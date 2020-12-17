@@ -10,4 +10,6 @@ Properties Ribbon can work with group of selected tracks, so you can adjust the 
 ## Flexibility ##
 The Properties Ribbon complex is very flexible. If you know the LUA scripting language and you're known with Reaper API, You can write needed properties list if it isn't realized yet and this properties will be available!
 ## Aditional information ##
-You might find the aditional detailed information at [wiki page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/]
++ How to install the script you can read at [Installation the script complex WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/Installation-the-script-complex)
++ The description of each script complex file you can see at [Scripts description WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/Scripts-description)
++ The order of using you can read at [How to use script complex WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/How-to-use-the-Properties-Ribbon-scripts-complex)
