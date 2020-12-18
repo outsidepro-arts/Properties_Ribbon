@@ -1,7 +1,7 @@
 --[[
 This file is part of script complex Properties Ribbon
-Copyright (c) 2020 outsidepro-arts
-License: MIT License
+Copyright (C), O-Team Development, 2020
+License: no licensed yet
 
 ----------
 
@@ -182,7 +182,7 @@ end
 local folderStateProperty = {}
  registerProperty( folderStateProperty, "visualLayout")
  folderStateProperty.states = {
-[0]="not folder",
+[0]="track",
 [1]="folder",
 [2]="end of folder",
 [3]="end of %u folders"
@@ -203,7 +203,7 @@ if type(tracks) == "table" then
 message("Tracks folder state: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_FOLDERDEPTH")
-message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
+message(string.format("track %u is ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
 if state == 0 or state == 1 then
 if state == 1 then
 local compactState = reaper.GetMediaTrackInfo_Value(tracks[k], "I_FOLDERCOMPACT")
@@ -224,10 +224,13 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-message(string.format("Track %u ", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER")))
+message(string.format("Track %u is a", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER")))
 if state == 0 or state == 1 then
 if state == 1 then
 local compactState = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT")
+if compactState == 0 then
+message("n")
+end
 message(" "..self.compactStates[compactState])
 end
 message(string.format(" %s", self.states[state]))
@@ -238,9 +241,9 @@ end
 elseif state < 0 then
 state = -(state-1)
 if state < 3 then
-message(string.format("%s", self.states[state]))
+message(string.format("n %s", self.states[state]))
 else
-message(string.format(" "..self.states[3], state-1))
+message(string.format("n "..self.states[3], state-1))
 end
 end
 end
