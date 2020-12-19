@@ -33,13 +33,13 @@ return false
 end
 end
 
-local function newProperty(property)
+local function registerProperty(property)
 masterLayout.properties[#masterLayout.properties+1] = property
 end
 
 -- volume methods
 local volumeProperty = {}
-newProperty( volumeProperty)
+registerProperty( volumeProperty)
 function  volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
@@ -79,7 +79,7 @@ end
 
 -- pan methods
 local panProperty = {}
-newProperty(panProperty)
+registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
@@ -120,7 +120,7 @@ end
 
 -- Width methods
 local widthProperty = {}
-newProperty(widthProperty)
+registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired width value for master track. Perform this property to reset the value to 100 percent.", "Adjustable, performable")
@@ -161,7 +161,7 @@ end
 
 -- Mute methods
 local muteProperty = {}
-newProperty(muteProperty)
+registerProperty(muteProperty)
 function muteProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to mute or unmute master track.", "Toggleable")
@@ -200,7 +200,7 @@ end
 
 -- Solo methods
 local soloProperty = {}
-newProperty(soloProperty)
+registerProperty(soloProperty)
 function soloProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to solo or unsolo master track.", "Toggleable")
@@ -233,11 +233,37 @@ reaper.SetMediaTrackInfo_Value(master, "I_SOLO", state)
 message(string.format("Master %s", states[({reaper.GetTrackState(master)})[2]&16]))
 return message
 end
+-- Mono/stereo methods
+-- This methods is very easy
+local monoProperty = {}
+registerProperty(monoProperty)
+function  monoProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the master track to mono or stereo.", "Toggleable")
+message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
+return message
+end
+
+function  monoProperty:set(action)
+local message = initOutputMessage()
+if action ~= nil then
+return "This property is toggleable only."
+end
+local state = reaper.GetToggleCommandState(40917)
+if state == 0 then
+state = 1
+elseif state == 1 then
+state = 0
+end
+reaper.Main_OnCommand(40917, state)
+message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
+return message
+end
 
 -- Play rate methods
 -- It's so easy because there are no deep control. Hmm, either i haven't found this.
 local playrateProperty = {}
-newProperty(playrateProperty)
+registerProperty(playrateProperty)
 function playrateProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1.", "adjustable, performable")
@@ -266,7 +292,7 @@ end
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
 local pitchPreserveProperty = {}
-newProperty(pitchPreserveProperty)
+registerProperty(pitchPreserveProperty)
 function  pitchPreserveProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the preserving pitch of items in the project when playrate changes.", "Toggleable")
@@ -295,7 +321,7 @@ end
 -- Master tempo methods
 -- Seems, Cockos allows to rest of for programmers 🤣
 local tempoProperty = {}
-newProperty(tempoProperty)
+registerProperty(tempoProperty)
 function tempoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set new master tempo.", "Adjustable")
