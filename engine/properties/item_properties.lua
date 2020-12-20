@@ -75,6 +75,7 @@ properties = {}
 parentLayout.itemLayout = setmetatable({
 section = "itemProperties", -- The section in ExtState
 name = "Item properties", -- the name of class which will set to some messages
+previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "takeLayout", -- the next sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
@@ -84,7 +85,7 @@ properties = {}
 parentLayout.takeLayout = setmetatable({
 section = "takeProperties", -- The section in ExtState
 name = "Item current take properties", -- the name of class which will set to some messages
-nextSubLayout = "visualLayout", -- the next sublayout the switch script will be set to
+previousSubLayout = "itemLayout", -- the previous sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}

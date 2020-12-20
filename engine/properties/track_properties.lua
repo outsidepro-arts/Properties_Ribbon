@@ -65,7 +65,6 @@ end
 parentLayout.visualLayout = setmetatable({
 section = "trackVisualProperties", -- The section in ExtState
 name = "Track visual properties", -- the name of class which will set to some messages
-previousSubLayout = "recordingLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "playbackLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
@@ -91,7 +90,6 @@ parentLayout.recordingLayout = setmetatable({
 section = "trackRecordingProperties", -- The section in ExtState
 name = "Track recording properties", -- the name of class which will set to some messages
 previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
-nextSubLayout = "visualLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
