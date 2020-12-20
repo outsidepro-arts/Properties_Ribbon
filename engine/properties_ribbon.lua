@@ -133,10 +133,18 @@ end
 
 function script_switchSublayout(action)
 if layout.nextSubLayout or layout.previousSubLayout then
-if (action == true or action == nil) and layout.nextSubLayout then
+if (action == true or action == nil) then
+if layout.nextSubLayout then
 extstate.set(currentLayout.."_sublayout", layout.nextSubLayout)
-elseif action == false and layout.previousSubLayout then
+else
+return "No next category. "
+end
+elseif action == false then
+if layout.previousSubLayout then
 extstate.set(currentLayout.."_sublayout", layout.previousSubLayout)
+else
+return "No previous category. "
+end
 end
 layout = dofile (({reaper.get_action_context()})[2]:match('^.+[\\//]') .. 'engine\\properties\\' .. currentLayout..".lua")
 if layout == nil then
