@@ -817,13 +817,13 @@ end
 local fadeinShapeProperty = {}
  registerProperty(fadeinShapeProperty, "itemLayout")
 fadeinShapeProperty.states = {
-[0] = "linear",
-[1] = "Fast 1",
-[2] = "Slow 1",
-[3] = "Fast 2",
-[4] = "Slow 2",
-[5] = "Smooth 1",
-[6] = "Smooth 2"
+[0] = "Linear",
+[1] = "Inverted quadratic",
+[2] = "Quadratic",
+[3] = "Inverted quartic",
+[4] = "Quartic",
+[5] = "Cosine S-curve",
+[	6] = "Quartic S-curve"
 }
 
 function fadeinShapeProperty.getValue(item)
