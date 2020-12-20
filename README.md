@@ -1,5 +1,7 @@
-# Properties_Ribbon
 [Данная информация на русском языке](README.RU.md)
+
+# Properties_Ribbon
+
 Properties Ribbon is the scripts complex for quick navigating and adjusting of track, item or another controls. This is a ReaScript complex intended for [REAPER](https://reaper.fm/) users with non-visual access and provides the extended control ability.
 *Please note:* The accessibility plugin [OSARA](https://osara.reaperaccessibility.com/) should be installed for provide the speech output.
 ## Why Properties Ribbon? ##
@@ -11,6 +13,6 @@ Properties Ribbon can work with group of selected elements, so you can adjust th
 ## Flexibility ##
 The Properties Ribbon complex is very flexible. If you know the LUA scripting language and you're known with Reaper API, You can write needed properties list if it isn't realized yet and this properties will be available!
 ## Aditional information ##
-+ How to install the script you can read at [Installation the script complex WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/Installation-the-script-complex)
-+ The description of each script complex file you can see at [Scripts description WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/Scripts-description)
-+ The order of using you can read at [How to use script complex WIKI page](https://github.com/outsidepro-arts/Properties_Ribbon/wiki/How-to-use-the-Properties-Ribbon-scripts-complex)
++ How to install the script you can read at [Installation the script complex WIKI page](/../../wiki/Installation-the-script-complex)
++ The description of each script complex file you can see at [Scripts description WIKI page](/../../wiki/Scripts-description)
++ The order of using you can read at [How to use script complex WIKI page](/../../wiki/How-to-use-the-Properties-Ribbon-scripts-complex)
