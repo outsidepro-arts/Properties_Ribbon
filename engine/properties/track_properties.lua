@@ -1,7 +1,7 @@
 --[[
 This file is part of script complex Properties Ribbon
-Copyright (C), O-Team Development, 2020
-License: no licensed yet
+Copyright (c) 2020 outsidepro-arts
+License: MIT License
 
 ----------
 
