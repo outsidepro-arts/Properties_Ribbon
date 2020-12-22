@@ -111,8 +111,8 @@ function extstate.set(key, value)
 reaper.SetExtState("Properties_Ribbon_script", key, value, false)
 end
 
-currentLayout, SpeakLayout, g_undoState = nil, false, "Unknown Change via Properties Ribbon script"
-layout = {}
+layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
+
 
 function script_init()
 currentLayout = extstate.get("currentLayout")
@@ -161,12 +161,11 @@ end
 
 function script_nextProperty()
 local message = initOutputMessage()
-local canProvide = layout.canProvide()
 if speakLayout == true then
 message(string.format("%s, ", layout.name))
 speakLayout = false
 end
-if canProvide == true then
+if layout.canProvide() == true then
 if #layout.properties < 1 then
 return string.format("The ribbon of %s is empty.", layout.name)
 end
@@ -185,12 +184,11 @@ end
 
 function script_previousProperty()
 local message = initOutputMessage()
-local canProvide = layout.canProvide()
 if speakLayout == true then
 message(string.format("%s, ", layout.name))
 speakLayout = false
 end
-if canProvide == true then
+if layout.canProvide() == true then
 if #layout.properties < 1 then
 return string.format("The ribbon of %s is empty.", layout.name)
 end
@@ -209,12 +207,11 @@ end
 
 function script_reportOrGotoProperty(propertyNum)
 local message = initOutputMessage()
-local canProvide = layout.canProvide()
 if speakLayout == true then
 message(string.format("%s, ", layout.name))
 speakLayout = false
 end
-if canProvide == true then
+if layout.canProvide() == true then
 if #layout.properties < 1 then
 return string.format("The ribbon of %s is empty.", layout.name)
 end
