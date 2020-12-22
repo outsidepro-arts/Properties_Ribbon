@@ -220,12 +220,15 @@ local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set desired pitch step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = round(config.getinteger("pitchStep", 1.00), 2)
 local fv = splitstring(tostring(state), ".")
-message("The pitch step adjustment is set to")
+message("The pitch step adjustment is set to ")
 if tonumber(fv[1]) >= 1 then
-message(string.format(" %s semitones", fv[1]))
+message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
+if tonumber(fv[2]) > 0 then
+message(", ")
+end
 end
 if fv[2] ~= "0" then
-message(string.format(" %s cents", numtopercent(tonumber("0."..fv[2]))))
+message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
 end
 return message
 end
@@ -262,12 +265,15 @@ config.setinteger("pitchStep", ajustingValue)
 end
 state = config.getinteger("pitchStep")
 local fv = splitstring(tostring(state), ".")
-message("The time step adjustment is set to")
+message("The pitch step adjustment is set to ")
 if tonumber(fv[1]) >= 1 then
-message(string.format(" %s semitones", fv[1]))
+message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
+if tonumber(fv[2]) > 0 then
+message(", ")
+end
 end
 if fv[2] ~= "0" then
-message(string.format(" %s cents", numtopercent(tonumber("0."..fv[2]))))
+message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
 end
 return message
 end
@@ -295,7 +301,7 @@ elseif state == false then
 state = true
 end
 config.setboolean("multiSelectionSupport", state)
-return string.format("The properties ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state])
+return string.format("Properties Ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state])
 end
 
 return configLayout
