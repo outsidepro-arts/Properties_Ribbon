@@ -28,16 +28,22 @@ do
 local countTracks = reaper.CountTracks(0)
 if multiSelectionSupport == true then
 if countTracks then
-tracks = {}
 for i = 1, countTracks do
 local track = reaper.GetTrack(0,i-1)
 if reaper.IsTrackSelected(track) == true then
+if not tracks then
+tracks = track
+elseif tracks then
+if type(tracks) ~= "table" then
+tracks = {}
+end
 tracks[#tracks+1] = track
 end
 end
-if #tracks == 1 then
-tracks = tracks[1]
 end
+--if #tracks == 1 then
+--tracks = tracks[1]
+--end
 end
 else
 local lastTouched = reaper.GetLastTouchedTrack()
