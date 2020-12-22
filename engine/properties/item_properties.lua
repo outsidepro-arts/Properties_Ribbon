@@ -48,6 +48,10 @@ local function getItemNumber(item)
 return reaper.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER")+1
 end
 
+-- And another one:
+local function getTakeNumber(take)
+return reaper.GetMediaItemTakeInfo_Value(take, "IP_TAKENUMBER")
+end
 
 -- global pseudoclass initialization
 -- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
@@ -2078,10 +2082,13 @@ if num < 0 then
 message("-")
 end
 if tonumber(fv[1]) ~= 0 then
-message(string.format("%s semitones", fv[1]))
+message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
+if tonumber(fv[2]) > 0 then
+message(", ")
+end
 end
 if fv[2] ~= "0" then
-message(string.format("%s cents", numtopercent(tonumber("0."..fv[2]))))
+message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
 end
 end
 return tostring(message)
