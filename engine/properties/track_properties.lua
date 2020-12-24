@@ -54,8 +54,9 @@ end
 end
 
 -- global pseudoclass initialization
-parentLayout = {}
-
+parentLayout = {
+name = "Track%s properties" -- The main class name which will be formatted by subclass name
+}
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 if tracks then
@@ -70,7 +71,7 @@ end
 --visual properties
 parentLayout.visualLayout = setmetatable({
 section = "trackVisualProperties", -- The section in ExtState
-name = "Track visual properties", -- the name of class which will set to some messages
+subname = " visual", -- the name of class which will set to some messages
 nextSubLayout = "playbackLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
@@ -81,7 +82,7 @@ properties = {}
 -- Playback properties
 parentLayout.playbackLayout = setmetatable({
 section = "trackPlaybackProperties", -- The section in ExtState
-name = "Track playback properties", -- the name of class which will set to some messages
+subname = " playback", -- the name of class which will set to some messages
 previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "recordingLayout", -- the next sublayout the switch script will be set to
 
@@ -94,7 +95,7 @@ properties = {}
 -- Recording properties
 parentLayout.recordingLayout = setmetatable({
 section = "trackRecordingProperties", -- The section in ExtState
-name = "Track recording properties", -- the name of class which will set to some messages
+subname = " recording", -- the name of class which will set to some messages
 previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.

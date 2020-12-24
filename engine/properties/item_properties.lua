@@ -55,7 +55,9 @@ end
 
 -- global pseudoclass initialization
 -- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
-parentLayout = {}
+parentLayout = {
+name = "Item%s properties", -- The main class name, which will be formatted by subclass name
+}
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 if reaper.CountSelectedMediaItems(0) > 0 then
@@ -69,7 +71,7 @@ end
 --visual properties
 parentLayout.visualLayout = setmetatable({
 section = "itemVisualProperties", -- The section in ExtState
-name = "Item visual properties", -- the name of class which will set to some messages
+subname = " visual", -- the name of class which will set to some messages
 nextSubLayout = "itemLayout", -- the next sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
@@ -78,7 +80,8 @@ properties = {}
 --Item properties
 parentLayout.itemLayout = setmetatable({
 section = "itemProperties", -- The section in ExtState
-name = "Item properties", -- the name of class which will set to some messages
+subname = "", -- the name of class which will set to some messages
+-- This string is empty cuz the layout's name and this sublayout's name is identical
 previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "takeLayout", -- the next sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
@@ -88,7 +91,7 @@ properties = {}
 -- Current take properties
 parentLayout.takeLayout = setmetatable({
 section = "takeProperties", -- The section in ExtState
-name = "Item current take properties", -- the name of class which will set to some messages
+subname = " current take", -- the name of class which will set to some messages
 previousSubLayout = "itemLayout", -- the previous sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
