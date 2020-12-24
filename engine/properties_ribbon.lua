@@ -126,7 +126,7 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
 end
-g_undoState = ("Switch properties layout to %s in Properties Ribbon script"):format(layout.name)
+g_undoState = ("Switch properties layout to %s in Properties Ribbon script"):format((layout.name):format(""))
 layout.pIndex = tonumber(extstate.get(layout.section)) or 1
 return layout
 end
@@ -151,23 +151,24 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return
 end
-g_undoState = ("Switch category to %s in Properties Ribbon script"):format(layout.name)
-speakLayout = true
+g_undoState = ("Switch category to %s in Properties Ribbon script"):format((layout.name):format(layout.subname))
+speakLayout = false
 layout.pIndex = tonumber(extstate.get(layout.section)) or 1
+return layout.name:format(layout.subname)..", "
 else
-return "This properties layout has no category. "
+return ("The %s layout has no category. "):format(layout.name:format(""))
 end
 end
 
 function script_nextProperty()
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", layout.name))
+message(string.format("%s, ", (layout.name):format(layout.subname)))
 speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name)
+return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
 end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
@@ -175,7 +176,7 @@ else
 message("last property. ")
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name)
+return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 message(tostring(layout.properties[layout.pIndex]:get()))
 g_undoState = "Properties Ribbon: "..tostring(message)
@@ -185,12 +186,12 @@ end
 function script_previousProperty()
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", layout.name))
+message(string.format("%s, ", layout.name:format(layout.subname)))
 speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name)
+return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
 end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
@@ -198,7 +199,7 @@ else
 message("first property. ")
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name)
+return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 message(tostring(layout.properties[layout.pIndex]:get()))
 g_undoState = "Properties Ribbon: "..tostring(message)
@@ -208,7 +209,7 @@ end
 function script_reportOrGotoProperty(propertyNum)
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", layout.name))
+message(string.format("%s, ", layout.name:format(layout.subname)))
 speakLayout = false
 end
 if layout.canProvide() == true then
@@ -219,11 +220,11 @@ if propertyNum then
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
-return string.format("No property with number %s in %s layout.", propertyNum, layout.name)
+return string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))
 end
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name)
+return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 message(tostring(layout.properties[layout.pIndex]:get()))
 return tostring(message)
