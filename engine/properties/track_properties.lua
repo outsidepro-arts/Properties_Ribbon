@@ -35,7 +35,7 @@ if not tracks then
 tracks = track
 elseif tracks then
 if type(tracks) ~= "table" then
-tracks = {}
+tracks = {tracks}
 end
 tracks[#tracks+1] = track
 end
