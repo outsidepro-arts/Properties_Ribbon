@@ -12,6 +12,9 @@ config.section = "Properties_Ribbon_script"
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 require "specfuncs"
+
+-- Including the byte words module
+require "bytewords"
 -- These modules usualy uses in properties code
 
 -- Custom message metamethod
