@@ -1312,7 +1312,13 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND")
-message(string.format("track %u %s to parent or master track", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
+message(string.format("track %u %s to ", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
+if reaper.GetParentTrack(tracks) then
+message("parent ")
+else
+message("master ")
+end
+message("track")
 end
 return message
 end
@@ -1355,7 +1361,13 @@ state = 1
 end
 reaper.SetMediaTrackInfo_Value(tracks, "B_MAINSEND", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND")
-message(string.format("Track %u %s to parent or master track", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
+message(string.format("track %u %s to ", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
+if reaper.GetParentTrack(tracks) then
+message("parent ")
+else
+message("master ")
+end
+message("track")
 end
 return message
 end
