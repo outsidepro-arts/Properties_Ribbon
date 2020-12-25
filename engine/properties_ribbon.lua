@@ -99,6 +99,15 @@ end
 -- }
 
 
+function composeSubLayout()
+local message = initOutputMessage()
+message(string.format("%s, ", (layout.name):format(layout.subname)))
+if config.getboolean("reportPos", true) == true and (layout.nextSubLayout or layout.previousSubLayout) then
+message(string.format("%u of %u, ", layout.slIndex, layout.ofCount))
+end
+return tostring(message)
+end
+
 -- Making the get and set internal ExtState more easier
 
 extstate = {}
@@ -154,7 +163,7 @@ end
 g_undoState = ("Switch category to %s in Properties Ribbon script"):format((layout.name):format(layout.subname))
 speakLayout = false
 layout.pIndex = tonumber(extstate.get(layout.section)) or 1
-return layout.name:format(layout.subname)..", "
+return composeSubLayout()
 else
 return ("The %s layout has no category. "):format(layout.name:format(""))
 end
@@ -163,7 +172,7 @@ end
 function script_nextProperty()
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", (layout.name):format(layout.subname)))
+message(composeSubLayout())
 speakLayout = false
 end
 if layout.canProvide() == true then
@@ -190,7 +199,7 @@ end
 function script_previousProperty()
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", layout.name:format(layout.subname)))
+message(composeSubLayout())
 speakLayout = false
 end
 if layout.canProvide() == true then
@@ -217,7 +226,7 @@ end
 function script_reportOrGotoProperty(propertyNum)
 local message = initOutputMessage()
 if speakLayout == true then
-message(string.format("%s, ", layout.name:format(layout.subname)))
+message(composeSubLayout())
 speakLayout = false
 end
 if layout.canProvide() == true then
