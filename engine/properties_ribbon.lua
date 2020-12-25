@@ -178,7 +178,11 @@ end
 else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
-message(tostring(layout.properties[layout.pIndex]:get()))
+local result = layout.properties[layout.pIndex]:get()
+if config.getboolean("reportPos", true) == true then
+result((", %u of %u"):format(layout.pIndex, #layout.properties))
+end
+message(tostring(result))
 g_undoState = "Properties Ribbon: "..tostring(message)
 return tostring(message)
 end
@@ -201,7 +205,11 @@ end
 else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
-message(tostring(layout.properties[layout.pIndex]:get()))
+local result = layout.properties[layout.pIndex]:get()
+if config.getboolean("reportPos", true) == true then
+result((", %u of %u"):format(layout.pIndex, #layout.properties))
+end
+message(tostring(result))
 g_undoState = "Properties Ribbon: "..tostring(message)
 return tostring(message)
 end
@@ -226,7 +234,11 @@ end
 else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
-message(tostring(layout.properties[layout.pIndex]:get()))
+local result = layout.properties[layout.pIndex]:get()
+if config.getboolean("reportPos", true) == true then
+result((", %u of %u"):format(layout.pIndex, #layout.properties))
+end
+message(tostring(result))
 return tostring(message)
 end
 
