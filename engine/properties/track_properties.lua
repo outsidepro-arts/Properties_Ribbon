@@ -1226,6 +1226,88 @@ end
 return message
 end
 
+-- Automation mode methods
+local automationModeProperty = {}
+ registerProperty(automationModeProperty, "recordingLayout")
+ automationModeProperty.states = setmetatable({
+[0] = "trim or off",
+[1] = "read",
+[2] = "touch",
+[3] = "write",
+[4] = "latch"
+}, {
+__index = function(self, key) return "Unknown automation mode "..key end
+})
+
+function automationModeProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired automation mode for selected track.", "Adjustable")
+if multiSelectionSupport == true then
+message:addType(string.format(' If the group of track has been selected, The value will enumerate only if all tracks have the same value. Otherwise, the automation mode state will be set to "%s", then will enumerate this.', self.states[1]), 1)
+end
+if type(tracks) == "table" then
+message("tracks automation mode: ")
+for k = 1, #tracks do
+local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE")
+message(string.format("track %u %s", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER"), self.states[state]))
+if k < #tracks then
+message(", ")
+end
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
+message(string.format("track %u automation mode %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
+end
+return message
+end
+
+function automationModeProperty:set(action)
+local message = initOutputMessage()
+local ajustingValue
+if action == true then
+ajustingValue = 1
+elseif action == false then
+ajustingValue = -1
+else
+return "This property adjustable only."
+end
+if type(tracks) == "table" then
+local st = {0,0,0,0,0}
+for k = 1, #tracks do
+local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE")
+if st[state+1] then
+st[state+1] = st[state+1]+1
+end
+end
+local state
+if math.max(st[1], st[2], st[3], st[4], st[5]) == #tracks then
+state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_AUTOMODE")
+if (state+ajustingValue) <= #self.states and (state+ajustingValue) >= 0then
+state = state+ajustingValue
+end
+else
+state = 1
+end
+message(string.format("Set all tracks automation mode to %s.", self.states[state]))
+for k = 1, #tracks do
+reaper.SetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE", state)
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
+if (state+ajustingValue) > #self.states then
+message("No more next property values. ")
+elseif (state+ajustingValue) < 0 then
+message("No more previous property values. ")
+else
+state = state+ajustingValue
+end
+reaper.SetMediaTrackInfo_Value(tracks, "I_AUTOMODE", state)
+message(string.format("track %u automation mode %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")]))
+end
+return message
+end
+
+
 local phaseProperty = {}
  registerProperty(phaseProperty, "playbackLayout")
  phaseProperty.states = {[0]="normal", [1]="inverted"}
