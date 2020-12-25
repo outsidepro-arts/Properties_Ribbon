@@ -54,10 +54,19 @@ end
 end
 
 -- global pseudoclass initialization
-parentLayout = {
+parentLayout = setmetatable({
 name = "Track%s properties", -- The main class name which will be formatted by subclass name
 ofCount = 0 -- The full categories count
-}
+}, {
+-- When new field has been added we just take over the ofCount adding
+__newindex = function(self, key, value)
+rawset(self, key, value)
+if key ~= "canProvide" then
+self.ofCount = self.ofCount+1
+end
+end
+})
+
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 if tracks then
@@ -70,7 +79,6 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.visualLayout = setmetatable({
 section = "trackVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
@@ -83,7 +91,6 @@ properties = {}
 )
 
 -- Playback properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.playbackLayout = setmetatable({
 section = "trackPlaybackProperties", -- The section in ExtState
 subname = " playback", -- the name of class which will set to some messages
@@ -97,7 +104,6 @@ properties = {}
 )
 
 -- Recording properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.recordingLayout = setmetatable({
 section = "trackRecordingProperties", -- The section in ExtState
 slIndex = 3, -- The index of category

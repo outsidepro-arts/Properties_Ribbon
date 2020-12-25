@@ -55,10 +55,19 @@ end
 
 -- global pseudoclass initialization
 -- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
-parentLayout = {
+parentLayout = setmetatable({
 name = "Item%s properties", -- The main class name, which will be formatted by subclass name
 ofCount = 0 -- The full categories count
-}
+}, {
+-- When new field has been added we just take over the ofCount adding
+__newindex = function(self, key, value)
+rawset(self, key, value)
+if key ~= "canProvide" then
+self.ofCount = self.ofCount+1
+end
+end
+})
+
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 if reaper.CountSelectedMediaItems(0) > 0 then
@@ -70,7 +79,6 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.visualLayout = setmetatable({
 section = "itemVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
@@ -81,7 +89,6 @@ properties = {}
 }, {__index = parentLayout}
 )
 --Item properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.itemLayout = setmetatable({
 section = "itemProperties", -- The section in ExtState
 subname = "", -- the name of class which will set to some messages
@@ -94,7 +101,6 @@ properties = {}
 }, {__index = parentLayout}
 )
 -- Current take properties
-parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.takeLayout = setmetatable({
 section = "takeProperties", -- The section in ExtState
 subname = " current take", -- the name of class which will set to some messages
