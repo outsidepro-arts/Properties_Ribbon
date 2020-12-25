@@ -55,7 +55,8 @@ end
 
 -- global pseudoclass initialization
 parentLayout = {
-name = "Track%s properties" -- The main class name which will be formatted by subclass name
+name = "Track%s properties", -- The main class name which will be formatted by subclass name
+ofCount = 0 -- The full categories count
 }
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -69,9 +70,11 @@ end
 
 -- sublayouts
 --visual properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.visualLayout = setmetatable({
 section = "trackVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
+slIndex = 1, -- Index of category
 nextSubLayout = "playbackLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
@@ -80,9 +83,11 @@ properties = {}
 )
 
 -- Playback properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.playbackLayout = setmetatable({
 section = "trackPlaybackProperties", -- The section in ExtState
 subname = " playback", -- the name of class which will set to some messages
+slIndex = 2, -- Index of category
 previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "recordingLayout", -- the next sublayout the switch script will be set to
 
@@ -91,10 +96,11 @@ properties = {}
 }, {__index = parentLayout}
 )
 
-
 -- Recording properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.recordingLayout = setmetatable({
 section = "trackRecordingProperties", -- The section in ExtState
+slIndex = 3, -- The index of category
 subname = " recording", -- the name of class which will set to some messages
 previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
 

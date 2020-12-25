@@ -57,6 +57,7 @@ end
 -- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
 parentLayout = {
 name = "Item%s properties", -- The main class name, which will be formatted by subclass name
+ofCount = 0 -- The full categories count
 }
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -69,19 +70,23 @@ end
 
 -- sublayouts
 --visual properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.visualLayout = setmetatable({
 section = "itemVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
+slIndex = 1, -- Index of category
 nextSubLayout = "itemLayout", -- the next sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
 )
 --Item properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.itemLayout = setmetatable({
 section = "itemProperties", -- The section in ExtState
 subname = "", -- the name of class which will set to some messages
 -- This string is empty cuz the layout's name and this sublayout's name is identical
+slIndex = 2, -- Index of category
 previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
 nextSubLayout = "takeLayout", -- the next sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
@@ -89,14 +94,17 @@ properties = {}
 }, {__index = parentLayout}
 )
 -- Current take properties
+parentLayout.ofCount = parentLayout.ofCount+1
 parentLayout.takeLayout = setmetatable({
 section = "takeProperties", -- The section in ExtState
 subname = " current take", -- the name of class which will set to some messages
+slIndex = 3, -- Index of category
 previousSubLayout = "itemLayout", -- the previous sublayout the switch script will be set to
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
 )
+
 -- The creating new property macros
 local function registerProperty(property, sl)
 parentLayout[sl].properties[#parentLayout[sl].properties+1] = setmetatable(property, {__index = parentLayout})
