@@ -1084,7 +1084,7 @@ end
 return message
 end
 
-function  recInputsProperty:set(action)
+function recInputsProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
 if action == true then
@@ -1654,7 +1654,7 @@ end
 return message
 end
 
-function  recmonitorItemsProperty:set(action)
+function recmonitorItemsProperty:set(action)
 local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."

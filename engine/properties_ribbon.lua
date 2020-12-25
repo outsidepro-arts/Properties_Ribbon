@@ -78,7 +78,7 @@ end,
 __tostring = function(self)
 local message = ""
 if self.msg then
-message  = self.msg
+message = self.msg
 else
 return ""
 end

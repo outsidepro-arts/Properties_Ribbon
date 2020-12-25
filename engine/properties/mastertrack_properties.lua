@@ -9,7 +9,7 @@ Let me say a few word before starts
 LUA - is not object oriented programming language, but very flexible. Its flexibility allows to realize OOP easy via metatables. In this scripts the pseudo OOP has been used, therefore we have to understand some terms.
 .1 When i'm speaking "Class" i mean the metatable variable with some fields.
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
-When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been  turned out more comfort as for writing new properties table, as for call this from main script engine.
+When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]--
 -- get the master track
@@ -40,7 +40,7 @@ end
 -- volume methods
 local volumeProperty = {}
 registerProperty( volumeProperty)
-function  volumeProperty:get()
+function volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
@@ -48,7 +48,7 @@ message(string.format("Master volume %s db", numtodecibels(state)))
 return message
 end
 
-function  volumeProperty:set(action)
+function volumeProperty:set(action)
 local message = initOutputMessage()
 if action == nil then
 message("reset, ")
@@ -237,14 +237,14 @@ end
 -- This methods is very easy
 local monoProperty = {}
 registerProperty(monoProperty)
-function  monoProperty:get()
+function monoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the master track to mono or stereo.", "Toggleable")
 message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
 return message
 end
 
-function  monoProperty:set(action)
+function monoProperty:set(action)
 local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
@@ -293,14 +293,14 @@ end
 -- It's more easy than previous method
 local pitchPreserveProperty = {}
 registerProperty(pitchPreserveProperty)
-function  pitchPreserveProperty:get()
+function pitchPreserveProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the preserving pitch of items in the project when playrate changes.", "Toggleable")
 message(string.format("Master pitch when playrate changes is %s", ({[0] = "not preserved", [1] = "preserved"})[reaper.GetToggleCommandState(40671)]))
 return message
 end
 
-function  pitchPreserveProperty:set(action)
+function pitchPreserveProperty:set(action)
 local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."

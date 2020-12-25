@@ -9,7 +9,7 @@ Let me say a few word before starts
 LUA - is not object oriented programming language, but very flexible. Its flexibility allows to realize OOP easy via metatables. In this scripts the pseudo OOP has been used, therefore we have to understand some terms.
 .1 When i'm speaking "Class" i mean the metatable variable with some fields.
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
-When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been  turned out more comfort as for writing new properties table, as for call this from main script engine.
+When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]--
 
@@ -64,7 +64,7 @@ message(string.format("Properties ribbon now provides %s", self.states[typeLevel
 return message
 end
 
-function  typeLevelProperty:set(action)
+function typeLevelProperty:set(action)
 if action == nil then
 return "This property is adjustable only."
 end
@@ -91,7 +91,7 @@ end
 -- Virtual cursor position reporting methods
 local reportPosProperty = {}
 registerProperty( reportPosProperty)
-function  reportPosProperty:get()
+function reportPosProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
 local state = config.getboolean("reportPos", true)
@@ -99,7 +99,7 @@ message(string.format("Properties Ribbon now %s the virtual cursor position", ({
 return message
 end
 
-function  reportPosProperty:set(action)
+function reportPosProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
@@ -122,11 +122,11 @@ local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("The  Decibel step adjustment is set to %s", state))
+message(string.format("The Decibel step adjustment is set to %s", state))
 return message
 end
 
-function  dbStepProperty:set(action)
+function dbStepProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("dbStep", 0.1)
 local ajustingValue
@@ -151,7 +151,7 @@ config.setinteger("dbStep", 0.01)
 else
 config.setinteger("dbStep", ajustingValue)
 end
-message(string.format("The  Decibel step adjustment is set to %s.", config.getinteger("dbStep")))
+message(string.format("The Decibel step adjustment is set to %s.", config.getinteger("dbStep")))
 return message
 end
 
@@ -164,7 +164,7 @@ local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = config.getinteger("percentStep", 1)
-message(string.format("The  percent step adjustment is set to %s%%", state))
+message(string.format("The percent step adjustment is set to %s%%", state))
 return message
 end
 
@@ -193,7 +193,7 @@ config.setinteger("percentStep", 1)
 else
 config.setinteger("percentStep", ajustingValue)
 end
-message(string.format("The  percent step adjustment is set to %s%%.", config.getinteger("percentStep")))
+message(string.format("The percent step adjustment is set to %s%%.", config.getinteger("percentStep")))
 return message
 end
 
@@ -201,7 +201,7 @@ end
 local timeStepProperty = {}
 registerProperty( timeStepProperty)
 
-function  timeStepProperty:get()
+function timeStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set needed time step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
@@ -226,7 +226,7 @@ else
 return "Canceled."
 end
 end
-if ajustingValue <= 0  then
+if ajustingValue <= 0 then
 message("Set the step to zero MS is pointless. ")
 config.setinteger("timeStep", 0.001)
 else
@@ -240,7 +240,7 @@ end
 local pitchStepProperty = {}
 registerProperty( pitchStepProperty)
 
-function  pitchStepProperty:get()
+function pitchStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set desired pitch step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
@@ -259,7 +259,7 @@ end
 return message
 end
 
-function  pitchStepProperty:set(action)
+function pitchStepProperty:set(action)
 local message = initOutputMessage()
 local state = round(config.getinteger("pitchStep", 1.00), 2)
 local ajustingValue
@@ -308,7 +308,7 @@ end
 -- Multiselection support methods
 local multiSelectionSupportProperty = {}
 registerProperty( multiSelectionSupportProperty)
-function  multiSelectionSupportProperty:get()
+function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
 local state = config.getboolean("multiSelectionSupport", true)
@@ -316,7 +316,7 @@ message(string.format("Properties Ribbon now %s the multi selection", ({[true] =
 return message
 end
 
-function  multiSelectionSupportProperty:set(action)
+function multiSelectionSupportProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
