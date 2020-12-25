@@ -88,6 +88,32 @@ message(string.format("Properties ribbon now provides %s", self.states[state]))
 return message
 end
 
+-- Virtual cursor position reporting methods
+local reportPosProperty = {}
+registerProperty( reportPosProperty)
+function  reportPosProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
+local state = config.getboolean("reportPos", true)
+message(string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state]))
+return message
+end
+
+function  reportPosProperty:set(action)
+if action ~= nil then
+return "This property is toggleable only."
+end
+local state = config.getboolean("reportPos", true)
+if state == true then
+state = false
+elseif state == false then
+state = true
+end
+config.setboolean("reportPos", state)
+return string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state])
+end
+
+
 -- DB step specify methods
 local dbStepProperty = {}
 registerProperty( dbStepProperty)
