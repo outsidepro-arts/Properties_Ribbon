@@ -280,7 +280,6 @@ end
 -- volume methods
 local itemVolumeProperty = {}
 registerProperty(itemVolumeProperty, "itemLayout")
-registerProperty(itemVolumeProperty, "takeLayout")
 
 function itemVolumeProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_VOL")
