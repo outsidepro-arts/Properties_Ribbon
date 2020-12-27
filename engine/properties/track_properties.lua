@@ -1236,7 +1236,7 @@ end
 local automationModeProperty = {}
  registerProperty(automationModeProperty, "recordingLayout")
  automationModeProperty.states = setmetatable({
-[0] = "trim or off",
+[0] = "trim read",
 [1] = "read",
 [2] = "touch",
 [3] = "write",
