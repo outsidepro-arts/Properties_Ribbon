@@ -49,8 +49,8 @@ return reaper.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER")+1
 end
 
 -- And another one:
-local function getTakeNumber(take)
-return reaper.GetMediaItemTakeInfo_Value(take, "IP_TAKENUMBER")
+local function getTakeNumber(item)
+return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
 end
 
 -- global pseudoclass initialization
@@ -151,7 +151,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, new name will applied to all active takes of selected items.", 1)
 end
 if type(items) == "table" then
-message("Items takes names: ")
+message("Takes names: ")
 for k = 1, #items do
 local name = self.getValue(items[k])
 message(string.format("Take of item %u ", getItemNumber(items[k])))
@@ -560,13 +560,13 @@ end
 local ajustingValue
 if tkPlayItems > tkNotPlayItems then
 ajustingValue = 0
-message("Sett all items takes play off.")
+message("Sett all Takes play off.")
 elseif tkPlayItems < tkNotPlayItems then
 ajustingValue = 1
-message("Set all items takes play on.")
+message("Set all Takes play on.")
 else
 ajustingValue = 0
-message("Set all items takes play off.")
+message("Set all Takes play off.")
 end
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY", ajustingValue)
@@ -1637,7 +1637,7 @@ if type(items) == "table" then
 message("Takes volume: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u in ", getItemNumber(items[k])))
+message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s db", numtodecibels(state)))
 if k < #items then
 message(", ")
@@ -1645,7 +1645,7 @@ end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take volume %s db", getItemNumber(items), numtodecibels(state)))
+message(string.format("Item %u take %u volume %s db", getItemNumber(items), getTakeNumber(items), numtodecibels(state)))
 end
 return message
 end
@@ -1678,7 +1678,7 @@ end
 self.setValue(items[k], state)
 end
 local state = self.getValue(items[k])
-message(string.format("Take of item %u in ", getItemNumber(items[k])))
+message(string.format("Take%u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s db", numtodecibels(state)))
 if k < #items then
 message(", ")
@@ -1707,7 +1707,7 @@ message("Normalize item take volume")
 reaper.Main_OnCommand(40108, 0)
 end
  state = self.getValue(items)
-message(string.format("Item %u current take volume %s db", getItemNumber(items), numtodecibels(state)))
+message(string.format("Item %u take %u volume %s db", getItemNumber(items), getTakeNumber(items), numtodecibels(state)))
 end
 return message
 end
@@ -1733,17 +1733,17 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to set the take pan to center.", 1)
 if type(items) == "table" then
-message("items takes pan state: ")
+message("Takes pan state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u in ", getItemNumber(items[k])))
+message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s", numtopan(state)))
 if k < #items then
 message(", ")
 end
 end
 else
-message(string.format("Item %u current take pan ", getItemNumber(items)))
+message(string.format("Item %u take %u pan ", getItemNumber(items), getTakeNumber(items)))
 local state = self.getValue(items)
 message(string.format("%s", numtopan(state)))
 end
@@ -1762,7 +1762,7 @@ message("reset, ")
 ajustingValue = nil
 end
 if type(items) == "table" then
-message("items takes pan: ")
+message("Takes pan: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
@@ -1777,7 +1777,7 @@ state = 0
 end
 self.setValue(items[k], state)
 state = self.getValue(items[k], "D_PAN")
-message(string.format("take of item %u in ", getItemNumber(items[k])))
+message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s", numtopan(state)))
 if k < #items then
 message(", ")
@@ -1799,7 +1799,7 @@ state = 0
 end
 self.setValue(items, state)
 state = self.getValue(items)
-message(string.format("Item %u current take pan %s", getItemNumber(items), numtopan(state)))
+message(string.format("Item %u take %u pan %s", getItemNumber(items), getTakeNumber(items), numtopan(state)))
 end
 return message
 end
@@ -1842,17 +1842,17 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the channel mode state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
-message("Items active takes channel mode state: ")
+message("Takes channel mode state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u %s", getItemNumber(items[k]), self.states[state]))
+message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
 if k < #items then
 message(", ")
 end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take channel mode %s", getItemNumber(items), self.states[state]))
+message(string.format("Item %u take %u channel mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
 end
 return message
 end
@@ -1890,7 +1890,7 @@ for k = 1, #items do
 self.setValue(items[k], state)
 end
 else
-message(string.format("Set all items channel mode to %s.", self.states[0]))
+message(string.format("Set all Takes channel mode to %s.", self.states[0]))
 for k = 1, #items do
 self.setValue(items[k], 0)
 end
@@ -1907,7 +1907,7 @@ state = state+ajustingValue
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u current take channel mode %s", getItemNumber(items), self.states[self.getValue(items)]))
+message(string.format("Item %u take %u channel mode %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end
@@ -1936,7 +1936,7 @@ if type(items) == "table" then
 message("Takes playrate state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u in ", getItemNumber(items[k])))
+message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s", round(state, 3)))
 if k < #items then
 message(", ")
@@ -1944,7 +1944,7 @@ end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take playrate %s", getItemNumber(items), round(state, 3)))
+message(string.format("Item %u take %u playrate %s", getItemNumber(items), getTakeNumber(items), round(state, 3)))
 end
 return message
 end
@@ -1955,12 +1955,11 @@ local ajustingValue = config.getinteger("timeStep", 0.001)
 if action == false then
 ajustingValue = -ajustingValue
 elseif action == nil then
-
 message("Reset,")
 ajustingValue = 1.000
 end
 if type(items) == "table" then
-message("Items takes playrate state: ")
+message("Takes playrate state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -1972,7 +1971,7 @@ state = ajustingValue
 end
 self.setValue(items[k], state)
 state = self.getValue(items[k])
-message(("take of item %u %s"):format(getItemNumber(items[k]), round(state, 3)))
+message(("take %u of item %u %s"):format(getTakeNumber(items[k]), getItemNumber(items[k]), round(state, 3)))
 if k < #items then
 message(", ")
 end
@@ -1991,7 +1990,7 @@ state = ajustingValue
 end
 self.setValue(items, state)
  state = self.getValue(items)
-message(string.format("Item %u current take playrate %s", getItemNumber(items), round(state, 3)))
+message(string.format("Item %u take %u playrate %s", getItemNumber(items), getTakeNumber(items), round(state, 3)))
 end
 return message
 end
@@ -2016,10 +2015,10 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the preserve state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items takes preserve pitch when playrate changes state: ")
+message("Takes preserve pitch when playrate changes state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("item %u ", getItemNumber(items[k])))
+message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(self.states[state])
 if k < #items then
 message(", ")
@@ -2027,7 +2026,7 @@ end
 end
 else
 local state = self.getValue(items)
-message(string.format("item %u current take pitch %s when playrate changes", getItemNumber(items), self.states[state]))
+message(string.format("item %u take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[state]))
 end
 return message
 end
@@ -2070,7 +2069,7 @@ state = 1
 end
 self.setValue(items, state)
 state = self.getValue(items)
-message(string.format("Item %u current take pitch %s when playrate changes", getItemNumber(items), self.states[state]))
+message(string.format("Item %u  take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[state]))
 end
 return message
 end
@@ -2121,7 +2120,7 @@ if type(items) == "table" then
 message("Takes pitch state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u in ", getItemNumber(items[k])))
+message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s", self.compose(state)))
 if k < #items then
 message(", ")
@@ -2129,7 +2128,7 @@ end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take pitch %s", getItemNumber(items), self.compose(state)))
+message(string.format("Item %u  take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
 end
 return message
 end
@@ -2144,7 +2143,7 @@ message("Reset,")
 ajustingValue = 0
 end
 if type(items) == "table" then
-message("Items takes pitch state: ")
+message("Takes pitch state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -2154,11 +2153,9 @@ state = ajustingValue
 end
 self.setValue(items[k], state)
 state = self.getValue(items[k])
-message(("take of item %u %s"):format(getItemNumber(items[k]), self.compose(state)))
+message(("take %u of item %u %s"):format(getTakeNumber(items[k]), getItemNumber(items[k]), self.compose(state)))
 if k < #items then
 message(", ")
-else
-message(" semitones")
 end
 end
 else
@@ -2170,7 +2167,7 @@ state = ajustingValue
 end
 self.setValue(items, state)
  state = self.getValue(items)
-message(string.format("Item %u current take pitch %s", getItemNumber(items), self.compose(state)))
+message(string.format("Item %u take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
 end
 return message
 end
@@ -2181,7 +2178,6 @@ registerProperty(takePitchShifterProperty, "takeLayout")
 takePitchShifterProperty.states = setmetatable({[-1] = "project default"},
 {
 __index = function(self, key)
-
 if tonumber(key) and key >= 0 then
 key = bytewords.getHiWord(key)
 local retval, name = reaper.EnumPitchShiftModes(key)
@@ -2217,17 +2213,17 @@ message:addType(string.format(' If the group of items has been selected, the val
 end
 message:addType(string.format(" Perform this property to reset the value to %s.", self.states[-1]), 1)
 if type(items) == "table" then
-message("Items active takes pitch shifter state: ")
+message("Takes pitch shifter state: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u %s", getItemNumber(items[k]), self.states[state]))
+message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
 if k < #items then
 message(", ")
 end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take pitch shifter %s", getItemNumber(items), self.states[state]))
+message(string.format("Item %u take %u pitch shifter %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
 end
 return message
 end
@@ -2327,7 +2323,7 @@ state = -1
 message("Reset, ")
 end
 self.setValue(items, state)
-message(string.format("Item %u current take pitch shifter %s", getItemNumber(items), self.states[self.getValue(items)]))
+message(string.format("Item %u take %u pitch shifter %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end
@@ -2356,17 +2352,17 @@ if multiSelectionSupport == true then
 message:addType(string.format(" If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until all shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
 end
 if type(items) == "table" then
-message("Items active takes pitch shifter modes: ")
+message("Takes pitch shifter modes: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("take of item %u %s", getItemNumber(items[k]), self.states[state]))
+message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
 if k < #items then
 message(", ")
 end
 end
 else
 local state = self.getValue(items)
-message(string.format("Item %u current take sshifter mode %s", getItemNumber(items), self.states[state]))
+message(string.format("Item %u take %u shifter mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
 if state == -1 then
 message:changeType(string.format("The Property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1]), 1)
 message:changeType("unavailable", 2)
@@ -2392,7 +2388,7 @@ local lastState = self.getValue(items[1])
 for k = 1, #items do
 local state = self.getValue(items[k])
 if state == -1 then
-return string.format("The shifter of take item %u is set to %s. Set any otherwise  shifter on this item before  setting up the shifter mode.", getItemNumber(items[k]), takePitchShifterProperty.states[-1])
+return string.format("The shifter of take %u item %u is set to %s. Set any otherwise  shifter on this take before  setting up the shifter mode.", getTakeNumber(items[k]), getItemNumber(items[k]), takePitchShifterProperty.states[-1])
 end
 if lastState ~= state then
 ajustingValue = 0
@@ -2440,7 +2436,7 @@ message("No more previous property values. ")
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u current take shifter mode %s", getItemNumber(items), self.states[self.getValue(items)]))
+message(string.format("Item %u take %u shifter mode %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end
