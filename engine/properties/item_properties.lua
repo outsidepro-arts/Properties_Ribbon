@@ -1611,6 +1611,92 @@ end
 return message
 end
 
+-- active take methods
+local activeTakeProperty = {}
+registerProperty(activeTakeProperty, "takeLayout")
+
+function activeTakeProperty.getValue(item)
+return reaper.GetActiveTake(item)
+end
+
+function  activeTakeProperty.setValue(item, take)
+reaper.SetActiveTake(take)
+end
+
+function activeTakeProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to switch the desired  active take of selected item.", "Adjustable, performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
+end
+if type(items) == "table" then
+message("Takes: ")
+for k = 1, #items do
+local state = self.getValue(items[k])
+local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
+message(string.format("take of item %u ", getItemNumber(items[k]), getItemNumber(items[k])))
+message(string.format("%u, %s", reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
+message(string.format("Item %u take %u, %s", getItemNumber(items), reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+end
+return message
+end
+
+function activeTakeProperty:set(action)
+local message = initOutputMessage()
+if type(items) == "table" then
+message("Takes: ")
+for k = 1, #items do
+local state = self.getValue(items[k])
+local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
+if action == true then
+if idx+1 < reaper.CountTakes(items[k]) then
+state = reaper.GetTake(items[k], idx+1)
+end
+elseif action == false then
+if idx-1 >= 0 then
+state = reaper.GetTake(items[k], idx-1)
+end
+end
+self.setValue(items[k], state)
+local state = self.getValue(items[k])
+local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
+message(string.format("take of item %u ", getItemNumber(items[k]), getItemNumber(items[k])))
+message(string.format("%u, %s", reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
+if action == true then
+if idx+1 < reaper.CountTakes(items) then
+state = reaper.GetTake(items, idx+1)
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if idx-1 >= 0 then
+state = reaper.GetTake(items, idx-1)
+else
+message("No more previous property values. ")
+end
+end
+self.setValue(items, state)
+state = self.getValue(items)
+local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
+message(string.format("Item %u take %u, %s", getItemNumber(items), reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+end
+return message
+end
+
 -- Take volume methods
 local takeVolumeProperty = {}
 registerProperty(takeVolumeProperty, "takeLayout")
