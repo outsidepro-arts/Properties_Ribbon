@@ -233,6 +233,33 @@ reaper.SetMediaTrackInfo_Value(master, "I_SOLO", state)
 message(string.format("Master %s", states[({reaper.GetTrackState(master)})[2]&16]))
 return message
 end
+
+-- FX bypass methods
+local masterFXProperty = {}
+registerProperty(masterFXProperty)
+function masterFXProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the FX activity of master track.", "Toggleable")
+message(string.format("Master FX %s", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)]))
+return message
+end
+
+function masterFXProperty:set(action)
+local message = initOutputMessage()
+if action ~= nil then
+return "This property is toggleable only."
+end
+local state = reaper.GetToggleCommandState(16)
+if state == 0 then
+state = 1
+elseif state == 1 then
+state = 0
+end
+reaper.Main_OnCommand(16, state)
+message(string.format("Master FX %s", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)]))
+return message
+end
+
 -- Mono/stereo methods
 -- This methods is very easy
 local monoProperty = {}
