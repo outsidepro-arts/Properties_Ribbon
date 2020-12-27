@@ -2176,5 +2176,274 @@ end
 return message
 end
 
+-- Pitch shifter methods
+local takePitchShifterProperty = {}
+registerProperty(takePitchShifterProperty, "takeLayout")
+takePitchShifterProperty.states = setmetatable({[-1] = "project default"},
+{
+__index = function(self, key)
+
+if tonumber(key) and key >= 0 then
+key = bytewords.getHiWord(key)
+local retval, name = reaper.EnumPitchShiftModes(key)
+if retval == true then
+return name
+end
+end
+return nil
+end,
+__len = function(self)
+local i = 0
+while ({reaper.EnumPitchShiftModes(i)})[1] == true do
+i = i+1
+end
+return i
+end
+})
+
+function takePitchShifterProperty.getValue(item)
+return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_PITCHMODE")
+end
+
+function  takePitchShifterProperty.setValue(item, value)
+reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_PITCHMODE", value)
+end
+
+
+function takePitchShifterProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.", "Adjustable, performable")
+if multiSelectionSupport == true then
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the pitch shifter state will be set to "%s", then will enumerate this.', self.states[-1]), 1)
+end
+message:addType(string.format(" Perform this property to reset the value to %s.", self.states[-1]), 1)
+if type(items) == "table" then
+message("Items active takes pitch shifter state: ")
+for k = 1, #items do
+local state = self.getValue(items[k])
+message(string.format("take of item %u %s", getItemNumber(items[k]), self.states[state]))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+message(string.format("Item %u current take pitch shifter %s", getItemNumber(items), self.states[state]))
+end
+return message
+end
+
+function   takePitchShifterProperty:set(action)
+local message = initOutputMessage()
+local ajustingValue
+if action == true then
+ajustingValue = 1
+elseif action == false then
+ajustingValue = -1
+end
+if type(items) == "table" then
+local state
+if action ~= nil then
+local lastState = self.getValue(items[1])
+for k = 1, #items do
+local state = self.getValue(items[k])
+if lastState ~= state then
+ajustingValue = 0
+break
+end
+lastState = state
+end
+state = self.getValue(items[1])
+if ajustingValue > 0 then
+if state >= 0 then
+for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
+if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
+state = bytewords.makeLong(bytewords.getLoWord(state), i)
+break
+end
+end
+else
+state = bytewords.makeLong(0, 0)
+end
+elseif ajustingValue < 0 then
+if state >= 0 then
+for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
+if i >= 0 then
+if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
+state = bytewords.makeLong(bytewords.getLoWord(state), i)
+break
+end
+else
+if self.states[i] then
+state = i
+end
+end
+end
+end
+elseif ajustingValue == 0 then
+state = -1
+end
+elseif action  == nil then
+state = -1
+end
+message(string.format("Set all items active takes pitch shifter to %s.", self.states[state]))
+for k = 1, #items do
+self.setValue(items[k], state)
+end
+else
+local state = self.getValue(items)
+if action == true then
+if state >= 0 then
+for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
+if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
+state = bytewords.makeLong(bytewords.getLoWord(state), i)
+break
+end
+if i == #self.states then
+message("No more next property values. ")
+end
+end
+else
+state = bytewords.makeLong(0, 0)
+end
+elseif action == false then
+if state >= 0 then
+for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
+if i >= 0 then
+if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
+state = bytewords.makeLong(bytewords.getLoWord(state), i)
+break
+end
+else
+if self.states[i] then
+state = i
+end
+end
+end
+else
+message("No more previous property values. ")
+end
+else
+state = -1
+message("Reset, ")
+end
+self.setValue(items, state)
+message(string.format("Item %u current take pitch shifter %s", getItemNumber(items), self.states[self.getValue(items)]))
+end
+return message
+end
+
+-- Active shifter mode methods
+local takePitchShifterModeProperty = {}
+registerProperty(takePitchShifterModeProperty, "takeLayout")
+takePitchShifterModeProperty.states = setmetatable({[-1] = "project default"},
+{
+__index = function(self, key)
+key = tonumber(key)
+if key then
+return reaper.EnumPitchShiftSubModes(bytewords.getHiWord(key), bytewords.getLoWord(key))
+end
+return nil
+end
+})
+
+takePitchShifterModeProperty.getValue, takePitchShifterModeProperty.setValue = takePitchShifterProperty.getValue, takePitchShifterProperty.setValue
+ 
+
+function takePitchShifterModeProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired mode for active shifter  of active take on selected item.", "Adjustable")
+if multiSelectionSupport == true then
+message:addType(string.format(" If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until all shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
+end
+if type(items) == "table" then
+message("Items active takes pitch shifter modes: ")
+for k = 1, #items do
+local state = self.getValue(items[k])
+message(string.format("take of item %u %s", getItemNumber(items[k]), self.states[state]))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+message(string.format("Item %u current take sshifter mode %s", getItemNumber(items), self.states[state]))
+if state == -1 then
+message:changeType(string.format("The Property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1]), 1)
+message:changeType("unavailable", 2)
+end
+end
+return message
+end
+
+function   takePitchShifterModeProperty:set(action)
+local message = initOutputMessage()
+local ajustingValue
+if action == true then
+ajustingValue = 1
+elseif action == false then
+ajustingValue = -1
+else
+return "This property adjustable only."
+end
+if type(items) == "table" then
+local state
+if action ~= nil then
+local lastState = self.getValue(items[1])
+for k = 1, #items do
+local state = self.getValue(items[k])
+if state == -1 then
+return string.format("The shifter of take item %u is set to %s. Set any otherwise  shifter on this item before  setting up the shifter mode.", getItemNumber(items[k]), takePitchShifterProperty.states[-1])
+end
+if lastState ~= state then
+ajustingValue = 0
+break
+end
+lastState = state
+end
+state = self.getValue(items[1])
+if ajustingValue ~= 0 then
+if action == true then
+local futureState = bytewords.makeLong(bytewords.getLoWord(state)+1, bytewords.getHiWord(state))
+if self.states[futureState] then
+state = futureState
+end
+elseif action == false then
+if bytewords.getLoWord(state)-1 >= 0 then
+state = bytewords.makeLong(bytewords.getLoWord(state)-1, bytewords.getHiWord(state))
+end
+end
+elseif ajustingValue == 0 then
+state = bytewords.makeLong(0, bytewords.getHiWord(state))
+end
+message(string.format("Set all items active takes pitch shifter modes to %s.", self.states[state]))
+for k = 1, #items do
+self.setValue(items[k], state)
+end
+end
+else
+local state = self.getValue(items)
+if state == -1 then
+return string.format("The property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1])
+end
+if action == true then
+local futureState = bytewords.makeLong(bytewords.getLoWord(state)+1, bytewords.getHiWord(state))
+if self.states[futureState] then
+state = futureState
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if bytewords.getLoWord(state)-1 >= 0 then
+state = bytewords.makeLong(bytewords.getLoWord(state)-1, bytewords.getHiWord(state))
+else
+message("No more previous property values. ")
+end
+end
+self.setValue(items, state)
+message(string.format("Item %u current take shifter mode %s", getItemNumber(items), self.states[self.getValue(items)]))
+end
+return message
+end
 
 return parentLayout[sublayout]
