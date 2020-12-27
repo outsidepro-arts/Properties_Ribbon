@@ -1926,9 +1926,13 @@ end
 
 function takeChannelModeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired channel mode for active take of selected item.", "Adjustable")
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired channel mode for active take of selected item.", "Adjustable, toggleable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the channel mode state will be set to "%s", then will enumerate this.', self.states[0]), 1)
+end
+message:addType(" Toggle this property to switch between channel mode categories.", 1)
+if multiSelectionSupport == true then
+message:addType(" If the group of items has been selected, the category will define by first selected item take and next category will be switch for all selected items.", 1)
 end
 if type(items) == "table" then
 message("Takes channel mode state: ")
@@ -1953,8 +1957,8 @@ if action == true then
 ajustingValue = 1
 elseif action == false then
 ajustingValue = -1
-else
-return "This property adjustable only."
+--else
+--return "This property adjustable only."
 end
 if type(items) == "table" then
 if action ~= nil then
@@ -1972,6 +1976,14 @@ if ajustingValue ~= 0 then
 state = self.getValue(items[1])
 if (state+ajustingValue) >= 0 and self.states[(state+ajustingValue)] then
 state = state+ajustingValue
+end
+else
+if state >= 0 and state < 5 then
+state = 5
+elseif state >= 5 and state < 67 then
+state = 67
+elseif state >= 67 then
+state = 0
 end
 end
 message(string.format("Set all items active takes channel mode to %s.", self.states[state]))
@@ -1993,6 +2005,14 @@ elseif state+ajustingValue < 0 then
 message("No more previous property values. ")
 else
 state = state+ajustingValue
+end
+else
+if state >= 0 and state < 5 then
+state = 5
+elseif state >= 5 and state < 67 then
+state = 67
+elseif state >= 67 then
+state = 0
 end
 end
 self.setValue(items, state)
