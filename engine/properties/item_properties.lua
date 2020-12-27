@@ -1650,6 +1650,9 @@ end
 
 function activeTakeProperty:set(action)
 local message = initOutputMessage()
+if action == nil then
+return "This property is adjustable only."
+end
 if type(items) == "table" then
 message("Takes: ")
 for k = 1, #items do
