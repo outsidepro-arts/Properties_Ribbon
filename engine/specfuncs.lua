@@ -98,3 +98,9 @@ table.insert(t, str)
 end
 return t
 end
+
+function delay(ms)
+ms = ms*0.1
+local curTime = os.clock()
+while (os.clock()-curTime) <= ms do end
+end
