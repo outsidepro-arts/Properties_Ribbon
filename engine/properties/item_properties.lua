@@ -2362,7 +2362,7 @@ if ajustingValue > 0 then
 if state >= 0 then
 for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
 if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(bytewords.getLoWord(state), i)
+state = bytewords.makeLong(0, i)
 break
 end
 end
@@ -2374,7 +2374,7 @@ if state >= 0 then
 for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
 if i >= 0 then
 if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(bytewords.getLoWord(state), i)
+state = bytewords.makeLong(0, i)
 break
 end
 else
@@ -2400,7 +2400,7 @@ if action == true then
 if state >= 0 then
 for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
 if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(bytewords.getLoWord(state), i)
+state = bytewords.makeLong(0, i)
 break
 end
 if i == #self.states then
@@ -2415,7 +2415,7 @@ if state >= 0 then
 for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
 if i >= 0 then
 if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(bytewords.getLoWord(state), i)
+state = bytewords.makeLong(0, i)
 break
 end
 else
