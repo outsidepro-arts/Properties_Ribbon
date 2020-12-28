@@ -100,7 +100,7 @@ return t
 end
 
 function delay(ms)
-ms = ms*0.1
+ms = ms*0.001
 local curTime = os.clock()
 while (os.clock()-curTime) <= ms do end
 end
