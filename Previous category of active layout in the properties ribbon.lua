@@ -10,10 +10,7 @@ package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\'
 require "properties_ribbon"
 
 if script_init() then
-local message = initOutputMessage()
-message(script_switchSublayout(false))
-message(script_reportOrGotoProperty())
-reaper.osara_outputMessage(tostring(message))
+reaper.osara_outputMessage(script_switchSublayout(false))
 script_finish()
 end
 

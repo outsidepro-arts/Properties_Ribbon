@@ -168,7 +168,10 @@ end
 g_undoState = ("Switch category to %s in Properties Ribbon script"):format((layout.name):format(layout.subname))
 speakLayout = false
 layout.pIndex = tonumber(extstate.get(layout.section)) or 1
-return composeSubLayout()
+local message = initOutputMessage()
+message(composeSubLayout())
+message(script_reportOrGotoProperty())
+return tostring(message)
 else
 return ("The %s layout has no category. "):format(layout.name:format(""))
 end
