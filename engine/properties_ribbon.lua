@@ -234,7 +234,7 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name)
+return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
 end
 if propertyNum then
 if propertyNum <= #layout.properties then
