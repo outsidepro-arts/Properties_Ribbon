@@ -353,7 +353,7 @@ function tempoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
 local state = reaper.Master_GetTempo()
-message(string.format("Master tempo %s", round(state, 3)))
+message(string.format("Master tempo %s BPM", round(state, 3)))
 return message
 end
 
@@ -368,7 +368,7 @@ reaper.Main_OnCommand(1134, 0)
 return ""
 end
 local state = reaper.Master_GetTempo()
-message(string.format("Master tempo %s", round(state, 3)))
+message(string.format("Master tempo %s BPM", round(state, 3)))
 return message
 end
 
