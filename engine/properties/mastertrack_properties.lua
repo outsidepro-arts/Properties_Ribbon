@@ -12,34 +12,68 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]--
+
+-- Reading the sublayout
+sublayout = extstate.get(currentLayout.."_sublayout")
+if sublayout == "" or sublayout == nil then
+sublayout = "playbackLayout"
+end
+
 -- get the master track
 master = reaper.GetMasterTrack(0)
 
 -- global pseudoclass initialization
-masterLayout = {
-section = "masterTrackProperties",
-name = "Master track properties",
+parentLayout = setmetatable({
+name = "Master track%s properties", -- The main class name which will be formatted by subclass name
+ofCount = 0 -- The full categories count
+}, {
+-- When new field has been added we just take over the ofCount adding
+__newindex = function(self, key, value)
+rawset(self, key, value)
+if key ~= "canProvide" then
+self.ofCount = self.ofCount+1
+end
+end
+})
 
-
-properties = {}
-}
-
-
-function masterLayout.canProvide()
-if reaper.GetMasterTrackVisibility() == 1 then
+function parentLayout.canProvide()
+-- We will check the TCP visibility only
+if (reaper.GetMasterTrackVisibility()&1) == 1 then
 return true
 else
 return false
 end
 end
 
-local function registerProperty(property)
-masterLayout.properties[#masterLayout.properties+1] = property
+parentLayout.playbackLayout = setmetatable({
+section = "masterPlaybackProperties", -- The section in ExtState
+subname = " playback", -- the name of class which will set to some messages
+slIndex = 1, -- Index of category
+nextSubLayout = "visualLayout", -- the next sublayout the switch script will be set to
+
+-- the properties list. It initializes first, then the methods will be added below.
+properties = {}
+}, {__index = parentLayout}
+)
+
+parentLayout.visualLayout = setmetatable({
+section = "masterVisualProperties", -- The section in ExtState
+subname = " visual", -- the name of class which will set to some messages
+slIndex = 2, -- Index of category
+previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
+
+-- the properties list. It initializes first, then the methods will be added below.
+properties = {}
+}, {__index = parentLayout}
+)
+
+local function registerProperty(property, sl)
+table.insert(parentLayout[sl].properties, property)
 end
 
 -- volume methods
 local volumeProperty = {}
-registerProperty( volumeProperty)
+registerProperty( volumeProperty, "playbackLayout")
 function volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
@@ -79,7 +113,7 @@ end
 
 -- pan methods
 local panProperty = {}
-registerProperty(panProperty)
+registerProperty(panProperty, "playbackLayout")
 
 function panProperty:get()
 local message = initOutputMessage()
@@ -120,7 +154,7 @@ end
 
 -- Width methods
 local widthProperty = {}
-registerProperty(widthProperty)
+registerProperty(widthProperty, "playbackLayout")
 function widthProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired width value for master track. Perform this property to reset the value to 100 percent.", "Adjustable, performable")
@@ -161,7 +195,7 @@ end
 
 -- Mute methods
 local muteProperty = {}
-registerProperty(muteProperty)
+registerProperty(muteProperty, "playbackLayout")
 function muteProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to mute or unmute master track.", "Toggleable")
@@ -200,7 +234,7 @@ end
 
 -- Solo methods
 local soloProperty = {}
-registerProperty(soloProperty)
+registerProperty(soloProperty, "playbackLayout")
 function soloProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to solo or unsolo master track.", "Toggleable")
@@ -236,7 +270,7 @@ end
 
 -- FX bypass methods
 local masterFXProperty = {}
-registerProperty(masterFXProperty)
+registerProperty(masterFXProperty, "playbackLayout")
 function masterFXProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the FX activity of master track.", "Toggleable")
@@ -263,7 +297,7 @@ end
 -- Mono/stereo methods
 -- This methods is very easy
 local monoProperty = {}
-registerProperty(monoProperty)
+registerProperty(monoProperty, "playbackLayout")
 function monoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the master track to mono or stereo.", "Toggleable")
@@ -290,7 +324,7 @@ end
 -- Play rate methods
 -- It's so easy because there are no deep control. Hmm, either i haven't found this.
 local playrateProperty = {}
-registerProperty(playrateProperty)
+registerProperty(playrateProperty, "playbackLayout")
 function playrateProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1.", "adjustable, performable")
@@ -319,7 +353,7 @@ end
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
 local pitchPreserveProperty = {}
-registerProperty(pitchPreserveProperty)
+registerProperty(pitchPreserveProperty, "playbackLayout")
 function pitchPreserveProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the preserving pitch of items in the project when playrate changes.", "Toggleable")
@@ -348,7 +382,7 @@ end
 -- Master tempo methods
 -- Seems, Cockos allows to rest of for programmers 🤣
 local tempoProperty = {}
-registerProperty(tempoProperty)
+registerProperty(tempoProperty, "playbackLayout")
 function tempoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
@@ -372,4 +406,139 @@ message(string.format("Master tempo %s BPM", round(state, 3)))
 return message
 end
 
-return masterLayout
+-- Master visibility methods
+-- TCP visibility
+local tcpVisibilityProperty = {}
+registerProperty(tcpVisibilityProperty, "visualLayout")
+tcpVisibilityProperty.states = {[false] = "not visible", [true] = "visible"}
+function tcpVisibilityProperty.getValue()
+local state = reaper.GetMasterTrackVisibility()&1
+return (state ~= 0)
+end
+
+function tcpVisibilityProperty.setValue(value)
+local state = reaper.GetMasterTrackVisibility()
+if value == true then
+state = ((1)|(state&2))
+else
+state = ((0)|(state&2))
+end
+reaper.SetMasterTrackVisibility(state)
+end
+
+function tcpVisibilityProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu.", "toggleable")
+message(string.format("Master control panel %s", self.states[self.getValue()]))
+return message
+end
+
+function tcpVisibilityProperty:set(action)
+local message = initOutputMessage()
+local state = self.getValue()
+if state == true then
+state = false
+elseif state == false then
+state = true
+end
+self.setValue(state)
+message(string.format("Master control panel %s", self.states[self.getValue()]))
+return message
+end
+
+-- MCP visibility
+local mcpVisibilityProperty = {}
+registerProperty(mcpVisibilityProperty, "visualLayout")
+mcpVisibilityProperty.states = tcpVisibilityProperty.states
+
+function mcpVisibilityProperty.getValue()
+local state = reaper.GetMasterTrackVisibility()&2
+return (state == 0)
+end
+
+function mcpVisibilityProperty.setValue(value)
+local state = reaper.GetMasterTrackVisibility()
+if value == true then
+state = ((state&1)|(0))
+else
+state = ((state&1)|(2))
+end
+reaper.SetMasterTrackVisibility(state)
+end
+
+function mcpVisibilityProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the master track visibility in mixer panel.", "toggleable")
+message(string.format("Master %s on mixer panel", self.states[self.getValue()]))
+return message
+end
+
+function mcpVisibilityProperty:set(action)
+local message = initOutputMessage()
+local state = self.getValue()
+if state == true then
+state = false
+elseif state == false then
+state = true
+end
+self.setValue(state)
+message(string.format("Master %s on mixer panel", self.states[self.getValue()]))
+return message
+end
+
+-- Master track position in mixer panel
+local masterTrackMixerPosProperty = {}
+registerProperty(masterTrackMixerPosProperty, "visualLayout")
+masterTrackMixerPosProperty.states = {
+"docked window",
+"separated window",
+"right side"
+}
+
+function masterTrackMixerPosProperty.getValue()
+local check = reaper.GetToggleCommandState
+if check(41610)== 1 then
+return 1
+elseif check(41636) == 1 then
+return 2
+elseif check(40389) == 1 then
+return 3
+end
+return 0
+end
+
+function masterTrackMixerPosProperty.setValue(value)
+local actions = {41610, 41636, 40389}
+reaper.Main_OnCommand (actions[value], 1)
+end
+
+function masterTrackMixerPosProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired master track position on the mixer panel.", "Adjustable")
+message(string.format("Master track in the %s on the mixer panel", self.states[self.getValue()]))
+return message
+end
+
+function masterTrackMixerPosProperty:set(action)
+local message = initOutputMessage()
+local state = self.getValue()
+if action == true then
+if self.states[state+1] then
+self.setValue(state+1)
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if self.states[state-1] then
+self.setValue(state-1)
+else
+message("No more previous property values. ")
+end
+else
+return "This property is adjustable only."
+end
+message(string.format("Master track in the %s on the mixer panel", self.states[self.getValue()]))
+return message
+end
+
+return parentLayout[sublayout]
