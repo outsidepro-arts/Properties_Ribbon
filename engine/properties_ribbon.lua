@@ -125,7 +125,6 @@ end
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
 
-
 function script_init()
 currentLayout = extstate.get("currentLayout")
 speakLayout = toboolean(extstate.get("speakLayout"))
@@ -144,6 +143,9 @@ return layout
 end
 
 function script_switchSublayout(action)
+if layout.canProvide() ~= true then
+return string.format("There are no elements %s be provided for.", layout.name:format(""))
+end
 if layout.nextSubLayout or layout.previousSubLayout then
 if (action == true or action == nil) then
 if layout.nextSubLayout then
