@@ -434,10 +434,15 @@ return message
 end
 
 function tcpVisibilityProperty:set(action)
+if action ~= nil then
+return "This property is toggleable only."
+end
 local message = initOutputMessage()
 local state = self.getValue()
 if state == true then
+if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", 1) == 1 then
 state = false
+end
 elseif state == false then
 state = true
 end
@@ -474,6 +479,9 @@ return message
 end
 
 function mcpVisibilityProperty:set(action)
+if action ~= nil then
+return "This property is toggleable only."
+end
 local message = initOutputMessage()
 local state = self.getValue()
 if state == true then
