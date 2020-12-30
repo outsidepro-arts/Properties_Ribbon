@@ -25,21 +25,18 @@ multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
 items = nil
 do
-local countItems = reaper.CountMediaItems(0)
-if countItems then
+if multiSelectionSupport == true then
+local countSelectedItems = reaper.CountSelectedMediaItems(0)
+if countSelectedItems > 1 then
 items = {}
-for i = 1, countItems do
-local item = reaper.GetMediaItem(0,i-1)
-		if reaper.IsMediaItemSelected(item) == true then
-items[#items+1] = item
-if multiSelectionSupport == false then
-break
+for i = 0, countSelectedItems-1 do
+table.insert(items, reaper.GetSelectedMediaItem(0, i))
 end
+else
+items = reaper.GetSelectedMediaItem(0, 0)
 end
-		end
-if #items == 1 then
-items = items[#items]
-end
+else
+items = reaper.GetSelectedMediaItem(0, 0)
 end
 end
 
@@ -113,7 +110,7 @@ properties = {}
 
 -- The creating new property macros
 local function registerProperty(property, sl)
-parentLayout[sl].properties[#parentLayout[sl].properties+1] = setmetatable(property, {__index = parentLayout})
+table.insert(parentLayout[sl].properties, property)
 end
 
 --[[
