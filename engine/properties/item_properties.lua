@@ -215,7 +215,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the lock state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items locking state: ")
+message("Items locking: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("item %u ", getItemNumber(items[k])))
@@ -381,7 +381,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the mute state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items mute state: ")
+message("Items mute: ")
 for k = 1, #items do
 local state = reaper.GetMediaItemInfo_Value(items[k], "B_MUTE")
 message(string.format("item %u ", getItemNumber(items[k])))
@@ -452,7 +452,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the loop source state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items source loop state: ")
+message("Items source loop: ")
 for k = 1, #items do
 local state = reaper.GetMediaItemInfo_Value(items[k], "B_LOOPSRC")
 message(string.format("item %u ", getItemNumber(items[k])))
@@ -523,7 +523,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the playing all takes state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items all takes playing state: ")
+message("Items all takes playing: ")
 for k = 1, #items do
 local state = reaper.GetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY")
 message(string.format("item %u ", getItemNumber(items[k])))
@@ -600,7 +600,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
-message("Items timebase state: ")
+message("Items timebase: ")
 for k = 1, #items do
 local state = reaper.GetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE")
 message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state+1]))
@@ -689,7 +689,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the auto-stretch state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items Auto-stretch at project tempo state: ")
+message("Items Auto-stretch at project tempo: ")
 for k = 1, #items do
 local state = reaper.GetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH")
 message(string.format("item %u ", getItemNumber(items[k])))
@@ -859,7 +859,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
-message("Items fadein shape state: ")
+message("Items fadein shape: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state]))
@@ -941,7 +941,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
-message("Items fadein length state: ")
+message("Items fadein length: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(("Item %u length in %s ms"):format(getItemNumber(items[k]), state))
@@ -970,7 +970,7 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items fadein lengths state: ")
+message("Items fadein lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -1127,7 +1127,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
-message("Items fadeout shape state: ")
+message("Items fadeout shape: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state]))
@@ -1209,7 +1209,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
-message("Items fadeout length state: ")
+message("Items fadeout length: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(("Item %u length in %s ms"):format(getItemNumber(items[k]), round(state, 3)))
@@ -1238,7 +1238,7 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items fadeout lengths state: ")
+message("Items fadeout lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -1387,7 +1387,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" If you want to switch off automatic fadein, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
-message("Items automatic fadein length state: ")
+message("Items automatic fadein length: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if state >= 0 then
@@ -1425,7 +1425,7 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items automatic fadein lengths state: ")
+message("Items automatic fadein lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == false then
@@ -1508,7 +1508,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" If you want to switch off automatic fadeout, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
-message("Items automatic fadeout length state: ")
+message("Items automatic fadeout length: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if state >= 0 then
@@ -1546,7 +1546,7 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items automatic fadeout lengths state: ")
+message("Items automatic fadeout lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == false then
@@ -1827,7 +1827,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to set the take pan to center.", 1)
 if type(items) == "table" then
-message("Takes pan state: ")
+message("Takes pan: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
@@ -1934,7 +1934,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the phase polarity state will be set to oposite value depending of moreness takes of items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Takes phase state: ")
+message("Takes phase: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
@@ -2035,7 +2035,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the category will define by first selected item take and next category will be switch for all selected items.", 1)
 end
 if type(items) == "table" then
-message("Takes channel mode state: ")
+message("Takes channel mode: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
@@ -2142,7 +2142,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to reset  playrate to 1.000 for.", 1)
 if type(items) == "table" then
-message("Takes playrate state: ")
+message("Takes playrate: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
@@ -2168,7 +2168,7 @@ message("Reset,")
 ajustingValue = 1.000
 end
 if type(items) == "table" then
-message("Takes playrate state: ")
+message("Takes playrate: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -2224,7 +2224,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the preserve state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Takes preserve pitch when playrate changes state: ")
+message("Takes preserve pitch when playrate changes: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
@@ -2326,7 +2326,7 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to reset  pitch to 0.", 1)
 if type(items) == "table" then
-message("Takes pitch state: ")
+message("Takes pitch: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
@@ -2352,7 +2352,7 @@ message("Reset,")
 ajustingValue = 0
 end
 if type(items) == "table" then
-message("Takes pitch state: ")
+message("Takes pitch: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -2422,7 +2422,7 @@ message:addType(string.format(' If the group of items has been selected, the val
 end
 message:addType(string.format(" Perform this property to reset the value to %s.", self.states[-1]), 1)
 if type(items) == "table" then
-message("Takes pitch shifter state: ")
+message("Takes pitch shifter: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))

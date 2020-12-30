@@ -207,7 +207,7 @@ if multiSelectionSupport == true then
 message:addType(" This property is adjustable for one track only.", 1)
 end
 if type(tracks) == "table" then
-message("Tracks folder state: ")
+message("Tracks folder: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_FOLDERDEPTH")
 message(string.format("track %u is ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -592,7 +592,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the mute state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks mute state: ")
+message("tracks mute: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -668,7 +668,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the solo state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks solo state: ")
+message("tracks solo: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_SOLO")
 message(string.format("track %u %s", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER"), self.states[state]))
@@ -743,7 +743,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the record state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks arm state: ")
+message("tracks arm: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECARM")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -817,7 +817,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, the value will enumerate only if all tracks have the same value. Otherwise, the record monitoring state will be set to "%s" first, then will enumerate this.', self.states[1]), 1)
 end
 if type(tracks) == "table" then
-message("tracks record monitoring state: ")
+message("tracks record monitoring: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMON")
 message(string.format("track %u %s", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER"), self.states[state]))
@@ -1058,7 +1058,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the quick switching will aplied for all tracks by first selected track.", 1)
 end
 if type(tracks) == "table" then
-message("Tracks record input state: ")
+message("Tracks record input: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECINPUT")
 message(string.format("track %u: %s", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER"), self.compose(state)))
@@ -1314,7 +1314,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the phase polarity state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks phase state: ")
+message("tracks phase: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_PHASE")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1384,7 +1384,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the send state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks send to parent or master track state: ")
+message("tracks send to parent or master track: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MAINSEND")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1545,7 +1545,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(' If the group of tracks has been selected, the value will enumerate only if all tracks have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(tracks) == "table" then
-message("Track timebase state: ")
+message("Track timebase: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE")
 message(string.format("track %u %s", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER"), self.states[state+1]))
@@ -1627,7 +1627,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the monitor items state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks monitoring items state: ")
+message("tracks monitoring items: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMONITEMS")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1698,7 +1698,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the buffering media state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks media buffering state: ")
+message("tracks media buffering: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS")&1
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1770,7 +1770,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the FX anticipativeness state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks FX anticipativeness state: ")
+message("tracks FX anticipativeness: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS")&2
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1842,7 +1842,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the visibility state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks visibility in Mixer panel state: ")
+message("tracks visibility in Mixer panel: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
@@ -1914,7 +1914,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the visibility state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
 if type(tracks) == "table" then
-message("tracks control panels visibility state: ")
+message("tracks control panels visibility: ")
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP")
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
