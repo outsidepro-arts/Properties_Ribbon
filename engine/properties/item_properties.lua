@@ -1898,6 +1898,101 @@ end
 return message
 end
 
+-- Take phase methods
+local takePhaseProperty = {}
+ registerProperty( takePhaseProperty, "takeLayout")
+takePhaseProperty.states = {[0]="normal", [1]="inverted"}
+
+-- Cockos made the phase inversion via negative volume value.
+function takePhaseProperty.getValue(item)
+local state = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
+if state < 0 then
+return 1
+elseif state >= 0 then
+return 0
+end
+end
+
+function  takePhaseProperty.setValue(item, value)
+local state = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
+if value == 1 then
+if state > 0 then
+state = -state
+end
+elseif value == 0 then
+if state < 0 then
+state = -state
+end
+end
+reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL", state)
+end
+
+function takePhaseProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the phase polarity for take of selected item.", "toggleable")
+if multiSelectionSupport == true then
+message:addType(" If the group of items has been selected, the phase polarity state will be set to oposite value depending of moreness takes of items with the same value.", 1)
+end
+if type(items) == "table" then
+message("Takes phase state: ")
+for k = 1, #items do
+local state = self.getValue(items[k])
+message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
+message(self.states[state])
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+message(string.format("item %u take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+end
+return message
+end
+
+function takePhaseProperty:set(action)
+local message = initOutputMessage()
+if action ~= nil then
+return "This property is toggleable only."
+end
+if type(items) == "table" then
+local phasedItems, notphasedItems = 0, 0
+for k = 1, #items do
+local state = self.getValue(items[k])
+if state == 1 then
+phasedItems = phasedItems+1
+else
+notphasedItems = notphasedItems+1
+end
+end
+local ajustingValue
+if phasedItems > notphasedItems then
+ajustingValue = 0
+message("Normalizing the phase for all items takes.")
+elseif phasedItems < notphasedItems then
+ajustingValue = 1
+message("Inverting the phase for all items takes.")
+else
+ajustingValue = 0
+message("Normalizing the phase for all items takes.")
+end
+for k = 1, #items do
+self.setValue(items[k], ajustingValue)
+end
+else
+local state = self.getValue(items)
+if state == 1 then
+state = 0
+else
+state = 1
+end
+self.setValue(items, state)
+state = self.getValue(items)
+message(string.format("Item %u  take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+end
+return message
+end
+
 -- Take channel mode methods
 local takeChannelModeProperty = {}
  registerProperty(takeChannelModeProperty, "takeLayout")
