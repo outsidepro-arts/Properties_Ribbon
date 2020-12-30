@@ -753,6 +753,14 @@ end
 -- Are you Sure? But i'm not. 🤣
 local groupingProperty = {}
 registerProperty(groupingProperty, "visualLayout")
+groupingProperty.states = setmetatable({
+[0] = "not in a group"
+}, {
+__index = function(self, key)
+return ("in group %u"):format(tostring(key))
+end
+})
+
 function groupingProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "I_GROUPID")
 end
@@ -771,18 +779,14 @@ if type(items) == "table" then
 message("Items group numbers: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
-message(string.format("item %u in group %u", getItemNumber(items[k]), self.getValue(items[k])))
+message(string.format("item %u %s", getItemNumber(items[k]), self.states[state]))
 if k < #items then
 message(", ")
 end
 end
 else
 local state = self.getValue(items)
-if state == 0 then
-message(("Item %u not in a group"):format(getItemNumber(items)))
-else
-message(("Item %u in group %u"):format(getItemNumber(items), state))
-end
+message(("Item %u %s"):format(getItemNumber(items), self.states[state]))
 end
 return message
 end
