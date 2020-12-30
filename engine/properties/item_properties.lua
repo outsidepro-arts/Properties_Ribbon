@@ -1862,7 +1862,7 @@ else
 state = 0
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k], "D_PAN")
+state = self.getValue(items[k])
 message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
 message(string.format("%s", numtopan(state)))
 if k < #items then
@@ -1873,10 +1873,10 @@ else
 local state = self.getValue(items)
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Right boundary. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end

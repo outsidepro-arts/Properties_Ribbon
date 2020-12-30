@@ -137,10 +137,10 @@ end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Right boundary. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
@@ -177,10 +177,10 @@ end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Maximum width. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Minimum width. ")
 end

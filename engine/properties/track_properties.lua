@@ -456,7 +456,6 @@ else
 message("reset, ")
 ajustingValue = nil
 end
-
 if type(tracks) == "table" then
 message("tracks pan: ")
 for k = 1, #tracks do
@@ -483,10 +482,10 @@ else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Right boundary. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
@@ -565,10 +564,10 @@ else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Maximum width. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Minimum width. ")
 end
