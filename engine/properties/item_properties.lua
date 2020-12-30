@@ -1702,10 +1702,18 @@ local takeVolumeProperty = {}
 registerProperty(takeVolumeProperty, "takeLayout")
 
 function takeVolumeProperty.getValue(item)
-return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
+local state = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
+if state < 0 then
+state = -state
+end
+return state
 end
 
 function  takeVolumeProperty.setValue(item, value)
+local state = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
+if state < 0 then
+value = -value
+end
 reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL", value)
 end
 
