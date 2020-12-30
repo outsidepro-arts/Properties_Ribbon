@@ -107,7 +107,7 @@ properties = {}
 
 -- The creating new property macros
 local function registerProperty(property, sl)
-parentLayout[sl].properties[#parentLayout[sl].properties+1] = property
+table.insert(parentLayout[sl].properties, property)
 end
 
 --[[
