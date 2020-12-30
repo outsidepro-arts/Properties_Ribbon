@@ -20,12 +20,24 @@ function bytewords.getHibyte(value)
 return (((Value)&0xFF00)>>8)
 end
 
+function bytewords.getBytes(value)
+local lo = ((value)&0xff)
+local hi = (((Value)&0xFF00)>>8)
+return lo, hi
+end
+
 function bytewords.getLoWord(value)
 return ((value)&0xffff)
 end
 
 function bytewords.getHiWord(value)
 return (((value)&0xFFFF0000)>>16)
+end
+
+function bytewords.getWords(value)
+local lo = ((value)&0xffff)
+local hi = (((value)&0xFFFF0000)>>16)
+return lo, hi
 end
 
 function bytewords.makeWord(lo, hi)
