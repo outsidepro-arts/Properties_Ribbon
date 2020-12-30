@@ -25,25 +25,15 @@ multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 -- For comfort coding, we are making the tracks array as global
 tracks = nil
 do
-local countTracks = reaper.CountTracks(0)
 if multiSelectionSupport == true then
-if countTracks then
-for i = 1, countTracks do
-local track = reaper.GetTrack(0,i-1)
-if reaper.IsTrackSelected(track) == true then
-if not tracks then
-tracks = track
-elseif tracks then
-if type(tracks) ~= "table" then
-tracks = {tracks}
+local countSelectedTracks = reaper.CountSelectedTracks(0)
+if countSelectedTracks > 1 then
+tracks = {}
+for i = 0, countSelectedTracks-1 do
+table.insert(tracks, reaper.GetSelectedTrack(0, i))
 end
-tracks[#tracks+1] = track
-end
-end
-end
---if #tracks == 1 then
---tracks = tracks[1]
---end
+else
+tracks = reaper.GetSelectedTrack(0, 0)
 end
 else
 local lastTouched = reaper.GetLastTouchedTrack()
