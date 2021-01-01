@@ -15,6 +15,9 @@ require "specfuncs"
 
 -- Including the byte words module
 require "bytewords"
+
+-- including the colors module
+require "colors_provider"
 -- These modules usualy uses in properties code
 
 -- Custom message metamethod
