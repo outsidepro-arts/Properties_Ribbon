@@ -16,7 +16,7 @@ After this preambula, let me begin.
 -- Reading the sublayout
 sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
-sublayout = "visualLayout"
+sublayout = "playbackLayout"
 end
 
 -- Preparing all needed configs which will be used not one time
