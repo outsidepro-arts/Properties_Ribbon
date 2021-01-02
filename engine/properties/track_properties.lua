@@ -14,7 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout") or "visualLayout"
+sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 sublayout = "visualLayout"
 end
@@ -1829,6 +1829,33 @@ end
 return message
 end
 
+-- Track color methods
+local colorProperty = {}
+registerProperty(colorProperty, "visualLayout")
+
+function colorProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel"), "Read this property to get the information about track color.", "Read-only")
+if type(tracks) == "table" then
+message("Tracks color: ")
+for k = 1, #tracks do
+local state = reaper.GetTrackColor(tracks[k])
+message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
+message(colors:getName(reaper.ColorFromNative(state)))
+if k < #tracks then
+message(", ")
+end
+end
+else
+local state = reaper.GetTrackColor(tracks)
+message(string.format("Track %u color %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), colors:getName(reaper.ColorFromNative(state))))
+end
+return message
+end
+
+function colorProperty:set(action)
+return "This property is read only."
+end
 
 -- Visibility in Mixer panel
 local mixerVisibilityProperty = {}
@@ -1900,7 +1927,6 @@ message(string.format("Track %u is %s on mixer panel", reaper.GetMediaTrackInfo_
 end
 return message
 end
-
 
 -- Visibility in TCP
 local tcpVisibilityProperty = {}

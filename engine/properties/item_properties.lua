@@ -2654,4 +2654,74 @@ end
 return message
 end
 
+-- Items color methods
+local itemColorProperty = {}
+registerProperty(itemColorProperty, "visualLayout")
+
+function itemColorProperty.getValue(item)
+return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR")
+end
+
+function itemColorProperty.setValue(item, value)
+reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", value|0x100000)
+end
+
+function itemColorProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about item specified color.", "read-only")
+if type(items) == "table" then
+message("Items color:")
+for k = 1, #items do
+local state = self.getValue(items[k])
+message(string.format("item %u is %s", getItemNumber(items[k]), colors:getName(reaper.ColorFromNative(state))))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+message(string.format("Item %u color %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
+end
+return message
+end
+
+function itemColorProperty:set(action)
+return "This property is read only."
+end
+
+-- Item current take methods
+local itemTakeColorProperty = {}
+registerProperty(itemTakeColorProperty, "visualLayout")
+
+function itemTakeColorProperty.getValue(item)
+return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
+end
+
+function  takePitchShifterProperty.setValue(item, value)
+reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR", value|0x100000)
+end
+
+function itemTakeColorProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about item current take specified color.", "read-only")
+if type(items) == "table" then
+message("active takes of Items color:")
+for k = 1, #items do
+local state = self.getValue(items[k])
+message(string.format("take %u of item %u is %s", getTakeNumber(items[k]), getItemNumber(items[k]), colors:getName(reaper.ColorFromNative(state))))
+if k < #items then
+message(", ")
+end
+end
+else
+local state = self.getValue(items)
+message(string.format("Item %u take %u color %s", getItemNumber(items), getTakeNumber(items), colors:getName(reaper.ColorFromNative(state))))
+end
+return message
+end
+
+function itemTakeColorProperty:set(action)
+return "This property is read only."
+end
+
 return parentLayout[sublayout]
