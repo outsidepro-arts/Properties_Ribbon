@@ -1,6 +1,6 @@
 --[[
 Config provider module
-Copyright (c) 2020 outsidepro-arts
+Copyright (c) 2020-2021 outsidepro-arts
 License: MIT License
 ]]--
 
