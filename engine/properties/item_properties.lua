@@ -2659,7 +2659,7 @@ local itemColorProperty = {}
 registerProperty(itemColorProperty, "visualLayout")
 
 function itemColorProperty.getValue(item)
-return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR")
+return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR"), reaper.GetDisplayedMediaItemColor(item)
 end
 
 function itemColorProperty.setValue(item, value)
@@ -2674,13 +2674,19 @@ message("Items color:")
 for k = 1, #items do
 local state = self.getValue(items[k])
 message(string.format("item %u is %s", getItemNumber(items[k]), colors:getName(reaper.ColorFromNative(state))))
+if state ~= visualApplied then
+message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
 if k < #items then
 message(", ")
 end
 end
 else
-local state = self.getValue(items)
+local state, visualApplied = self.getValue(items)
 message(string.format("Item %u color %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
+if state ~= visualApplied then
+message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
 end
 return message
 end

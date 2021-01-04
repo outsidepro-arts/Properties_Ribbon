@@ -1833,22 +1833,36 @@ end
 local colorProperty = {}
 registerProperty(colorProperty, "visualLayout")
 
+function colorProperty.getValue(track)
+return reaper.GetMediaTrackInfo_Value(track, "I_CUSTOMCOLOR"), reaper.GetTrackColor(track)
+end
+
+function colorProperty.setValue(track, value)
+reaper.SetTrackColor(track, value)
+end
+
 function colorProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel"), "Read this property to get the information about track color.", "Read-only")
 if type(tracks) == "table" then
 message("Tracks color: ")
 for k = 1, #tracks do
-local state = reaper.GetTrackColor(tracks[k])
+local state, visualApplied = self.getValue(tracks[k])
 message(string.format("track %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
 message(colors:getName(reaper.ColorFromNative(state)))
+if state ~= 0 and visualApplied == 0 then
+message(string.format(", but visually looks like %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
 if k < #tracks then
 message(", ")
 end
 end
 else
-local state = reaper.GetTrackColor(tracks)
+local state, visualApplied = self.getValue(tracks)
 message(string.format("Track %u color %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), colors:getName(reaper.ColorFromNative(state))))
+if state ~= visualApplied then
+message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
 end
 return message
 end
