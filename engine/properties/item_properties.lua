@@ -2379,7 +2379,7 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
+ local state = self.getValue(items)
 message(string.format("Item %u take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
 end
 return message
@@ -2703,7 +2703,7 @@ function itemTakeColorProperty.getValue(item)
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
 end
 
-function  takePitchShifterProperty.setValue(item, value)
+function  itemTakeColorProperty.setValue(item, value)
 reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR", value|0x100000)
 end
 
