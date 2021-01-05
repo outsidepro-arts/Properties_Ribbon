@@ -127,6 +127,12 @@ forever = forever or false
 reaper.SetExtState("Properties_Ribbon_script", key, value, forever)
 end
 
+function extstate.remove(key, forever)
+forever = forever or false
+reaper.DeleteExtState("Properties_Ribbon_script", key, forever)
+end
+
+
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
 
 function script_init()
