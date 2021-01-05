@@ -122,8 +122,9 @@ function extstate.get(key)
 return reaper.GetExtState("Properties_Ribbon_script", key)
 end
 
-function extstate.set(key, value)
-reaper.SetExtState("Properties_Ribbon_script", key, value, false)
+function extstate.set(key, value, forever)
+forever = forever or false
+reaper.SetExtState("Properties_Ribbon_script", key, value, forever)
 end
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
