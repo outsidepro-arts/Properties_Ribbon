@@ -2014,9 +2014,3 @@ return message
 end
 
 return parentLayout[sublayout]
-
---[[
-Todo:
-Report the color
-Record inputs (partially made)
-]]--
