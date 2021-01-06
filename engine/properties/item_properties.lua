@@ -50,6 +50,24 @@ local function getTakeNumber(item)
 return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
 end
 
+-- Reading the color from color composer specified section
+local function getItemComposedColor()
+local color = extstate.get("colcom_item_curValue")
+if color == "" or color == nil then
+return nil
+end
+return color
+end
+
+local function getTakeComposedColor()
+local color = extstate.get("colcom_take_curValue")
+if color == "" or color == nil then
+return nil
+end
+return color
+end
+
+
 -- global pseudoclass initialization
 -- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
 parentLayout = setmetatable({
@@ -2668,7 +2686,10 @@ end
 
 function itemColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about item specified color.", "read-only")
+message:initType(config.getinteger("typeLevel"), "Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of items have been selected, this color will be applied for all this items.", 1)
+end
 if type(items) == "table" then
 message("Items color:")
 for k = 1, #items do
@@ -2692,10 +2713,33 @@ return message
 end
 
 function itemColorProperty:set(action)
-return "This property is read only."
+local message = initOutputMessage()
+if action == nil then
+local state = getItemComposedColor()
+if state then
+if type(items) == "table" then
+message(string.format("All selected items colorized to %s.", colors.getName(reaper.ColorFromNative(state))))
+for _, item in ipairs(items) do
+self.setValue(item, state)
+end
+else
+self.setValue(items, state)
+local state, visualApplied = self.getValue(items)
+message(string.format("Item %u colorized to %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
+if state ~= visualApplied then
+message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
+end
+else
+message("Compose a color in color composer first.")
+end
+else
+message("This property is performable only.")
+end
+return message
 end
 
--- Item current take methods
+-- Item current take color methods
 local itemTakeColorProperty = {}
 registerProperty(itemTakeColorProperty, "visualLayout")
 
@@ -2709,7 +2753,10 @@ end
 
 function itemTakeColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about item current take specified color.", "read-only")
+message:initType(config.getinteger("typeLevel"), "Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of items have been selected, this color will be applied for all its active takes.", 1)
+end
 if type(items) == "table" then
 message("active takes of Items color:")
 for k = 1, #items do
@@ -2727,7 +2774,27 @@ return message
 end
 
 function itemTakeColorProperty:set(action)
-return "This property is read only."
+local message = initOutputMessage()
+if action == nil then
+local state = getTakeComposedColor()
+if state then
+if type(items) == "table" then
+message(string.format("All active takes of selected items colorized to %s.", colors.getName(reaper.ColorFromNative(state))))
+for _, item in ipairs(items) do
+self.setValue(item, state)
+end
+else
+self.setValue(items, state)
+local state = self.getValue(items)
+message(string.format("Item %u take %u colorized to %s", getItemNumber(items), getTakeNumber(items), colors:getName(reaper.ColorFromNative(state))))
+end
+else
+message("Compose a color in color composer first.")
+end
+else
+message("This property is performable only.")
+end
+return message
 end
 
 return parentLayout[sublayout]

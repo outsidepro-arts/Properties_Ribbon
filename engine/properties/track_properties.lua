@@ -43,6 +43,15 @@ end
 end
 end
 
+-- Reading the color from color composer specified section
+local function getTrackComposedColor()
+local color = extstate.get("colcom_track_curValue")
+if color == "" or color == nil then
+return nil
+end
+return color
+end
+
 -- global pseudoclass initialization
 parentLayout = setmetatable({
 name = "Track%s properties", -- The main class name which will be formatted by subclass name
@@ -1843,7 +1852,10 @@ end
 
 function colorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel"), "Read this property to get the information about track color.", "Read-only")
+message:initType(config.getinteger("typeLevel"), "Read this property to get the information about track color. Perform this property to apply composed color in the track category.", "performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of track have been selected, this color will be applied for all this tracks.", 1)
+end
 if type(tracks) == "table" then
 message("Tracks color: ")
 for k = 1, #tracks do
@@ -1868,7 +1880,30 @@ return message
 end
 
 function colorProperty:set(action)
-return "This property is read only."
+local message = initOutputMessage()
+if action == nil then
+local state = getTrackComposedColor()
+if state then
+if type(tracks) == "table" then
+message(string.format("All selected tracks colorized to %s.", colors.getName(reaper.ColorFromNative(state))))
+for _, track in ipairs(tracks) do
+self.setValue(track, state)
+end
+else
+self.setValue(tracks, state)
+local state, visualApplied = self.getValue(tracks)
+message(string.format("Track %u colorized to %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), colors:getName(reaper.ColorFromNative(state))))
+if state ~= visualApplied then
+message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
+end
+else
+message("Compose a color in color composer first.")
+end
+else
+message("This property is performable only.")
+end
+return message
 end
 
 -- Visibility in Mixer panel
