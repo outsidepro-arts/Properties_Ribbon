@@ -624,4 +624,65 @@ message(string.format("Color blue intensity %u, closest color is %s", self.getVa
 return message
 end
 
+-- Grabbing a color from an elements methods
+local grabColorProperty = {}
+registerProperty(grabColorProperty)
+grabColorProperty.states = {
+["track"] = "last touched track",
+["item"] = "first selected item",
+["take"] = "active take of selected item"
+}
+
+function grabColorProperty.getValue()
+if sublayout == "track" then
+if reaper.GetLastTouchedTrack() then
+return reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_CUSTOMCOLOR")
+end
+return nil
+elseif sublayout == "item" then
+if reaper.GetSelectedMediaItem(0, 0) then
+return reaper.GetMediaItemInfo_Value(reaper.GetSelectedMediaItem(0, 0), "I_CUSTOMCOLOR")
+end
+return nil
+elseif sublayout == "take" then
+if reaper.GetSelectedMediaItem(0, 0) then
+return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0)), "I_CUSTOMCOLOR")
+end
+return nil
+end
+end
+
+function grabColorProperty.setValue(value)
+setColor(value)
+setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+end
+
+function grabColorProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", self.states[sublayout]), "Performable")
+if not self.getValue() then
+message:addType(" This property unavailable right now because no one element has been selected.", 1)
+message:changeType("unavailable", 2)
+end
+message(string.format("Grab a color from %s", self.states[sublayout]))
+return message
+end
+
+function grabColorProperty:set(action)
+local message = initOutputMessage()
+if action == nil then
+local state = self.getValue()
+if not state then
+return "This property is unavailable right now because no one element of this category has been neither touched nor selected."
+end
+self.setValue(state)
+message(string.format("The %s color has been grabbed from %s.", colors:getName(reaper.ColorFromNative(getColor())), self.states[sublayout]))
+return message
+else
+return "This property is performable only."
+end
+end
+
+
+
 return parentLayout[sublayout]
