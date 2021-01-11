@@ -52,19 +52,29 @@ end
 return color
 end
 
+-- The sublayout registration macros
+local function registerSublayout(slName, sl)
+parentLayout[slName] = sl
+parentLayout.ofCount = parentLayout.ofCount+1
+parentLayout[slName].slIndex = parentLayout.ofCount
+for slsn, sls in pairs(parentLayout) do
+if type(sls) == "table" then
+if sls.slIndex== parentLayout.ofCount-1 then
+sls.nextSubLayout = slName
+parentLayout[slName].previousSubLayout = slsn
+end
+end
+end
+end
+
+
+
+
 -- global pseudoclass initialization
-parentLayout = setmetatable({
+parentLayout = {
 name = "Track%s properties", -- The main class name which will be formatted by subclass name
 ofCount = 0 -- The full categories count
-}, {
--- When new field has been added we just take over the ofCount adding
-__newindex = function(self, key, value)
-rawset(self, key, value)
-if key ~= "canProvide" then
-self.ofCount = self.ofCount+1
-end
-end
-})
+}
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -78,41 +88,34 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout.visualLayout = setmetatable({
+registerSublayout("visualLayout", setmetatable({
 section = "trackVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
-slIndex = 1, -- Index of category
-nextSubLayout = "playbackLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 -- Playback properties
-parentLayout.playbackLayout = setmetatable({
+registerSublayout("playbackLayout", setmetatable({
 section = "trackPlaybackProperties", -- The section in ExtState
 subname = " playback", -- the name of class which will set to some messages
-slIndex = 2, -- Index of category
-previousSubLayout = "visualLayout", -- the previous sublayout the switch script will be set to
-nextSubLayout = "recordingLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 -- Recording properties
-parentLayout.recordingLayout = setmetatable({
+registerSublayout("recordingLayout", setmetatable({
 section = "trackRecordingProperties", -- The section in ExtState
-slIndex = 3, -- The index of category
 subname = " recording", -- the name of class which will set to some messages
-previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 -- The creating new property macros
 local function registerProperty(property, sl)

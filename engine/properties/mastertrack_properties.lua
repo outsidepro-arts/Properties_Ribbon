@@ -22,19 +22,26 @@ end
 -- get the master track
 master = reaper.GetMasterTrack(0)
 
+-- The sublayout registration macros
+local function registerSublayout(slName, sl)
+parentLayout[slName] = sl
+parentLayout.ofCount = parentLayout.ofCount+1
+parentLayout[slName].slIndex = parentLayout.ofCount
+for slsn, sls in pairs(parentLayout) do
+if type(sls) == "table" then
+if sls.slIndex== parentLayout.ofCount-1 then
+sls.nextSubLayout = slName
+parentLayout[slName].previousSubLayout = slsn
+end
+end
+end
+end
+
 -- global pseudoclass initialization
-parentLayout = setmetatable({
+parentLayout = {
 name = "Master track%s properties", -- The main class name which will be formatted by subclass name
 ofCount = 0 -- The full categories count
-}, {
--- When new field has been added we just take over the ofCount adding
-__newindex = function(self, key, value)
-rawset(self, key, value)
-if key ~= "canProvide" then
-self.ofCount = self.ofCount+1
-end
-end
-})
+}
 
 function parentLayout.canProvide()
 -- We will check the TCP visibility only
@@ -45,27 +52,23 @@ return false
 end
 end
 
-parentLayout.playbackLayout = setmetatable({
+registerSublayout("playbackLayout", setmetatable({
 section = "masterPlaybackProperties", -- The section in ExtState
 subname = " playback", -- the name of class which will set to some messages
-slIndex = 1, -- Index of category
-nextSubLayout = "visualLayout", -- the next sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
-parentLayout.visualLayout = setmetatable({
+registerSublayout("visualLayout", setmetatable({
 section = "masterVisualProperties", -- The section in ExtState
 subname = " visual", -- the name of class which will set to some messages
-slIndex = 2, -- Index of category
-previousSubLayout = "playbackLayout", -- the previous sublayout the switch script will be set to
 
 -- the properties list. It initializes first, then the methods will be added below.
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 local function registerProperty(property, sl)
 table.insert(parentLayout[sl].properties, property)

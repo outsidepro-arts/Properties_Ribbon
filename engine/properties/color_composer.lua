@@ -150,19 +150,28 @@ local function setColor(color)
 extstate.set(("colcom_%s_curValue"):format(sublayout), tostring(color))
 end
 
+
+-- The sublayout registration macros
+local function registerSublayout(slName, sl)
+parentLayout[slName] = sl
+parentLayout.ofCount = parentLayout.ofCount+1
+parentLayout[slName].slIndex = parentLayout.ofCount
+for slsn, sls in pairs(parentLayout) do
+if type(sls) == "table" then
+if sls.slIndex== parentLayout.ofCount-1 then
+sls.nextSubLayout = slName
+parentLayout[slName].previousSubLayout = slsn
+end
+end
+end
+end
+
+
 -- global pseudoclass initialization
-parentLayout = setmetatable({
+parentLayout = {
 name = "Color composer%s", -- The main class name which will be formatted by subclass name
 ofCount = 0 -- The full categories count
-}, {
--- When new field has been added we just take over the ofCount adding
-__newindex = function(self, key, value)
-rawset(self, key, value)
-if key ~= "canProvide" then
-self.ofCount = self.ofCount+1
-end
-end
-})
+}
 
 -- the function which gives green light to call any method from this class
 -- The color composer is available always, so we will just return true.
@@ -173,36 +182,29 @@ end
 
 -- sublayouts
 -- Track properties
-parentLayout.track = setmetatable({
+registerSublayout("track", setmetatable({
 section = "trackPropertiesComposer",
 subname = " for tracks",
-slIndex = 1, 
-nextSubLayout = "item",
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 
 -- Item properties
-parentLayout.item = setmetatable({
+registerSublayout("item", setmetatable({
 section = "itemColorComposer",
 subname = " for items",
-slIndex = 2, 
-previousSubLayout = "track",
-nextSubLayout = "take",
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 -- Take sublayout
-parentLayout.take = setmetatable({
+registerSublayout("take", setmetatable({
 section = "takePropertiesComposer",
 subname = " for item takes",
-slIndex = 3, 
-previousSubLayout = "item",
 properties = {}
 }, {__index = parentLayout}
-)
+))
 
 
 -- The creating new property macros
@@ -276,7 +278,7 @@ message(string.format("Preset %s has been updated. ", self.states[state].name))
 else
 message(string.format("Unable to update preset %s. ", self.states[state].name))
 end
-elseif self.states[state].value == getColor() then
+elseif answer ~= self.states[state].name and self.states[state].value == getColor() then
 local oldName = self.states[state].name
 if self.states:rename(state, answer) == true then
 Message(string.format("Preset %s has been renamed to %s. ", oldName, answer))
