@@ -14,24 +14,12 @@ After this preambula, let me begin.
 ]]--
 
 -- global pseudoclass initialization
--- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
-configLayout = {
-section = "configProperties", -- The section in ExtState
-name = "Configuration properties", -- the name of class which will set to some messages
+configLayout = initLayout("Configuration properties")
 
 -- the function which gives green light to call any method from this class
-canProvide = function()
+function configLayout.canProvide()
 -- The configs ever available, so let define this always.
 return true
-end,
-
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}
-
--- The creating new property macros
-local function registerProperty(property)
-configLayout.properties[#configLayout.properties+1] = property
 end
 
 --[[
@@ -53,7 +41,7 @@ and try to complement any getState message with short type label. I mean what th
 
 -- type level methods
 local typeLevelProperty = {}
-registerProperty(typeLevelProperty)
+configLayout:registerProperty(typeLevelProperty)
 typeLevelProperty.states = {[0] = "no prompt for property actions", [1] = "detailed prompts for property actions (for beginers)",[2] = "short prompts for property actions"}
 
 function typeLevelProperty:get()
@@ -90,7 +78,7 @@ end
 
 -- Virtual cursor position reporting methods
 local reportPosProperty = {}
-registerProperty( reportPosProperty)
+configLayout:registerProperty( reportPosProperty)
 function reportPosProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
@@ -116,7 +104,7 @@ end
 
 -- DB step specify methods
 local dbStepProperty = {}
-registerProperty( dbStepProperty)
+configLayout:registerProperty( dbStepProperty)
 function dbStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
@@ -157,7 +145,7 @@ end
 
 -- Percentage step adjustment methods
 local percentagestepProperty = {}
-registerProperty( percentagestepProperty)
+configLayout:registerProperty( percentagestepProperty)
 
 function percentagestepProperty:get()
 local message = initOutputMessage()
@@ -199,7 +187,7 @@ end
 
 -- Time step adjustment methods
 local timeStepProperty = {}
-registerProperty( timeStepProperty)
+configLayout:registerProperty( timeStepProperty)
 
 function timeStepProperty:get()
 local message = initOutputMessage()
@@ -238,7 +226,7 @@ end
 
 -- Pitch adjustment methods
 local pitchStepProperty = {}
-registerProperty( pitchStepProperty)
+configLayout:registerProperty( pitchStepProperty)
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
@@ -307,7 +295,7 @@ end
 
 -- Multiselection support methods
 local multiSelectionSupportProperty = {}
-registerProperty( multiSelectionSupportProperty)
+configLayout:registerProperty( multiSelectionSupportProperty)
 function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")

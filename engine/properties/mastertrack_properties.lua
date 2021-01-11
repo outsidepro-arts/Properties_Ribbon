@@ -22,26 +22,8 @@ end
 -- get the master track
 master = reaper.GetMasterTrack(0)
 
--- The sublayout registration macros
-local function registerSublayout(slName, sl)
-parentLayout[slName] = sl
-parentLayout.ofCount = parentLayout.ofCount+1
-parentLayout[slName].slIndex = parentLayout.ofCount
-for slsn, sls in pairs(parentLayout) do
-if type(sls) == "table" then
-if sls.slIndex== parentLayout.ofCount-1 then
-sls.nextSubLayout = slName
-parentLayout[slName].previousSubLayout = slsn
-end
-end
-end
-end
-
 -- global pseudoclass initialization
-parentLayout = {
-name = "Master track%s properties", -- The main class name which will be formatted by subclass name
-ofCount = 0 -- The full categories count
-}
+parentLayout = initLayout("Master track%s properties")
 
 function parentLayout.canProvide()
 -- We will check the TCP visibility only
@@ -52,31 +34,13 @@ return false
 end
 end
 
-registerSublayout("playbackLayout", setmetatable({
-section = "masterPlaybackProperties", -- The section in ExtState
-subname = " playback", -- the name of class which will set to some messages
+parentLayout:registerSublayout("playbackLayout", " playback")
+parentLayout:registerSublayout("visualLayout", " visual")
 
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
-
-registerSublayout("visualLayout", setmetatable({
-section = "masterVisualProperties", -- The section in ExtState
-subname = " visual", -- the name of class which will set to some messages
-
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
-
-local function registerProperty(property, sl)
-table.insert(parentLayout[sl].properties, property)
-end
 
 -- volume methods
 local volumeProperty = {}
-registerProperty( volumeProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty( volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
@@ -116,7 +80,7 @@ end
 
 -- pan methods
 local panProperty = {}
-registerProperty(panProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
@@ -157,7 +121,7 @@ end
 
 -- Width methods
 local widthProperty = {}
-registerProperty(widthProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired width value for master track. Perform this property to reset the value to 100 percent.", "Adjustable, performable")
@@ -198,7 +162,7 @@ end
 
 -- Mute methods
 local muteProperty = {}
-registerProperty(muteProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(muteProperty)
 function muteProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to mute or unmute master track.", "Toggleable")
@@ -237,7 +201,7 @@ end
 
 -- Solo methods
 local soloProperty = {}
-registerProperty(soloProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(soloProperty)
 function soloProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to solo or unsolo master track.", "Toggleable")
@@ -273,7 +237,7 @@ end
 
 -- FX bypass methods
 local masterFXProperty = {}
-registerProperty(masterFXProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(masterFXProperty)
 function masterFXProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the FX activity of master track.", "Toggleable")
@@ -300,7 +264,7 @@ end
 -- Mono/stereo methods
 -- This methods is very easy
 local monoProperty = {}
-registerProperty(monoProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(monoProperty)
 function monoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the master track to mono or stereo.", "Toggleable")
@@ -327,7 +291,7 @@ end
 -- Play rate methods
 -- It's so easy because there are no deep control. Hmm, either i haven't found this.
 local playrateProperty = {}
-registerProperty(playrateProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(playrateProperty)
 function playrateProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1.", "adjustable, performable")
@@ -356,7 +320,7 @@ end
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
 local pitchPreserveProperty = {}
-registerProperty(pitchPreserveProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(pitchPreserveProperty)
 function pitchPreserveProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the preserving pitch of items in the project when playrate changes.", "Toggleable")
@@ -385,7 +349,7 @@ end
 -- Master tempo methods
 -- Seems, Cockos allows to rest of for programmers 🤣
 local tempoProperty = {}
-registerProperty(tempoProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(tempoProperty)
 function tempoProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
@@ -412,7 +376,7 @@ end
 -- Master visibility methods
 -- TCP visibility
 local tcpVisibilityProperty = {}
-registerProperty(tcpVisibilityProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(tcpVisibilityProperty)
 tcpVisibilityProperty.states = {[false] = "not visible", [true] = "visible"}
 function tcpVisibilityProperty.getValue()
 local state = reaper.GetMasterTrackVisibility()&1
@@ -456,7 +420,7 @@ end
 
 -- MCP visibility
 local mcpVisibilityProperty = {}
-registerProperty(mcpVisibilityProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(mcpVisibilityProperty)
 mcpVisibilityProperty.states = tcpVisibilityProperty.states
 
 function mcpVisibilityProperty.getValue()
@@ -499,7 +463,7 @@ end
 
 -- Master track position in mixer panel
 local masterTrackMixerPosProperty = {}
-registerProperty(masterTrackMixerPosProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(masterTrackMixerPosProperty)
 masterTrackMixerPosProperty.states = {
 "docked window",
 "separated window",

@@ -52,29 +52,9 @@ end
 return color
 end
 
--- The sublayout registration macros
-local function registerSublayout(slName, sl)
-parentLayout[slName] = sl
-parentLayout.ofCount = parentLayout.ofCount+1
-parentLayout[slName].slIndex = parentLayout.ofCount
-for slsn, sls in pairs(parentLayout) do
-if type(sls) == "table" then
-if sls.slIndex== parentLayout.ofCount-1 then
-sls.nextSubLayout = slName
-parentLayout[slName].previousSubLayout = slsn
-end
-end
-end
-end
-
-
-
 
 -- global pseudoclass initialization
-parentLayout = {
-name = "Track%s properties", -- The main class name which will be formatted by subclass name
-ofCount = 0 -- The full categories count
-}
+parentLayout = initLayout("Track%s properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -88,39 +68,13 @@ end
 
 -- sublayouts
 --visual properties
-registerSublayout("visualLayout", setmetatable({
-section = "trackVisualProperties", -- The section in ExtState
-subname = " visual", -- the name of class which will set to some messages
-
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("visualLayout", " visual")
 
 -- Playback properties
-registerSublayout("playbackLayout", setmetatable({
-section = "trackPlaybackProperties", -- The section in ExtState
-subname = " playback", -- the name of class which will set to some messages
-
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("playbackLayout", " playback")
 
 -- Recording properties
-registerSublayout("recordingLayout", setmetatable({
-section = "trackRecordingProperties", -- The section in ExtState
-subname = " recording", -- the name of class which will set to some messages
-
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
-
--- The creating new property macros
-local function registerProperty(property, sl)
-table.insert(parentLayout[sl].properties, property)
-end
+parentLayout:registerSublayout("recordingLayout", " recording")
 
 --[[
 Before the properties list fill get started, let describe this subclass methods:
@@ -140,7 +94,7 @@ and try to complement any get message with short type label. I mean what the "aj
 
 -- Track name methods
 local trackNameProperty = {}
-registerProperty(trackNameProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(trackNameProperty)
 
 function trackNameProperty:get()
 local message = initOutputMessage()
@@ -199,7 +153,7 @@ end
 
 
 local folderStateProperty = {}
- registerProperty( folderStateProperty, "visualLayout")
+ parentLayout.visualLayout:registerProperty( folderStateProperty)
  folderStateProperty.states = {
 [0]="track",
 [1]="folder",
@@ -343,8 +297,8 @@ return message
 end
 
 local volumeProperty = {}
-registerProperty(volumeProperty, "playbackLayout")
-registerProperty(volumeProperty, "recordingLayout")
+parentLayout.playbackLayout:registerProperty(volumeProperty)
+parentLayout.recordingLayout:registerProperty(volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for selected track.", "Adjustable, performable")
@@ -430,8 +384,9 @@ end
 
 
 local panProperty = {}
-registerProperty(panProperty, "playbackLayout")
-registerProperty(panProperty, "recordingLayout")
+parentLayout.playbackLayout:registerProperty(panProperty)
+parentLayout.recordingLayout:registerProperty(panProperty)
+
 function panProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired pan value for selected track.", "Adjustable, performable")
@@ -512,7 +467,7 @@ return message
 end
 
 local widthProperty = {}
-registerProperty(widthProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(widthProperty)
 
 function widthProperty:get()
 local message = initOutputMessage()
@@ -594,7 +549,7 @@ return message
 end
 
 local muteProperty = {}
- registerProperty(muteProperty, "playbackLayout")
+ parentLayout.playbackLayout:registerProperty(muteProperty)
  muteProperty.states = {[0]="not muted", [1]="muted"}
 
 function muteProperty:get()
@@ -664,7 +619,7 @@ return message
 end
 
 local soloProperty = {}
- registerProperty(soloProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(soloProperty)
  soloProperty.states = {
 [0] = "not soloed",
 [1] = "soloed",
@@ -745,7 +700,7 @@ return message
 end
 
 local recarmProperty = {}
- registerProperty(recarmProperty, "recordingLayout")
+ parentLayout.recordingLayout:registerProperty(recarmProperty)
  recarmProperty.states = {[0]="not armed", [1]="armed"}
 
 function recarmProperty:get()
@@ -815,7 +770,7 @@ return message
 end
 
 local recmonitoringProperty = {}
- registerProperty(recmonitoringProperty, "recordingLayout")
+ parentLayout.recordingLayout:registerProperty(recmonitoringProperty)
  recmonitoringProperty.states = {
 [0] = "off",
 [1] = "normal",
@@ -890,7 +845,7 @@ end
 
 -- Record inputs
 local recInputsProperty = {}
-registerProperty(recInputsProperty, "recordingLayout")
+parentLayout.	recordingLayout:registerProperty(recInputsProperty)
 
 function recInputsProperty.getMIDIInputName(id)
 local result, name = reaper.GetMIDIInputName(id, "")
@@ -1141,7 +1096,7 @@ return message
 end
 
 local recmodeProperty = {}
- registerProperty(recmodeProperty, "recordingLayout")
+ parentLayout.recordingLayout:registerProperty(recmodeProperty)
  recmodeProperty.states = setmetatable({
 [0] = "input",
 [1] = "output (stereo)",
@@ -1235,7 +1190,7 @@ end
 
 -- Automation mode methods
 local automationModeProperty = {}
- registerProperty(automationModeProperty, "recordingLayout")
+parentLayout.recordingLayout: registerProperty(automationModeProperty)
  automationModeProperty.states = setmetatable({
 [0] = "trim read",
 [1] = "read",
@@ -1316,7 +1271,7 @@ end
 
 
 local phaseProperty = {}
- registerProperty(phaseProperty, "playbackLayout")
+ parentLayout.playbackLayout:registerProperty(phaseProperty)
  phaseProperty.states = {[0]="normal", [1]="inverted"}
 
 function phaseProperty:get()
@@ -1386,7 +1341,7 @@ end
 
 -- Send to parent or master track methods
 local mainSendProperty = {}
- registerProperty(mainSendProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(mainSendProperty)
 mainSendProperty.states = {[0]="not sends", [1]="sends"}
 
 function mainSendProperty:get()
@@ -1470,7 +1425,7 @@ end
 
 -- Free mode methods
 local freemodeProperty = {}
- registerProperty(freemodeProperty, "playbackLayout")
+parentLayout.playbackLayout:registerProperty(freemodeProperty)
 freemodeProperty.states = {[0]="disabled", [1]="enabled"}
 
 function freemodeProperty:get()
@@ -1540,7 +1495,7 @@ end
 
 -- Timebase methods
 local timebaseProperty = {}
- registerProperty(timebaseProperty, "playbackLayout")
+ parentLayout.playbackLayout:registerProperty(timebaseProperty)
 timebaseProperty.states = setmetatable({
 [0] = "project default",
 [1] = "time",
@@ -1629,7 +1584,7 @@ end
 
 -- Monitor items while recording methods
 local recmonitorItemsProperty = {}
-registerProperty( recmonitorItemsProperty, "recordingLayout")
+parentLayout.recordingLayout:registerProperty( recmonitorItemsProperty)
 recmonitorItemsProperty.states = {[0]="not monitoring", [1]="monitoring"}
 
 function recmonitorItemsProperty:get()
@@ -1700,7 +1655,7 @@ end
 
 -- Track performance settings: buffering media
 local performanceBufferingProperty = {}
- registerProperty(performanceBufferingProperty, "playbackLayout")
+parentLayout.playbackLayout: registerProperty(performanceBufferingProperty)
 performanceBufferingProperty.states = {[0]="buffering", [1]="not buffering"}
 
 function performanceBufferingProperty:get()
@@ -1772,7 +1727,7 @@ end
 
 -- Track performance settings: Anticipative FX
 local performanceAnticipativeFXProperty = {}
- registerProperty(performanceAnticipativeFXProperty, "playbackLayout")
+ parentLayout.playbackLayout:registerProperty(performanceAnticipativeFXProperty)
 performanceAnticipativeFXProperty.states = {[0]="anticipative", [2]="non-anticipative"}
 
 function performanceAnticipativeFXProperty:get()
@@ -1843,7 +1798,7 @@ end
 
 -- Track color methods
 local colorProperty = {}
-registerProperty(colorProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(colorProperty)
 
 function colorProperty.getValue(track)
 return reaper.GetMediaTrackInfo_Value(track, "I_CUSTOMCOLOR"), reaper.GetTrackColor(track)
@@ -1911,7 +1866,7 @@ end
 
 -- Visibility in Mixer panel
 local mixerVisibilityProperty = {}
-registerProperty( mixerVisibilityProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty( mixerVisibilityProperty)
 mixerVisibilityProperty.states = {[0]="hidden", [1]="visible"}
 
 function mixerVisibilityProperty:get()
@@ -1982,7 +1937,7 @@ end
 
 -- Visibility in TCP
 local tcpVisibilityProperty = {}
-registerProperty( tcpVisibilityProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty( tcpVisibilityProperty)
 tcpVisibilityProperty.states = mixerVisibilityProperty.states
 
 function tcpVisibilityProperty:get()

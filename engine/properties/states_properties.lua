@@ -14,16 +14,9 @@ After this preambula, let me begin.
 ]]--
 
 -- global pseudoclass initialization
-statesLayout = {
-section = "statesProperties",
-name = "Status properties",
-canProvide = function() return true end,
-properties = {}
-}
+statesLayout = initLayout("Status properties")
 
-local function registerProperty(property)
-table.insert(statesLayout.properties, property)
-end
+function statesLayout.canProvide() return true end
 
 -- Usual methods and fields
 -- They will be coppied into easy switching methods.
@@ -55,7 +48,7 @@ end
 
 
 -- Master track visibility
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the master track in this project.",
@@ -91,12 +84,12 @@ end,
 get = usualGet,
 set = usualSet
 }
-registerProperty(mixerProperty)
+statesLayout:registerProperty(mixerProperty)
 
 -- Docker visibility
 -- if mixer hidden, the docker couldn't be displayed.
 if mixerProperty.getValue() == 1 then
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the docker area.",
@@ -116,7 +109,7 @@ set = usualSet
 end
 
 -- Transport panel visibility
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the transport panel.",
@@ -134,7 +127,7 @@ set = usualSet
 })
 
 -- Video window visibility
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the video window.",
@@ -152,7 +145,7 @@ set = usualSet
 })
 
 -- Media explorer window visibility
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the media explorer window.",
@@ -171,7 +164,7 @@ set = usualSet
 
 -- Big clock visibility
 -- The same trouble like with mixer area.
-registerProperty({
+statesLayout:registerProperty({
 states = usualStates,
 type = {
 [1] = "Toggle this property to show or hide the big clock window.",

@@ -151,27 +151,10 @@ extstate.set(("colcom_%s_curValue"):format(sublayout), tostring(color))
 end
 
 
--- The sublayout registration macros
-local function registerSublayout(slName, sl)
-parentLayout[slName] = sl
-parentLayout.ofCount = parentLayout.ofCount+1
-parentLayout[slName].slIndex = parentLayout.ofCount
-for slsn, sls in pairs(parentLayout) do
-if type(sls) == "table" then
-if sls.slIndex== parentLayout.ofCount-1 then
-sls.nextSubLayout = slName
-parentLayout[slName].previousSubLayout = slsn
-end
-end
-end
-end
 
 
 -- global pseudoclass initialization
-parentLayout = {
-name = "Color composer%s", -- The main class name which will be formatted by subclass name
-ofCount = 0 -- The full categories count
-}
+parentLayout = initLayout("Color composer%s")
 
 -- the function which gives green light to call any method from this class
 -- The color composer is available always, so we will just return true.
@@ -182,36 +165,22 @@ end
 
 -- sublayouts
 -- Track properties
-registerSublayout("track", setmetatable({
-section = "trackPropertiesComposer",
-subname = " for tracks",
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("track", " for tracks")
 
 
 -- Item properties
-registerSublayout("item", setmetatable({
-section = "itemColorComposer",
-subname = " for items",
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("item", " for items")
 
 -- Take sublayout
-registerSublayout("take", setmetatable({
-section = "takePropertiesComposer",
-subname = " for item takes",
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("take", " for item takes")
 
 
 -- The creating new property macros
+-- Here a special case, so we will not  use the native layout's methods as is
 local function registerProperty(property)
 for curClass, _ in pairs(parentLayout) do
 if type(parentLayout[curClass]) == "table" then
-table.insert(parentLayout[curClass].properties, property)
+parentLayout[curClass]:registerProperty(property)
 end
 end
 end

@@ -67,28 +67,9 @@ end
 return color
 end
 
--- The sublayout registration macros
-local function registerSublayout(slName, sl)
-parentLayout[slName] = sl
-parentLayout.ofCount = parentLayout.ofCount+1
-parentLayout[slName].slIndex = parentLayout.ofCount
-for slsn, sls in pairs(parentLayout) do
-if type(sls) == "table" then
-if sls.slIndex== parentLayout.ofCount-1 then
-sls.nextSubLayout = slName
-parentLayout[slName].previousSubLayout = slsn
-end
-end
-end
-end
-
 
 -- global pseudoclass initialization
--- We have to fully initialize this because this table will be coppied to main class. Some fields seems uneccessary, but it's not true.
-parentLayout = {
-name = "Item%s properties", -- The main class name, which will be formatted by subclass name
-ofCount = 0 -- The full categories count
-}
+parentLayout = initLayout("Item%s properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -101,37 +82,15 @@ end
 
 -- sublayouts
 --visual properties
-registerSublayout("visualLayout", setmetatable({
-section = "itemVisualProperties", -- The section in ExtState
-subname = " visual", -- the name of class which will set to some messages
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
+parentLayout:registerSublayout("visualLayout", " visual")
 
 --Item properties
-registerSublayout("itemLayout", setmetatable({
-section = "itemProperties", -- The section in ExtState
-subname = "", -- the name of class which will set to some messages
--- This string is empty cuz the layout's name and this sublayout's name is identical
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout}
-))
+-- The second parameter is empty string cuz the parent layout's name and this sublayout's name is identical
+parentLayout:registerSublayout("itemLayout", "")
 
 -- Current take properties
-registerSublayout("takeLayout", setmetatable({
-section = "takeProperties", -- The section in ExtState
-subname = " current take", -- the name of class which will set to some messages
--- the properties list. It initializes first, then the methods will be added below.
-properties = {}
-}, {__index = parentLayout})
-)
+parentLayout:registerSublayout("takeLayout", " current take")
 
--- The creating new property macros
-local function registerProperty(property, sl)
-table.insert(parentLayout[sl].properties, property)
-end
 
 --[[
 Before the properties list fill get started, let describe this subclass methods:
@@ -151,7 +110,7 @@ and try to complement any getState message with short type label. I mean what th
 
 -- Take name methods
 local currentTakeNameProperty = {}
-registerProperty(currentTakeNameProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(currentTakeNameProperty)
 
 function currentTakeNameProperty.getValue(item)
 return ({reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)})[2]
@@ -217,7 +176,7 @@ end
 
 -- Lock item methods
 local lockProperty = {}
- registerProperty( lockProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty( lockProperty)
 lockProperty.states = {[0]="Unlocked", [1]="locked"}
 
 function lockProperty.getValue(item)
@@ -296,7 +255,7 @@ end
 
 -- volume methods
 local itemVolumeProperty = {}
-registerProperty(itemVolumeProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty(itemVolumeProperty)
 
 function itemVolumeProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_VOL")
@@ -391,7 +350,7 @@ end
 
 -- mute methods
 local muteItemProperty = {}
- registerProperty( muteItemProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty( muteItemProperty)
 muteItemProperty.states = {[0]="not muted", [1]="muted"}
 
 function muteItemProperty:get()
@@ -462,7 +421,7 @@ end
 
 -- Loop source methods
 local loopSourceProperty = {}
- registerProperty( loopSourceProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty( loopSourceProperty)
 loopSourceProperty.states = {[0]="not looped", [1]="looped"}
 
 function loopSourceProperty:get()
@@ -533,7 +492,7 @@ end
 
 -- All takes play methods
 local itemAllTakesPlayProperty = {}
- registerProperty( itemAllTakesPlayProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty( itemAllTakesPlayProperty)
 itemAllTakesPlayProperty.states = {[0]="all takes aren't playing", [1]="all takes are playing"}
 
 function itemAllTakesPlayProperty:get()
@@ -606,7 +565,7 @@ end
 
 -- timebase methods
 local timebaseProperty = {}
- registerProperty(timebaseProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty(timebaseProperty)
 timebaseProperty.states = {
 [0] = "track or project default",
 [2] = "beats (position, length, rate)",
@@ -699,7 +658,7 @@ end
 
 -- Auto-stretch methods
 local autoStretchProperty = {}
- registerProperty( autoStretchProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty( autoStretchProperty)
 autoStretchProperty.states = {[0]="disabled", [1]="enabled"}
 
 function autoStretchProperty:get()
@@ -772,7 +731,7 @@ end
 -- For now, this property has been registered in visual layout section. Really, it influences on all items in the same group: all controls will be grouped and when an user changes any control slider, all other items changes the value too.
 -- Are you Sure? But i'm not. 🤣
 local groupingProperty = {}
-registerProperty(groupingProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(groupingProperty)
 groupingProperty.states = setmetatable({
 [0] = "not in a group"
 }, {
@@ -857,7 +816,7 @@ end
 -- Fade methods
 -- Fadein shape
 local fadeinShapeProperty = {}
- registerProperty(fadeinShapeProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty(fadeinShapeProperty)
 fadeinShapeProperty.states = {
 [0] = "Linear",
 [1] = "Inverted quadratic",
@@ -947,7 +906,7 @@ end
 
 -- Fadein manual length methods
 local fadeinLenProperty = {}
-registerProperty(fadeinLenProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty(fadeinLenProperty)
 
 function  fadeinLenProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEINLEN")
@@ -1034,7 +993,7 @@ end
 
 -- Fadein curve methods
 local fadeinDirProperty = {}
-registerProperty( fadeinDirProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty( fadeinDirProperty)
 
 function  fadeinDirProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEINDIR")
@@ -1133,7 +1092,7 @@ end
 
 -- Fadeout shape
 local fadeoutShapeProperty = {}
- registerProperty(fadeoutShapeProperty, "itemLayout")
+ parentLayout.itemLayout:registerProperty(fadeoutShapeProperty)
 fadeoutShapeProperty.states =  fadeinShapeProperty.states
 
 function fadeoutShapeProperty.getValue(item)
@@ -1215,7 +1174,7 @@ end
 
 -- fadeout manual length methods
 local fadeoutLenProperty = {}
-registerProperty(fadeoutLenProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty(fadeoutLenProperty)
 
 function  fadeoutLenProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEOUTLEN")
@@ -1302,7 +1261,7 @@ end
 
 -- fadeout curve methods
 local fadeoutDirProperty = {}
-registerProperty( fadeoutDirProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty( fadeoutDirProperty)
 
 function  fadeoutDirProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEOUTDIR")
@@ -1393,7 +1352,7 @@ end
 
 -- Fadein automatic length
 local fadeinAutoLenProperty = {}
-registerProperty(fadeinAutoLenProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty(fadeinAutoLenProperty)
 
 function  fadeinAutoLenProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEINLEN_AUTO")
@@ -1514,7 +1473,7 @@ end
 
 -- Automatic fadeout length methods
 local fadeoutAutoLenProperty = {}
-registerProperty(fadeoutAutoLenProperty, "itemLayout")
+parentLayout.itemLayout:registerProperty(fadeoutAutoLenProperty)
 
 function  fadeoutAutoLenProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEOUTLEN_AUTO")
@@ -1634,7 +1593,7 @@ end
 
 -- active take methods
 local activeTakeProperty = {}
-registerProperty(activeTakeProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(activeTakeProperty)
 
 function activeTakeProperty.getValue(item)
 return reaper.GetActiveTake(item)
@@ -1723,7 +1682,7 @@ end
 
 -- Take volume methods
 local takeVolumeProperty = {}
-registerProperty(takeVolumeProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takeVolumeProperty)
 
 function takeVolumeProperty.getValue(item)
 local state = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_VOL")
@@ -1833,7 +1792,7 @@ end
 
 -- Take pan methods
 local takePanProperty = {}
-registerProperty(takePanProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takePanProperty)
 
 function takePanProperty.getValue(item)
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PAN")
@@ -1924,7 +1883,7 @@ end
 
 -- Take phase methods
 local takePhaseProperty = {}
- registerProperty( takePhaseProperty, "takeLayout")
+ parentLayout.takeLayout:registerProperty( takePhaseProperty)
 takePhaseProperty.states = {[0]="normal", [1]="inverted"}
 
 -- Cockos made the phase inversion via negative volume value.
@@ -2019,7 +1978,7 @@ end
 
 -- Take channel mode methods
 local takeChannelModeProperty = {}
- registerProperty(takeChannelModeProperty, "takeLayout")
+ parentLayout.takeLayout:registerProperty(takeChannelModeProperty)
 takeChannelModeProperty.states = setmetatable({
 [0] = "normal",
 [1] = "reverse stereo",
@@ -2148,7 +2107,7 @@ end
 
 -- Take playrate methods
 local takePlayrateProperty = {}
-registerProperty(takePlayrateProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takePlayrateProperty)
 
 function takePlayrateProperty.getValue(item)
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
@@ -2230,7 +2189,7 @@ end
 
 -- Preserve pitch when playrate changes methods
 local preserveTakePitchProperty = {}
- registerProperty( preserveTakePitchProperty, "takeLayout")
+ parentLayout.takeLayout:registerProperty( preserveTakePitchProperty)
 preserveTakePitchProperty.states = {[0]="not preserved", [1]="preserved"}
 
 function preserveTakePitchProperty.getValue(item)
@@ -2309,7 +2268,7 @@ end
 
 -- Take pitch methods
 local takePitchProperty = {}
-registerProperty(takePitchProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takePitchProperty)
 
 function takePitchProperty.getValue(item)
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PITCH")
@@ -2407,7 +2366,7 @@ end
 
 -- Pitch shifter methods
 local takePitchShifterProperty = {}
-registerProperty(takePitchShifterProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takePitchShifterProperty)
 takePitchShifterProperty.states = setmetatable({[-1] = "project default"},
 {
 __index = function(self, key)
@@ -2563,7 +2522,7 @@ end
 
 -- Active shifter mode methods
 local takePitchShifterModeProperty = {}
-registerProperty(takePitchShifterModeProperty, "takeLayout")
+parentLayout.takeLayout:registerProperty(takePitchShifterModeProperty)
 takePitchShifterModeProperty.states = setmetatable({[-1] = "project default"},
 {
 __index = function(self, key)
@@ -2676,7 +2635,7 @@ end
 
 -- Items color methods
 local itemColorProperty = {}
-registerProperty(itemColorProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(itemColorProperty)
 
 function itemColorProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR"), reaper.GetDisplayedMediaItemColor(item)
@@ -2743,7 +2702,7 @@ end
 
 -- Item current take color methods
 local itemTakeColorProperty = {}
-registerProperty(itemTakeColorProperty, "visualLayout")
+parentLayout.visualLayout:registerProperty(itemTakeColorProperty)
 
 function itemTakeColorProperty.getValue(item)
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
