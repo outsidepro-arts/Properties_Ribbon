@@ -104,3 +104,8 @@ ms = ms*0.001
 local curTime = os.clock()
 while (os.clock()-curTime) <= ms do end
 end
+
+-- This function grabbed of https://stackoverflow.com/questions/10460126/how-to-remove-spaces-from-a-string-in-lua/10460780
+function removeSpaces(str)
+  return str:match"^%s*(.*)":match"(.-)%s*$"
+end

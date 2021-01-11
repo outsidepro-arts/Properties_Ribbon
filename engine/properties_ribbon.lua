@@ -20,6 +20,9 @@ require "bytewords"
 require "colors_provider"
 -- These modules usualy uses in properties code
 
+
+-- own metamethods
+
 -- Custom message metamethod
 function initOutputMessage()
 local mt = setmetatable({
@@ -103,6 +106,47 @@ end,
 })
 return mt
 end
+
+-- The layout initialization
+-- The input parameter "str" waits the new class message
+-- The input parameter section waits the section in extState
+function initLayout(str)
+local t = {
+name = str,
+section = string.format(removeSpaces(str), ""),
+ofCount = 0,
+
+-- slID (string) - the ID of sublayout in parent layout
+-- slName (string) - The sub-name of the sublayout which will be reported in main class format name
+registerSublayout = function(self, slID, slName)
+self[slID] = setmetatable({
+subname = slName,
+section = removeSpaces(string.format(self.name, slName)),
+properties = {}
+}, {
+__index = self})
+self.ofCount = self.ofCount+1
+self[slID].slIndex = self.ofCount
+for slsn, sls in pairs(self) do
+if type(sls) == "table" then
+if sls.slIndex == self.ofCount-1 then
+sls.nextSubLayout = slID
+self[slID].previousSubLayout = slsn
+end
+end
+end
+self[slID].registerProperty = self.registerProperty
+-- If a category has been created, the parent registration methods should be unavailable.
+if self.properties then self.properties = nil end
+end,
+properties = {},
+registerProperty = function(self, property)
+ return table.insert(self.properties, property)
+end
+}
+return t
+end
+
 
 -- }
 
