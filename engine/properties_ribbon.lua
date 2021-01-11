@@ -69,6 +69,8 @@ self.tLevels, self.tl = nil
 end
 end
 }, {
+-- Redefine the metamethod type
+__type = "output_message",
 -- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
 __call = function(self, str)
 if self.msg then
