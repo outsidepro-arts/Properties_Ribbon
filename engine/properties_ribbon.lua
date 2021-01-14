@@ -109,7 +109,6 @@ end
 
 -- The layout initialization
 -- The input parameter "str" waits the new class message
--- The input parameter section waits the section in extState
 function initLayout(str)
 local t = {
 name = str,
