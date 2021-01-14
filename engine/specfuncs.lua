@@ -4,6 +4,9 @@ Copyright (c) 2020-2021 outsidepro-arts & other contributors
 License: MIT License
 ]]--
 
+-- Here are some functions which I have been grabbed from some sources and opensource projects. Some of was needed to be rewritten for LUA, but some of already being presented as is also.
+-- Unfortunately, not all functions written here I remembered where grabbed, because I wrote it at the start of complex coding and did not planned to git this..
+-- If you outraged of, please let me know about via issues in the repository.
 
 function round(num, numDecimalPlaces)
 local negative = false
@@ -19,6 +22,7 @@ else
 end
 end
 
+-- These two functions have been based on project WDL (https://github.com/justinfrankel/WDL)
 function numtodecibels(num, noString)
 local v = 0
 if num < 0.0000000298023223876953125 then
@@ -54,6 +58,7 @@ return 0
 end
 return math.exp(db*0.11512925464970228420089957273422)
 end
+-- .
 
 function numtopan(num)
 if num == 0 then
@@ -67,11 +72,12 @@ return string.format("%s%% left", math.floor(num))
 end
 end
 
-
+-- This function originaly written by @electrik-spb in PureBasic and rewritten by me for LUA.
 function numtopercent(num)
 return math.floor(num/(1/100))
 end
 
+-- This function based on previous function but just reversed.
 function percenttonum(perc)
 return perc/(1*100)
 end
@@ -84,6 +90,8 @@ return (value > 0)
 end
 end
 
+-- This function written by @electrik-spb in PureBasic and rewritten by me for LUA.
+-- Thank you for help with, Sergey!
 function getBitValue(value, first, last)
 return ((value & ((1<<last)-1)) >> (first-1))
 end
