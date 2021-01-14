@@ -66,7 +66,7 @@ end
 
 
 -- REAPER preferences
-parentLayout.reaperPrefs:registerProperty(getUsualProperty(40016, "REAPER preferences"))
+parentLayout.reaperPrefs:registerProperty(getUsualProperty(40016, "Global preferences"))
 
 -- Metronome/Pre-roll setings
 parentLayout.reaperPrefs:registerProperty(getUsualProperty(40363, "Show metronome or pre-roll settings"))
