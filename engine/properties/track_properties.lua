@@ -605,12 +605,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_MUTE", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_MUTE", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE")
 message(string.format("Track %u %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -756,12 +751,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECARM", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECARM", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM")
 message(string.format("Track %u %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -1327,12 +1317,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_PHASE", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_PHASE", state)
 message(string.format("track %u phase %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE")]))
 end
@@ -1403,12 +1388,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_MAINSEND", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_MAINSEND", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND")
 message(string.format("track %u %s to ", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -1480,12 +1460,7 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "B_FREEMODE", ajustingValue)
 end
 reaper.UpdateTimeline()
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_FREEMODE", state)
 reaper.UpdateTimeline()
 message(string.format("track %u free position %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE")]))
@@ -1640,12 +1615,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMONITEMS", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS"))
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECMONITEMS", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS")
 message(string.format("Track %u items while recording now is %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -1711,12 +1681,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS", ajustingValue&1)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1)
 reaper.SetMediaTrackInfo_Value(tracks, "I_PERFFLAGS", state&1)
 state = reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1
 message(string.format("Track %u media is %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -1922,12 +1887,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER")
 message(string.format("Track %u is %s on mixer panel", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))
@@ -1993,12 +1953,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP", ajustingValue)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINTCP", state)
 state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP")
 message(string.format("Track %u control panel is %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), self.states[state]))

@@ -91,12 +91,7 @@ function reportPosProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = config.getboolean("reportPos", true)
-if state == true then
-state = false
-elseif state == false then
-state = true
-end
+local state = nor(config.getboolean("reportPos", true))
 config.setboolean("reportPos", state)
 return string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state])
 end
@@ -308,12 +303,7 @@ function multiSelectionSupportProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = config.getboolean("multiSelectionSupport", true)
-if state == true then
-state = false
-elseif state == false then
-state = true
-end
+local state = nor(config.getboolean("multiSelectionSupport", true))
 config.setboolean("multiSelectionSupport", state)
 return string.format("Properties Ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state])
 end

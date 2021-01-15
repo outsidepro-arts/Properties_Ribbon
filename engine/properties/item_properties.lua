@@ -240,15 +240,8 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-local state = self.getValue(items)
-if state == 1 then
-state = 0
-else
-state = 1
-end
-self.setValue(items, state)
-state = self.getValue(items)
-message(string.format("Item %u %s", getItemNumber(items), self.states[state]))
+self.setValue(items, nor(self.getValue(items)))
+message(string.format("Item %u %s", getItemNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end
@@ -406,12 +399,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_MUTE", ajustingValue)
 end
 else
-local state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
 reaper.SetMediaItemInfo_Value(items, "B_MUTE", state)
 state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
 message(string.format("Item %u %s", getItemNumber(items), self.states[state]))
@@ -477,12 +465,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_LOOPSRC", ajustingValue)
 end
 else
-local state = reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
 reaper.SetMediaItemInfo_Value(items, "B_LOOPSRC", state)
 state = reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC")
 message(string.format("Item %u source %s", getItemNumber(items), self.states[state]))
@@ -548,12 +531,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY", ajustingValue)
 end
 else
-local state = reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
 reaper.SetMediaItemInfo_Value(items, "B_ALLTAKESPLAY", state)
 state = reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY")
 message(string.format("Item %u %s", getItemNumber(items), self.states[state]))
@@ -714,12 +692,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH", ajustingValue)
 end
 else
-local state = reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH")
-if state == 1 then
-state = 0
-else
-state = 1
-end
+local state = nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
 reaper.SetMediaItemInfo_Value(items, "C_AUTOSTRETCH", state)
 state = reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH")
 message(string.format("Item %u auto-stretch at project tempo %s", getItemNumber(items), self.states[state]))
@@ -1963,15 +1936,8 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-local state = self.getValue(items)
-if state == 1 then
-state = 0
-else
-state = 1
-end
-self.setValue(items, state)
-state = self.getValue(items)
-message(string.format("Item %u  take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+self.setValue(items, nor(self.getValue(items)))
+message(string.format("Item %u  take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end
@@ -2253,15 +2219,8 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-local state = self.getValue(items)
-if state == 1 then
-state = 0
-else
-state = 1
-end
-self.setValue(items, state)
-state = self.getValue(items)
-message(string.format("Item %u  take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[state]))
+self.setValue(items, nor(self.getValue(items)))
+message(string.format("Item %u  take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
 return message
 end

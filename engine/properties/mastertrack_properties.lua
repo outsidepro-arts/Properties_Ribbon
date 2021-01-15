@@ -250,12 +250,7 @@ local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = reaper.GetToggleCommandState(16)
-if state == 0 then
-state = 1
-elseif state == 1 then
-state = 0
-end
+local state = nor(reaper.GetToggleCommandState(16))
 reaper.Main_OnCommand(16, state)
 message(string.format("Master FX %s", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)]))
 return message
@@ -277,12 +272,7 @@ local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = reaper.GetToggleCommandState(40917)
-if state == 0 then
-state = 1
-elseif state == 1 then
-state = 0
-end
+local state = nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
 message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
 return message
@@ -333,12 +323,7 @@ local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = reaper.GetToggleCommandState(40671)
-if state == 0 then
-state = 1
-elseif state == 1 then
-state = 0
-end
+local state = nor(reaper.GetToggleCommandState(40671))
 reaper.Main_OnCommand(40671, state)
 message(string.format("Master pitch when playrate changes is %s", ({[0] = "not preserved", [1] = "preserved"})[reaper.GetToggleCommandState(40671)]))
 return message

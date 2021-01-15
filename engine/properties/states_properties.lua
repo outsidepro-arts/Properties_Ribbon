@@ -35,12 +35,7 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
-local state = self.getValue()
-if state == 0 then
-state = 1
-elseif state == 1 then
-state = 0
-end
+local state = nor(self.getValue())
 self.setValue(state)
 message(string.format(self.msg, self.states[self.getValue()]))
 return message
