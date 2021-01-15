@@ -117,3 +117,18 @@ end
 function removeSpaces(str)
   return str:match"^%s*(.*)":match"(.-)%s*$"
 end
+
+function nor(state)
+if type(state) == "number" then
+if state <= 1 then
+state = state~1
+end
+elseif type(state) == "boolean" then
+if state == true then
+state = false
+elseif state == false then
+state = true
+end
+end
+return state
+end
