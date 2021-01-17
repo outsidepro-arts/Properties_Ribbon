@@ -177,10 +177,16 @@ forever = forever or false
 reaper.DeleteExtState("Properties_Ribbon_script", key, forever)
 end
 
+-- Main body
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
 
 function script_init()
+-- Checking the speech output method existing
+if not reaper.APIExists("osara_outputMessage") then
+reaper.ShowMessageBox("Seems you haven't OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.", "Properties Ribbon error", 0)
+return nil
+end
 currentLayout = extstate.get("currentLayout")
 speakLayout = toboolean(extstate.get("speakLayout"))
 if currentLayout == nil or currentLayout == "" then
