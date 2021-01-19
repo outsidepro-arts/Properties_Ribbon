@@ -69,10 +69,10 @@ end
 parentLayout.reaperPrefs:registerProperty(getUsualProperty(40016, "Global preferences"))
 
 -- Metronome/Pre-roll setings
-parentLayout.reaperPrefs:registerProperty(getUsualProperty(40363, "Show metronome or pre-roll settings"))
+parentLayout.reaperPrefs:registerProperty(getUsualProperty(40363, "Show metronome and pre-roll settings"))
 
 -- Snap/Grid settings
-parentLayout.reaperPrefs:registerProperty(getUsualProperty(40071, "Show snap or grid settings"))
+parentLayout.reaperPrefs:registerProperty(getUsualProperty(40071, "Show snap and grid settings"))
 
 -- External time synchronization settings
 parentLayout.reaperPrefs:registerProperty(getUsualProperty(40619, "Show external timecode synchronization settings"))
