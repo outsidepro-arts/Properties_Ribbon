@@ -475,7 +475,12 @@ end
 function masterTrackMixerPosProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired master track position on the mixer panel.", "Adjustable")
-message(string.format("Master track in the %s on the mixer panel", self.states[self.getValue()]))
+local state = self.getValue()
+if state == 0 then
+message("Master track is  positioned nowhere")
+else
+message(string.format("Master track in the %s on the mixer panel", self.states[state]))
+end
 return message
 end
 
