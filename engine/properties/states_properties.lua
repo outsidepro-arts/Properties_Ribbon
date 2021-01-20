@@ -80,7 +80,7 @@ local message = initOutputMessage()
 self.states = {[0] = "closed", [1] = "opened"}
 local state = nor(self.getValue())
 self.setValue(state)
-message(string.format("%s has been %s", self.msg:format(""), self.states[self.getValue()]))
+message(string.format("%s has been %s", self.msg:sub(4), self.states[self.getValue()]))
 if self.getValue() == 0 then
 return message
 end
