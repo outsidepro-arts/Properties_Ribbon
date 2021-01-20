@@ -117,11 +117,11 @@ message(", ")
 end
 end
 else
-local state, name = reaper.GetTrackName(tracks)
-if state == true then
+local _, name = reaper.GetSetMediaTrackInfo_String(tracks, "P_NAME", "", false)
+if  name ~= "" then
 message(string.format("Track %u name %s", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"), name))
 else
-message(string.format("Track %u unnamed", string.format("track %u is ", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"))))
+message(string.format("Track %u unnamed", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER")))
 end
 end
 return message
