@@ -790,15 +790,20 @@ end
 -- Fadein shape
 local fadeinShapeProperty = {}
  parentLayout.itemLayout:registerProperty(fadeinShapeProperty)
-fadeinShapeProperty.states = {
+fadeinShapeProperty.states = setmetatable({
 [0] = "Linear",
 [1] = "Inverted quadratic",
 [2] = "Quadratic",
 [3] = "Inverted quartic",
 [4] = "Quartic",
 [5] = "Cosine S-curve",
-[	6] = "Quartic S-curve"
-}
+[	6] = "Quartic S-curve",
+[7] = "Equal power"
+}, {
+__index = function(self, key)
+return string.format("Unknown fade type %s. Please create an issue with this fade type on the properties Ribbon github repository.", tostring(key))
+end
+})
 
 function fadeinShapeProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "C_FADEINSHAPE")
