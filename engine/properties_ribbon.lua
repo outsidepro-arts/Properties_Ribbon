@@ -14,6 +14,7 @@ config.section = "Properties_Ribbon_script"
 require "specfuncs"
 
 -- Including the byte words module
+-- SWS has own byte operations, but what if has an user not SWS installed?
 require "bytewords"
 
 -- including the colors module
