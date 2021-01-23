@@ -14,16 +14,16 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 sublayout = "playbackLayout"
 end
 
 -- get the master track
-master = reaper.GetMasterTrack(0)
+local master = reaper.GetMasterTrack(0)
 
 -- global pseudoclass initialization
-parentLayout = initLayout("Master track%s properties")
+local parentLayout = initLayout("Master track%s properties")
 
 function parentLayout.canProvide()
 -- We will check the TCP visibility only

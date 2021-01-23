@@ -14,13 +14,13 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 sublayout = "areas"
 end
 
 -- global pseudoclass initialization
-parentLayout = initLayout("%sstatus properties")
+local parentLayout = initLayout("%sstatus properties")
 
 function parentLayout.canProvide() return true end
 

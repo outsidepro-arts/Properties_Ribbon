@@ -14,7 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- global pseudoclass initialization
-configLayout = initLayout("Configuration properties")
+local configLayout = initLayout("Configuration properties")
 
 -- the function which gives green light to call any method from this class
 function configLayout.canProvide()

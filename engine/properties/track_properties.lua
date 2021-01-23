@@ -14,16 +14,16 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 sublayout = "playbackLayout"
 end
 
 -- Preparing all needed configs which will be used not one time
-multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
+local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
 -- For comfort coding, we are making the tracks array as global
-tracks = nil
+local tracks = nil
 do
 if multiSelectionSupport == true then
 local countSelectedTracks = reaper.CountSelectedTracks(0)
@@ -54,7 +54,7 @@ end
 
 
 -- global pseudoclass initialization
-parentLayout = initLayout("Track%s properties")
+local parentLayout = initLayout("Track%s properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()

@@ -16,13 +16,13 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 sublayout = "embededLayout"
 end
 
 
-parentLayout = initLayout("%seditor")
+local parentLayout = initLayout("%seditor")
 
 function parentLayout.canProvide()
 -- Just check one of items has been selected

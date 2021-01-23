@@ -15,7 +15,7 @@ After this preambula, let me begin.
 
 
 -- Reading the sublayout
-sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate.get(currentLayout.."_sublayout")
 if sublayout == "" or sublayout == nil then
 -- This layout should define current context
 context = reaper.GetCursorContext()
@@ -154,7 +154,7 @@ end
 
 
 -- global pseudoclass initialization
-parentLayout = initLayout("Color composer%s")
+local parentLayout = initLayout("Color composer%s")
 
 -- the function which gives green light to call any method from this class
 -- The color composer is available always, so we will just return true.
