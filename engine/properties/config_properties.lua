@@ -96,6 +96,26 @@ config.setboolean("reportPos", state)
 return string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state])
 end
 
+-- Remember the last sublayout property
+local resetSublayoutProperty = {}
+configLayout:registerProperty( resetSublayoutProperty)
+function resetSublayoutProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
+local state = config.getboolean("rememberSublayout", true)
+message(string.format("Properties Ribbon now %s last category in newly loaded ribbon", ({[true] = "remembers", [false] = "resets"})[state]))
+return message
+end
+
+function resetSublayoutProperty:set(action)
+if action ~= nil then
+return "This property is toggleable only."
+end
+local state = nor(config.getboolean("rememberSublayout", true))
+config.setboolean("rememberSublayout", state)
+return string.format("Properties Ribbon now %s last category in newly loaded ribbon", ({[true] = "remembers", [false] = "resets"})[state])
+end
+
 
 -- DB step specify methods
 local dbStepProperty = {}
