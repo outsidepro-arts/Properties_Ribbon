@@ -8,22 +8,21 @@ License: MIT License
 reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
+
 context = reaper.GetCursorContext()
 if context == 0 then
 if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
-extState = "mastertrack_properties"
+contextLayout = "mastertrack_properties"
 else
-extState = "track_properties"
+contextLayout = "track_properties"
 end
 elseif context == 1 then
-extState = "item_properties"
+contextLayout = "item_properties"
 elseif context == 2 then
-extState = "envelope_properties"
+contextLayout = "envelope_properties"
 end
-extstate.set("currentLayout", extState)
-extstate.set("speakLayout", tostring(true))
 
-if script_init() then
+if script_init(contextLayout) then
 reaper.osara_outputMessage(script_reportOrGotoProperty())
 script_finish()
 end

@@ -8,10 +8,8 @@ License: MIT License
 reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
-extState = "color_composer"
-extstate.set("currentLayout", extState)
-extstate.set("speakLayout", tostring(true))
-if script_init() then
+
+if script_init("color_composer") then
 reaper.osara_outputMessage(script_reportOrGotoProperty())
 script_finish()
 end

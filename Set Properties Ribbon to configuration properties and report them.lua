@@ -8,10 +8,8 @@ License: MIT License
 reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
-extState = "config_properties"
-extstate.set("currentLayout", extState)
-extstate.set("speakLayout", tostring(true))
-if script_init() then
+
+if script_init("config_properties") then
 reaper.osara_outputMessage(script_reportOrGotoProperty())
 script_finish()
 end
