@@ -182,14 +182,28 @@ end
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
 
-function script_init()
+-- The main initialization function
+-- newLayout (string, optional): new layout name which Properties Ribbon should switch to. If it is omited, the last layout will be loaded.
+-- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, the value will be true by default. Note  that this option will be taken only if  newLayout will be passed.
+function script_init(newLayout, shouldSpeakLayout)
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
 reaper.ShowMessageBox("Seems you haven't OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.", "Properties Ribbon error", 0)
 return nil
 end
+if newLayout ~= nil then
+currentLayout = newLayout
+speakLayout = shouldSpeakLayout or true
+if config.getboolean("rememberSublayout", true) == false then
+-- Let REAPER do not request the extstate superfluously
+if  extstate.get(newLayout.."_sublayout") ~= "" then
+extstate.remove(newLayout.."_sublayout")
+end
+end
+else
 currentLayout = extstate.get("currentLayout")
 speakLayout = toboolean(extstate.get("speakLayout"))
+end
 if currentLayout == nil or currentLayout == "" then
 reaper.osara_outputMessage("Switch one action group first.")
 return nil
