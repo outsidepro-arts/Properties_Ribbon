@@ -4,8 +4,6 @@ Copyright (c) 2020-2021 outsidepro-arts
 License: MIT License
 ]]--
 
-package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]') ..'engine\\'.. "?.lua"
-
 -- Include the configuration provider
 require "config_provider"
 config.section = "Properties_Ribbon_script"
