@@ -75,10 +75,26 @@ end
 __type = "output_message",
 -- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
 __call = function(self, str)
+if type(str) == "table" and str.msg then
+if str.msg then
+if self.msg then
+self.msg = self.msg.." "..str.msg
+else
+self.msg = str.msg
+end
+end
+if str.tLevels then
+if self.tLevels then
+self.tLevels = str.tLevels
+self.tl = str.tl
+end
+end
+else
 if self.msg then
 self.msg = self.msg..str
 else
 self.msg = str
+end
 end
 end,
 -- for get full string after concatenating the message, please forcedly convert the metamethod to string
