@@ -13,14 +13,25 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
+-- Reading the sublayout
+local sublayout = extstate.get(currentLayout.."_sublayout")
+if sublayout == "" or sublayout == nil then
+sublayout = "main"
+end
+
 -- global pseudoclass initialization
-local configLayout = initLayout("Configuration properties")
+local configLayout = initLayout("%sConfiguration properties")
 
 -- the function which gives green light to call any method from this class
 function configLayout.canProvide()
 -- The configs ever available, so let define this always.
 return true
 end
+
+-- sub-layouts
+-- Main sub-layout
+configLayout:registerSublayout("main", "general ")
+configLayout:registerSublayout("stepAdjustment", "Step adjustment ")
 
 --[[
 Before the properties list fill get started, let describe this subclass methods:
@@ -41,7 +52,7 @@ and try to complement any getState message with short type label. I mean what th
 
 -- type level methods
 local typeLevelProperty = {}
-configLayout:registerProperty(typeLevelProperty)
+configLayout.main:registerProperty(typeLevelProperty)
 typeLevelProperty.states = {[0] = "no prompt for property actions", [1] = "detailed prompts for property actions (for beginers)",[2] = "short prompts for property actions"}
 
 function typeLevelProperty:get()
@@ -78,7 +89,7 @@ end
 
 -- Virtual cursor position reporting methods
 local reportPosProperty = {}
-configLayout:registerProperty( reportPosProperty)
+configLayout.main:registerProperty( reportPosProperty)
 function reportPosProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
@@ -98,7 +109,7 @@ end
 
 -- Remember the last sublayout property
 local resetSublayoutProperty = {}
-configLayout:registerProperty( resetSublayoutProperty)
+configLayout.main:registerProperty( resetSublayoutProperty)
 function resetSublayoutProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
@@ -119,7 +130,7 @@ end
 
 -- DB step specify methods
 local dbStepProperty = {}
-configLayout:registerProperty( dbStepProperty)
+configLayout.stepAdjustment:registerProperty( dbStepProperty)
 function dbStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
@@ -160,7 +171,7 @@ end
 
 -- Percentage step adjustment methods
 local percentagestepProperty = {}
-configLayout:registerProperty( percentagestepProperty)
+configLayout.stepAdjustment:registerProperty( percentagestepProperty)
 
 function percentagestepProperty:get()
 local message = initOutputMessage()
@@ -202,7 +213,7 @@ end
 
 -- Time step adjustment methods
 local timeStepProperty = {}
-configLayout:registerProperty( timeStepProperty)
+configLayout.stepAdjustment:registerProperty( timeStepProperty)
 
 function timeStepProperty:get()
 local message = initOutputMessage()
@@ -241,7 +252,7 @@ end
 
 -- Pitch adjustment methods
 local pitchStepProperty = {}
-configLayout:registerProperty( pitchStepProperty)
+configLayout.stepAdjustment:registerProperty( pitchStepProperty)
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
@@ -310,7 +321,7 @@ end
 
 -- Multiselection support methods
 local multiSelectionSupportProperty = {}
-configLayout:registerProperty( multiSelectionSupportProperty)
+configLayout.main:registerProperty( multiSelectionSupportProperty)
 function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
@@ -328,4 +339,4 @@ config.setboolean("multiSelectionSupport", state)
 return string.format("Properties Ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state])
 end
 
-return configLayout
+return configLayout[sublayout]
