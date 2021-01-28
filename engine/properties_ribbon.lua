@@ -355,7 +355,7 @@ local msg = tostring(layout.properties[layout.pIndex]:set(value))
 g_undoState = "Properties Ribbon: "..msg
 return msg
 else
-return string.format("There are no element to ajust or perform any action for %s.", layout.name)
+return string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))
 end
 end
 
