@@ -21,6 +21,8 @@ end
 
 -- Reading the some config which will be used everyhere
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
+
 -- For comfort coding, we are making the items array as global
 
 local items = nil
@@ -65,6 +67,76 @@ if color == "" or color == nil then
 return nil
 end
 return color
+end
+
+-- The macros for compose when group of items selected
+local function composeMultipleItemMessage(func, states, inaccuracy)
+inaccuracy = inaccuracy or 0
+local message = initOutputMessage()
+for k = 1, #items do
+local state = func(items[k])
+local prevState if items[k-1] then prevState = func(items[k-1]) end
+local nextState if items[k+1] then nextState = func(items[k+1]) end
+if state ~= prevState and state == nextState then
+message(string.format("items from %u ", getItemNumber(items[k])))
+elseif state == prevState and state ~= nextState then
+message(string.format("to %u ", getItemNumber(items[k])))
+if inaccuracy and type(state) == "number" then
+message(string.format("%s", states[state+inaccuracy]))
+else
+message(string.format("%s", states[state]))
+end
+if k < #items then
+message(", ")
+end
+elseif state == prevState and state == nextState then
+else
+message(string.format("item %u ", getItemNumber(items[k])))
+if inaccuracy and type(state) == "number" then
+message(string.format("%s", states[state+inaccuracy]))
+else
+message(string.format("%s", states[state]))
+end
+if k < #items then
+message(", ")
+end
+end
+end
+return message
+end
+
+local function composeMultipleTakeMessage(func, states, inaccuracy)
+local message = initOutputMessage()
+for k = 1, #items do
+local state, takeIDX = func(items[k]), getTakeNumber(items[k])
+local prevState, prevTakeIDX if items[k-1] then prevState, prevTakeIDX = func(items[k-1]), getTakeNumber(items[k-1]) end
+local nextState, nextTakeIDX if items[k+1] then nextState, nextTakeIDX = func(items[k+1]), getTakeNumber(items[k+1]) end
+if (state ~= prevState and state == nextState) and (takeIDX ~= prevTakeIDX and takeIDX == nextTakeIDX) then
+message(string.format("take %u of items from %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
+elseif (state == prevState and state ~= nextState) and (takeIDX == prevTakeIDX and takeIDX ~= nextTakeIDX) then
+message(string.format("to %u ", getItemNumber(items[k])))
+if inaccuracy and type(state) == "number" then
+message(string.format("%s", states[state+inaccuracy]))
+else
+message(string.format("%s", states[state]))
+end
+if k < #items then
+message(", ")
+end
+elseif (state == prevState and state == nextState) and (takeIDX == prevTakeIDX and takeIDX == nextTakeIDX) then
+else
+message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
+if inaccuracy and type(state) == "number" then
+message(string.format("%s", states[state+inaccuracy]))
+else
+message(string.format("%s", states[state]))
+end
+if k < #items then
+message(", ")
+end
+end
+end
+return message
 end
 
 
@@ -124,7 +196,7 @@ function currentTakeNameProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this action to rename selected item current take.", "performable")
 if multiSelectionSupport == true then
-message:addType(" If the group of items has been selected, new name will applied to all active takes of selected items.", 1)
+message:addType(" If the group of items has been selected, new name will applied to selected active takes of selected items.", 1)
 end
 if type(items) == "table" then
 message("Takes names: ")
@@ -195,14 +267,7 @@ message:addType(" If the group of items has been selected, the lock state will b
 end
 if type(items) == "table" then
 message("Items locking: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("item %u ", getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("item %u %s", getItemNumber(items), self.states[state]))
@@ -228,21 +293,21 @@ end
 local ajustingValue
 if lockedItems > notLockedItems then
 ajustingValue = 0
-message("Locking all selected items.")
+message("Locking selected items.")
 elseif lockedItems < notLockedItems then
 ajustingValue = 1
-message("Unlocking all selected items.")
+message("Unlocking selected  items.")
 else
 ajustingValue = 0
-message("Locking all selected items.")
+message("Locking selected selected items.")
 end
 for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
 self.setValue(items, nor(self.getValue(items)))
-message(string.format("Item %u %s", getItemNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -266,15 +331,8 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 message:addType(" Perform this property to reset the volume to zero DB.", 1)
 if type(items) == "table" then
-message("items volume: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("item %u in ", getItemNumber(items[k])))
-message(string.format("%s db", numtodecibels(state)))
-if k < #items then
-message(", ")
-end
-end
+message("items volume:")
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return string.format("%s dB", numtodecibels(key)) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u volume %s db", getItemNumber(items), numtodecibels(state)))
@@ -285,58 +343,50 @@ end
 function itemVolumeProperty:set(action)
 local message = initOutputMessage()
 if action == nil then
-message("reset, ")
+message("reset,")
 end
 local ajustStep = config.getinteger("dbStep", 0.1)
 if type(items) == "table" then
-message("Items volume: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true then
 if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+self.setValue(items[k], decibelstonum(numtodecibels(state)+ajustStep))
 else
-state = 3.981071705535
+self.setValue(items[k], decibelstonum(maxDBValue))
 end
 elseif action == false then
 if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+self.setValue(items[k], decibelstonum(numtodecibels(state, true)-ajustStep))
 else
-state = 0
+self.setValue(items[k], 0)
 end
 else
-state = 1
-end
-self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(string.format("item %u in ", getItemNumber(items[k])))
-message(string.format("%s db", numtodecibels(state)))
-if k < #items then
-message(", ")
+self.setValue(items[k], 1)
 end
 end
+message(self:get())
 else
 local state = self.getValue(items)
 if action == true then
 if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state, true)+ajustStep)
+self.setValue(items, decibelstonum(numtodecibels(state, true)+ajustStep))
 else
-state = decibelstonum(12.0)
-message("maximum volume. ")
+self.setValue(items, decibelstonum(12.0))
+message("maximum volume.")
 end
 elseif action == false then
 if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state, true)-ajustStep)
+self.setValue(items, decibelstonum(numtodecibels(state, true)-ajustStep))
 else
-state = 0
-message("Minimum volume. ")
+self.setValue(items, 0)
+message("Minimum volume.")
 end
 else
-state = 1
+self.setValue(items, 1)
 end
-self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u volume %s db", getItemNumber(items), numtodecibels(state)))
+--message(string.format("Item %u volume %s db", getItemNumber(items), numtodecibels(self.getValue(items))))
+message(self:get())
 end
 return message
 end
@@ -353,15 +403,8 @@ if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the mute state will be set to oposite value depending of moreness items with the same value.", 1)
 end
 if type(items) == "table" then
-message("Items mute: ")
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "B_MUTE")
-message(string.format("item %u ", getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message("Items mute:")
+message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_MUTE") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
 message(string.format("item %u %s", getItemNumber(items), self.states[state]))
@@ -387,13 +430,13 @@ end
 local ajustingValue
 if mutedItems > notMutedItems then
 ajustingValue = 0
-message("Unmuting all items.")
+message("Unmuting selected items.")
 elseif mutedItems < notMutedItems then
 ajustingValue = 1
-message("Muting all items.")
+message("Muting selected items.")
 else
 ajustingValue = 0
-message("Unmuting all items.")
+message("Unmuting selected items.")
 end
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_MUTE", ajustingValue)
@@ -402,8 +445,8 @@ else
 local state = nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
 reaper.SetMediaItemInfo_Value(items, "B_MUTE", state)
 state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
-message(string.format("Item %u %s", getItemNumber(items), self.states[state]))
 end
+message(self:get())
 return message
 end
 
@@ -420,14 +463,7 @@ message:addType(" If the group of items has been selected, the loop source state
 end
 if type(items) == "table" then
 message("Items source loop: ")
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "B_LOOPSRC")
-message(string.format("item %u ", getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_LOOPSRC") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC")
 message(string.format("item %u source %s", getItemNumber(items), self.states[state]))
@@ -453,13 +489,13 @@ end
 local ajustingValue
 if loopedItems > notLoopedItems then
 ajustingValue = 0
-message("Set all items sources loop off.")
+message("Set selected items sources loop off.")
 elseif loopedItems < notLoopedItems then
 ajustingValue = 1
-message("Looping all items sources.")
+message("Looping selected items sources.")
 else
 ajustingValue = 0
-message("Set all items sourcess loop off.")
+message("Set selected items sourcess loop off.")
 end
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_LOOPSRC", ajustingValue)
@@ -467,16 +503,15 @@ end
 else
 local state = nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
 reaper.SetMediaItemInfo_Value(items, "B_LOOPSRC", state)
-state = reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC")
-message(string.format("Item %u source %s", getItemNumber(items), self.states[state]))
 end
+message(self:get())
 return message
 end
 
 -- All takes play methods
 local itemAllTakesPlayProperty = {}
  parentLayout.itemLayout:registerProperty( itemAllTakesPlayProperty)
-itemAllTakesPlayProperty.states = {[0]="all takes aren't playing", [1]="all takes are playing"}
+itemAllTakesPlayProperty.states = {[0]="aren't playing", [1]="are playing"}
 
 function itemAllTakesPlayProperty:get()
 local message = initOutputMessage()
@@ -486,17 +521,10 @@ message:addType(" If the group of items has been selected, the playing all takes
 end
 if type(items) == "table" then
 message("Items all takes playing: ")
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY")
-message(string.format("item %u ", getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_ALLTAKESPLAY") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY")
-message(string.format("item %u %s", getItemNumber(items), self.states[state]))
+message(string.format("item %u all takes %s", getItemNumber(items), self.states[state]))
 end
 return message
 end
@@ -519,13 +547,13 @@ end
 local ajustingValue
 if tkPlayItems > tkNotPlayItems then
 ajustingValue = 0
-message("Sett all Takes play off.")
+message("Sett all Takes of selected items play off.")
 elseif tkPlayItems < tkNotPlayItems then
 ajustingValue = 1
-message("Set all Takes play on.")
+message("Set all takes of selected items play on.")
 else
 ajustingValue = 0
-message("Set all Takes play off.")
+message("Sett all Takes of selected items play off.")
 end
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY", ajustingValue)
@@ -533,9 +561,8 @@ end
 else
 local state = nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
 reaper.SetMediaItemInfo_Value(items, "B_ALLTAKESPLAY", state)
-state = reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY")
-message(string.format("Item %u %s", getItemNumber(items), self.states[state]))
 end
+message(self:get())
 return message
 end
 
@@ -554,17 +581,11 @@ function timebaseProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired time base mode for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
-message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
 message("Items timebase: ")
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE")
-message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state+1]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "C_BEATATTACHMODE") end, self.states, 1))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")
 message(string.format("Item %u timebase %s", getItemNumber(items), self.states[state+1]))
@@ -601,12 +622,12 @@ end
 else
 state = 0
 end
-message(string.format("Set all items timebase to %s.", self.states[state+1]))
+message(string.format("Set selected items timebase to %s.", self.states[state+1]))
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE", state)
 end
 else
-message(string.format("Set all items timebase to %s.", self.states[0]))
+message(string.format("Set selected items timebase to %s.", self.states[0]))
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE", -1)
 end
@@ -629,8 +650,8 @@ else
 state = -1
 end
 reaper.SetMediaItemInfo_Value(items, "C_BEATATTACHMODE", state)
-message(string.format("Item %u timebase is %s", getItemNumber(items), self.states[reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")+1]))
 end
+message(self:get())
 return message
 end
 
@@ -647,14 +668,7 @@ message:addType(" If the group of items has been selected, the auto-stretch stat
 end
 if type(items) == "table" then
 message("Items Auto-stretch at project tempo: ")
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH")
-message(string.format("item %u ", getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "C_AUTOSTRETCH") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH")
 message(string.format("item %u auto-stretch at project tempo %s", getItemNumber(items), self.states[state]))
@@ -680,13 +694,13 @@ end
 local ajustingValue
 if stretchedItems > notStretchedItems then
 ajustingValue = 0
-message("Switching off the auto-stretch mode for all selected items.")
+message("Switching off the auto-stretch mode for selected items.")
 elseif stretchedItems < notStretchedItems then
 ajustingValue = 1
-message("Switching on the auto-stretch mode for all selected items.")
+message("Switching on the auto-stretch mode for  selected items.")
 else
 ajustingValue = 0
-message("Switching off the auto-stretch mode for all selected items.")
+message("Switching off the auto-stretch mode for  selected items.")
 end
 for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH", ajustingValue)
@@ -694,9 +708,8 @@ end
 else
 local state = nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
 reaper.SetMediaItemInfo_Value(items, "C_AUTOSTRETCH", state)
-state = reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH")
-message(string.format("Item %u auto-stretch at project tempo %s", getItemNumber(items), self.states[state]))
 end
+message(self:get())
 return message
 end
 
@@ -729,13 +742,7 @@ message:addType(" If the group of items has been selected, the group will be set
 end
 if type(items) == "table" then
 message("Items group numbers: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("item %u %s", getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(("Item %u %s"):format(getItemNumber(items), self.states[state]))
@@ -758,11 +765,11 @@ local state = self.getValue(items[1])
 if state+ajustingValue > 0 then
 state = state+ajustingValue
 ajustingValue = 0
-message(("Set all selected items to group %u."):format(state))
+message(("Set selected  items to group %u."):format(state))
 elseif state+ajustingValue == 0 then
 state = 0
 ajustingValue = 0
-message("Removing all selected items from any group.")
+message("Removing  selected items from any group.")
 else
 message("No more groups in this direction.")
 end
@@ -817,17 +824,11 @@ function fadeinShapeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired shape mode for fadein in selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
-message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
 message("Items fadein shape: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("Item %u fadein shape %s", getItemNumber(items), self.states[state]))
@@ -861,7 +862,7 @@ end
 else
 state = 1
 end
-message(string.format("Set all items fadein shapes to %s.", self.states[state]))
+message(string.format("Set selected items fadein shapes to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
@@ -877,8 +878,8 @@ state = state+ajustingValue
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u fadein shape %s", getItemNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -903,13 +904,7 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadein length: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(("Item %u length in %s ms"):format(getItemNumber(items[k]), state))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return key end})))
 else
 message(("Item %u fadein length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
 end
@@ -931,7 +926,6 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items fadein lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -944,11 +938,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(("item %u %s ms"):format(getItemNumber(items[k]), round(state, 3)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -963,15 +952,25 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u fadein length %s ms", getItemNumber(items), round(state, 3)))
 end
+message(self:get())
 return message
 end
 
 -- Fadein curve methods
 local fadeinDirProperty = {}
 parentLayout.itemLayout:registerProperty( fadeinDirProperty)
+fadeinDirProperty.states = setmetatable({
+[0] = "flat"
+}, {
+__index = function(self, key)
+if key >0 then
+return ("%s%% to the right"):format(numtopercent(key))
+elseif key < 0 then
+return ("%s%% to the left"):format(-numtopercent(key))
+end
+end
+})
 
 function  fadeinDirProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEINDIR")
@@ -979,16 +978,6 @@ end
 
 function  fadeinDirProperty.setValue(item,value)
 reaper.SetMediaItemInfo_Value(item, "D_FADEINDIR", value)
-end
-
-function   fadeinDirProperty.compose(value)
-if value >0 then
-return ("%s%% to the right"):format(numtopercent(value))
-elseif value < 0 then
-return ("%s%% to the left"):format(-numtopercent(value))
-elseif value == 0 then
-return "flat"
-end
 end
 
 function  fadeinDirProperty:get()
@@ -1000,16 +989,10 @@ end
 message:addType(" Perform this property to reset the value to 0.00.", 1)
 if type(items) == "table" then
 message("Items fadein curve: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(("item %u: %s"):format(getItemNumber(items[k]), self.compose(state)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(("Item %u fadein curve %s"):format(getItemNumber(items), self.compose(state)))
+message(("Item %u fadein curve %s"):format(getItemNumber(items), self.states[state]))
 end
 return message
 end
@@ -1026,7 +1009,6 @@ message("reset, ")
 ajustingValue = nil
 end
 if type(items) == "table" then
-message("Items fadein curve: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
@@ -1040,31 +1022,24 @@ else
 state = 0
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(string.format("Item %u: %s", getItemNumber(items[k]), self.compose(state)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Right curve boundary. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Left curve boundary. ")
 end
 else
 state = 0.00
-message("Reset to flat curve. ")
 end
 self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u fadein curve %s", getItemNumber(items), self.compose(state)))
 end
+message(self:get())
 return message
 end
 
@@ -1085,17 +1060,11 @@ function fadeoutShapeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired shape mode for fadeout in selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
-message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(items) == "table" then
 message("Items fadeout shape: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("Item %u %s", getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("Item %u fadeout shape %s", getItemNumber(items), self.states[state]))
@@ -1129,7 +1098,7 @@ end
 else
 state = 1
 end
-message(string.format("Set all items fadeout shapes to %s.", self.states[state]))
+message(string.format("Set selected items fadeout shapes to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
@@ -1145,8 +1114,8 @@ state = state+ajustingValue
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u fadeout shape %s", getItemNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -1171,13 +1140,7 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadeout length: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(("Item %u length in %s ms"):format(getItemNumber(items[k]), round(state, 3)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return round(key, 3) end})))
 else
 message(("Item %u fadeout length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
 end
@@ -1199,7 +1162,6 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items fadeout lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
@@ -1212,11 +1174,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(("item %u %s ms"):format(getItemNumber(items[k]), round(state, 3)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -1231,15 +1188,15 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u fadeout length %s ms", getItemNumber(items), round(state, 3)))
-end
+ end
+message(self:get())
 return message
 end
 
 -- fadeout curve methods
 local fadeoutDirProperty = {}
 parentLayout.itemLayout:registerProperty( fadeoutDirProperty)
+fadeoutDirProperty.states = fadeinDirProperty.states
 
 function  fadeoutDirProperty.getValue(item)
 return reaper.GetMediaItemInfo_Value(item, "D_FADEOUTDIR")
@@ -1249,27 +1206,19 @@ function  fadeoutDirProperty.setValue(item,value)
 reaper.SetMediaItemInfo_Value(item, "D_FADEOUTDIR", value)
 end
 
-fadeoutDirProperty.compose =   fadeinDirProperty.compose
-
 function  fadeoutDirProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired fadeout curvature for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" Perform this property to reset the value to 0.00.", 1)
+message:addType(" Perform this property to reset the value to flat.", 1)
 if type(items) == "table" then
 message("Items fadeout curve: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(("item %u: %s"):format(getItemNumber(items[k]), self.compose(state)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(("Item %u fadeout curve %s"):format(getItemNumber(items), self.compose(state)))
+message(("Item %u fadeout curve %s"):format(getItemNumber(items), self.states[state]))
 end
 return message
 end
@@ -1286,7 +1235,6 @@ message("reset, ")
 ajustingValue = nil
 end
 if type(items) == "table" then
-message("Items fadeout curve: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
@@ -1300,31 +1248,24 @@ else
 state = 0
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(string.format("Item %u: %s", getItemNumber(items[k]), self.compose(state)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
 if ajustingValue then
 state = round((state+ajustingValue), 3)
-if state >= 1 then
+if state > 1 then
 state = 1
 message("Right curve boundary. ")
-elseif state <= -1 then
+elseif state < -1 then
 state = -1
 message("Left curve boundary. ")
 end
 else
 state = 0.00
-message("Reset to center curve. ")
 end
 self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u fadeout curve %s", getItemNumber(items), self.compose(state)))
 end
+message(self:get())
 return message
 end
 
@@ -1349,17 +1290,14 @@ end
 message:addType(" If you want to switch off automatic fadein, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items automatic fadein length: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
 if state >= 0 then
-message(("Item %u length in %s ms"):format(getItemNumber(items[k]), state))
+return ("%s ms"):format(tostring(state))
 else
-message(("Item %u automatic fadein off"):format(getItemNumber(items[k])))
-end
-if k < #items then
-message(", ")
+return "automatic fadein off"
 end
 end
+})))
 else
 local state = self.getValue(items)
 if state >= 0 then
@@ -1386,7 +1324,6 @@ return "No default fade length value has read in preferences."
 end
 end
 if type(items) == "table" then
-message("Items automatic fadein lengths: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == false then
@@ -1408,15 +1345,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-if state >= 0 then
-message(("item %u %s ms"):format(getItemNumber(items[k]), round(state, 3)))
-else
-message(("item %u off"):format(getItemNumber(items[k])))
-end
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -1439,13 +1367,8 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
-if state >= 0 then
-message(string.format("Item %u automatic fadein length %s ms", getItemNumber(items), round(state, 3)))
-else
-message(string.format("Item %u automatic fadein off", getItemNumber(items)))
 end
-end
+message(self:get())
 return message
 end
 
@@ -1470,17 +1393,14 @@ end
 message:addType(" If you want to switch off automatic fadeout, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items automatic fadeout length: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
 if state >= 0 then
-message(("Item %u length in %s ms"):format(getItemNumber(items[k]), state))
+return ("%s ms"):format(tostring(state))
 else
-message(("Item %u automatic fadein off"):format(getItemNumber(items[k])))
-end
-if k < #items then
-message(", ")
+return "automatic fadeout off"
 end
 end
+})))
 else
 local state = self.getValue(items)
 if state >= 0 then
@@ -1528,15 +1448,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-if state >= 0 then
-message(("item %u %s ms"):format(getItemNumber(items[k]), round(state, 3)))
-else
-message(("item %u off"):format(getItemNumber(items[k])))
-end
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -1559,13 +1470,8 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
-if state >= 0 then
-message(string.format("Item %u automatic fadeout length %s ms", getItemNumber(items), round(state, 3)))
-else
-message(string.format("Item %u automatic fadeout off", getItemNumber(items)))
 end
-end
+message(self:get())
 return message
 end
 
@@ -1589,19 +1495,32 @@ message:addType(" If the group of items has been selected, the relative of previ
 end
 if type(items) == "table" then
 message("Takes: ")
+-- Here is non-standart case, so we will not use our macros
 for k = 1, #items do
-local state = self.getValue(items[k])
-local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("take of item %u ", getItemNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%u, %s", reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+local state, IDX = self.getValue(items[k]), getTakeNumber(items[k])
+local prevState, prevIDX  if items[k-1] then prevState, prevIDX = self.getValue(items[k-1]), getTakeNumber(items[k-1]) end
+local nextState, nextIDX if items[k+1] then nextState, nextIDX = self.getValue(items[k+1]), getTakeNumber(items[k+1]) end
+if IDX ~= prevIDX and IDX == nextIDX then
+message(string.format("items from %u ", getItemNumber(items[k])))
+elseif IDX == prevIDX and IDX ~= nextIDX then
+message(string.format("to %u ", getItemNumber(items[k])))
+message(string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k])))
 if k < #items then
 message(", ")
+end
+elseif IDX == prevIDX and IDX == nextIDX then
+else
+message(string.format("item %u ", getItemNumber(items[k])))
+message(string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k])))
+if k < #items then
+message(", ")
+end
 end
 end
 else
 local state = self.getValue(items)
 local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("Item %u take %u, %s", getItemNumber(items), reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
+message(string.format("Item %u take %u, %s", getItemNumber(items), getTakeNumber(items), name))
 end
 return message
 end
@@ -1626,13 +1545,6 @@ state = reaper.GetTake(items[k], idx-1)
 end
 end
 self.setValue(items[k], state)
-local state = self.getValue(items[k])
-local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("take of item %u ", getItemNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%u, %s", reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -1651,10 +1563,8 @@ message("No more previous property values. ")
 end
 end
 self.setValue(items, state)
-state = self.getValue(items)
-local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("Item %u take %u, %s", getItemNumber(items), reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")+1, name))
 end
+message(self:get())
 return message
 end
 
@@ -1690,14 +1600,7 @@ message:addType(" If the group of items has been selected, normalize to common g
 end
 if type(items) == "table" then
 message("Takes volume: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s db", numtodecibels(state)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%s dB", numtodecibels(state)) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u volume %s db", getItemNumber(items), getTakeNumber(items), numtodecibels(state)))
@@ -1713,11 +1616,10 @@ if action == nil then
 message("Normalizing item takes to common gain, ")
 reaper.Main_OnCommand(40254, 0)
 end
-message("takes volume: ")
 for k = 1, #items do
 if action == true then
 local state = self.getValue(items[k])
-if state < decibelstonum(12.0) then
+if state < decibelstonum(maxDBValue) then
 state = decibelstonum(numtodecibels(state)+ajustStep)
 else
 state = decibelstonum(12.0)
@@ -1732,17 +1634,11 @@ state = 0
 end
 self.setValue(items[k], state)
 end
-local state = self.getValue(items[k])
-message(string.format("Take%u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s db", numtodecibels(state)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
 if action == true then
-if state < decibelstonum(12.0) then
+if state < decibelstonum(maxDBValue) then
 state = decibelstonum(numtodecibels(state, true)+ajustStep)
 else
 state = decibelstonum(12.0)
@@ -1761,9 +1657,8 @@ else
 message("Normalize item take volume")
 reaper.Main_OnCommand(40108, 0)
 end
- state = self.getValue(items)
-message(string.format("Item %u take %u volume %s db", getItemNumber(items), getTakeNumber(items), numtodecibels(state)))
 end
+message(self:get())
 return message
 end
 
@@ -1789,14 +1684,7 @@ end
 message:addType(" Perform this property to set the take pan to center.", 1)
 if type(items) == "table" then
 message("Takes pan: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s", numtopan(state)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return numtopan(state) end})))
 else
 message(string.format("Item %u take %u pan ", getItemNumber(items), getTakeNumber(items)))
 local state = self.getValue(items)
@@ -1817,7 +1705,6 @@ message("reset, ")
 ajustingValue = nil
 end
 if type(items) == "table" then
-message("Takes pan: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
@@ -1831,12 +1718,6 @@ else
 state = 0
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s", numtopan(state)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -1853,9 +1734,8 @@ else
 state = 0
 end
 self.setValue(items, state)
-state = self.getValue(items)
-message(string.format("Item %u take %u pan %s", getItemNumber(items), getTakeNumber(items), numtopan(state)))
 end
+message(self:get())
 return message
 end
 
@@ -1896,14 +1776,7 @@ message:addType(" If the group of items has been selected, the phase polarity st
 end
 if type(items) == "table" then
 message("Takes phase: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("item %u take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
@@ -1929,21 +1802,21 @@ end
 local ajustingValue
 if phasedItems > notphasedItems then
 ajustingValue = 0
-message("Normalizing the phase for all items takes.")
+message("Normalizing the phase for selected items takes.")
 elseif phasedItems < notphasedItems then
 ajustingValue = 1
-message("Inverting the phase for all items takes.")
+message("Inverting the phase for selected items takes.")
 else
 ajustingValue = 0
-message("Normalizing the phase for all items takes.")
+message("Normalizing the phase for selected items takes.")
 end
 for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
 self.setValue(items, nor(self.getValue(items)))
-message(string.format("Item %u  take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -1982,21 +1855,15 @@ function takeChannelModeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired channel mode for active take of selected item.", "Adjustable, toggleable")
 if multiSelectionSupport == true then
-message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the channel mode state will be set to "%s", then will enumerate this.', self.states[0]), 1)
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the channel mode state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 message:addType(" Toggle this property to switch between channel mode categories.", 1)
 if multiSelectionSupport == true then
-message:addType(" If the group of items has been selected, the category will define by first selected item take and next category will be switch for all selected items.", 1)
+message:addType(" If the group of items has been selected, the category will define by first selected item take and next category will be switch for selected selected items.", 1)
 end
 if type(items) == "table" then
 message("Takes channel mode: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u channel mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
@@ -2011,8 +1878,6 @@ if action == true then
 ajustingValue = 1
 elseif action == false then
 ajustingValue = -1
---else
---return "This property adjustable only."
 end
 if type(items) == "table" then
 if action ~= nil then
@@ -2040,12 +1905,12 @@ elseif state >= 67 then
 state = 0
 end
 end
-message(string.format("Set all items active takes channel mode to %s.", self.states[state]))
+message(string.format("Set selected items active takes channel mode to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
 else
-message(string.format("Set all Takes channel mode to %s.", self.states[0]))
+message(string.format("Set selected Takes channel mode to %s.", self.states[0]))
 for k = 1, #items do
 self.setValue(items[k], 0)
 end
@@ -2070,8 +1935,8 @@ state = 0
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u take %u channel mode %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -2097,14 +1962,7 @@ end
 message:addType(" Perform this property to reset  playrate to 1.000 for.", 1)
 if type(items) == "table" then
 message("Takes playrate: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s", round(state, 3)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%-5f ms", state) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u playrate %s", getItemNumber(items), getTakeNumber(items), round(state, 3)))
@@ -2133,11 +1991,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(("take %u of item %u %s"):format(getTakeNumber(items[k]), getItemNumber(items[k]), round(state, 3)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -2152,9 +2005,8 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- state = self.getValue(items)
-message(string.format("Item %u take %u playrate %s", getItemNumber(items), getTakeNumber(items), round(state, 3)))
-end
+ end
+ message(self:get())
 return message
 end
 
@@ -2179,14 +2031,7 @@ message:addType(" If the group of items has been selected, the preserve state wi
 end
 if type(items) == "table" then
 message("Takes preserve pitch when playrate changes: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(self.states[state])
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("item %u take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[state]))
@@ -2212,21 +2057,21 @@ end
 local ajustingValue
 if preservedItems > notpreservedItems then
 ajustingValue = 0
-message("switching off the preserving for all items.")
+message("switching off the preserving for selected items.")
 elseif preservedItems < notpreservedItems then
 ajustingValue = 1
-message("switching on the preserving for all items.")
+message("switching on the preserving for selected items.")
 else
 ajustingValue = 0
-message("switching off the preserving for all items.")
+message("switching off the preserving for selected items.")
 end
 for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
 self.setValue(items, nor(self.getValue(items)))
-message(string.format("Item %u  take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -2274,14 +2119,7 @@ end
 message:addType(" Perform this property to reset  pitch to 0.", 1)
 if type(items) == "table" then
 message("Takes pitch: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u in ", getTakeNumber(items[k]), getItemNumber(items[k])))
-message(string.format("%s", self.compose(state)))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return takePitchProperty.compose(state) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u  take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
@@ -2308,11 +2146,6 @@ else
 state = ajustingValue
 end
 self.setValue(items[k], state)
-state = self.getValue(items[k])
-message(("take %u of item %u %s"):format(getTakeNumber(items[k]), getItemNumber(items[k]), self.compose(state)))
-if k < #items then
-message(", ")
-end
 end
 else
 local state = self.getValue(items)
@@ -2322,9 +2155,8 @@ else
 state = ajustingValue
 end
 self.setValue(items, state)
- local state = self.getValue(items)
-message(string.format("Item %u take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
 end
+message(self:get())
 return message
 end
 
@@ -2365,18 +2197,12 @@ function takePitchShifterProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
-message:addType(string.format(' If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the pitch shifter state will be set to "%s", then will enumerate this.', self.states[-1]), 1)
+message:addType(string.format(' If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter state will be set to "%s", then will enumerate this.', self.states[-1]), 1)
 end
 message:addType(string.format(" Perform this property to reset the value to %s.", self.states[-1]), 1)
 if type(items) == "table" then
 message("Takes pitch shifter: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u pitch shifter %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
@@ -2437,7 +2263,7 @@ end
 elseif action  == nil then
 state = -1
 end
-message(string.format("Set all items active takes pitch shifter to %s.", self.states[state]))
+message(string.format("Set selected items active takes pitch shifter to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
@@ -2479,8 +2305,8 @@ state = -1
 message("Reset, ")
 end
 self.setValue(items, state)
-message(string.format("Item %u take %u pitch shifter %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -2505,17 +2331,11 @@ function takePitchShifterModeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired mode for active shifter  of active take on selected item.", "Adjustable")
 if multiSelectionSupport == true then
-message:addType(string.format(" If the group of items has been selected, the value will enumerate only if all items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until all shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
+message:addType(string.format(" If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until selected shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
 end
 if type(items) == "table" then
 message("Takes pitch shifter modes: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u %s", getTakeNumber(items[k]), getItemNumber(items[k]), self.states[state]))
-if k < #items then
-message(", ")
-end
-end
+message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u shifter mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
@@ -2567,7 +2387,7 @@ end
 elseif ajustingValue == 0 then
 state = bytewords.makeLong(0, bytewords.getHiWord(state))
 end
-message(string.format("Set all items active takes pitch shifter modes to %s.", self.states[state]))
+message(string.format("Set selected items active takes pitch shifter modes to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
@@ -2592,8 +2412,8 @@ message("No more previous property values. ")
 end
 end
 self.setValue(items, state)
-message(string.format("Item %u take %u shifter mode %s", getItemNumber(items), getTakeNumber(items), self.states[self.getValue(items)]))
 end
+message(self:get())
 return message
 end
 
@@ -2613,25 +2433,32 @@ function itemColorProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel"), "Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
 if multiSelectionSupport == true then
-message:addType(" If the group of items have been selected, this color will be applied for all this items.", 1)
+message:addType(" If the group of items have been selected, this color will be applied for selected this items.", 1)
 end
 if type(items) == "table" then
 message("Items color:")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("item %u is %s", getItemNumber(items[k]), colors:getName(reaper.ColorFromNative(state))))
+message(composeMultipleItemMessage(function(item)
+local state, visualApplied = self.getValue(item)
+return string.format("%s|%s", state, visualApplied)
+end,
+setmetatable({}, {
+__index = function(self, key)
+local msg = ""
+local raw = splitstring(key, "|")
+local state = tonumber(raw[1])
+local visualApplied = tonumber(raw[2])
+msg = colors:getName(reaper.ColorFromNative(state))
 if state ~= visualApplied then
-message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+msg = msg..string.format(", but visually looks as %s", colors:getName(reaper.ColorFromNative(visualApplied)))
 end
-if k < #items then
-message(", ")
+return msg
 end
-end
+})))
 else
 local state, visualApplied = self.getValue(items)
 message(string.format("Item %u color %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
 if state ~= visualApplied then
-message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+message(string.format(", but visually looks as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
 end
 end
 return message
@@ -2680,17 +2507,11 @@ function itemTakeColorProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel"), "Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
 if multiSelectionSupport == true then
-message:addType(" If the group of items have been selected, this color will be applied for all its active takes.", 1)
+message:addType(" If the group of items have been selected, this color will be applied for selected its active takes.", 1)
 end
 if type(items) == "table" then
-message("active takes of Items color:")
-for k = 1, #items do
-local state = self.getValue(items[k])
-message(string.format("take %u of item %u is %s", getTakeNumber(items[k]), getItemNumber(items[k]), colors:getName(reaper.ColorFromNative(state))))
-if k < #items then
-message(", ")
-end
-end
+message("Take  color:")
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return colors:getName(reaper.ColorFromNative(state)) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u color %s", getItemNumber(items), getTakeNumber(items), colors:getName(reaper.ColorFromNative(state))))
