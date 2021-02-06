@@ -58,8 +58,8 @@ typeLevelProperty.states = {[0] = "no prompt for property actions", [1] = "detai
 function typeLevelProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set the desired prompts level.", "Adjustable")
-message(string.format("Properties ribbon now provides %s", self.states[typeLevel]))
+message:initType(typeLevel, "Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.", "Adjustable")
+message(string.format("Types prompts level %s", self.states[typeLevel]))
 return message
 end
 
@@ -82,8 +82,7 @@ else
 message("No more previous property values.")
 end
 end
-state = config.getinteger("typeLevel")
-message(string.format("Properties ribbon now provides %s", self.states[state]))
+message(self:get())
 return message
 end
 
@@ -92,9 +91,9 @@ local reportPosProperty = {}
 configLayout.main:registerProperty( reportPosProperty)
 function reportPosProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Toggleable")
 local state = config.getboolean("reportPos", true)
-message(string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state]))
+message(string.format("Reporting navigation position %s", ({[true] = "enabled", [false] = "disabled"})[state]))
 return message
 end
 
@@ -104,7 +103,8 @@ return "This property is toggleable only."
 end
 local state = nor(config.getboolean("reportPos", true))
 config.setboolean("reportPos", state)
-return string.format("Properties Ribbon now %s the virtual cursor position", ({[true] = "reports", [false] = "not reports"})[state])
+local message = initOutputMessage() message(self:get())
+return message
 end
 
 -- Remember the last sublayout property
@@ -112,9 +112,9 @@ local resetSublayoutProperty = {}
 configLayout.main:registerProperty( resetSublayoutProperty)
 function resetSublayoutProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the position remembering when you are loading a properties layout which was been loaded earlier.", "Toggleable")
 local state = config.getboolean("rememberSublayout", true)
-message(string.format("Properties Ribbon now %s last category in newly loaded ribbon", ({[true] = "remembers", [false] = "resets"})[state]))
+message(string.format("%s position in layouts when loading", ({[true] = "remember", [false] = "forget"})[state]))
 return message
 end
 
@@ -124,7 +124,8 @@ return "This property is toggleable only."
 end
 local state = nor(config.getboolean("rememberSublayout", true))
 config.setboolean("rememberSublayout", state)
-return string.format("Properties Ribbon now %s last category in newly loaded ribbon", ({[true] = "remembers", [false] = "resets"})[state])
+local message = initOutputMessage() message(self:get())
+return message
 end
 
 
@@ -134,9 +135,9 @@ configLayout.stepAdjustment:registerProperty( dbStepProperty)
 function dbStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("The Decibel step adjustment is set to %s", state))
+message(string.format("Decibel step adjustment %s", state))
 return message
 end
 
@@ -165,7 +166,7 @@ config.setinteger("dbStep", 0.01)
 else
 config.setinteger("dbStep", ajustingValue)
 end
-message(string.format("The Decibel step adjustment is set to %s.", config.getinteger("dbStep")))
+message(self:get())
 return message
 end
 
@@ -176,9 +177,9 @@ configLayout.stepAdjustment:registerProperty( percentagestepProperty)
 function percentagestepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = config.getinteger("percentStep", 1)
-message(string.format("The percent step adjustment is set to %s%%", state))
+message(string.format("Percent step adjustment  %s%%", state))
 return message
 end
 
@@ -207,7 +208,7 @@ config.setinteger("percentStep", 1)
 else
 config.setinteger("percentStep", ajustingValue)
 end
-message(string.format("The percent step adjustment is set to %s%%.", config.getinteger("percentStep")))
+message(self:get())
 return message
 end
 
@@ -218,9 +219,9 @@ configLayout.stepAdjustment:registerProperty( timeStepProperty)
 function timeStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed time step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set needed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = config.getinteger("timeStep", 0.001)
-message(string.format("The time step adjustment is set to %s ms", state))
+message(string.format("Time step adjustment %s ms", state))
 return message
 end
 
@@ -246,7 +247,7 @@ config.setinteger("timeStep", 0.001)
 else
 config.setinteger("timeStep", ajustingValue)
 end
-message(string.format("The time step adjustment is set to %s ms.", config.getinteger("timeStep")))
+message(self:get())
 return message
 end
 
@@ -257,10 +258,10 @@ configLayout.stepAdjustment:registerProperty( pitchStepProperty)
 function pitchStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set desired pitch step to either more or less than current value. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set desired pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
 local state = round(config.getinteger("pitchStep", 1.00), 2)
 local fv = splitstring(tostring(state), ".")
-message("The pitch step adjustment is set to ")
+message("Pitch step adjustment ")
 if tonumber(fv[1]) >= 1 then
 message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
 if tonumber(fv[2]) > 0 then
@@ -303,18 +304,7 @@ config.setinteger("pitchStep", 0.01)
 else
 config.setinteger("pitchStep", ajustingValue)
 end
-state = config.getinteger("pitchStep")
-local fv = splitstring(tostring(state), ".")
-message("The pitch step adjustment is set to ")
-if tonumber(fv[1]) >= 1 then
-message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
-if tonumber(fv[2]) > 0 then
-message(", ")
-end
-end
-if fv[2] ~= "0" then
-message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
-end
+message(self:get())
 return message
 end
 
@@ -324,9 +314,9 @@ local multiSelectionSupportProperty = {}
 configLayout.main:registerProperty( multiSelectionSupportProperty)
 function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set an opposite value for this setting.", "Toggleable")
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.", "Toggleable")
 local state = config.getboolean("multiSelectionSupport", true)
-message(string.format("Properties Ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state]))
+message(string.format("Multi-selection support %s", ({[true] = "enabled", [false] = "disabled"})[state]))
 return message
 end
 
@@ -336,7 +326,8 @@ return "This property is toggleable only."
 end
 local state = nor(config.getboolean("multiSelectionSupport", true))
 config.setboolean("multiSelectionSupport", state)
-return string.format("Properties Ribbon now %s the multi selection", ({[true] = "supports", [false] = "not supports"})[state])
+local message = initOutputMessage() message(self:get())
+return message
 end
 
 return configLayout[sublayout]
