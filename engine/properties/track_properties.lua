@@ -52,6 +52,24 @@ end
 return color
 end
 
+
+-- We have to define the track reporting by configuration
+local function getTrackID(track)
+local cfg = config.getboolean("reportName", false)
+if cfg == true then
+local retval, name = reaper.GetTrackName(track)
+if retval then
+local premsg = ""
+if  name:find("Track") and name:match("%d+") then
+name = name:match("%d+")
+end
+return name
+end
+else
+return reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER")
+end
+end
+
 -- The macros for compose when group of items selected
 local function composeMultipleTrackMessage(func, states, inaccuracy)
 local message = initOutputMessage()
@@ -60,9 +78,9 @@ local state = func(tracks[k])
 local prevState if tracks[k-1] then prevState = func(tracks[k-1]) end
 local nextState if tracks[k+1] then nextState = func(tracks[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("tracks from %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
+message(string.format("tracks from %s ", getTrackID(tracks[k])))
 elseif state == prevState and state ~= nextState then
-message(string.format("to %u ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
+message(string.format("to %s ", getTrackID(tracks[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -73,7 +91,7 @@ message(", ")
 end
 elseif state == prevState and state == nextState then
 else
-message(string.format("%s ", reaper.GetMediaTrackInfo_Value(tracks[k], "IP_TRACKNUMBER")))
+message(string.format("Track %s ", getTrackID(tracks[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -81,28 +99,12 @@ message(string.format("%s", states[state]))
 end
 if k < #tracks then
 message(", ")
+elseif k == #tracks-1 then
+message(" and ")
 end
 end
 end
 return message
-end
-
--- We have to define the track reporting by configuration
-local function getTrackID(track)
-local cfg = config.getboolean("reportName", false)
-if cfg == true then
-local retval, name = reaper.GetTrackName(track)
-if retval then
-local premsg = ""
-if not name:find("Track") then
-premsg = "Track "
-end
-premsg = premsg..name
-return premsg
-end
-else
-return string.format("Track %u", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"))
-end
 end
 
 -- global pseudoclass initialization
@@ -168,9 +170,9 @@ setmetatable({}, {__index = function(self, key) return key end})))
 else
 local _, name = reaper.GetSetMediaTrackInfo_String(tracks, "P_NAME", "", false)
 if  name ~= "" then
-message(string.format("%s name %s", getTrackID(tracks), name))
+message(string.format("Track %s name %s", getTrackID(tracks), name))
 else
-message(string.format("%s unnamed", getTrackID(tracks)))
+message(string.format("Track %s unnamed", getTrackID(tracks)))
 end
 end
 return message
@@ -250,7 +252,7 @@ end})
 ))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-message(string.format("%s is a", getTrackID(tracks)))
+message(string.format("Track %s is a", getTrackID(tracks)))
 if state == 0 or state == 1 then
 if state == 1 then
 local compactState = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT")
@@ -325,7 +327,7 @@ end
 end
 end
 state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-message(string.format("%s is a", getTrackID(tracks)))
+message(string.format("Track %s is a", getTrackID(tracks)))
 if state == 0 or state == 1 then
 if state == 1 then
 local compactState = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT")
@@ -364,7 +366,7 @@ message("tracks volume:")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, setmetatable({}, {__index = function(self, state) return string.format("%s dB", numtodecibels(state)) end})))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-message(string.format("%s volume %s db", getTrackID(tracks), numtodecibels(state)))
+message(string.format("Track %s volume %s db", getTrackID(tracks), numtodecibels(state)))
 end
 return message
 end
@@ -436,7 +438,7 @@ if type(tracks) == "table" then
 message("tracks pan: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, setmetatable({}, {__index = function(self, state) return numtopan(state) end})))
 else
-message(string.format("%s pan ", getTrackID(tracks)))
+message(string.format("Track %s pan ", getTrackID(tracks)))
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
 message(string.format("%s", numtopan(state)))
 end
@@ -503,7 +505,7 @@ if type(tracks) == "table" then
 message("tracks width: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", numtopercent(state)) end})))
 else
-message(string.format("%s width ", getTrackID(tracks)))
+message(string.format("Track %s width ", getTrackID(tracks)))
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
 message(string.format("%s%%", numtopercent(state)))
 end
@@ -571,7 +573,7 @@ message("tracks mute: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_MUTE") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE")
-message(string.format("%s %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -634,7 +636,7 @@ message("tracks solo: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
-message(string.format("%s %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -703,7 +705,7 @@ message("tracks arm: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECARM") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM")
-message(string.format("%s %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -764,7 +766,7 @@ message("tracks record monitoring: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECMON") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMON")
-message(string.format("%s record monitoring %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s record monitoring %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -999,7 +1001,7 @@ message("Tracks record inputs: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECINPUT") end, setmetatable({}, {__index = function(self, state) return recInputsProperty.compose(state) end})))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT")
-message(string.format("%s record input %s", getTrackID(tracks), self.compose(state)))
+message(string.format("Track %s record input %s", getTrackID(tracks), self.compose(state)))
 end
 return message
 end
@@ -1094,7 +1096,7 @@ message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackI
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMODE")
 -- reaper.ShowMessageBox(state, "debug", 0)
-message(string.format("%s record mode %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s record mode %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1169,7 +1171,7 @@ message("tracks automation mode: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_AUTOMODE") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
-message(string.format("%s automation mode %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s automation mode %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1236,7 +1238,7 @@ message("tracks phase: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_PHASE") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE")
-message(string.format("%s phase %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s phase %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1309,7 +1311,7 @@ end
 })))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND")
-message(string.format("%s %s to ", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s %s to ", getTrackID(tracks), self.states[state]))
 if reaper.GetParentTrack(tracks) then
 message("parent ")
 else
@@ -1374,7 +1376,7 @@ message("tracks free position mode: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE")
-message(string.format("%s free position %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s free position %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1439,7 +1441,7 @@ message("Track timebase: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "C_BEATATTACHMODE") end, self.states, 1))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
-message(string.format("%s timebase %s", getTrackID(tracks), self.states[state+1]))
+message(string.format("Track %s timebase %s", getTrackID(tracks), self.states[state+1]))
 end
 return message
 end
@@ -1515,7 +1517,7 @@ message("tracks monitoring items: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECMONITEMS") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS")
-message(string.format("%s items while recording is %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s items while recording is %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1573,7 +1575,7 @@ message("tracks media buffering: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_PERFFLAGS")&1 end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1
-message(string.format("%s media is %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s media is %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1632,7 +1634,7 @@ message("tracks FX anticipativeness: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_PERFFLAGS")&2 end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&2
-message(string.format("%s FX is %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s FX is %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1711,7 +1713,7 @@ end
 })))
 else
 local state, visualApplied = self.getValue(tracks)
-message(string.format("%s color %s", getTrackID(tracks), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("Track %s color %s", getTrackID(tracks), colors:getName(reaper.ColorFromNative(state))))
 if state ~= visualApplied then
 message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
 end
@@ -1758,7 +1760,7 @@ message("tracks visibility in Mixer panel: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_SHOWINMIXER") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER")
-message(string.format("%s is %s on mixer panel", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s is %s on mixer panel", getTrackID(tracks), self.states[state]))
 end
 return message
 end
@@ -1816,7 +1818,7 @@ message("tracks control panels visibility: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_SHOWINTCP") end, self.states))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP")
-message(string.format("%s control panel is %s", getTrackID(tracks), self.states[state]))
+message(string.format("Track %s control panel is %s", getTrackID(tracks), self.states[state]))
 end
 return message
 end
