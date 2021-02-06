@@ -330,4 +330,24 @@ local message = initOutputMessage() message(self:get())
 return message
 end
 
+-- Report name methods
+local reportNameProperty = {}
+configLayout.main:registerProperty(reportNameProperty)
+
+function reportNameProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the reporting element ID information in properties values which this option are supported. If this configuration enabled, a property will report the name of. If this configuration disabled, a property will reportits number only.", "Toggleable")
+local state = config.getboolean("reportName", false)
+message(string.format("Report element's %s", ({[false]="number only",[true]="name instead of number"})[state]))
+return message
+end
+
+function reportNameProperty:set(action)
+local message = initOutputMessage()
+config.setboolean("reportName", nor(config.getboolean("reportName", false)))
+message(self:get())
+return message
+end
+
+
 return configLayout[sublayout]
