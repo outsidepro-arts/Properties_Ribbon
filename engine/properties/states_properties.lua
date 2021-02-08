@@ -14,7 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-local sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate[currentLayout.."_sublayout"]
 if sublayout == "" or sublayout == nil then
 sublayout = "areas"
 end

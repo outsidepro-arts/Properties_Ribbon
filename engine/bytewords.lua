@@ -9,7 +9,7 @@ License: MIT License
 ]]--
 
 
-bytewords = {}
+local bytewords = {}
 -- Please read the functions names carefully.
 
 function bytewords.getLoByte(value)
@@ -47,3 +47,5 @@ end
 function bytewords.makeLong(lo, hi)
 return (((lo)&0xffff)|((hi)&0xffff)<<16)
 end
+
+return bytewords

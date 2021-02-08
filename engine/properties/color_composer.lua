@@ -15,7 +15,7 @@ After this preambula, let me begin.
 
 
 -- Reading the sublayout
-local sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate[currentLayout.."_sublayout"]
 if sublayout == "" or sublayout == nil then
 -- This layout should define current context
 context = reaper.GetCursorContext()
@@ -43,10 +43,10 @@ end
 -- At first run the layout hasn't any selected preset, so we should to have this element
 self[0] = {name="choose preset"}
 local i = 1
-while extstate.get("colcon_"..sublayout.."_preset"..i.."Value") ~= "" do
+while extstate["colcon_"..sublayout.."_preset"..i.."Value"] do
 table.insert(self, {
-name = extstate.get("colcon_"..sublayout.."_preset"..i.."Name"),
-value = extstate.get("colcon_"..sublayout.."_preset"..i.."Value")
+name = extstate["colcon_"..sublayout.."_preset"..i.."Name"],
+value = extstate["colcon_"..sublayout.."_preset"..i.."Value"]
 })
 i = i+1
 end
@@ -54,15 +54,15 @@ end,
 remove = function(self, index)
 local i = 1
 local removed = nil
-while extstate.get("colcon_"..sublayout.."_preset"..i.."Value") ~= "" do
+while extstate["colcon_"..sublayout.."_preset"..i.."Value"] do
 if i == index then
-extstate.remove("colcon_"..sublayout.."_preset"..i.."Name", true)
-extstate.remove("colcon_"..sublayout.."_preset"..i.."Value", true)
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Name"] = nil
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Value"] = nil
 elseif i > index then
-extstate.set("colcon_"..sublayout.."_preset"..(i-1).."Name", self[i].name, true)
-extstate.remove("colcon_"..sublayout.."_preset"..i.."Name", true)
-extstate.set("colcon_"..sublayout.."_preset"..(i-1).."Value", self[i].value, true)
-extstate.remove("colcon_"..sublayout.."_preset"..i.."Value", true)
+extstate._forever["colcon_"..sublayout.."_preset"..(i-1).."Name"] = self[i].name
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Name"] = nil
+extstate._forever["colcon_"..sublayout.."_preset"..(i-1).."Value"] = self[i].value
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Value"] = nil
 end
 i = i+1
 end
@@ -73,7 +73,7 @@ end,
 rename = function(self, index, str)
 if self[index] then
 self[index].name = str
-extstate.set("colcon_"..sublayout.."_preset"..index.."Name", str, true)
+extstate._forever["colcon_"..sublayout.."_preset"..index.."Name"] = str
 return true
 end
 return false
@@ -81,7 +81,7 @@ end,
 change = function(self, index, color)
 if self[index] then
 self[index].value = color
-extstate.set("colcon_"..sublayout.."_preset"..index.."Value", color, true)
+extstate._forever["colcon_"..sublayout.."_preset"..index.."Value"] = color
 return true
 end
 return false
@@ -89,8 +89,8 @@ end,
 create = function(self, str, color)
 local i = #self+1
 self[i] = {name=str, value=color}
-extstate.set("colcon_"..sublayout.."_preset"..i.."Name", str, true)
-extstate.set("colcon_"..sublayout.."_preset"..i.."Value", color, true) 
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Name"] = str
+extstate._forever["colcon_"..sublayout.."_preset"..i.."Value"] = color
 return i
 end
 }
@@ -99,55 +99,47 @@ return presets
 end
 
 local function getColorIndex()
-local colorIndex = extstate.get("colcom_"..sublayout.."_colorIndex")
-if colorIndex == "" or colorIndex == nil then
+local colorIndex = extstate["colcom_"..sublayout.."_colorIndex"]
+if colorIndex == nil then
 colorIndex = 1
-else
-colorIndex = tonumber(colorIndex)
 end
 return colorIndex
 end
 
 local function getPresetIndex()
-local presetIndex = extstate.get("colcom_"..sublayout.."_presetIndex")
-if presetIndex == "" or presetIndex == nil then
+local presetIndex = extstate["colcom_"..sublayout.."_presetIndex"]
+if presetIndex == nil then
 presetIndex = 0
-else
-presetIndex = tonumber(presetIndex)
 end
 return presetIndex
 end
 
 local function setColorIndex(value)
-extstate.set("colcom_"..sublayout.."_colorIndex", tostring(value), false)
+extstate["colcom_"..sublayout.."_colorIndex"] = value
 end
 
 local function setPresetIndex(value)
-extstate.set("colcom_"..sublayout.."_presetIndex", tostring(value), false)
+extstate["colcom_"..sublayout.."_presetIndex"] = value
 end
 
 local function getFilter()
-local filter = extstate.get(("colcom_%s_colorFilter"):format(sublayout))
-if filter ~= "" then
-return filter
-end
-return nil
+return extstate[("colcom_%s_colorFilter"):format(sublayout)]
 end
 
 local function getColor()
-local color = extstate.get(("colcom_%s_curValue"):format(sublayout))
-if color == "" or color == nil then
+local color = extstate[("colcom_%s_curValue"):format(sublayout)]
+if color == nil then
 color = reaper.ColorToNative(0, 0, 0)
 end
-return tonumber(color)
+return color
 end
 
 local function setFilter(filter)
-extstate.set(("colcom_%s_colorFilter"):format(sublayout), filter)
+extstate[("colcom_%s_colorFilter"):format(sublayout)] = filter
 end
 
 local function setColor(color)
-extstate.set(("colcom_%s_curValue"):format(sublayout), tostring(color))
+extstate[("colcom_%s_curValue"):format(sublayout)] = color
 end
 
 

@@ -5,7 +5,7 @@ License: MIT License
 ]]--
 
 -- Include the configuration provider
-require "config_provider"
+config = require "config_provider"
 config.section = "Properties_Ribbon_script"
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
@@ -13,10 +13,13 @@ require "specfuncs"
 
 -- Including the byte words module
 -- SWS has own byte operations, but what if has an user not SWS installed?
-require "bytewords"
+bytewords = require "bytewords"
 
 -- including the colors module
-require "colors_provider"
+colors = require "colors_provider"
+-- Making the get and set internal ExtState more easier
+extstate = require "reaper_extstate"
+extstate._section = config.section
 -- These modules usualy uses in properties code
 
 
@@ -25,6 +28,12 @@ require "colors_provider"
 -- Custom message metamethod
 function initOutputMessage()
 local mt = setmetatable({
+-- type prompts initialization method
+-- The type prompts adds the string message set by default to the end of value message.
+-- Parameters:
+-- level (number): the level number of type prompts by default.
+-- infinite parameters (string): the prompts messages in supported order.
+-- returns none.
 initType = function(self, level, ...)
 local args = {...}
 self.tl = level
@@ -33,7 +42,11 @@ for i = 1, #args do
 self.tLevels[i] = args[i]
 end
 end,
--- Change the type message
+-- Change the type prompts message
+-- Parameters:
+-- str (string): new message.
+-- level (number): the type level which needs to be changed.
+-- returns none.
 changeType = function(self, str, level)
 if level == nil then
 self.tLevels[self.tl] = str
@@ -41,7 +54,12 @@ else
 self.tLevels[level] = str
 end
 end,
--- Add the next part to type message
+-- Add the next part to type prompts message. The message adds to the end of existing message.
+-- For change the message fuly, use the changeType method.
+-- Parameters:
+-- str (string): the string message which needs to be added.
+-- level (number): the type level which the passed message needs to be added to.
+-- Returns none.
 addType = function(self, str, level)
 if level == nil then
 if self.tLevels[self.tl] ~= nil then
@@ -59,13 +77,15 @@ end
 end,
 
 -- Clearing the local message
+-- No parameters. Returns none.
 clearMessage = function(self)
 if self.msg then
 self.msg = nil
 end
 end,
 -- Clearing the type levels
-clearType = function()
+-- No parameters. Returns none.
+clearType = function(self)
 if self.tLevels then
 self.tLevels, self.tl = nil
 end
@@ -174,23 +194,6 @@ end
 return tostring(message)
 end
 
--- Making the get and set internal ExtState more easier
-
-extstate = {}
-
-function extstate.get(key)
-return reaper.GetExtState("Properties_Ribbon_script", key)
-end
-
-function extstate.set(key, value, forever)
-forever = forever or false
-reaper.SetExtState("Properties_Ribbon_script", key, value, forever)
-end
-
-function extstate.remove(key, forever)
-forever = forever or false
-reaper.DeleteExtState("Properties_Ribbon_script", key, forever)
-end
 
 -- Main body
 
@@ -210,13 +213,13 @@ currentLayout = newLayout
 speakLayout = shouldSpeakLayout or true
 if config.getboolean("rememberSublayout", true) == false then
 -- Let REAPER do not request the extstate superfluously
-if  extstate.get(newLayout.."_sublayout") ~= "" then
-extstate.remove(newLayout.."_sublayout")
+if  extstate[newLayout.."_sublayout"] ~= "" then
+extstate[newLayout.."_sublayout"] = nil
 end
 end
 else
-currentLayout = extstate.get("currentLayout")
-speakLayout = toboolean(extstate.get("speakLayout"))
+currentLayout = extstate.currentLayout
+speakLayout = extstate.speakLayout
 end
 if currentLayout == nil or currentLayout == "" then
 reaper.osara_outputMessage("Switch one action group first.")
@@ -228,7 +231,7 @@ reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded
 return nil
 end
 g_undoState = ("Switch properties layout to %s in Properties Ribbon script"):format((layout.name):format(""))
-layout.pIndex = tonumber(extstate.get(layout.section)) or 1
+layout.pIndex = extstate[layout.section] or 1
 return layout
 end
 
@@ -239,13 +242,13 @@ end
 if layout.nextSubLayout or layout.previousSubLayout then
 if (action == true or action == nil) then
 if layout.nextSubLayout then
-extstate.set(currentLayout.."_sublayout", layout.nextSubLayout)
+extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
 else
 return "No next category. "
 end
 elseif action == false then
 if layout.previousSubLayout then
-extstate.set(currentLayout.."_sublayout", layout.previousSubLayout)
+extstate[currentLayout.."_sublayout"] = layout.previousSubLayout
 else
 return "No previous category. "
 end
@@ -257,7 +260,7 @@ return
 end
 g_undoState = ("Switch category to %s in Properties Ribbon script"):format((layout.name):format(layout.subname))
 speakLayout = false
-layout.pIndex = tonumber(extstate.get(layout.section)) or 1
+layout.pIndex = extstate[layout.section] or 1
 local message = initOutputMessage()
 message(composeSubLayout())
 message(script_reportOrGotoProperty())
@@ -361,8 +364,8 @@ end
 
 function script_finish()
 if layout then
-extstate.set(layout.section, layout.pIndex)
-extstate.set("currentLayout", currentLayout)
-extstate.set("speakLayout", tostring(speakLayout))
+extstate[layout.section] = layout.pIndex
+extstate.currentLayout = currentLayout
+extstate.speakLayout = speakLayout
 end
 end

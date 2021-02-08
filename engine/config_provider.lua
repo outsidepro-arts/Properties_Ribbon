@@ -6,7 +6,7 @@ License: MIT License
 
 -- Before use this module, please fill the config.section by your unique name which should set to ExtState
 
-config = {}
+local config = {}
 
 
 function config.getboolean(key, defvalue)
@@ -57,3 +57,5 @@ end
 function config.setstring(key, value)
 reaper.SetExtState(config.section, "cfg_"..key, tostring(value), true)
 end
+
+return config

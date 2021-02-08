@@ -5,7 +5,7 @@ Based on https://gist.github.com/jdiscar/9144764
 Special thanks to @beqabeqa473 for parsing the full list and some Python syntax prompts
 ]]--
 
-colors = {}
+local colors = {}
 
 colors.colorList = {
 {name = "Alice Blue", r = 240, g = 248, b = 255},
@@ -599,3 +599,4 @@ end
 end
 return minID
 end
+ return colors

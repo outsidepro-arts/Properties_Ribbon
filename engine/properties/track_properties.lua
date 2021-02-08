@@ -14,7 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-local sublayout = extstate.get(currentLayout.."_sublayout")
+local sublayout = extstate[currentLayout.."_sublayout"]
 if sublayout == "" or sublayout == nil then
 sublayout = "playbackLayout"
 end
@@ -45,7 +45,7 @@ end
 
 -- Reading the color from color composer specified section
 local function getTrackComposedColor()
-local color = extstate.get("colcom_track_curValue")
+local color = extstate.colcom_track_curValue
 if color == "" or color == nil then
 return nil
 end
