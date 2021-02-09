@@ -14,10 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"]
-if sublayout == "" or sublayout == nil then
-sublayout = "areas"
-end
+local sublayout = extstate[currentLayout.."_sublayout"] or "areas"
 
 -- global pseudoclass initialization
 local parentLayout = initLayout("%sstatus properties")

@@ -14,10 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"]
-if sublayout == "" or sublayout == nil then
-sublayout = "main"
-end
+local sublayout = extstate[currentLayout.."_sublayout"] or "main"
 
 -- global pseudoclass initialization
 local configLayout = initLayout("%sConfiguration properties")

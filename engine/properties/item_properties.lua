@@ -14,10 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"]
-if sublayout == "" or sublayout == nil then
-sublayout = "itemLayout"
-end
+local sublayout = extstate[currentLayout.."_sublayout"] or "itemLayout"
 
 -- Reading the some config which will be used everyhere
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)

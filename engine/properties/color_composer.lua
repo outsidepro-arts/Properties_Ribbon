@@ -16,9 +16,9 @@ After this preambula, let me begin.
 
 -- Reading the sublayout
 local sublayout = extstate[currentLayout.."_sublayout"]
-if sublayout == "" or sublayout == nil then
+if sublayout == nil then
 -- This layout should define current context
-context = reaper.GetCursorContext()
+local context = reaper.GetCursorContext()
 if context == 0 then
 sublayout = "track"
 elseif context == 1 then

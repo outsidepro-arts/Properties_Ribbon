@@ -16,10 +16,7 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 -- Reading the sublayout
-local sublayout = extstate.get(currentLayout.."_sublayout")
-if sublayout == "" or sublayout == nil then
-sublayout = "embededLayout"
-end
+local sublayout = extstate[currentLayout.."_sublayout"] or "embededLayout"
 
 
 local parentLayout = initLayout("%seditor")
