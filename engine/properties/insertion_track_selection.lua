@@ -62,5 +62,6 @@ insertionLayout:registerProperty(getUsualProperty(40001, "Insert new track"))
 end
 insertionLayout:registerProperty(getUsualProperty(40702, "Insert new track at end of track list"))
 insertionLayout:registerProperty(getUsualProperty(46000, "Insert track from template"))
+insertionLayout:registerProperty(getUsualProperty(41067, "Insert multiple new tracks"))
 
 return insertionLayout
