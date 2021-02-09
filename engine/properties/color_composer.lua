@@ -296,6 +296,10 @@ function shadeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color", #colors.colorList), "Adjustable, performable")
 message(string.format("Color %s", colors.colorList[self.getValue()].name))
+local filter = getFilter()
+if filter then
+message(string.format(", filter set to %s", filter))
+end
 return message
 end
 
@@ -374,6 +378,7 @@ end
 end
 self.setValue(state)
 setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
+-- Here is old method because we do not want to report the filter superfluously
 message(string.format("Color %s", colors.colorList[self.getValue()].name))
 return message
 end
