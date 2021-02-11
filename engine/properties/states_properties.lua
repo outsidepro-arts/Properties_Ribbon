@@ -277,5 +277,17 @@ setWindow
 )
 )
 
+-- Threshold sensitivity adjusting window
+-- From the recent time this dialog is focusable and accessible, so let me add here
+parentLayout.windows:registerProperty(
+getUsualProperty(
+usualWindowStates,
+41208,
+"%s the Transient detection sensitivity and threshold adjusting window",
+{"Toggle this property to either open or close the Transient detection sensitivity and threshold adjusting window.", "Toggleable"},
+nil,
+setWindow
+)
+)
 
 return parentLayout[sublayout]
