@@ -16,3 +16,8 @@ The Properties Ribbon complex is very flexible. If you know the LUA scripting la
 + How to install the script you can read at [Installation the script complex WIKI page](/../../wiki/Installation-the-script-complex)
 + The description of each script complex file you can see at [Scripts description WIKI page](/../../wiki/Scripts-description)
 + The order of using you can read at [How to use script complex WIKI page](/../../wiki/How-to-use-the-Properties-Ribbon-scripts-complex)
+
+## Donation ##
+If you have appreciated my made work, you might want to tell me a thank word financially. This complex takes many time from my life so my wife and my son asks me wwhy I am not take care of them. Let me descript while showing the some digits in my bank account! ☺
+You may use [this Paypal transaction page](https://paypal.me/outsidepro) to make my mood more light and tthankfull!
+Of course, it is not neccessary. You can use this complex for free absolutely!
