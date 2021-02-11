@@ -18,7 +18,7 @@ After this preambula, let me begin.
 -- Reading the sublayout
 local sublayout = extstate[currentLayout.."_sublayout"] or "reaperPrefs"
 
-local parentLayout = initLayout("%spreferences")
+local parentLayout = initLayout("%spreferences actions")
 
 function parentLayout.canProvide()
 return true

@@ -19,7 +19,7 @@ After this preambula, let me begin.
 local sublayout = extstate[currentLayout.."_sublayout"] or "embededLayout"
 
 
-local parentLayout = initLayout("%seditor")
+local parentLayout = initLayout("%seditor selection")
 
 function parentLayout.canProvide()
 -- Just check one of items has been selected

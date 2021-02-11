@@ -15,7 +15,7 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-local insertionLayout = initLayout("Track insertion")
+local insertionLayout = initLayout("Track insertion actions")
 
 function insertionLayout.canProvide()
 return true

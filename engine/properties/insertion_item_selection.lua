@@ -15,7 +15,7 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-local insertionLayout = initLayout("Item insertion")
+local insertionLayout = initLayout("Item insertion actions")
 
 function insertionLayout.canProvide()
 if reaper.CountSelectedTracks() > 0 then

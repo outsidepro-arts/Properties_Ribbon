@@ -17,7 +17,7 @@ After this preambula, let me begin.
 local sublayout = extstate[currentLayout.."_sublayout"] or "areas"
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("%sstatus properties")
+local parentLayout = initLayout("%sstatement")
 
 function parentLayout.canProvide() return true end
 
