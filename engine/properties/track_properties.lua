@@ -190,7 +190,7 @@ message(string.format("The name %s has been set for %u tracks.", answer, #tracks
 end
 else
 local nameState, name = reaper.GetTrackName(tracks)
-local aState, answer = reaper.GetUserInputs(string.format("Change name for %s", getTrackID(tracks)), 1, 'Type new track name:', name)
+local aState, answer = reaper.GetUserInputs(string.format("Change name for track %s", getTrackID(tracks)), 1, 'Type new track name:', name)
 if aState == true then
 reaper.GetSetMediaTrackInfo_String(tracks, "P_NAME", answer, true)
 end
