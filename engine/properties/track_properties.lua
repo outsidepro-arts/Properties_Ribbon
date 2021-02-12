@@ -63,7 +63,7 @@ end
 return name
 end
 else
-return reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER")
+return string.format("%u", reaper.GetMediaTrackInfo_Value(tracks, "IP_TRACKNUMBER"))
 end
 end
 
