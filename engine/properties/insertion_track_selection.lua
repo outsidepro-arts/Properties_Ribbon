@@ -15,6 +15,9 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
+-- Set the cursor context forced
+-- For what? REAPER should set the some actions to track context that user can perform them
+reaper.SetCursorContext(0)
 local insertionLayout = initLayout("Track insertion actions")
 
 function insertionLayout.canProvide()
