@@ -964,7 +964,7 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadein length: ")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return key end})))
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return string.format("%s ms", round(key, 3)) end})))
 else
 message(("Item %u fadein length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
 end
@@ -1200,7 +1200,7 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadeout length: ")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return round(key, 3) end})))
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return ("%s ms"):format(round(key, 3)) end})))
 else
 message(("Item %u fadeout length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
 end
