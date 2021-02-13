@@ -710,6 +710,77 @@ message(self:get())
 return message
 end
 
+-- Snap offset methods
+local itemSnapOffsetProperty  = {}
+parentLayout.itemLayout:registerProperty(itemSnapOffsetProperty)
+
+function itemSnapOffsetProperty.getValue(item)
+return reaper.GetMediaItemInfo_Value(item, "D_SNAPOFFSET")
+end
+
+function itemSnapOffsetProperty.setValue(item, value)
+reaper.SetMediaItemInfo_Value(item, "D_SNAPOFFSET", value)
+end
+
+
+function itemSnapOffsetProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel"), "Adjust this property to set the desired snap offset time.", "Adjustable, performable")
+if multiSelectionSupport == ttrue then
+message:addType(" If the group of items has selected, the relative depending on previous value will be set for each selected item.", 1)
+end
+message:addType(" Perform this property to remove snap offset time.", 1)
+if type(items) == "table" then
+message("Items snap offset:")
+message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%s ms", round(state, 3)) end})))
+else
+local state = self.getValue(items)
+message(string.format("Item %u snap offset %s ms", getItemNumber(items), round(state, 3)))
+end
+return message
+end
+
+function itemSnapOffsetProperty:set(action)
+local message = initOutputMessage()
+local ajustingValue = config.getinteger("timeStep", 0.001)
+if action == false then
+ajustingValue = -ajustingValue
+elseif action == nil then
+message("Remove the snap offset.")
+end
+if type(items) == "table" then
+for k = 1, #items do
+local state = self.getValue(items[k])
+if action == true or action == false then
+if (state+ajustingValue) >= 0 then
+state = state+ajustingValue
+else
+state = 0.000
+end
+else
+state = 0.000
+end
+self.setValue(items[k], state)
+end
+else
+local state = self.getValue(items)
+if action == true or action == false then
+if (state+ajustingValue) >= 0.000 then
+state = state+ajustingValue
+else
+state = 0.000
+message("Minimum snap offset time. ")
+end
+else
+state = 0.000
+end
+self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+
 -- Item group methods
 -- For now, this property has been registered in visual layout section. Really, it influences on all items in the same group: all controls will be grouped and when an user changes any control slider, all other items changes the value too.
 -- Are you Sure? But i'm not. 🤣
