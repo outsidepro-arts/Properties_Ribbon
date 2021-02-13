@@ -42,11 +42,7 @@ end
 
 -- Reading the color from color composer specified section
 local function getTrackComposedColor()
-local color = extstate.colcom_track_curValue
-if color == "" or color == nil then
-return nil
-end
-return color
+return extstate.colcom_track_curValue
 end
 
 
