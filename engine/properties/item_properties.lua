@@ -2381,7 +2381,7 @@ end
 -- Active shifter mode methods
 local takePitchShifterModeProperty = {}
 parentLayout.takeLayout:registerProperty(takePitchShifterModeProperty)
-takePitchShifterModeProperty.states = setmetatable({[-1] = "project default"},
+takePitchShifterModeProperty.states = setmetatable({[-1] = "unavailable"},
 {
 __index = function(self, key)
 key = tonumber(key)
