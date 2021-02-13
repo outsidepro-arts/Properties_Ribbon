@@ -51,19 +51,11 @@ end
 
 -- Reading the color from color composer specified section
 local function getItemComposedColor()
-local color = extstate.get("colcom_item_curValue")
-if color == "" or color == nil then
-return nil
-end
-return color
+return extstate.colcom_item_curValue
 end
 
 local function getTakeComposedColor()
-local color = extstate.get("colcom_take_curValue")
-if color == "" or color == nil then
-return nil
-end
-return color
+return extstate.colcom_take_curValue
 end
 
 -- The macros for compose when group of items selected
