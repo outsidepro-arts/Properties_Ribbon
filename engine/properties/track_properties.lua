@@ -1699,7 +1699,11 @@ __index = function(self, key)
 state, visualApplied = tonumber(splitstring(key, "|")[1]), tonumber(splitstring(key, "|")[2])
 msg = colors:getName(reaper.ColorFromNative(state))
 if state ~= visualApplied then
+if visualApplied == 0 then
+msg = msg..", but visually not applied"
+else
 msg = msg..string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied)))
+end
 end
 return msg
 end
@@ -1707,8 +1711,12 @@ end
 else
 local state, visualApplied = self.getValue(tracks)
 message(string.format("Track %s color %s", getTrackID(tracks), colors:getName(reaper.ColorFromNative(state))))
-if state ~= visualApplied then
+if visualApplied == 0 then
+if visualApplied == 0 then
+message(", but visually not applied")
+else
 message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
+end
 end
 end
 return message
