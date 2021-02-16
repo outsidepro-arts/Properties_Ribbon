@@ -129,12 +129,25 @@ end
 -- DB step specify methods
 local dbStepProperty = {}
 configLayout.stepAdjustment:registerProperty( dbStepProperty)
+dbStepProperty.states = setmetatable({},
+{__index = function(self, key)
+local predb = splitstring(string.format("%.2f", key), ".")
+local udb, ddb = tonumber(predb[1]), tonumber(predb[2])
+local msg = string.format("%u", udb)
+if ddb > 0 then
+msg = msg..string.format(".%u", ddb)
+end
+msg = msg.." dB"
+return msg
+end
+}
+)
 function dbStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("Decibel step adjustment %s", state))
+message(string.format("Decibel step adjustment %s", self.states[state]))
 return message
 end
 
@@ -143,9 +156,27 @@ local message = initOutputMessage()
 local state = config.getinteger("dbStep", 0.1)
 local ajustingValue
 if action == true then
-ajustingValue = state+0.01
+if state >= 0.01 and state < 0.1 then
+ajustingValue = 0.1
+elseif state >= 0.1 and state < 0.5 then
+ajustingValue = 0.5
+elseif state >= 0.5 and state < 1.0 then
+ajustingValue = 1.0
+else
+return "Maximal step value"
+end
 elseif action == false then
-ajustingValue = state-0.01
+if state > 1.0 then
+ajustingValue = 1.0
+elseif state <= 1.0 and state > 0.5 then
+ajustingValue = 0.5
+elseif state <= 0.5 and state > 0.1 then
+ajustingValue = 0.1
+elseif state <= 0.1 and state > 0.01 then
+ajustingValue = 0.01
+else
+return "Minimal step value"
+end
 else
 local result, answer = reaper.GetUserInputs("Decibel step input", 1, 'Type the needed step which every property with DB value will change per one adjustment in decimal format but no more two digits after decimal separator (0.1, 1.25 and etc):', state)
 if result == true then
@@ -174,7 +205,7 @@ configLayout.stepAdjustment:registerProperty( percentagestepProperty)
 function percentagestepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("percentStep", 1)
 message(string.format("Percent step adjustment  %s%%", state))
 return message
@@ -185,9 +216,23 @@ local message = initOutputMessage()
 local state = config.getinteger("percentStep", 1)
 local ajustingValue
 if action == true then
-ajustingValue = state+1
+if state >= 1 and state < 5 then
+ajustingValue = 5
+elseif state >= 5 and state < 10 then
+ajustingValue = 10
+else
+return "Maximal step value"
+end
 elseif action == false then
-ajustingValue = state-1
+if state > 10 then
+ajustingValue = 10
+elseif state <= 10 and state > 5 then
+ajustingValue = 5
+elseif state <= 5 and state >1 then
+ajustingValue = 1
+else
+return "Minimal step value"
+end
 else
 local result, answer = reaper.GetUserInputs("Percent step input", 1, 'Type the needed percentage step (2, 45 and etc):', state)
 if result == true then
@@ -212,13 +257,29 @@ end
 -- Time step adjustment methods
 local timeStepProperty = {}
 configLayout.stepAdjustment:registerProperty( timeStepProperty)
+timeStepProperty.states = setmetatable({},
+{__index = function(self, key)
+local pretime = splitstring(string.format("%.3f", key), ".")
+local s, ms = tonumber(pretime[1]), tonumber(pretime[2])
+local msg = ""
+if s > 0 then
+msg = msg..string.format("%u second%s, ", s, ({[true]="s",[false]=""})[(s ~= 1)])
+end
+if ms > 0 then
+msg = msg..string.format("%u milisecond%s", ms, ({[true]="s",[false]=""})[(ms ~= 1)])
+else
+msg = msg:gsub(", ", "")
+end
+return msg
+end
+})
 
 function timeStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set needed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("timeStep", 0.001)
-message(string.format("Time step adjustment %s ms", state))
+message(string.format("Time step adjustment %s", self.states[state]))
 return message
 end
 
@@ -227,9 +288,27 @@ local message = initOutputMessage()
 local state = config.getinteger("timeStep", 0.001)
 local ajustingValue
 if action == true then
-ajustingValue = state+0.001
+if state >= 0.001 and state < 0.010 then
+ajustingValue = 0.010
+elseif state >= 0.010 and state < 0.100 then
+ajustingValue = 0.100
+elseif state >= 0.100 and state < 1.000 then
+ajustingValue = 1.000
+else
+return "Maximal step value"
+end
 elseif action == false then
-ajustingValue = state-0.001
+if state > 1.000 then
+ajustingValue = 1.000
+elseif state <= 1.000 and state > 0.100 then
+ajustingValue = 0.100
+elseif state <= 0.100 and state> 0.010 then
+ajustingValue = 0.010
+elseif state <= 0.010 and state > 0.001 then
+ajustingValue = 0.001
+else
+return "Minimal step value"
+end
 else
 local result, answer = reaper.GetUserInputs("Time step input", 1, 'Type the needed step which every property with time value will change per one adjustment in decimal format but no more three digits after decimal separator (0.1, 1.25, 3.201 and etc):', state)
 if result == true then
@@ -251,23 +330,30 @@ end
 -- Pitch adjustment methods
 local pitchStepProperty = {}
 configLayout.stepAdjustment:registerProperty( pitchStepProperty)
+pitchStepProperty.states = setmetatable({},
+{__index = function(self, key)
+local prepitch = splitstring(string.format("%.2f", key), ".")
+local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
+local msg = ""
+if s > 0 then
+msg = msg..string.format("%u semitone%s, ", s, ({[true]="s",[false]=""})[(s ~= 1)])
+end
+if c > 0 then
+msg = msg..string.format("%u cent%s", c, ({[true]="s",[false]=""})[(c ~= 1)])
+else
+msg = msg:gsub(", ", "")
+end
+return msg
+end
+})
+
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set desired pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed step value manualy.", "adjustable, performable")
+message:initType(typeLevel, "Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = round(config.getinteger("pitchStep", 1.00), 2)
-local fv = splitstring(tostring(state), ".")
-message("Pitch step adjustment ")
-if tonumber(fv[1]) >= 1 then
-message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
-if tonumber(fv[2]) > 0 then
-message(", ")
-end
-end
-if fv[2] ~= "0" then
-message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
-end
+message(string.format("Pitch step adjustment %s", self.states[state]))
 return message
 end
 
@@ -276,16 +362,26 @@ local message = initOutputMessage()
 local state = round(config.getinteger("pitchStep", 1.00), 2)
 local ajustingValue
 if action == true then
-if state == 0.01 then
-ajustingValue = 1.0
+if state >= 0.01 and state < 0.50 then
+ajustingValue = 0.50
+elseif state >= 0.50 and state < 1.00 then
+ajustingValue = 1.00
+elseif state >= 1.00 and state < 12.00 then
+ajustingValue = 12.00
 else
-ajustingValue = state+1.0
+return "Maximal proposed step value"
 end
 elseif action == false then
-if state== 1.00 then
+if state > 12.00 then
+ajustingValue = 12.00
+elseif state <= 12.00 and state > 1.00 then
+ajustingValue = 1.00
+elseif state <= 1.00 and state > 0.50 then
+ajustingValue = 0.50
+elseif state <= 0.50 and state > 0.01 then
 ajustingValue = 0.01
 else
-ajustingValue = state-1.0
+return "Minimal proposed step value"
 end
 else
 local result, answer = reaper.GetUserInputs("Pitch step input", 1, 'Type the needed step which every property with pitch value will change per one adjustment in decimal format but no more two digits after decimal separator (0.01=0 semitones, 1 cent), 1.25=1 semitone, 25 cents and etc):', state)
