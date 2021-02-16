@@ -129,25 +129,13 @@ end
 -- DB step specify methods
 local dbStepProperty = {}
 configLayout.stepAdjustment:registerProperty( dbStepProperty)
-dbStepProperty.states = setmetatable({},
-{__index = function(self, key)
-local predb = splitstring(string.format("%.2f", key), ".")
-local udb, ddb = tonumber(predb[1]), tonumber(predb[2])
-local msg = string.format("%u", udb)
-if ddb > 0 then
-msg = msg..string.format(".%u", ddb)
-end
-msg = msg.." dB"
-return msg
-end
-}
-)
+
 function dbStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("Decibel step adjustment %s", self.states[state]))
+message(string.format("Decibel step adjustment %s", representation.db[-decibelstonum(state)]))
 return message
 end
 
@@ -257,29 +245,13 @@ end
 -- Time step adjustment methods
 local timeStepProperty = {}
 configLayout.stepAdjustment:registerProperty( timeStepProperty)
-timeStepProperty.states = setmetatable({},
-{__index = function(self, key)
-local pretime = splitstring(string.format("%.3f", key), ".")
-local s, ms = tonumber(pretime[1]), tonumber(pretime[2])
-local msg = ""
-if s > 0 then
-msg = msg..string.format("%u second%s, ", s, ({[true]="s",[false]=""})[(s ~= 1)])
-end
-if ms > 0 then
-msg = msg..string.format("%u milisecond%s", ms, ({[true]="s",[false]=""})[(ms ~= 1)])
-else
-msg = msg:gsub(", ", "")
-end
-return msg
-end
-})
 
 function timeStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("timeStep", 0.001)
-message(string.format("Time step adjustment %s", self.states[state]))
+message(string.format("Time step adjustment %s", representation.timesec[state]))
 return message
 end
 
@@ -330,30 +302,13 @@ end
 -- Pitch adjustment methods
 local pitchStepProperty = {}
 configLayout.stepAdjustment:registerProperty( pitchStepProperty)
-pitchStepProperty.states = setmetatable({},
-{__index = function(self, key)
-local prepitch = splitstring(string.format("%.2f", key), ".")
-local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
-local msg = ""
-if s > 0 then
-msg = msg..string.format("%u semitone%s, ", s, ({[true]="s",[false]=""})[(s ~= 1)])
-end
-if c > 0 then
-msg = msg..string.format("%u cent%s", c, ({[true]="s",[false]=""})[(c ~= 1)])
-else
-msg = msg:gsub(", ", "")
-end
-return msg
-end
-})
-
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType(typeLevel, "Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = round(config.getinteger("pitchStep", 1.00), 2)
-message(string.format("Pitch step adjustment %s", self.states[state]))
+message(string.format("Pitch step adjustment %s", representation.pitch[state]))
 return message
 end
 

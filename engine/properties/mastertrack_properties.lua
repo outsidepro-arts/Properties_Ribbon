@@ -42,7 +42,7 @@ function volumeProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
-message(string.format("Master volume %s db", numtodecibels(state)))
+message(string.format("Master volume %s", representation.db[state]))
 return message
 end
 
@@ -55,14 +55,14 @@ local ajustStep = config.getinteger("dbStep", 0.1)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 if action == true then
 if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state, true)+ajustStep)
+state = decibelstonum(numtodecibels(state)+ajustStep)
 else
 state = decibelstonum(12.0)
 message("maximum volume. ")
 end
 elseif action == false then
 if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state, true)-ajustStep)
+state = decibelstonum(numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -71,7 +71,7 @@ else
 state = 1
 end
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
-message(string.format("Master volume %s db", numtodecibels(reaper.GetMediaTrackInfo_Value(master, "D_VOL"))))
+message(self:get())
 return message
 end
 
@@ -83,7 +83,7 @@ function panProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired pan value for master track. Perform this property to set the pan to center.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-message(string.format("Master pan %s", numtopan(state)))
+message(string.format("Master pan %s", representation.pan[state]))
 return message
 end
 
@@ -112,7 +112,7 @@ else
 state = 0
 end
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
-message(string.format("Master pan %s", numtopan(reaper.GetMediaTrackInfo_Value(master, "D_PAN"))))
+message(self:get())
 return message
 end
 

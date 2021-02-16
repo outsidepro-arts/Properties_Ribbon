@@ -321,10 +321,10 @@ end
 message:addType(" Perform this property to reset the volume to zero DB.", 1)
 if type(items) == "table" then
 message("items volume:")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return string.format("%s dB", numtodecibels(key)) end})))
+message(composeMultipleItemMessage(self.getValue, representation.db))
 else
 local state = self.getValue(items)
-message(string.format("Item %u volume %s db", getItemNumber(items), numtodecibels(state)))
+message(string.format("Item %u volume %s", getItemNumber(items), representation.db[state]))
 end
 return message
 end
@@ -359,14 +359,14 @@ else
 local state = self.getValue(items)
 if action == true then
 if state < decibelstonum(12.0) then
-self.setValue(items, decibelstonum(numtodecibels(state, true)+ajustStep))
+self.setValue(items, decibelstonum(numtodecibels(state)+ajustStep))
 else
 self.setValue(items, decibelstonum(12.0))
 message("maximum volume.")
 end
 elseif action == false then
 if numtodecibels(state) ~= "-inf" then
-self.setValue(items, decibelstonum(numtodecibels(state, true)-ajustStep))
+self.setValue(items, decibelstonum(numtodecibels(state)-ajustStep))
 else
 self.setValue(items, 0)
 message("Minimum volume.")
@@ -374,7 +374,6 @@ end
 else
 self.setValue(items, 1)
 end
---message(string.format("Item %u volume %s db", getItemNumber(items), numtodecibels(self.getValue(items))))
 message(self:get())
 end
 return message
@@ -724,10 +723,10 @@ end
 message:addType(" Perform this property to remove snap offset time.", 1)
 if type(items) == "table" then
 message("Items snap offset:")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%s ms", round(state, 3)) end})))
+message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
 local state = self.getValue(items)
-message(string.format("Item %u snap offset %s ms", getItemNumber(items), round(state, 3)))
+message(string.format("Item %u snap offset %s", getItemNumber(items), representation.timesec[round(state, 3)]))
 end
 return message
 end
@@ -964,9 +963,9 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadein length: ")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return string.format("%s ms", round(key, 3)) end})))
+message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
-message(("Item %u fadein length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
+message(("Item %u fadein length %s"):format(getItemNumber(items), representation.timesec[self.getValue(items)]))
 end
 return message
 end
@@ -1200,9 +1199,9 @@ end
 message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 if type(items) == "table" then
 message("Items fadeout length: ")
-message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, key) return ("%s ms"):format(round(key, 3)) end})))
+message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
-message(("Item %u fadeout length %s ms"):format(getItemNumber(items), round(self.getValue(items), 3)))
+message(("Item %u fadeout length %s"):format(getItemNumber(items), representation.timesec[self.getValue(items)]))
 end
 return message
 end
@@ -1352,7 +1351,7 @@ if type(items) == "table" then
 message("Items automatic fadein length: ")
 message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
 if state >= 0 then
-return ("%s ms"):format(tostring(state))
+return representation.timesec[state]
 else
 return "automatic fadein off"
 end
@@ -1361,7 +1360,7 @@ end
 else
 local state = self.getValue(items)
 if state >= 0 then
-message(("Item %u automatic fadein length %s ms"):format(getItemNumber(items), round(state, 3)))
+message(("Item %u automatic fadein length %s"):format(getItemNumber(items), representation.timesec[state]))
 else
 message(("Item %u automatic fadein off"):format(getItemNumber(items)))
 end
@@ -1455,7 +1454,7 @@ if type(items) == "table" then
 message("Items automatic fadeout length: ")
 message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
 if state >= 0 then
-return ("%s ms"):format(tostring(state))
+return representation.timesec[state]
 else
 return "automatic fadeout off"
 end
@@ -1464,7 +1463,7 @@ end
 else
 local state = self.getValue(items)
 if state >= 0 then
-message(("Item %u automatic fadeout length %s ms"):format(getItemNumber(items), round(state, 3)))
+message(("Item %u automatic fadeout length %s"):format(getItemNumber(items), representation.timesec[state]))
 else
 message(("Item %u automatic fadeout off"):format(getItemNumber(items)))
 end
@@ -1660,10 +1659,10 @@ message:addType(" If the group of items has been selected, normalize to common g
 end
 if type(items) == "table" then
 message("Takes volume: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%s dB", numtodecibels(state)) end})))
+message(composeMultipleTakeMessage(self.getValue, representation.db))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u volume %s db", getItemNumber(items), getTakeNumber(items), numtodecibels(state)))
+message(string.format("Item %u take %u volume %s", getItemNumber(items), getTakeNumber(items), representation.db[state]))
 end
 return message
 end
@@ -1687,7 +1686,7 @@ end
 self.setValue(items[k], state)
 elseif action == false then
 local state = self.getValue(items[k])
-if numtodecibels(state) ~= "-inf" then
+if numtodecibels(state) ~= -150 then
 state = decibelstonum(numtodecibels(state)-ajustStep)
 else
 state = 0
@@ -1699,15 +1698,15 @@ else
 local state = self.getValue(items)
 if action == true then
 if state < decibelstonum(maxDBValue) then
-state = decibelstonum(numtodecibels(state, true)+ajustStep)
+state = decibelstonum(numtodecibels(state)+ajustStep)
 else
 state = decibelstonum(12.0)
 message("maximum volume. ")
 end
 self.setValue(items, state)
 elseif action == false then
-if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state, true)-ajustStep)
+if numtodecibels(state) ~= -150.00 then
+state = decibelstonum(numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -1744,11 +1743,11 @@ end
 message:addType(" Perform this property to set the take pan to center.", 1)
 if type(items) == "table" then
 message("Takes pan: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return numtopan(state) end})))
+message(composeMultipleTakeMessage(self.getValue, representation.pan))
 else
 message(string.format("Item %u take %u pan ", getItemNumber(items), getTakeNumber(items)))
 local state = self.getValue(items)
-message(string.format("%s", numtopan(state)))
+message(string.format("%s", representation.pan[state]))
 end
 return message
 end
@@ -2147,29 +2146,6 @@ function  takePitchProperty.setValue(item, value)
 reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PITCH", value)
 end
 
-function takePitchProperty.compose(num)
-local message = initOutputMessage()
-num = round(num, 2)
-if num == 0 then
-return "original"
-else
-local fv = splitstring(tostring(round(num, 2)), ".")
-if num < 0 then
-message("-")
-end
-if tonumber(fv[1]) ~= 0 then
-message(string.format("%s semitone%s", fv[1], ({[false]="", [true]="s"})[(tonumber(fv[1]) > 1 or tonumber(fv[1]) < -1)]))
-if tonumber(fv[2]) > 0 then
-message(", ")
-end
-end
-if fv[2] ~= "0" then
-message(string.format("%s cent%s", numtopercent(tonumber("0."..fv[2])), ({[false]="", [true]="s"})[(numtopercent(tonumber("0."..fv[2])) > 1)]))
-end
-end
-return tostring(message)
-end
-
 function takePitchProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired pitch value for active take of selected item.", "Adjustable, performable")
@@ -2179,10 +2155,10 @@ end
 message:addType(" Perform this property to reset  pitch to 0.", 1)
 if type(items) == "table" then
 message("Takes pitch: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return takePitchProperty.compose(state) end})))
+message(composeMultipleTakeMessage(self.getValue, representation.pitch))
 else
 local state = self.getValue(items)
-message(string.format("Item %u  take %u pitch %s", getItemNumber(items), getTakeNumber(items), self.compose(state)))
+message(string.format("Item %u  take %u pitch %s", getItemNumber(items), getTakeNumber(items), representation.pitch[state]))
 end
 return message
 end
@@ -2197,7 +2173,6 @@ message("Reset,")
 ajustingValue = 0
 end
 if type(items) == "table" then
-message("Takes pitch: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then

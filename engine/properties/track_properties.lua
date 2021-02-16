@@ -356,10 +356,10 @@ end
 message:addType(" Perform this property to reset the volume to zero DB.", 1)
 if type(tracks) == "table" then
 message("tracks volume:")
-message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, setmetatable({}, {__index = function(self, state) return string.format("%s dB", numtodecibels(state)) end})))
+message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, representation.db))
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-message(string.format("Track %s volume %s db", getTrackID(tracks), numtodecibels(state)))
+message(string.format("Track %s volume %s", getTrackID(tracks), representation.db[state]))
 end
 return message
 end
@@ -394,14 +394,14 @@ else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
 if action == true then
 if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state, true)+ajustStep)
+state = decibelstonum(numtodecibels(state)+ajustStep)
 else
 state = decibelstonum(12.0)
 message("maximum volume. ")
 end
 elseif action == false then
 if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state, true)-ajustStep)
+state = decibelstonum(numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -429,11 +429,11 @@ end
 message:addType(" Perform this property to set the pan to center.", 1)
 if type(tracks) == "table" then
 message("tracks pan: ")
-message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, setmetatable({}, {__index = function(self, state) return numtopan(state) end})))
+message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, representation.pan))
 else
 message(string.format("Track %s pan ", getTrackID(tracks)))
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-message(string.format("%s", numtopan(state)))
+message(string.format("%s", representation.pan[state]))
 end
 return message
 end
