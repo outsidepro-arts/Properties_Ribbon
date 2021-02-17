@@ -299,6 +299,48 @@ message(self:get())
 return message
 end
 
+-- Playrate adjustment methods
+local playrateStepProperty = {}
+configLayout.stepAdjustment:registerProperty(playrateStepProperty)
+playrateStepProperty.states = {
+[1]="0.6 percent or 10 cents",
+[2]="6 percent or one semitone"
+}
+
+function playrateStepProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.", "adjustable")
+local state = config.getinteger("rateStep", 1)
+message(string.format("Play rate step adjustment %s", self.states[state]))
+return message
+end
+
+function playrateStepProperty:set(action)
+local message = initOutputMessage()
+local state = config.getinteger("ratestep", 1)
+if action == true then
+if (state+1) <= #self.states then
+state = state+1
+else
+return "No more next property values"
+end
+elseif action == false then
+if state > #self.states then
+state = #self.states
+end
+if (state-1) >= 1 then
+state = state-1
+else
+return "No moreprevious property values"
+end
+else
+return "This property adjustable only."
+end
+config.setinteger("rateStep", state)
+message(self:get())
+return message
+end
+
 -- Pitch adjustment methods
 local pitchStepProperty = {}
 configLayout.stepAdjustment:registerProperty( pitchStepProperty)
