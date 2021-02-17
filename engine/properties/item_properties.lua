@@ -559,11 +559,16 @@ end
 -- timebase methods
 local timebaseProperty = {}
  parentLayout.itemLayout:registerProperty(timebaseProperty)
-timebaseProperty.states = {
+timebaseProperty.states = setmetatable({
 [0] = "track or project default",
+[1] = "time",
 [2] = "beats (position, length, rate)",
 [3] = "beats (position only)"
-}
+}, {
+__index = function(self, key)
+return string.format("Unknown item timebase mode %u, please report about via Github issue.", key)
+end
+})
 
 function timebaseProperty:get()
 local message = initOutputMessage()
@@ -624,7 +629,6 @@ else
 local state = reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")
 if action == true or action == false then
 if state+ajustingValue == 0 then
-state = state+ajustingValue
 state = state+ajustingValue
 -- LUA doesn't defines the non-ordered arrays, so the method like in Tracks willn't works
 elseif state+ajustingValue > 2 then
@@ -2024,48 +2028,26 @@ message("Takes playrate: ")
 message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%-5f ms", state) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u playrate %s", getItemNumber(items), getTakeNumber(items), round(state, 3)))
+message(string.format("Item %u take %u playrate %s%%", getItemNumber(items), getTakeNumber(items), numtopercent(state)))
 end
 return message
 end
 
+-- I still didn't came up with any algorhythm for encounting the needed step rate, so we will use the REAPER actions.
+-- Seems it's the lightest method for all time of :)
 function takePlayrateProperty:set(action)
 local message = initOutputMessage()
-local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == false then
-ajustingValue = -ajustingValue
-elseif action == nil then
+local actions= {
+{[false]=40520,[true]=40519},
+{[false]=40518, [true]=40517}
+}
+if action == true or action == false then
+reaper.Main_OnCommand(actions[config.getinteger("rateStep", 1)][action], 0)
+else
 message("Reset,")
-ajustingValue = 1.000
+reaper.Main_OnCommand(40652, 0)
 end
-if type(items) == "table" then
-message("Takes playrate: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-if action == true or action == false then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-end
-else
-state = ajustingValue
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == true or action == false then
-if (state+ajustingValue) >= 0.000 then
-state = state+ajustingValue
-else
-state = 0.000
-message("Minimum playrate. ")
-end
-else
-state = ajustingValue
-end
-self.setValue(items, state)
- end
- message(self:get())
+message(self:get())
 return message
 end
 
