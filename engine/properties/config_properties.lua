@@ -302,7 +302,7 @@ end
 -- Playrate adjustment methods
 local playrateStepProperty = {}
 configLayout.stepAdjustment:registerProperty(playrateStepProperty)
-playrateStepProperty.states = {
+playrateStepProperty.states = {
 [1]="0.6 percent or 10 cents",
 [2]="6 percent or one semitone"
 }
