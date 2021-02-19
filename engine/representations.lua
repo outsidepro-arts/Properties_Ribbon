@@ -69,7 +69,7 @@ if s > 0 then
 msg = msg..string.format("%u second%s, ", s, ({[true]="s",[false]=""})[(s ~= 1)])
 end
 if ms > 0 then
-msg = msg..string.format("%u milisecond%s", ms, ({[true]="s",[false]=""})[(ms ~= 1)])
+msg = msg..string.format("%u millisecond%s", ms, ({[true]="s",[false]=""})[(ms ~= 1)])
 else
 msg = msg:gsub(", ", "")
 end
