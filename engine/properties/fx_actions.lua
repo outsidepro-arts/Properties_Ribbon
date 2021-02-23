@@ -138,8 +138,10 @@ local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), ("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]), "Performable")
 if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
 message:addType(" The FX which have being added to monitoring section will display also here.", 1)
+elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
+message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
 end
-local available = (isAvailable() == true or reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0)
+local available = (isAvailable() or (context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) or (context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0))
 if not available then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
@@ -147,12 +149,14 @@ end
 message(("View OSARA FX parameters for %s"):format(contexts[context]))
 if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
 message(" and monitoring section")
+elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
+message(" and input FX chain")
 end
 return message
 end,
 set = function(self, action)
 if action == nil then
-local available = (isAvailable() == true or reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0)
+local available = (isAvailable() or (context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) or (context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0))
 if available then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
 return ""
@@ -173,7 +177,7 @@ registerProperty("monitoringLayout", {
 get = function(self)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to show the monitoring FX chain.", "Performable")
-message("View the monitoring FX chain")
+message("View FX chain for monitoring FX")
 return message
 end,
 set = function(self, action)
