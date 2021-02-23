@@ -31,7 +31,7 @@ end
 
 -- Checking availableness of context perform
 local function isAvailable()
-if (context == 0 and reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()) > 0) or (context == 1 and reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))) > 0) or (context == true and reaper.TrackFX_GetCount(reaper.GetMasterTrack()) > 0) then
+if (context == 0 and reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()) > 0) or (context == 1 and reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))) > 0) or (context == true and reaper.TrackFX_GetCount(reaper.GetMasterTrack()) > 0 or reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) then
 return true
 end
 return false
