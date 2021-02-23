@@ -25,7 +25,7 @@ local contexts = {
 
 
 local context = nil
-if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0) then
+if not reaper.GetLastTouchedTrack() or reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0) then
 context = true
 else
 context = reaper.GetCursorContext()
@@ -52,8 +52,8 @@ end
 
 function fxActionsLayout.canProvide()
 local context = reaper.GetCursorContext()
-if context == 0 or context == 1 or context == true then
-return true
+if reaper.GetLastTouchedTrack() then
+return (context == 0 or context == 1 or context == true)
 end
 return false
 end
@@ -111,7 +111,7 @@ if not isAvailable() then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
 end
-local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
+ local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
 message(("%s all %s FX"):format(self.states[state], contexts[context]))
 return message
 end,
