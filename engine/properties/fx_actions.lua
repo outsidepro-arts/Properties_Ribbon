@@ -83,7 +83,7 @@ local commands = {
 [true]=40846
 }
 if action == nil then
-reaper.Main_OnCommand(commands[context], 1)
+reaper.Main_OnCommand(commands[context], 0)
 return ""
 else
 return "This property is performable only."
