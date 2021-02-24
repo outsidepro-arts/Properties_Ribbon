@@ -12,7 +12,7 @@ require "properties_ribbon"
 if config.getboolean("automaticLayoutLoading", false) == true then
 proposedLayout = proposeLayout()
 end
-if script_init(proposedLayout) then
+if script_init(proposedLayout, false) then
 reaper.osara_outputMessage(script_nextProperty())
 script_finish()
 end
