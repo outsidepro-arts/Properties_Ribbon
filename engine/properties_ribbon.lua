@@ -212,7 +212,7 @@ contextLayout = "item_properties"
 elseif context == 2 then
 contextLayout = "envelope_properties"
 end
-if forced == true or curLayout == "mastertrack_properties" or curLayout == "track_properties" or curLayout == "envelope_properties" then
+if forced == true or curLayout == "mastertrack_properties" or curLayout == "track_properties" or curLayout == "item_properties" or curLayout == "envelope_properties" then
 return contextLayout
 end
 return nil
