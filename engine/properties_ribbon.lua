@@ -195,6 +195,29 @@ end
 return tostring(message)
 end
 
+-- Propose an existing Properties Ribbon layout by current REAPER build-in context
+-- parameters:
+-- optional forced (boolean): should the function return the contextual layout forcedly even if one of context has been set earlier. False or nil: only if one of contextual layouts is set, true - immediately.
+function proposeLayout(forced)
+forced = forced or false
+local context, contextLayout, curLayout = reaper.GetCursorContext(), nil, extstate.currentLayout
+if context == 0 then
+if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
+contextLayout = "mastertrack_properties"
+else
+contextLayout = "track_properties"
+end
+elseif context == 1 then
+contextLayout = "item_properties"
+elseif context == 2 then
+contextLayout = "envelope_properties"
+end
+if forced == true or curLayout == "mastertrack_properties" or curLayout == "track_properties" or curLayout == "envelope_properties" then
+return contextLayout
+end
+return nil
+end
+
 
 -- Main body
 
