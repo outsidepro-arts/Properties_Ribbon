@@ -439,5 +439,26 @@ message(self:get())
 return message
 end
 
+-- Automaticaly propose contextual layouts
+local autoProposeLayoutProperty = {}
+configLayout.main:registerProperty(autoProposeLayoutProperty)
+
+function autoProposeLayoutProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.", "Toggleable")
+message(string.format("Propose contextual layout %s when navigating", ({[true]="automaticaly",[false]="manualy"})[config.getboolean("automaticLayoutLoading", false)]))
+return message
+end
+
+function autoProposeLayoutProperty:set(action)
+local message = initOutputMessage()
+if action == nil then
+config.setboolean("automaticLayoutLoading", nor(config.getboolean("automaticLayoutLoading", false)))
+message(self:get())
+return message
+else
+return "This property is toggleable only."
+end
+end
 
 return configLayout[sublayout]

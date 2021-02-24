@@ -9,7 +9,10 @@ reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
 
-if script_init() then
+if config.getboolean("automaticLayoutLoading", false) == true then
+proposedLayout = proposeLayout()
+end
+if script_init(proposedLayout) then
 reaper.osara_outputMessage(script_nextProperty())
 script_finish()
 end
