@@ -234,7 +234,11 @@ return nil
 end
 if newLayout ~= nil then
 currentLayout = newLayout
-speakLayout = shouldSpeakLayout or true
+if shouldSpeakLayout ~= nil then
+speakLayout = shouldSpeakLayout
+else
+speakLayout = true
+end
 if config.getboolean("rememberSublayout", true) == false then
 -- Let REAPER do not request the extstate superfluously
 if  extstate[newLayout.."_sublayout"] ~= "" then
@@ -243,7 +247,11 @@ end
 end
 else
 currentLayout = extstate.currentLayout
+if shouldSpeakLayout ~= nil then
+speakLayout = shouldSpeakLayout
+else
 speakLayout = extstate.speakLayout
+end
 end
 if currentLayout == nil or currentLayout == "" then
 reaper.osara_outputMessage("Switch one action group first.")
