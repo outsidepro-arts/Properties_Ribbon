@@ -300,17 +300,18 @@ end
 function playrateProperty:set(action)
 local message = initOutputMessage()
 -- Cockos are surprisingly strange... There are is over two methods to get master playrate but no one method to set this. But we aren't offend!
-if action == true then
-reaper.Main_OnCommand(40524, 0)
-elseif action == false then
-reaper.Main_OnCommand(40525, 0)
+local actions= {
+{[false]=40525,[true]=40524},
+{[false]=40523, [true]=40522}
+}
+if action == true or action == false then
+reaper.Main_OnCommand(actions[config.getinteger("rateStep", 1)][action], 0)
 else
 message("Reset, ")
 reaper.Main_OnCommand(40521, 0)
 end
 -- If you can found another method to set this, please let me know!
-local state = reaper.Master_GetPlayRate(0)
-message(string.format("Master play rate %s", round(state, 3)))
+message(self:get())
 return message
 end
 
