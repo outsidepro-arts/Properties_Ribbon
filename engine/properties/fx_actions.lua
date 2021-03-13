@@ -93,7 +93,7 @@ end
 
 -- Bypass all FX action
 -- It must not be created if context is items and SWS is not installed
-if context ~= 1 and not reaper.APIExists("CF_GetSWSVersion") == false then
+if context ~= 1 or (context == 1 and reaper.APIExists("CF_GetSWSVersion")) then
 registerProperty("mainLayout", {
 states = {
 [0]="Activate",
