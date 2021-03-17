@@ -83,7 +83,7 @@ local prepitch = splitstring(string.format("%.2f", key), ".")
 local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
 local msg = ""
 if s == 0 and c == 0 then
-return "0 semitones"
+return "original"
 end
 if s < 0 then
 msg = msg.."Minus "
