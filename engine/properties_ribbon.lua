@@ -239,7 +239,7 @@ speakLayout = shouldSpeakLayout
 else
 speakLayout = true
 end
-if config.getboolean("rememberSublayout", true) == false then
+if config.getboolean("rememberSublayout", true) == false and extstate.currentLayout ~= currentLayout then
 -- Let REAPER do not request the extstate superfluously
 if  extstate[newLayout.."_sublayout"] ~= "" then
 extstate[newLayout.."_sublayout"] = nil
