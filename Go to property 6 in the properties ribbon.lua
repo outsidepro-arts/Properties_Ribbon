@@ -13,7 +13,7 @@ if config.getboolean("automaticLayoutLoading", false) == true then
 proposedLayout = proposeLayout()
 end
 
-if script_init(proposedLayout, false) then
+if script_init(proposedLayout) then
 reaper.osara_outputMessage( script_reportOrGotoProperty(6))
 script_finish()
 end
