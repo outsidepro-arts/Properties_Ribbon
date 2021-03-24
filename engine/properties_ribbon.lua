@@ -225,7 +225,7 @@ layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Chang
 
 -- The main initialization function
 -- newLayout (string, optional): new layout name which Properties Ribbon should switch to. If it is omited, the last layout will be loaded.
--- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, the value will be true by default. Note  that this option will be taken only if  newLayout will be passed.
+-- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
 function script_init(newLayout, shouldSpeakLayout)
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
@@ -234,8 +234,12 @@ return nil
 end
 if newLayout ~= nil then
 currentLayout = newLayout
+if shouldSpeakLayout == nil then
 if extstate.currentLayout ~= newLayout then
 speakLayout = true
+end
+else
+speakLayout = shouldSpeakLayout
 end
 if config.getboolean("rememberSublayout", true) == false and extstate.currentLayout ~= currentLayout then
 -- Let REAPER do not request the extstate superfluously
