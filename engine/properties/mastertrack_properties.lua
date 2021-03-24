@@ -152,7 +152,7 @@ else
 state = 1
 end
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
-message(string.format("Master width %s%%", numtopercent(reaper.GetMediaTrackInfo_Value(master, "D_WIDTH"))))
+message(self:get())
 return message
 end
 
@@ -187,12 +187,7 @@ else
 state = 1
 end
 reaper.SetMediaTrackInfo_Value(master, "B_MUTE", state)
-if ({reaper.GetTrackUIMute(master)})[2] == true then
-state = 1
-else 
-state = 0
-end
-message(string.format("master %s", states[state]))
+message(self:get())
 return message
 end
 
@@ -220,7 +215,6 @@ soloInConfig = 2
 else
 soloInConfig = 1
 end
-local states = {[0] = "not soloed", [16] = "soloed"}
 local state = ({reaper.GetTrackState(master)})[2]&16
 if state > 0 then
 state = 0
@@ -228,7 +222,7 @@ else
 state = soloInConfig
 end
 reaper.SetMediaTrackInfo_Value(master, "I_SOLO", state)
-message(string.format("Master %s", states[({reaper.GetTrackState(master)})[2]&16]))
+message(self:get())
 return message
 end
 
@@ -256,7 +250,7 @@ end
 if reaper.TrackFX_GetCount(master) > 0 then
 local state = nor(reaper.GetToggleCommandState(16))
 reaper.Main_OnCommand(16, state)
-message(string.format("Master FX %s", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)]))
+message(self:get())
 else
 return "This property  is unavailable nowbecause no one FX in master track FX chain found."
 end
@@ -281,7 +275,7 @@ return "This property is toggleable only."
 end
 local state = nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
-message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
+message(self:get())
 return message
 end
 
@@ -293,7 +287,7 @@ function playrateProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1.", "adjustable, performable")
 local state = reaper.Master_GetPlayRate(0)
-message(string.format("Master play rate %s", round(state, 3)))
+message(string.format("Master play rate %s%%", numtopercent(state)))
 return message
 end
 
@@ -333,7 +327,7 @@ return "This property is toggleable only."
 end
 local state = nor(reaper.GetToggleCommandState(40671))
 reaper.Main_OnCommand(40671, state)
-message(string.format("Master pitch when playrate changes is %s", ({[0] = "not preserved", [1] = "preserved"})[reaper.GetToggleCommandState(40671)]))
+message(self:get())
 return message
 end
 
@@ -361,8 +355,7 @@ else
 reaper.Main_OnCommand(1134, 0)
 return ""
 end
-local state = reaper.Master_GetTempo()
-message(string.format("Master tempo %s BPM", round(state, 3)))
+message(self:get())
 return message
 end
 
@@ -398,16 +391,13 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
-local state = self.getValue()
-if state == true then
+local state = nor(self.getValue())
+if state == false then
 if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", 1) == 1 then
-state = false
+self:setValue(state)
 end
-elseif state == false then
-state = true
 end
-self.setValue(state)
-message(string.format("Master control panel %s", self.states[self.getValue()]))
+message(self:get())
 return message
 end
 
@@ -444,13 +434,8 @@ return "This property is toggleable only."
 end
 local message = initOutputMessage()
 local state = self.getValue()
-if state == true then
-state = false
-elseif state == false then
-state = true
-end
-self.setValue(state)
-message(string.format("Master %s on mixer panel", self.states[self.getValue()]))
+self.setValue(nor(state))
+message(self:get())
 return message
 end
 
@@ -510,7 +495,7 @@ end
 else
 return "This property is adjustable only."
 end
-message(string.format("Master track in the %s on the mixer panel", self.states[self.getValue()]))
+message(self:get())
 return message
 end
 
