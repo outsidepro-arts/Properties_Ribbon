@@ -234,9 +234,7 @@ return nil
 end
 if newLayout ~= nil then
 currentLayout = newLayout
-if shouldSpeakLayout ~= nil then
-speakLayout = shouldSpeakLayout
-else
+if extstate.currentLayout ~= newLayout then
 speakLayout = true
 end
 if config.getboolean("rememberSublayout", true) == false and extstate.currentLayout ~= currentLayout then
