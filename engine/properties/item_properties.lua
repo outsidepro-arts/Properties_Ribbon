@@ -2025,7 +2025,7 @@ end
 message:addType(" Perform this property to reset  playrate to 1.000 for.", 1)
 if type(items) == "table" then
 message("Takes playrate: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%-5f ms", state) end})))
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", numtopercent(state)) end})))
 else
 local state = self.getValue(items)
 message(string.format("Item %u take %u playrate %s%%", getItemNumber(items), getTakeNumber(items), numtopercent(state)))
