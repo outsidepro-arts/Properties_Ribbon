@@ -125,8 +125,8 @@ end
 -- Hack our sublayout a little
 setmetatable(parentLayout.regionsLayout.properties, {
 __index = function(self, key)
-if self.pIndex > numMarkers then
-self.pIndex = numMarkers
+if self.pIndex > numRegions then
+self.pIndex = numRegions
 end
 return nil
 end
