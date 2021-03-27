@@ -32,7 +32,7 @@ end
 local parentLayout = initLayout("Time%s selection")
 
 function parentLayout.canProvide()
-return (mrretval and (numMarkers > 0 or numRegions >0))
+return (mrretval > 0)
 end
 
 if numMarkers > 0 then
@@ -72,6 +72,15 @@ end
 })
 end
 end
+-- Hack our sublayout a little
+setmetatable(parentLayout.markersLayout.properties, {
+__index = function(self, key)
+if self.pIndex > numMarkers then
+self.pIndex = numMarkers
+end
+return nil
+end
+})
 end
 
 
@@ -113,6 +122,15 @@ end
 })
 end
 end
+-- Hack our sublayout a little
+setmetatable(parentLayout.regionsLayout.properties, {
+__index = function(self, key)
+if self.pIndex > numMarkers then
+self.pIndex = numMarkers
+end
+return nil
+end
+})
 end
 
 return parentLayout[sublayout]
