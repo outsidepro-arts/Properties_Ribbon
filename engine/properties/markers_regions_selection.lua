@@ -17,7 +17,16 @@ After this preambula, let me begin.
 
 -- Reading the sublayout
 local sublayout = extstate[currentLayout.."_sublayout"]
+
+-- Before define which sublayout we will load when no sublayout found, just load all marker/regions data.
+-- Also, it will be used in other cases
 local mrretval, numMarkers, numRegions = reaper.CountProjectMarkers(0)
+
+if numMarkers > 0 then
+sublayout = "markersLayout"
+elseif numRegions > 0 then
+sublayout = "regionsLayout"
+end
 
 -- Just a few internal functions
 local function checkMarkerAction()
@@ -54,9 +63,14 @@ local function clearRegionAction()
 extstate.mrkregLayout_rgnstate = nil
 end
 
+-- Reading the color from color composer specified section
+local function getMarkersComposedColor()
+return extstate.colcom_marker_curValue
+end
+
 
 -- Main class initialization
-local parentLayout = initLayout("Time%s selection")
+local parentLayout = initLayout("%stime ruler selection")
 
 function parentLayout.canProvide()
 return (mrretval > 0)
@@ -70,7 +84,8 @@ if retval and not isrgn then
 parentLayout.markersLayout:registerProperty({
 states = setmetatable({
 [1] = "Edit ",
-[2] = "Delete "
+[2] = "Colorize ",
+[3] = "Delete "
 }, {
 __index = function(self, action)
 return ""
@@ -98,7 +113,7 @@ end
 if self.str ~= "" then
 message(string.format(", %s", self.str))
 else
-message("unnamed")
+message(", unnamed")
 end
 return message
 end,
@@ -129,17 +144,22 @@ end
 elseif action == nil then
 if lastAction == 1 then
 -- There is no any different method to show the standart dialog window for user
-message("Editing the")
-reaper.SetEditCurPos(self.position, true, true)
+local prevPosition = reaper.GetCursorPosition()
+reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40614, 0)
+reaper.SetEditCurPos(prevPosition, false, false)
+return ""
 elseif lastAction == 2 then
-if reaper.ShowMessageBox(string.format("Are you sure you want to delete the marker %u?", self.mIndex), "Delete marker", 4) == 6 then
-message(self:get())
-reaper.DeleteProjectMarker(0, self.mIndex, false)
-return message
+local precolor = getMarkersComposedColor()
+if precolor then
+reaper.SetProjectMarker4(0, self.mIndex, false, self.position, 0, self.str, precolor|0x1000000, 0)
+return string.format("Marker %u colorized to %s color.", self.mIndex, colors:getName(reaper.ColorFromNative(precolor)))
 else
-return "Canceled"
+return "Compose any color for markers or regions first."
 end
+elseif lastAction == 3 then
+reaper.DeleteProjectMarker(0, self.mIndex, false)
+return string.format("Marker %u has been deleted.", self.mIndex)
 else
 reaper.SetEditCurPos(self.position, true, true)
 message("Moving to")
@@ -171,7 +191,8 @@ parentLayout.regionsLayout:registerProperty({
 states = setmetatable({
 [1] = "Move to end of ",
 [2] = "Edit ",
-[3] = "Delete "
+[3] = "Colorize ",
+[4] = "Delete "
 }, {
 __index = function(self, action)
 return ""
@@ -233,17 +254,22 @@ if lastAction == 1 then
 reaper.SetEditCurPos(self.endPosition, true, true)
 elseif lastAction == 2 then
 -- There is no any different method to show the standart dialog window for user
-message("Editing the")
-reaper.SetEditCurPos(self.position, true, true)
+local prevPosition = reaper.GetCursorPosition()
+reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40616, 0)
+reaper.SetEditCurPos(prevPosition, false, false)
+return ""
 elseif lastAction == 3 then
-if reaper.ShowMessageBox(string.format("Are you sure you want to delete the region %u?", self.rIndex), "Delete region", 4) == 6 then
-message(self:get())
-reaper.DeleteProjectMarker(0, self.rIndex, true)
-return message
+local precolor = getMarkersComposedColor()
+if precolor then
+reaper.SetProjectMarker4(0, self.rIndex, true, self.position, self.endPosition, self.str, precolor|0x1000000, 0)
+return string.format("Region %u colorized to %s color.", self.rIndex, colors:getName(reaper.ColorFromNative(precolor)))
 else
-return "Canceled"
+return "Compose any color for markers or regions first."
 end
+elseif lastAction == 4 then
+reaper.DeleteProjectMarker(0, self.rIndex, true)
+return string.format("Region %u has been deleted.", self.rIndex)
 else
 reaper.SetEditCurPos(self.position, true, true)
 message("Moving to")
@@ -264,13 +290,9 @@ end
 })
 end
 
--- Dynamic sublayouts still have bugs... Crap!
-if parentLayout[sublayout] then
+-- Dynamic sublayout composing is very cool, but let the engine do not show any error message boxes when unexpectedly no sublayout defined
+if sublayout then
 return parentLayout[sublayout]
 else
-if numMarkers > 0 then
- return parentLayout["markersLayout"]
-elseif numRegions > 0 then
-return parentLayout["regionsLayout"]
-end
+return parentLayout
 end
