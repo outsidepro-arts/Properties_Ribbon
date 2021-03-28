@@ -166,6 +166,8 @@ parentLayout:registerSublayout("item", " for items")
 -- Take sublayout
 parentLayout:registerSublayout("take", " for item takes")
 
+-- Markers
+parentLayout:registerSublayout("marker", " for markers and regions")
 
 -- The creating new property macros
 -- Here a special case, so we will not  use the native layout's methods as is
@@ -598,7 +600,8 @@ registerProperty(grabColorProperty)
 grabColorProperty.states = {
 ["track"] = "last touched track",
 ["item"] = "first selected item",
-["take"] = "active take of selected item"
+["take"] = "active take of selected item",
+["marker"] = "marker or region near cursor"
 }
 
 function grabColorProperty.getValue()
@@ -615,6 +618,24 @@ return nil
 elseif sublayout == "take" then
 if reaper.GetSelectedMediaItem(0, 0) then
 return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0)), "I_CUSTOMCOLOR")
+end
+return nil
+elseif sublayout == "marker" then
+local markeridx, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
+if markeridx then
+local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, markeridx)
+return color
+elseif regionidx then
+local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
+return color
+elseif markeridx and regionidx then
+if reaper.ShowMessageBox('This position contains both a marker and a region. Press \"Yes\" button to grab a color from current marker and \"No\" button for grab a color from region. ', "Make a choice", 4) == 6 then
+local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, markeridx)
+return color
+else
+local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
+return color
+end
 end
 return nil
 end
