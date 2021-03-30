@@ -97,13 +97,13 @@ clr = color,
 mIndex = markrgnindexnumber,
 get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose one of actions for marker on.", "Adjustable, performable")
+message:initType(config.getinteger("typeLevel", 1), "Adjust this marker property to choose one of actions for. Perform this marker property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
 local lastID, lastAction = checkMarkerAction()
 if shouldSaveAnAction and (lastID and lastAction) and (lastID == self.mIndex) then
 message(self.states[lastAction])
-message:addType(string.format(" Perform this property to %sthis marker.", self.states[lastAction]), 1)
+--message:addType(string.format(" Perform this property to %sthis marker.", self.states[lastAction]), 1)
 else
-message:addType(" Perform this property to move the edit cursor to the marker position.", 1)
+--message:addType(" Perform this property to move the edit cursor to the marker position.", 1)
 clearMarkerAction()
 end
 message(string.format("Marker %u", self.mIndex))
@@ -205,13 +205,13 @@ clr = color,
 rIndex = markrgnindexnumber,
 get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose one of actions for the region on.", "Adjustable, performable")
+message:initType(config.getinteger("typeLevel", 1), "Adjust this region property to choose one of actions for. Perform this region property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
 local lastID, lastAction = checkRegionAction()
 if shouldSaveAnAction (lastID and lastAction) and (lastID == self.rIndex) then
 message(self.states[lastAction])
-message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
+--message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
 else
-message:addType(" Perform this property to move the edit cursor to the start position of this region.", 1)
+--message:addType(" Perform this property to move the edit cursor to the start position of this region.", 1)
 clearRegionAction()
 end
 message(string.format("Region %u", self.rIndex))
