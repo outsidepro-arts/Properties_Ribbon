@@ -95,11 +95,11 @@ position = pos,
 str = name,
 clr = color,
 mIndex = markrgnindexnumber,
-get = function(self)
+get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose one of actions for marker on.", "Adjustable, performable")
 local lastID, lastAction = checkMarkerAction()
-if (lastID and lastAction) and (lastID == self.mIndex) then
+if shouldSaveAnAction and (lastID and lastAction) and (lastID == self.mIndex) then
 message(self.states[lastAction])
 message:addType(string.format(" Perform this property to %sthis marker.", self.states[lastAction]), 1)
 else
@@ -165,7 +165,7 @@ reaper.SetEditCurPos(self.position, true, true)
 message("Moving to")
 end
 end
-message(self:get())
+message(self:get(true))
 return message
 end
 })
@@ -203,11 +203,11 @@ endPosition = rgnend,
 str = name,
 clr = color,
 rIndex = markrgnindexnumber,
-get = function(self)
+get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose one of actions for the region on.", "Adjustable, performable")
 local lastID, lastAction = checkRegionAction()
-if (lastID and lastAction) and (lastID == self.rIndex) then
+if shouldSaveAnAction (lastID and lastAction) and (lastID == self.rIndex) then
 message(self.states[lastAction])
 message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
 else
@@ -275,7 +275,7 @@ reaper.SetEditCurPos(self.position, true, true)
 message("Moving to")
 end
 end
-message(self:get())
+message(self:get(true))
 return message
 end
 })
