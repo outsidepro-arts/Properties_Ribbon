@@ -22,10 +22,12 @@ local sublayout = extstate[currentLayout.."_sublayout"]
 -- Also, it will be used in other cases
 local mrretval, numMarkers, numRegions = reaper.CountProjectMarkers(0)
 
+if sublayout == nil then
 if numMarkers > 0 then
 sublayout = "markersLayout"
 elseif numRegions > 0 then
 sublayout = "regionsLayout"
+end
 end
 
 -- Just a few internal functions
