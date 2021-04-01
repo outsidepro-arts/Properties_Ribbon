@@ -189,7 +189,8 @@ end
 function composeSubLayout()
 local message = initOutputMessage()
 message(string.format("%s, ", (layout.name):format(layout.subname)))
-if config.getboolean("reportPos", true) == true and (layout.nextSubLayout or layout.previousSubLayout) then
+local cfg = config.getinteger("reportPos", 4)
+if (cfg == 2 or cfg == 4) and (layout.nextSubLayout or layout.previousSubLayout) then
 message(string.format("%u of %u, ", layout.slIndex, layout.ofCount))
 end
 return tostring(message)
@@ -323,7 +324,8 @@ else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 local result = layout.properties[layout.pIndex]:get()
-if config.getboolean("reportPos", true) == true then
+local cfg = config.getinteger("reportPos", 4)
+if cfg == 3 or cfg == 4 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(tostring(result))
@@ -350,7 +352,8 @@ else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 local result = layout.properties[layout.pIndex]:get()
-if config.getboolean("reportPos", true) == true then
+local cfg = config.getinteger("reportPos", 4)
+if cfg == 3 or cfg == 4 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(tostring(result))
@@ -379,7 +382,8 @@ else
 return string.format("There are no elements %s be provided for.", layout.name:format(""))
 end
 local result = layout.properties[layout.pIndex]:get()
-if config.getboolean("reportPos", true) == true then
+local cfg = config.getinteger("reportPos", 4)
+if cfg == 3 or cfg == 4 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(tostring(result))

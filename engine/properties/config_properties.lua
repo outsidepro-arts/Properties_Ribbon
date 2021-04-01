@@ -86,21 +86,40 @@ end
 -- Virtual cursor position reporting methods
 local reportPosProperty = {}
 configLayout.main:registerProperty( reportPosProperty)
+reportPosProperty.states = {
+[1] = "off",
+[2] = "only for categories",
+[3] = "only for properties",
+[4] = "both for categories and properties"
+}
 function reportPosProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Toggleable")
-local state = config.getboolean("reportPos", true)
-message(string.format("Reporting navigation position %s", ({[true] = "enabled", [false] = "disabled"})[state]))
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
+local state = config.getinteger("reportPos", 4)
+message(string.format("Reporting navigation position %s", self.states[state]))
 return message
 end
 
 function reportPosProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
+if action == nil then
+return "This property is adjustable only."
 end
-local state = nor(config.getboolean("reportPos", true))
-config.setboolean("reportPos", state)
-local message = initOutputMessage() message(self:get())
+local message = initOutputMessage()
+local state = config.getinteger("reportPos", 4)
+if action == true then
+if (state+1) <= #self.states then
+config.setinteger("reportPos", state+1)
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if (state-1) >= 0 then
+config.setinteger("reportPos", state-1)
+else
+message("No more previous property values. ")
+end
+end
+message(self:get())
 return message
 end
 
