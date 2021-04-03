@@ -23,6 +23,24 @@ local contexts = {
 [true]="Master track"
 }
 
+local function getStringPluginsCount(where)
+local preproc = setmetatable({}, {
+__index = function(self, key)
+if tonumber(key) ~= 0 then
+return string.format("%s", key)
+else
+return "no"
+end
+end
+})
+if where == 1 then
+local result = reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack())
+return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(result ~= 1)])
+elseif where == 2 then
+local result = reaper.TrackFX_GetRecCount(reaper.GetMasterTrack())
+return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(result ~= 1)])
+end
+end
 
 local context = nil
 if not reaper.GetLastTouchedTrack() or reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0) then
@@ -70,7 +88,7 @@ registerProperty("mainLayout", {
 get = function(self)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), ("Perform this property to show the %s FX chain."):format(contexts[context]), "Performable")
-message(("View FX chain for %s"):format(contexts[context]))
+message(("View FX chain for %s with %s"):format(contexts[context], getStringPluginsCount(1)))
 return message
 end,
 set = function(self, action)
@@ -143,9 +161,9 @@ if not available then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
 end
-message(("View OSARA FX parameters for %s"):format(contexts[context]))
+message(("View OSARA FX parameters for %s with %s"):format(contexts[context], getStringPluginsCount(1)))
 if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
-message(" and monitoring section")
+message((" and monitoring section with %s"):format(getStringPluginsCount(2)))
 elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
 message(" and input FX chain")
 end
@@ -174,7 +192,7 @@ registerProperty("monitoringLayout", {
 get = function(self)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to show the monitoring FX chain.", "Performable")
-message("View FX chain for monitoring FX")
+message(("View FX chain for monitoring FX with %s"):format(getStringPluginsCount(2)))
 return message
 end,
 set = function(self, action)
