@@ -145,13 +145,11 @@ else
 extstate.mrkregLayout_mrkstate = nil
 end
 message(string.format("Marker %u", self.mIndex))
-if self.clr > 0 then
-message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
-end
 if self.str ~= "" then
 message(string.format(", %s", self.str))
-else
-message(", unnamed")
+end
+if self.clr > 0 then
+message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
 end
 return message
 end,
@@ -333,13 +331,11 @@ else
 extstate.mrkregLayout_rgnstate = nil
 end
 message(string.format("Region %u", self.rIndex))
-if self.clr > 0 then
-message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
-end
 if self.str ~= "" then
 message(string.format(", %s", self.str))
-else
-message("unnamed")
+end
+if self.clr > 0 then
+message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
 end
 return message
 end,
