@@ -23,41 +23,6 @@ local sublayout = extstate[currentLayout.."_sublayout"] or "markersLayout"
 local mrretval, numMarkers, numRegions = reaper.CountProjectMarkers(0)
 
 
--- Just a few internal functions
-local function checkMarkerAction()
-local state = extstate.mrkregLayout_mrkstate
-if state then
-state = splitstring(state)
-return tonumber(state[1]), tonumber(state[2])
-end
-return nil
-end
-
-local function checkRegionAction()
-local state = extstate.mrkregLayout_rgnstate
-if state then
-state = splitstring(state)
-return tonumber(state[1]), tonumber(state[2])
-end
-return nil
-end
-
-local function clearMarkerAction()
-extstate.mrkregLayout_mrkstate = nil
-end
-
-local function setMarkerAction(mrkid, mrkaction)
-extstate.mrkregLayout_mrkstate = ("%u %u"):format(mrkid, mrkaction)
-end
-
-local function setRegionAction(rgnid, rgnaction)
-extstate.mrkregLayout_rgnstate = ("%u %u"):format(rgnid, rgnaction)
-end
-
-local function clearRegionAction()
-extstate.mrkregLayout_rgnstate = nil
-end
-
 -- Reading the color from color composer specified section
 local function getMarkersComposedColor()
 return extstate.colcom_marker_curValue
