@@ -2807,7 +2807,7 @@ return parentLayout.stretchMarkersLayout.properties[#parentLayout.stretchMarkers
 end
 })
 
-
+--[[
 local takeMarkersActionsProperty = {}
 parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
 takeMarkersActionsProperty.states = {
@@ -2886,5 +2886,6 @@ parentLayout.pIndex = #parentLayout.takeMarkersLayout.properties
 return parentLayout.takeMarkersLayout.properties[#parentLayout.takeMarkersLayout.properties]
 end
 })
+]]--
 
 return parentLayout[sublayout]
