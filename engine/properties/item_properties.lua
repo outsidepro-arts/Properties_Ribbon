@@ -129,6 +129,35 @@ return message
 end
 
 
+local function getSelectedItemAtCursor()
+local suitableItem = nil
+if type(items) == "table" then
+for _, item in ipairs(items) do
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemLength/takePlayrate) then
+return item
+end
+end
+else
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(items, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(items, "D_LENGTH")
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemLength/takePlayrate) then
+return items
+end
+end
+end
+
+local function pos_relativeToGlobal(item, rel)
+local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
+return (itemPosition+rel)/takePlayrate
+end
+
+local function pos_globalToRelative(item)
+local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
+return (reaper.GetCursorPosition()-itemPosition)*takePlayrate
+end
+
+
+
 -- global pseudoclass initialization
 local parentLayout = initLayout("Item%s properties")
 
@@ -151,6 +180,13 @@ parentLayout:registerSublayout("itemLayout", "")
 
 -- Current take properties
 parentLayout:registerSublayout("takeLayout", " current take")
+
+-- Stretch markers
+parentLayout:registerSublayout("stretchMarkersLayout", " take stretch markers")
+
+-- Take markers
+-- Currently is not finaly written, so  now it is commented at this time.
+--parentLayout:registerSublayout("takeMarkersLayout", " take markers")
 
 
 --[[
@@ -2559,5 +2595,296 @@ message("This property is performable only.")
 end
 return message
 end
+
+-- Stretch markers realisation
+local function formStretchMarkerProperties(item)
+for i = 0, reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item)) do
+local stretchMarker = {}
+stretchMarker.item = item
+stretchMarker.idx = i
+stretchMarker.retval, stretchMarker.pos, stretchMarker.srcpos = reaper.GetTakeStretchMarker(reaper.GetActiveTake(item), i)
+if stretchMarker.retval ~= -1 then
+parentLayout.stretchMarkersLayout:registerProperty({
+states = {
+[0] = "Jump to ",
+[1] = "Pull ",
+[2] = "Edit ",
+[3] = "Delete "
+},
+marker = stretchMarker,
+get = function (self, shouldSaveAction)
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this stretch marker property to choose aproppriate action for. Perform this stretch marker property to either jump to its position or apply chosen earlier action on.", "Adjustable, performable")
+if extstate.itemProperties_smrkaction and not shouldSaveAction then
+extstate.itemProperties_smrkaction = nil
+else
+message(self.states[extstate.itemProperties_smrkaction])
+end
+message(string.format("Item %u take %u stretch marker %u", getItemNumber(self.marker.item), getTakeNumber(self.marker.item), self.marker.idx+1))
+return message
+end,
+set = function(self, action)
+local message = initOutputMessage()
+local maction = extstate.itemProperties_smrkaction
+if action == true then
+if not maction then
+maction = 0
+end
+if (maction+1) <= #self.states then
+maction = maction+1
+extstate.itemProperties_smrkaction = maction
+else
+message("No more next stretch marker actions. ")
+end
+elseif action == false then
+if not maction then
+maction = 0
+end
+if (maction-1) >= 0 then
+maction = maction-1
+extstate.itemProperties_smrkaction = maction
+else
+message("No more previous stretch marker actions. ")
+end
+elseif action == nil then
+if maction == 1 then
+local curpos = reaper.GetCursorPosition()
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(self.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(self.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(self.marker.item, "D_LENGTH")
+if curpos >= itemPosition and curpos <= (itemPosition+itemLength) then
+reaper.SetTakeStretchMarker(reaper.GetActiveTake(self.marker.item), self.marker.idx, ((curpos-itemPosition)*takePlayrate))
+message(self:get())
+message("pulled onto new position.")
+else
+return "You're trying to pull the stretch marker which belongs to defined item through out the edges of this item."
+end
+elseif maction == 2 then
+local curpos = reaper.GetCursorPosition()
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.Main_OnCommand(41988, 0)
+reaper.SetEditCurPos(curpos, false, false)
+return ""
+elseif maction == 3 then
+message(self:get())
+reaper.DeleteTakeStretchMarkers(reaper.GetActiveTake(self.marker.item), self.marker.idx)
+message("has been deleted.")
+return message
+else
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+message(self.states[0])
+end
+end
+message(self:get(true))
+return message
+end
+})
+end
+end
+end
+ 
+ local function formTakeMarkersProperties(item)
+ for i = 0, reaper.GetNumTakeMarkers(reaper.GetActiveTake(item)) do
+ local takeMarker = {}
+takeMarker.item = item
+takeMarker.idx = i
+takeMarker.retval, takeMarker.name, takeMarker.color = reaper.GetTakeMarker(reaper.GetActiveTake(item), i)
+if takeMarker.retval ~= -1 then
+parentLayout.takeMarkersLayout:registerProperty({
+marker = takeMarker,
+get = function(self)
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
+message(string.format("Item %u take %u take marker %u", getItemNumber(self.marker.item), getTakeNumber(self.marker.item), self.marker.idx+1))
+if self.marker.color > 0 then
+message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.marker.color))))
+end
+if self.marker.name then
+message(string.format(", %s", self.marker.name))
+else
+message(", unnamed")
+end
+return message
+end,
+set = function(self, action)
+return "Doesn't supported yet" 
+end
+})
+end
+end
+end
+
+-- Main stretch markers actions
+local stretchMarkerActionsProperty = {}
+parentLayout.stretchMarkersLayout:registerProperty(stretchMarkerActionsProperty)
+stretchMarkerActionsProperty.states = {
+[1] = "Add stretch marker at cursor",
+[2] = "Add stretch markers at time selection",
+[3] = "Add stretch marker at cursor and edit",
+[4] = "Delete all stretch markers"
+}
+
+function stretchMarkerActionsProperty:get(shouldSaveAction)
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose needed action for stretch markers. Perform this property to apply chosen action.", "Adjustable, performable")
+if extstate.itemsProperty_smrkaction and not shouldSaveAction then
+extstate.itemsProperty_smrkaction = nil
+end
+local state = extstate.itemsProperty_smrkaction
+if not state then
+state = 1
+end
+message(self.states[state])
+return message
+end
+
+function stretchMarkerActionsProperty:set(action)
+local message = initOutputMessage()
+local state = extstate.itemsProperty_smrkaction
+if not state then
+state = 1
+end
+if action == true then
+if (state+1) <= #self.states then
+extstate.itemsProperty_smrkaction = state+1
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if (state-1) > 0 then
+extstate.itemsProperty_smrkaction = state-1
+else
+message("No more previous property values. ")
+end
+elseif action == nil then
+if state == 2 then
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+reaper.Main_OnCommand(41843, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+if prevMarkersCount < newMarkersCount then
+return "Stretch markers created by time selection."
+else
+return "No stretch markers created."
+end
+elseif state == 3 then
+reaper.Main_OnCommand(41842, 0)
+reaper.Main_OnCommand(41988, 0)
+elseif state == 4 then
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+reaper.Main_OnCommand(41844, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+if prevMarkersCount > newMarkersCount then
+return "All Stretch markers deleted."
+else
+return "No stretch markers deleted."
+end
+else
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+reaper.Main_OnCommand(41842, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
+if prevMarkersCount < newMarkersCount then
+return "Stretch marker created."
+else
+return "No stretch markers created."
+end
+end
+end
+message(self:get(true))
+return message
+end
+
+-- creating the stretch markers properties by the items list
+if type(items) == "table" then
+for _, item in ipairs(items) do
+formStretchMarkerProperties(item)
+end
+else
+formStretchMarkerProperties(items)
+end
+-- Hack our sublayout a little to avoid the engine to call  not existing properties
+setmetatable(parentLayout.stretchMarkersLayout.properties, {
+__index = function(self, key)
+parentLayout.pIndex = #parentLayout.stretchMarkersLayout.properties
+return parentLayout.stretchMarkersLayout.properties[#parentLayout.stretchMarkersLayout.properties]
+end
+})
+
+
+local takeMarkersActionsProperty = {}
+parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
+takeMarkersActionsProperty.states = {
+[1] = "Create take marker at current position",
+[2] = "Create take marker at current position and colorize it",
+[3] = "Create take marker at current position and edit it",
+[4] = "Delete all take markers"
+}
+
+function takeMarkersActionsProperty:get(shouldSaveAction)
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose needed action for take markers. Perform this property to apply chosen action.", "Adjustable, performable")
+if extstate.itemsProperty_tmrkaction and not shouldSaveAction then
+extstate.itemsProperty_tmrkaction = nil
+end
+local state = extstate.itemsProperty_tmrkaction
+if not state then
+state = 1
+end
+message(self.states[state])
+return message
+end
+
+function takeMarkersActionsProperty:set(action)
+local message = initOutputMessage()
+local state = extstate.itemsProperty_tmrkaction
+if not state then
+state = 1
+end
+if action == true then
+if (state+1) <= #self.states then
+extstate.itemsProperty_tmrkaction = state+1
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if (state-1) > 0 then
+extstate.itemsProperty_tmrkaction = state-1
+else
+message("No more previous property values. ")
+end
+elseif action == nil then
+if state == 2 then
+local suitableItem = getItemAtCursor()
+if suitableItem then
+local retval = reaper.SetTakeMarker(suitableItem, -1, "", time_globalToRelative(suitableItem), getTakeComposedColor())
+if retval >= 0 then
+message(string.format("Take marker %u has been added.", retval))
+end
+end
+elseif state == 3 then
+reaper.Main_OnCommand(41842, 0)
+reaper.Main_OnCommand(41988, 0)
+elseif state == 4 then
+reaper.Main_OnCommand(41844, 0)
+else
+reaper.Main_OnCommand(42390, 0)
+end
+end
+message(self:get(true))
+return message
+end
+
+-- creating the take markers properties by the items list
+if type(items) == "table" then
+for _, item in ipairs(items) do
+formTakeMarkersProperties(item)
+end
+else
+formTakeMarkersProperties(items)
+end
+-- Hack our sublayout a little to avoid the engine to call  not existing properties
+setmetatable(parentLayout.takeMarkersLayout.properties, {
+__index = function(self, key)
+parentLayout.pIndex = #parentLayout.takeMarkersLayout.properties
+return parentLayout.takeMarkersLayout.properties[#parentLayout.takeMarkersLayout.properties]
+end
+})
 
 return parentLayout[sublayout]
