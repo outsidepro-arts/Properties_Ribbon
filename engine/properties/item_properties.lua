@@ -2760,7 +2760,7 @@ local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(ge
 reaper.Main_OnCommand(41843, 0)
 local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
 if prevMarkersCount < newMarkersCount then
-return "Stretch markers created by time selection."
+return "Stretch markers added by time selection."
 else
 return "No stretch markers created."
 end
@@ -2781,7 +2781,7 @@ local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(ge
 reaper.Main_OnCommand(41842, 0)
 local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(getSelectedItemAtCursor()))
 if prevMarkersCount < newMarkersCount then
-return "Stretch marker created."
+return "Stretch marker added."
 else
 return "No stretch markers created."
 end
