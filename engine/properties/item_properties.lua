@@ -756,7 +756,7 @@ end
 
 function itemSnapOffsetProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel"), "Adjust this property to set the desired snap offset time.", "Adjustable, performable")
+message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired snap offset time.", "Adjustable, performable")
 if multiSelectionSupport == ttrue then
 message:addType(" If the group of items has selected, the relative depending on previous value will be set for each selected item.", 1)
 end
@@ -2484,7 +2484,7 @@ end
 
 function itemColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel"), "Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
+message:initType(config.getinteger("typeLevel",1 ), "Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items have been selected, this color will be applied for selected this items.", 1)
 end
@@ -2558,7 +2558,7 @@ end
 
 function itemTakeColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel"), "Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
+message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items have been selected, this color will be applied for selected its active takes.", 1)
 end
