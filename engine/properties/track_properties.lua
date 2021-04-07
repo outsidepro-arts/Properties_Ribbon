@@ -1688,7 +1688,7 @@ end
 
 function colorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel"), "Read this property to get the information about track color. Perform this property to apply composed color in the track category.", "performable")
+message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about track color. Perform this property to apply composed color in the track category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track have been selected, this color will be applied for all this tracks.", 1)
 end
