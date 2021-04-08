@@ -87,15 +87,15 @@ end
 local reportPosProperty = {}
 configLayout.main:registerProperty( reportPosProperty)
 reportPosProperty.states = {
-[1] = "off",
-[2] = "only for categories",
-[3] = "only for properties",
-[4] = "both for categories and properties"
+[0] = "off",
+[1] = "only for categories",
+[2] = "only for properties",
+[3] = "both for categories and properties"
 }
 function reportPosProperty:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
-local state = config.getinteger("reportPos", 4)
+local state = config.getinteger("reportPos", 3)
 message(string.format("Reporting navigation position %s", self.states[state]))
 return message
 end
@@ -105,7 +105,7 @@ if action == nil then
 return "This property is adjustable only."
 end
 local message = initOutputMessage()
-local state = config.getinteger("reportPos", 4)
+local state = config.getinteger("reportPos", 3)
 if action == true then
 if (state+1) <= #self.states then
 config.setinteger("reportPos", state+1)
