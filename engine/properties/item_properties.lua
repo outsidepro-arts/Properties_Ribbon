@@ -163,11 +163,7 @@ local parentLayout = initLayout("Item%s properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
-if reaper.CountSelectedMediaItems(0) > 0 then
-return true
-else
-return false
-end
+return (reaper.CountSelectedMediaItems(0) > 0)
 end
 
 -- sublayouts
@@ -2598,6 +2594,9 @@ end
 
 -- Stretch markers realisation
 local function formStretchMarkerProperties(item)
+if not parentLayout.canProvide() then
+return
+end
 for i = 0, reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item)) do
 local stretchMarker = {}
 stretchMarker.item = item
@@ -2625,11 +2624,8 @@ return message
 end,
 set = function(self, action)
 local message = initOutputMessage()
-local maction = extstate.itemProperties_smrkaction
+local maction = extstate.itemProperties_smrkaction or 0
 if action == true then
-if not maction then
-maction = 0
-end
 if (maction+1) <= #self.states then
 maction = maction+1
 extstate.itemProperties_smrkaction = maction
@@ -2637,9 +2633,6 @@ else
 message("No more next stretch marker actions. ")
 end
 elseif action == false then
-if not maction then
-maction = 0
-end
 if (maction-1) >= 0 then
 maction = maction-1
 extstate.itemProperties_smrkaction = maction
