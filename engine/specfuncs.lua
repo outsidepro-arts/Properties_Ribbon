@@ -108,3 +108,7 @@ end
 function debug(str)
 reaper.ShowMessageBox(str, "Debug", 0)
 end
+
+function getScriptPath()
+return ({reaper.get_action_context()})[2]:match('^.+[\\//]').."engine\\"
+end

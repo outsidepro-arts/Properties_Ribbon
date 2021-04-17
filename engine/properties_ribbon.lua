@@ -260,7 +260,7 @@ if currentLayout == nil or currentLayout == "" then
 reaper.osara_outputMessage("Switch one action group first.")
 return nil
 end
-layout = dofile (({reaper.get_action_context()})[2]:match('^.+[\\//]') .. 'engine\\properties\\' .. currentLayout..".lua")
+layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
@@ -288,7 +288,7 @@ else
 return "No previous category. "
 end
 end
-layout = dofile (({reaper.get_action_context()})[2]:match('^.+[\\//]') .. 'engine\\properties\\' .. currentLayout..".lua")
+layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return
