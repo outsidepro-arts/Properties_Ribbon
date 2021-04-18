@@ -244,7 +244,7 @@ end
 elseif answer ~= self.states[state].name and self.states[state].value == getColor() then
 local oldName = self.states[state].name
 if self.states:rename(state, answer) == true then
-Message(string.format("Preset %s has been renamed to %s. ", oldName, answer))
+message(string.format("Preset %s has been renamed to %s. ", oldName, answer))
 else
 message(string.format("Unable to rename preset %s. ", self.states[state].name))
 end
