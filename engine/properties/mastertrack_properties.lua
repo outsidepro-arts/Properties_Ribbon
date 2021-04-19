@@ -346,17 +346,15 @@ return message
 end
 
 function tempoProperty:set(action)
-local message = initOutputMessage()
 if action == true then
 reaper.Main_OnCommand(41129, 0)
 elseif action == false then
 reaper.Main_OnCommand(41130, 0)
 else
 reaper.Main_OnCommand(1134, 0)
-return ""
 end
-message(self:get())
-return message
+-- OSARA provides the state value for tempo
+return ""
 end
 
 -- Master visibility methods
