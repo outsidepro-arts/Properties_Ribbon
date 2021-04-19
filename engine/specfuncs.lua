@@ -68,14 +68,16 @@ function getBitValue(value, first, last)
 return ((value & ((1<<last)-1)) >> (first-1))
 end
 
-function splitstring(string, delimiter)
-if delimiter == nil then
-delimiter = "%s"
+function splitstring(str, delimiter, mode)
+delimiter = delimiter or "%s"
+mode = nor(mode) or true
+local t, spos = {}, 1
+while string.find(str, delimiter, spos, mode) ~= nil do
+local startFindPos, endFindPos = str:find(delimiter, spos, mode)
+table.insert(t, str:sub(spos, startFindPos-1))
+spos = endFindPos+1
 end
-local t={}
-for str in string.gmatch(string, "([^"..delimiter.."]+)") do
-table.insert(t, str)
-end
+table.insert(t, str:sub(spos))
 return t
 end
 
@@ -85,9 +87,9 @@ local curTime = os.clock()
 while (os.clock()-curTime) <= ms do end
 end
 
--- This function grabbed of https://stackoverflow.com/questions/10460126/how-to-remove-spaces-from-a-string-in-lua/10460780
 function removeSpaces(str)
-  return str:match"^%s*(.*)":match"(.-)%s*$"
+preproc = str:gsub("%s.", string.upper):gsub("%s", "")
+  return  preproc:gsub("^.", string.lower)
 end
 
 function nor(state)
