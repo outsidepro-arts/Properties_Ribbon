@@ -130,17 +130,16 @@ end
 
 
 local function getSelectedItemAtCursor()
-local suitableItem = nil
 if type(items) == "table" then
 for _, item in ipairs(items) do
 local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemLength/takePlayrate) then
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemPosition+(itemLength/takePlayrate)) then
 return item
 end
 end
 else
 local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(items, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(items, "D_LENGTH")
-if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemLength/takePlayrate) then
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemPosition+(itemLength/takePlayrate)) then
 return items
 end
 end
@@ -2643,13 +2642,13 @@ elseif action == nil then
 if maction == 1 then
 local curpos = reaper.GetCursorPosition()
 local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(self.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(self.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(self.marker.item, "D_LENGTH")
-if curpos >= itemPosition and curpos <= (itemPosition+itemLength) then
+--if curpos >= itemPosition and curpos <= (itemPosition+itemLength) then
 reaper.SetTakeStretchMarker(reaper.GetActiveTake(self.marker.item), self.marker.idx, ((curpos-itemPosition)*takePlayrate))
 message(self:get())
 message("pulled onto new position.")
-else
-return "You're trying to pull the stretch marker which belongs to defined item through out the edges of this item."
-end
+--else
+--return "You're trying to pull the stretch marker which belongs to defined item through out the edges of this item."
+--end
 elseif maction == 2 then
 local curpos = reaper.GetCursorPosition()
 reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
