@@ -269,14 +269,14 @@ return message
 end
 
 function monoProperty:set(action)
-local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
 end
 local state = nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
-message(self:get())
-return message
+-- OSARA reports this state by itself
+setUndoLabel(self:get())
+return ""
 end
 
 -- Play rate methods
@@ -354,6 +354,7 @@ else
 reaper.Main_OnCommand(1134, 0)
 end
 -- OSARA provides the state value for tempo
+setUndoLabel(self:get())
 return ""
 end
 

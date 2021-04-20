@@ -52,6 +52,7 @@ end,
 set = function(self, action)
 if action == nil then
 reaper.Main_OnCommand(self.cmd, 1)
+setUndoLabel(self:get())
 return ""
 else
 return "This property is performable only."

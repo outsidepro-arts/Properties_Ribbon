@@ -81,6 +81,7 @@ message(string.format("%s has been %s", self.msg:sub(4), self.states[self.getVal
 if self.getValue() == 0 then
 return message
 end
+setUndoLabel(message)
 return ""
 end
 

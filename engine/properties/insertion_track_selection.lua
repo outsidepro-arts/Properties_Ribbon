@@ -48,6 +48,7 @@ return string.format("%u tracks added", newTracksCount-oldTracksCount)
 elseif oldTracksCount > newTracksCount then
 return string.format("%u tracks removed", oldTracksCount-newTracksCount)
 end
+setUndoLabel(self:get())
 return ""
 else
 return "This property is performable only."

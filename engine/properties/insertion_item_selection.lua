@@ -52,6 +52,7 @@ return string.format("%u items added", newItemsCount-oldItemsCount)
 elseif oldItemsCount > newItemsCount then
 return string.format("%u items removed", oldItemsCount-newItemsCount)
 end
+setUndoLabel(self:get())
 return ""
 else
 return "This property is performable only."

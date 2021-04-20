@@ -125,6 +125,7 @@ elseif action == nil then
 if state == 1 then
 reaper.Main_OnCommand(40171, 0)
 -- OSARA reports the marker creation events
+setUndoLabel(self:get(true))
 return ""
 elseif state == 2 then
 if numMarkers > 0 then
@@ -140,6 +141,7 @@ end
 elseif state == 3 then
 reaper.Main_OnCommand(40420, 0)
 -- OSARA reports the marker creation events
+setUndoLabel(self:get(true))
 return ""
 elseif state == 4 then
 local countDeletedMarkers = 0
@@ -156,6 +158,7 @@ end
 else
 reaper.Main_OnCommand(40157, 0)
 -- OSARA reports the marker creation events
+setUndoLabel(self:get(true))
 return ""
 end
 end
@@ -225,6 +228,7 @@ local prevPosition = reaper.GetCursorPosition()
 reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40614, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
+setUndoLabel(self:get(true))
 return ""
 elseif lastAction == 2 then
 local precolor = getMarkersComposedColor()
@@ -301,12 +305,14 @@ elseif action == nil then
 if state == 1 then
 reaper.Main_OnCommand(40306, 0)
 -- OSARA reports the marker creation events
+setUndoLabel(self:get(true))
 return ""
 elseif state == 2 then
 reaper.Main_OnCommand(40348, 0)
 elseif state == 3 then
 reaper.Main_OnCommand(40393, 0)
 -- OSARA reports the marker creation events
+setUndoLabel(self:get(true))
 return ""
 elseif state == 4 then
 reaper.Main_OnCommand(41664, 0)
@@ -413,6 +419,7 @@ local prevPosition = reaper.GetCursorPosition()
 reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40616, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
+setUndoLabel(self:get(true))
 return ""
 elseif lastAction == 3 then
 local precolor = getMarkersComposedColor()

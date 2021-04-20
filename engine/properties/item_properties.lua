@@ -2654,6 +2654,7 @@ local curpos = reaper.GetCursorPosition()
 reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
 reaper.Main_OnCommand(41988, 0)
 reaper.SetEditCurPos(curpos, false, false)
+setUndoLabel(self:get(true))
 return ""
 elseif maction == 3 then
 message(self:get())
