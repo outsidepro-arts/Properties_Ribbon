@@ -219,6 +219,20 @@ end
 return nil
 end
 
+function setUndoLabel(label)
+if type(label) == "table" then
+local result = initOutputMessage()
+result(label)
+label = tostring(result)
+end
+if not label then
+g_undoState = ""
+elseif label == "" then
+-- do nothing
+else
+g_undoState = string.format("Properties Ribbon: %s", label)
+end
+end
 
 -- Main body
 
@@ -265,7 +279,7 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
 end
-g_undoState = ("Switch properties layout to %s in Properties Ribbon script"):format((layout.name):format(""))
+setUndoLabel(("Switch properties layout to %s"):format((layout.name):format("")))
 layout.pIndex = extstate[layout.section] or 1
 return layout
 end
@@ -293,7 +307,7 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return
 end
-g_undoState = ("Switch category to %s in Properties Ribbon script"):format((layout.name):format(layout.subname))
+setUndoLabel(("Switch category to %s"):format((layout.name):format(layout.subname)))
 speakLayout = false
 layout.pIndex = extstate[layout.section] or 1
 local message = initOutputMessage()
@@ -329,7 +343,7 @@ if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(tostring(result))
-g_undoState = "Properties Ribbon: "..tostring(message)
+setUndoLabel(message)
 return tostring(message)
 end
 
@@ -357,7 +371,7 @@ if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(tostring(result))
-g_undoState = "Properties Ribbon: "..tostring(message)
+setUndoLabel(message)
 return tostring(message)
 end
 
@@ -393,7 +407,7 @@ end
 function script_ajustProperty(value)
 if layout.canProvide() == true then
 local msg = tostring(layout.properties[layout.pIndex]:set(value))
-g_undoState = "Properties Ribbon: "..msg
+setUndoLabel(msg)
 return msg
 else
 return string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))
