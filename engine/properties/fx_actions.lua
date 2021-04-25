@@ -128,7 +128,7 @@ message:addType(" This action is unavailable right now because there are no FX."
 message:changeType("Unavailable", 2)
 end
  local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
-message(("%s all %s FX"):format(self.states[state], contexts[context]))
+message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(1), contexts[context]))
 return message
 end,
 set = function(self, action)
