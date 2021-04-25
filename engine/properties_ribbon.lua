@@ -234,6 +234,12 @@ g_undoState = string.format("Properties Ribbon: %s", label)
 end
 end
 
+function restorePreviousLayout()
+if config.getboolean("allowLayoutsrestorePrev", true) == true and extstate.previousLayout then
+currentLayout = extstate.previousLayout
+end
+end
+
 -- Main body
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
@@ -249,6 +255,9 @@ return nil
 end
 if newLayout ~= nil then
 currentLayout = newLayout
+if config.getboolean("allowLayoutsrestorePrev", true) == true and newLayout ~= extstate.currentLayout then
+extstate.previousLayout = extstate.currentLayout
+end
 if shouldSpeakLayout == nil then
 if extstate.currentLayout ~= newLayout then
 speakLayout = true
