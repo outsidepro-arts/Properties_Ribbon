@@ -35,6 +35,10 @@ parentLayout.embededLayout:registerProperty(midiEditor)
 function midiEditor:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to open the embeded REAPER MIDI-editor.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message("Open in built-in MIDI editor (set default behavior in preferences)")
 return message
 end
@@ -42,7 +46,9 @@ end
 function midiEditor:set(action)
 if action == nil then
 reaper.Main_OnCommand(40153, 1)
-return "Opened."
+restorePreviousLayout()
+setUndoLabel(self:get())
+return ""
 else
 return "This property is performable only."
 end
@@ -54,6 +60,10 @@ parentLayout.externalLayout:registerProperty(copiesInPrimaryEditor)
 function copiesInPrimaryEditor:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to open copies of selected items to primary editor set in REAPER preferences.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message("Open item copies in primary external editor")
 return message
 end
@@ -61,6 +71,7 @@ end
 function copiesInPrimaryEditor:set(action)
 if action == nil then
 reaper.Main_OnCommand(40132, 1)
+restorePreviousLayout()
 return "Opened."
 else
 return "This property is performable only."
@@ -73,6 +84,10 @@ parentLayout.externalLayout:registerProperty(itemInPrimaryEditor)
 function itemInPrimaryEditor:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items in primary editor set in REAPER preferences.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message("Open items in primary external editor")
 return message
 end
@@ -80,6 +95,7 @@ end
 function itemInPrimaryEditor:set(action)
 if action == nil then
 reaper.Main_OnCommand(40109, 1)
+restorePreviousLayout()
 return "Opened."
 else
 return "This property is performable only."
@@ -93,6 +109,10 @@ parentLayout.externalLayout:registerProperty(copiesInSecondaryEditor)
 function copiesInSecondaryEditor:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items copies to secondary external editor set in REAPER preferences.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message("Open item copies in secondary external editor")
 return message
 end
@@ -100,7 +120,8 @@ end
 function copiesInSecondaryEditor:set(action)
 if action == nil then
 reaper.Main_OnCommand(40203, 1)
-eturn "Opened."
+restorePreviousLayout()
+return "Opened."
 else
 return "This property is performable only."
 end
@@ -112,6 +133,10 @@ parentLayout.externalLayout:registerProperty(itemInSecondaryEditor)
 function itemInSecondaryEditor:get()
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items in secondary external editor set in REAPER preferences.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message("Open items in secondary external editor")
 return message
 end
@@ -119,6 +144,7 @@ end
 function itemInSecondaryEditor:set(action)
 if action == nil then
 reaper.Main_OnCommand(40202, 1)
+restorePreviousLayout()
 return "Opened."
 else
 return "This property is performable only."

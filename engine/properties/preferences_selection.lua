@@ -46,12 +46,17 @@ msg = _msg,
 get = function(self)
 local message = initOutputMessage()
 message:initType(config.getinteger("typeLevel", 1), string.format("Perform this property to open the %s dialog.", self.msg), "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
+message:addType(", onetime", 2)
+end
 message(self.msg)
 return message
 end,
 set = function(self, action)
 if action == nil then
 reaper.Main_OnCommand(self.cmd, 1)
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else

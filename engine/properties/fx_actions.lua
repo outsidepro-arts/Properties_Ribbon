@@ -99,6 +99,7 @@ local commands = {
 }
 if action == nil then
 reaper.Main_OnCommand(commands[context], 0)
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
@@ -136,6 +137,7 @@ if action == nil then
 if isAvailable() then
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
 reaper.Main_OnCommand(self.commands[context], nor(state))
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
@@ -176,6 +178,7 @@ if action == nil then
 local available = (isAvailable() or (context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) or (context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0))
 if available then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
@@ -201,6 +204,7 @@ end,
 set = function(self, action)
 if action == nil then
 reaper.Main_OnCommand(41882, 0)
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
@@ -226,6 +230,7 @@ set = function(self, action)
 if action == nil then
 local state = reaper.GetToggleCommandState(41884)
 reaper.Main_OnCommand(41884, nor(state))
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
