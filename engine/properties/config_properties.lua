@@ -480,4 +480,27 @@ return "This property is toggleable only."
 end
 end
 
+-- Can some properties restore previous layout or not
+local allowRestorePreviousProperty = {}
+configLayout.main:registerProperty(allowRestorePreviousProperty)
+
+function allowRestorePreviousProperty:get()
+local message = initOutputMessage()
+message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.", "Toggleable")
+message(("%s for some properties to restore previous layout"):format(({[true]="Allow",[false]="Disallow"})[config.getboolean("allowLayoutsrestorePrev", true)]))
+return message
+end
+
+function allowRestorePreviousProperty:set(action)
+if action == nil then
+local message = initOutputMessage()
+config.setboolean("allowLayoutsrestorePrev", nor(config.getboolean("allowLayoutsrestorePrev", true)))
+message(self:get())
+return message
+else
+return "This property is toggleable only."
+end
+end
+
+
 return configLayout[sublayout]
