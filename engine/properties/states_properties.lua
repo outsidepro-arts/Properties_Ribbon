@@ -51,7 +51,7 @@ reaper.Main_OnCommand(_cmd, value)
 end,
 get = _get or function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), _type[1], _type[2])
+message:initType(_type[1], _type[2])
 message(string.format(self.msg, self.states[self.getValue()]))
 return message
 end,

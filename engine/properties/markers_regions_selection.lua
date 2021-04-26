@@ -98,7 +98,7 @@ markerActionsProperty.states = {
 
 function markerActionsProperty:get(shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
+message:initType("Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
 if extstate.mrkregLayout_mrkstate and not shouldSaveAnAction then
 extstate.mrkregLayout_mrkstate = nil
 end
@@ -186,7 +186,7 @@ clr = color,
 mIndex = markrgnindexnumber,
 get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this marker property to choose one of actions for. Perform this marker property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
+message:initType("Adjust this marker property to choose one of actions for. Perform this marker property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
 if shouldSaveAnAction and extstate.mrkregLayout_mrkstate then
 message(self.states[extstate.mrkregLayout_mrkstate])
 --message:addType(string.format(" Perform this property to %sthis marker.", self.states[lastAction]), 1)
@@ -278,7 +278,7 @@ regionActionsProperty.states = {
 
 function regionActionsProperty:get(shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
+message:initType("Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
 if extstate.mrkregLayout_rgnstate and not shouldSaveAnAction then
 extstate.mrkregLayout_rgnstate = nil
 end
@@ -375,7 +375,7 @@ clr = color,
 rIndex = markrgnindexnumber,
 get = function(self, shouldSaveAnAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this region property to choose one of actions for. Perform this region property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
+message:initType("Adjust this region property to choose one of actions for. Perform this region property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
 if shouldSaveAnAction  and  extstate.mrkregLayout_rgnstate then
 message(self.states[extstate.mrkregLayout_rgnstate])
 --message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)

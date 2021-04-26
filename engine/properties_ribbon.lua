@@ -35,9 +35,9 @@ local mt = setmetatable({
 -- level (number): the level number of type prompts by default.
 -- infinite parameters (string): the prompts messages in supported order.
 -- returns none.
-initType = function(self, level, ...)
+initType = function(self, ...)
 local args = {...}
-self.tl = level
+self.tl = config.getinteger("typeLevel", 1)
 self.tLevels = {}
 for i = 1, #args do
 self.tLevels[i] = args[i]

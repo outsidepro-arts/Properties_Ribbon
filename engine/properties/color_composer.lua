@@ -194,7 +194,7 @@ end
 
 function presetsProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.", "Adjustable, performable")
+message:initType("Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.", "Adjustable, performable")
 if #self.states > 0 then
 message(string.format("Color preset %s", self.states[self.getValue()].name))
 else
@@ -296,7 +296,7 @@ end
 
 function shadeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color", #colors.colorList), "Adjustable, performable")
+message:initType(string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color", #colors.colorList), "Adjustable, performable")
 message(string.format("Color %s", colors.colorList[self.getValue()].name))
 local filter = getFilter()
 if filter then
@@ -402,7 +402,7 @@ end
 
 function rgbRProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to find nearest  red shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  red shade intensity value which belongs to different color.", "Adjustable")
 message(string.format("Color red intensity %u", self.getValue()))
 return message
 end
@@ -472,7 +472,7 @@ end
 
 function rgbGProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
 message(string.format("Color green intensity %u", self.getValue()))
 return message
 end
@@ -542,7 +542,7 @@ end
 
 function rgbBProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
 message(string.format("Color blue intensity %u", self.getValue()))
 return message
 end
@@ -648,7 +648,7 @@ end
 
 function grabColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", self.states[sublayout]), "Performable")
+message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", self.states[sublayout]), "Performable")
 if not self.getValue() then
 message:addType(" This property unavailable right now because no one element has been selected.", 1)
 message:changeType("unavailable", 2)

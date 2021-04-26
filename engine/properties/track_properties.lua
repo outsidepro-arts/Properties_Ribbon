@@ -145,7 +145,7 @@ parentLayout.visualLayout:registerProperty(trackNameProperty)
 
 function trackNameProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this action to rename selected track.", "performable")
+message:initType("Perform this action to rename selected track.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, new name will applied to all selected tracks.", 1)
 end
@@ -213,7 +213,7 @@ local folderStateProperty = {}
 
 function folderStateProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to switch the folder state of selected tracks.", "Adjustable")
+message:initType("Adjust this property to switch the folder state of selected tracks.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" This property is adjustable for one track only.", 1)
 end
@@ -349,7 +349,7 @@ parentLayout.playbackLayout:registerProperty(volumeProperty)
 parentLayout.recordingLayout:registerProperty(volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for selected track.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -422,7 +422,7 @@ parentLayout.recordingLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired pan value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pan value for selected track.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -489,7 +489,7 @@ parentLayout.playbackLayout:registerProperty(widthProperty)
 
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired width value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired width value for selected track.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -557,7 +557,7 @@ local muteProperty = {}
 
 function muteProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to mute or unmute selected track.", "Toggleable")
+message:initType("Toggle this property to mute or unmute selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the mute state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -620,7 +620,7 @@ parentLayout.playbackLayout:registerProperty(soloProperty)
 
 function soloProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to solo or unsolo selected track.", "Toggleable")
+message:initType("Toggle this property to solo or unsolo selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the solo state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -689,7 +689,7 @@ local recarmProperty = {}
 
 function recarmProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to arm or disarm selected track for record.", "Toggleable")
+message:initType("Toggle this property to arm or disarm selected track for record.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the record state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -750,7 +750,7 @@ local recmonitoringProperty = {}
 
 function recmonitoringProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired record monitoring state.", "Adjustable")
+message:initType("Adjust this property to choose the desired record monitoring state.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the record monitoring state will be set to "%s" first, then will enumerate this.', self.states[1]), 1)
 end
@@ -981,7 +981,7 @@ end
 
 function recInputsProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired record input of selected track.", "Adjustable, toggleable")
+message:initType("Adjust this property to choose the desired record input of selected track.", "Adjustable, toggleable")
 if multiSelectionSupport == true then
 message:addType((' If the group of track has been selected, the value will enumerate up if selected tracks have the same value. If one of tracks has different value, all track will set to "%s" first, then will enumerate up this.'):format(self.compose(0)), 1)
 end
@@ -1079,7 +1079,7 @@ __index = function(self, key) return "Unknown record mode "..key end
 
 function recmodeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired mode for recording.", "Adjustable")
+message:initType("Adjust this property to set the desired mode for recording.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, The value will enumerate only if selected tracks have the same value. Otherwise, the record mode state will be set to "%s", then will enumerate this.', self.states[1]), 1)
 end
@@ -1155,7 +1155,7 @@ __index = function(self, key) return "Unknown automation mode "..key end
 
 function automationModeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired automation mode for selected track.", "Adjustable")
+message:initType("Adjust this property to set the desired automation mode for selected track.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, The value will enumerate only if selected tracks have the same value. Otherwise, the automation mode state will be set to "%s", then will enumerate this.', self.states[1]), 1)
 end
@@ -1222,7 +1222,7 @@ local phaseProperty = {}
 
 function phaseProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the phase polarity of selected track.", "toggleable")
+message:initType("Toggle this property to set the phase polarity of selected track.", "toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the phase polarity state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1280,7 +1280,7 @@ mainSendProperty.states = {[0]="not sends", [1]="sends"}
 
 function mainSendProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the send state of selected track to parent or master track.", "Toggleable")
+message:initType("Toggle this property to switch the send state of selected track to parent or master track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the send state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1360,7 +1360,7 @@ freemodeProperty.states = {[0]="disabled", [1]="enabled"}
 
 function freemodeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the free mode of selected track.", "Toggleable")
+message:initType("Toggle this property to set the free mode of selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the free mode state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1425,7 +1425,7 @@ __index = function(self, key) return "Unknown timebase mode "..key end
 
 function timebaseProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired time base mode for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired time base mode for selected track.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of tracks has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -1501,7 +1501,7 @@ recmonitorItemsProperty.states = {[0]="not monitoring", [1]="monitoring"}
 
 function recmonitorItemsProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property if you want to monitor items while recording or not on selected track.", "Toggleable")
+message:initType("Toggle this property if you want to monitor items while recording or not on selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the monitor items state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1559,7 +1559,7 @@ performanceBufferingProperty.states = {[0]="buffering", [1]="not buffering"}
 
 function performanceBufferingProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the track performance buffering media of selected track.", "Toggleable")
+message:initType("Toggle this property to switch the track performance buffering media of selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the buffering media state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1618,7 +1618,7 @@ performanceAnticipativeFXProperty.states = {[0]="anticipative", [2]="non-anticip
 
 function performanceAnticipativeFXProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the track performance FX anticipativeness of selected track.", "Toggleable")
+message:initType("Toggle this property to switch the track performance FX anticipativeness of selected track.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the FX anticipativeness state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1688,7 +1688,7 @@ end
 
 function colorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about track color. Perform this property to apply composed color in the track category.", "performable")
+message:initType("Read this property to get the information about track color. Perform this property to apply composed color in the track category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track have been selected, this color will be applied for all this tracks.", 1)
 end
@@ -1752,7 +1752,7 @@ mixerVisibilityProperty.states = {[0]="hidden", [1]="visible"}
 
 function mixerVisibilityProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the visibility of selected track in mixer panel.", "Toggleable")
+message:initType("Toggle this property to switch the visibility of selected track in mixer panel.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the visibility state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end
@@ -1810,7 +1810,7 @@ tcpVisibilityProperty.states = mixerVisibilityProperty.states
 
 function tcpVisibilityProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the visibility of selected track control panel in arange view.", "Toggleable")
+message:initType("Toggle this property to switch the visibility of selected track control panel in arange view.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the visibility state will be set to oposite value depending of moreness tracks with the same value.", 1)
 end

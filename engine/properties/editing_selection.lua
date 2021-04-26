@@ -34,7 +34,7 @@ parentLayout.embededLayout:registerProperty(midiEditor)
 
 function midiEditor:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to open the embeded REAPER MIDI-editor.", "Performable")
+message:initType("Perform this property to open the embeded REAPER MIDI-editor.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
@@ -59,7 +59,7 @@ parentLayout.externalLayout:registerProperty(copiesInPrimaryEditor)
 
 function copiesInPrimaryEditor:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to open copies of selected items to primary editor set in REAPER preferences.", "Performable")
+message:initType("Perform this property to open copies of selected items to primary editor set in REAPER preferences.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
@@ -83,7 +83,7 @@ parentLayout.externalLayout:registerProperty(itemInPrimaryEditor)
 
 function itemInPrimaryEditor:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items in primary editor set in REAPER preferences.", "Performable")
+message:initType("Perform this property to open selected items in primary editor set in REAPER preferences.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
@@ -108,7 +108,7 @@ parentLayout.externalLayout:registerProperty(copiesInSecondaryEditor)
 
 function copiesInSecondaryEditor:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items copies to secondary external editor set in REAPER preferences.", "Performable")
+message:initType("Perform this property to open selected items copies to secondary external editor set in REAPER preferences.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
@@ -132,7 +132,7 @@ parentLayout.externalLayout:registerProperty(itemInSecondaryEditor)
 
 function itemInSecondaryEditor:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to open selected items in secondary external editor set in REAPER preferences.", "Performable")
+message:initType("Perform this property to open selected items in secondary external editor set in REAPER preferences.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)

@@ -214,7 +214,7 @@ end
 
 function currentTakeNameProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this action to rename selected item current take.", "performable")
+message:initType("Perform this action to rename selected item current take.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, new name will applied to selected active takes of selected items.", 1)
 end
@@ -281,7 +281,7 @@ end
 
 function lockProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to lock or unlock selected item for any changes.", "Toggleable")
+message:initType("Toggle this property to lock or unlock selected item for any changes.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the lock state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -345,7 +345,7 @@ end
 
 function itemVolumeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -417,7 +417,7 @@ muteItemProperty.states = {[0]="not muted", [1]="muted"}
 
 function muteItemProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to mute or unmute selected item.", "Toggleable")
+message:initType("Toggle this property to mute or unmute selected item.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the mute state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -476,7 +476,7 @@ loopSourceProperty.states = {[0]="not looped", [1]="looped"}
 
 function loopSourceProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to loop or unloop the source of selected item.", "Toggleable")
+message:initType("Toggle this property to loop or unloop the source of selected item.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the loop source state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -534,7 +534,7 @@ itemAllTakesPlayProperty.states = {[0]="aren't playing", [1]="are playing"}
 
 function itemAllTakesPlayProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to define the playing all takes of selected item.", "Toggleable")
+message:initType("Toggle this property to define the playing all takes of selected item.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the playing all takes state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -603,7 +603,7 @@ end
 
 function timebaseProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired time base mode for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired time base mode for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -685,7 +685,7 @@ autoStretchProperty.states = {[0]="disabled", [1]="enabled"}
 
 function autoStretchProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), string.format('Toggle this property to enable or disable auto-stretch selected item at project tempo when the item timebase is set to "%s".', timebaseProperty.states[2]), "Toggleable")
+message:initType(string.format('Toggle this property to enable or disable auto-stretch selected item at project tempo when the item timebase is set to "%s".', timebaseProperty.states[2]), "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the auto-stretch state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -751,7 +751,7 @@ end
 
 function itemSnapOffsetProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired snap offset time.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired snap offset time.", "Adjustable, performable")
 if multiSelectionSupport == ttrue then
 message:addType(" If the group of items has selected, the relative depending on previous value will be set for each selected item.", 1)
 end
@@ -830,7 +830,7 @@ end
 
 function groupingProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set up the desired group number for selected item.", "Adjustable")
+message:initType("Adjust this property to set up the desired group number for selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the group will be set to 1 first, then will begins enumerate up of.", 1)
 end
@@ -916,7 +916,7 @@ end
 
 function fadeinShapeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired shape mode for fadein in selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired shape mode for fadein in selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -991,7 +991,7 @@ end
 
 function  fadeinLenProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to setup desired fadein length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired fadein length for selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1076,7 +1076,7 @@ end
 
 function  fadeinDirProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired fadein curvature for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired fadein curvature for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1152,7 +1152,7 @@ end
 
 function fadeoutShapeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired shape mode for fadeout in selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired shape mode for fadeout in selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -1227,7 +1227,7 @@ end
 
 function  fadeoutLenProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to setup desired fadeout length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired fadeout length for selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1302,7 +1302,7 @@ end
 
 function  fadeoutDirProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired fadeout curvature for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired fadeout curvature for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1377,7 +1377,7 @@ end
 
 function  fadeinAutoLenProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to setup desired automatic fadein length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired automatic fadein length for selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1480,7 +1480,7 @@ end
 
 function  fadeoutAutoLenProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to setup desired automatic fadeout length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired automatic fadeout length for selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1583,7 +1583,7 @@ end
 
 function activeTakeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to switch the desired  active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to switch the desired  active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1684,7 +1684,7 @@ end
 
 function takeVolumeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired volume value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -1771,7 +1771,7 @@ end
 
 function takePanProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired current take pan value for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired current take pan value for selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item active take of.", 1)
 end
@@ -1864,7 +1864,7 @@ end
 
 function takePhaseProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the phase polarity for take of selected item.", "toggleable")
+message:initType("Toggle this property to set the phase polarity for take of selected item.", "toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the phase polarity state will be set to oposite value depending of moreness takes of items with the same value.", 1)
 end
@@ -1947,7 +1947,7 @@ end
 
 function takeChannelModeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired channel mode for active take of selected item.", "Adjustable, toggleable")
+message:initType("Adjust this property to choose the desired channel mode for active take of selected item.", "Adjustable, toggleable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the channel mode state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -2049,7 +2049,7 @@ end
 
 function takePlayrateProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired playrate value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired playrate value for active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -2097,7 +2097,7 @@ end
 
 function preserveTakePitchProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the switch status of preserving current take pitch when play rate changes of selected item.", "Toggleable")
+message:initType("Toggle this property to set the switch status of preserving current take pitch when play rate changes of selected item.", "Toggleable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the preserve state will be set to oposite value depending of moreness items with the same value.", 1)
 end
@@ -2161,7 +2161,7 @@ end
 
 function takePitchProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired pitch value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pitch value for active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -2243,7 +2243,7 @@ end
 
 function takePitchShifterProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.", "Adjustable, performable")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter state will be set to "%s", then will enumerate this.', self.states[-1]), 1)
 end
@@ -2377,7 +2377,7 @@ takePitchShifterModeProperty.getValue, takePitchShifterModeProperty.setValue = t
 
 function takePitchShifterModeProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the desired mode for active shifter  of active take on selected item.", "Adjustable")
+message:initType("Adjust this property to choose the desired mode for active shifter  of active take on selected item.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(string.format(" If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until selected shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
 end
@@ -2479,7 +2479,7 @@ end
 
 function itemColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel",1 ), "Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
+message:initType("Read this property to get the information about item color. Perform this property to apply composed color in the items category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items have been selected, this color will be applied for selected this items.", 1)
 end
@@ -2553,7 +2553,7 @@ end
 
 function itemTakeColorProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
+message:initType("Read this property to get the information about active item take color. Perform this property to apply composed color in the takes category.", "performable")
 if multiSelectionSupport == true then
 message:addType(" If the group of items have been selected, this color will be applied for selected its active takes.", 1)
 end
@@ -2612,7 +2612,7 @@ states = {
 marker = stretchMarker,
 get = function (self, shouldSaveAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this stretch marker property to choose aproppriate action for. Perform this stretch marker property to either jump to its position or apply chosen earlier action on.", "Adjustable, performable")
+message:initType("Adjust this stretch marker property to choose aproppriate action for. Perform this stretch marker property to either jump to its position or apply chosen earlier action on.", "Adjustable, performable")
 if extstate.itemProperties_smrkaction and not shouldSaveAction then
 extstate.itemProperties_smrkaction = nil
 else
@@ -2685,7 +2685,7 @@ parentLayout.takeMarkersLayout:registerProperty({
 marker = takeMarker,
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
+message:initType("Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
 message(string.format("Item %u take %u take marker %u", getItemNumber(self.marker.item), getTakeNumber(self.marker.item), self.marker.idx+1))
 if self.marker.color > 0 then
 message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.marker.color))))
@@ -2717,7 +2717,7 @@ stretchMarkerActionsProperty.states = {
 
 function stretchMarkerActionsProperty:get(shouldSaveAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose needed action for stretch markers. Perform this property to apply chosen action.", "Adjustable, performable")
+message:initType("Adjust this property to choose needed action for stretch markers. Perform this property to apply chosen action.", "Adjustable, performable")
 if extstate.itemsProperty_smrkaction and not shouldSaveAction then
 extstate.itemsProperty_smrkaction = nil
 end
@@ -2812,7 +2812,7 @@ takeMarkersActionsProperty.states = {
 
 function takeMarkersActionsProperty:get(shouldSaveAction)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose needed action for take markers. Perform this property to apply chosen action.", "Adjustable, performable")
+message:initType("Adjust this property to choose needed action for take markers. Perform this property to apply chosen action.", "Adjustable, performable")
 if extstate.itemsProperty_tmrkaction and not shouldSaveAction then
 extstate.itemsProperty_tmrkaction = nil
 end

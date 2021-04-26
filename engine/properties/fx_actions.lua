@@ -87,7 +87,7 @@ end
 registerProperty("mainLayout", {
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), ("Perform this property to show the %s FX chain."):format(contexts[context]), "Performable")
+message:initType(("Perform this property to show the %s FX chain."):format(contexts[context]), "Performable")
 message(("View FX chain for %s with %s"):format(contexts[context], getStringPluginsCount(1)))
 return message
 end,
@@ -123,7 +123,7 @@ commands = {
 },
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), ("Toggle this property to bypass or activate the %s FX chain."):format(contexts[context]), "Toggleable")
+message:initType(("Toggle this property to bypass or activate the %s FX chain."):format(contexts[context]), "Toggleable")
 if not isAvailable() then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
@@ -154,7 +154,7 @@ end
 registerProperty("mainLayout", {
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), ("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]), "Performable")
+message:initType(("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]), "Performable")
 if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
 message:addType(" The FX which have being added to monitoring section will display also here.", 1)
 elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
@@ -197,7 +197,7 @@ end
 registerProperty("monitoringLayout", {
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Perform this property to show the monitoring FX chain.", "Performable")
+message:initType("Perform this property to show the monitoring FX chain.", "Performable")
 message(("View FX chain for monitoring FX with %s"):format(getStringPluginsCount(2)))
 return message
 end,
@@ -221,7 +221,7 @@ states = {
 },
 get = function(self)
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to bypass or activate all monitoring FX.", "Toggleable")
+message:initType("Toggle this property to bypass or activate all monitoring FX.", "Toggleable")
 local state = reaper.GetToggleCommandState(41884)
 message(("%s all monitoring FX"):format(self.states[state]))
 return message

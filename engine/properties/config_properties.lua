@@ -55,7 +55,7 @@ typeLevelProperty.states = {[0] = "no prompt for property actions", [1] = "detai
 function typeLevelProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.", "Adjustable")
+message:initType("Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.", "Adjustable")
 message(string.format("Types prompts level %s", self.states[typeLevel]))
 return message
 end
@@ -94,7 +94,7 @@ reportPosProperty.states = {
 }
 function reportPosProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
+message:initType("Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
 local state = config.getinteger("reportPos", 3)
 message(string.format("Reporting navigation position %s", self.states[state]))
 return message
@@ -128,7 +128,7 @@ local resetSublayoutProperty = {}
 configLayout.main:registerProperty( resetSublayoutProperty)
 function resetSublayoutProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the position remembering when you are loading a properties layout which was been loaded earlier.", "Toggleable")
+message:initType("Toggle this property to switch the position remembering when you are loading a properties layout which was been loaded earlier.", "Toggleable")
 local state = config.getboolean("rememberSublayout", true)
 message(string.format("%s position in layouts when loading", ({[true] = "remember", [false] = "forget"})[state]))
 return message
@@ -151,8 +151,7 @@ configLayout.stepAdjustment:registerProperty( dbStepProperty)
 
 function dbStepProperty:get()
 local message = initOutputMessage()
-local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
 message(string.format("Decibel step adjustment %s", representation.db[-decibelstonum(state)]))
 return message
@@ -211,8 +210,7 @@ configLayout.stepAdjustment:registerProperty( percentagestepProperty)
 
 function percentagestepProperty:get()
 local message = initOutputMessage()
-local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("percentStep", 1)
 message(string.format("Percent step adjustment  %s%%", state))
 return message
@@ -267,8 +265,7 @@ configLayout.stepAdjustment:registerProperty( timeStepProperty)
 
 function timeStepProperty:get()
 local message = initOutputMessage()
-local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("timeStep", 0.001)
 message(string.format("Time step adjustment %s", representation.timesec[state]))
 return message
@@ -328,7 +325,7 @@ playrateStepProperty.states = {
 
 function playrateStepProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.", "adjustable")
+message:initType("Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.", "adjustable")
 local state = config.getinteger("rateStep", 1)
 message(string.format("Play rate step adjustment %s", self.states[state]))
 return message
@@ -366,8 +363,7 @@ configLayout.stepAdjustment:registerProperty( pitchStepProperty)
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
-local typeLevel = config.getinteger("typeLevel", 1)
-message:initType(typeLevel, "Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = round(config.getinteger("pitchStep", 1.00), 2)
 message(string.format("Pitch step adjustment %s", representation.pitch[state]))
 return message
@@ -423,7 +419,7 @@ local multiSelectionSupportProperty = {}
 configLayout.main:registerProperty( multiSelectionSupportProperty)
 function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.", "Toggleable")
+message:initType("Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.", "Toggleable")
 local state = config.getboolean("multiSelectionSupport", true)
 message(string.format("Multi-selection support %s", ({[true] = "enabled", [false] = "disabled"})[state]))
 return message
@@ -445,7 +441,7 @@ configLayout.main:registerProperty(reportNameProperty)
 
 function reportNameProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to switch the reporting element ID information in properties values which this option are supported. If this configuration enabled, a property will report the name of. If this configuration disabled, a property will reportits number only.", "Toggleable")
+message:initType("Toggle this property to switch the reporting element ID information in properties values which this option are supported. If this configuration enabled, a property will report the name of. If this configuration disabled, a property will reportits number only.", "Toggleable")
 local state = config.getboolean("reportName", false)
 message(string.format("Report element's %s", ({[false]="number only",[true]="name instead of number"})[state]))
 return message
@@ -464,7 +460,7 @@ configLayout.main:registerProperty(autoProposeLayoutProperty)
 
 function autoProposeLayoutProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.", "Toggleable")
+message:initType("Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.", "Toggleable")
 message(string.format("%s contextual layout when navigating", ({[true]="Automaticaly propose",[false]="Switch manualy"})[config.getboolean("automaticLayoutLoading", false)]))
 return message
 end
@@ -486,7 +482,7 @@ configLayout.main:registerProperty(allowRestorePreviousProperty)
 
 function allowRestorePreviousProperty:get()
 local message = initOutputMessage()
-message:initType(config.getinteger("typeLevel", 1), "Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.", "Toggleable")
+message:initType("Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.", "Toggleable")
 message(("%s for some properties to restore previous layout"):format(({[true]="Allow",[false]="Disallow"})[config.getboolean("allowLayoutsrestorePrev", true)]))
 return message
 end
