@@ -24,6 +24,19 @@ extstate._section = config.section
 -- Including the humanbeing representations metamethods
 representation = require "representations"
 
+
+-- Little injections
+-- Make string type as outputable to OSARA directly
+function string:output()
+reaper.osara_outputMessage(self)
+end
+
+-- Ad the trap method to the string type to avoid superfluous check writing when we are working with outputMessage metamethod
+function string:extract()
+return self
+end
+
+
 -- own metamethods
 
 -- Custom message metamethod
@@ -90,6 +103,41 @@ clearType = function(self)
 if self.tLevels then
 self.tLevels, self.tl = nil
 end
+end,
+-- Output  composed message to OSARA by itself
+-- No parameters takes. Returns no parameters.
+output = function(self)
+local message = ""
+if self.msg then
+message = self.msg
+else
+return ""
+end
+if self.tLevels and self.tl > 0 then
+message = message..". "..self.tLevels[self.tl]
+end
+reaper.osara_outputMessage(message)
+end,
+-- Extract the message composed string
+-- Parameters:
+-- shouldExtractType (boolean, optional):  Should the type prommpt be extracted with composed message. By default is true
+-- Returns composed string without type prompt. If there are no string, returns nil.
+extract = function(self, shouldExtractType)
+shouldExtractType = shouldExtractType or true
+if shouldExtractType == true then
+local message = ""
+if self.msg then
+message = self.msg
+else
+return ""
+end
+if self.tLevels and self.tl > 0 then
+message = message..". "..self.tLevels[self.tl]
+end
+return message
+else
+return self.msg or nil
+end
 end
 }, {
 -- Redefine the metamethod type
@@ -117,19 +165,6 @@ else
 self.msg = str
 end
 end
-end,
--- for get full string after concatenating the message, please forcedly convert the metamethod to string
-__tostring = function(self)
-local message = ""
-if self.msg then
-message = self.msg
-else
-return ""
-end
-if self.tLevels and self.tl > 0 then
-message = message..". "..self.tLevels[self.tl]
-end
-return message
 end,
 -- Concatenating with metatable still doesn't works... Crap!
 __concat = function(str, self)
@@ -193,7 +228,7 @@ local cfg = config.getinteger("reportPos", 3)
 if (cfg == 1 or cfg == 3) and (layout.nextSubLayout or layout.previousSubLayout) then
 message(string.format("%u of %u, ", layout.slIndex, layout.ofCount))
 end
-return tostring(message)
+return message:extract()
 end
 
 -- Propose an existing Properties Ribbon layout by current REAPER build-in context
@@ -280,7 +315,7 @@ speakLayout = extstate.speakLayout
 end
 end
 if currentLayout == nil or currentLayout == "" then
-reaper.osara_outputMessage("Switch one action group first.")
+("Switch one action group first."):output()
 return nil
 end
 layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
@@ -295,20 +330,20 @@ end
 
 function script_switchSublayout(action)
 if layout.canProvide() ~= true then
-return string.format("There are no elements %s be provided for.", layout.name:format(""))
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
 end
 if layout.nextSubLayout or layout.previousSubLayout then
 if (action == true or action == nil) then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
 else
-return "No next category. "
+("No next category."):output() return
 end
 elseif action == false then
 if layout.previousSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.previousSubLayout
 else
-return "No previous category. "
+("No previous category."):output() return
 end
 end
 layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
@@ -317,14 +352,11 @@ reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded
 return
 end
 setUndoLabel(("Switch category to %s"):format((layout.name):format(layout.subname)))
-speakLayout = false
+speakLayout = true
 layout.pIndex = extstate[layout.section] or 1
-local message = initOutputMessage()
-message(composeSubLayout())
-message(script_reportOrGotoProperty())
-return tostring(message)
+script_reportOrGotoProperty()
 else
-return ("The %s layout has no category. "):format(layout.name:format(""))
+(("The %s layout has no category. "):format(layout.name:format(""))):output()
 end
 end
 
@@ -336,7 +368,7 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
 end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
@@ -344,16 +376,16 @@ else
 message("last property. ")
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name:format(""))
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(tostring(result))
-setUndoLabel(message)
-return tostring(message)
+message(result)
+setUndoLabel(message:extract(false))
+message:output()
 end
 
 function script_previousProperty()
@@ -364,7 +396,7 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
 end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
@@ -372,16 +404,16 @@ else
 message("first property. ")
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name:format(""))
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(tostring(result))
-setUndoLabel(message)
-return tostring(message)
+message(result)
+setUndoLabel(message:extract(false))
+message:output()
 end
 
 function script_reportOrGotoProperty(propertyNum)
@@ -392,34 +424,34 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
 end
 if propertyNum then
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
-return string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))
+(string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output() return
 end
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name:format(""))
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(tostring(result))
-return tostring(message)
+message(result)
+message:output()
 end
 
 function script_ajustProperty(value)
 if layout.canProvide() == true then
-local msg = tostring(layout.properties[layout.pIndex]:set(value))
-setUndoLabel(msg)
-return msg
+local msg = layout.properties[layout.pIndex]:set(value)
+setUndoLabel(msg:extract(false))
+msg:output()
 else
-return string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))
+(string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))):output()
 end
 end
 
