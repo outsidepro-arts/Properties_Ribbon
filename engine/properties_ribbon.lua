@@ -330,7 +330,9 @@ end
 
 function script_switchSublayout(action)
 if layout.canProvide() ~= true then
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+restorePreviousLayout()
+return
 end
 if layout.nextSubLayout or layout.previousSubLayout then
 if (action == true or action == nil) then
@@ -349,6 +351,7 @@ end
 layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
+restorePreviousLayout()
 return
 end
 setUndoLabel(("Switch category to %s"):format((layout.name):format(layout.subname)))
@@ -368,7 +371,9 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+restorePreviousLayout()
+return
 end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
@@ -376,7 +381,9 @@ else
 message("last property. ")
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+restorePreviousLayout()
+return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
@@ -396,7 +403,9 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+restorePreviousLayout()
+return
 end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
@@ -404,7 +413,9 @@ else
 message("first property. ")
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+restorePreviousLayout()
+return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
@@ -424,17 +435,22 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output() return
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+restorePreviousLayout()
+return
 end
 if propertyNum then
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
-(string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output() return
+(string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output()
+restorePreviousLayout()return
 end
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output() return
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+restorePreviousLayout()
+return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
