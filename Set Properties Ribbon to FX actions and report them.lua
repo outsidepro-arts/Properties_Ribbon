@@ -10,7 +10,7 @@ package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\'
 require "properties_ribbon"
 
 if script_init("fx_actions", true) then
-reaper.osara_outputMessage(script_reportOrGotoProperty())
+script_reportOrGotoProperty()
 script_finish()
 end
 

@@ -863,7 +863,7 @@ end
 message(string.format("stereo, %s", inputs[input]))
 end
 end
-return tostring(message)
+return message:extract()
 end
 
 function recInputsProperty.calc(state, action)

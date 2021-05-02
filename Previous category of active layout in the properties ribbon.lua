@@ -14,7 +14,7 @@ proposedLayout = proposeLayout()
 end
 
 if script_init(proposedLayout) then
-reaper.osara_outputMessage(script_switchSublayout(false))
+script_switchSublayout(false)
 script_finish()
 end
 

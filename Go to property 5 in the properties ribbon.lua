@@ -14,7 +14,7 @@ proposedLayout = proposeLayout()
 end
 
 if script_init(proposedLayout) then
-reaper.osara_outputMessage( script_reportOrGotoProperty(5))
+ script_reportOrGotoProperty(5)
 script_finish()
 end
 reaper.Undo_EndBlock(g_undoState, -1)
