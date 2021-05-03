@@ -111,7 +111,7 @@ local message = ""
 if self.msg then
 message = self.msg
 else
-return ""
+return
 end
 if self.tLevels and self.tl > 0 then
 message = message..". "..self.tLevels[self.tl]
@@ -143,7 +143,8 @@ end
 -- Redefine the metamethod type
 __type = "output_message",
 -- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
-__call = function(self, str)
+__call = function(self, str, shouldCopyTypeLevel)
+shouldCopyTypeLevel = shouldCopyTypeLevel or false
 if type(str) == "table" and str.msg then
 if str.msg then
 if self.msg then
@@ -153,7 +154,7 @@ self.msg = str.msg
 end
 end
 if str.tLevels then
-if self.tLevels then
+if self.tLevels or shouldCopyTypeLevel then
 self.tLevels = str.tLevels
 self.tl = str.tl
 end
@@ -390,7 +391,7 @@ local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(result)
+message(result, true)
 setUndoLabel(message:extract(false))
 message:output()
 end
@@ -422,7 +423,7 @@ local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(result)
+message(result, true)
 setUndoLabel(message:extract(false))
 message:output()
 end
@@ -457,7 +458,7 @@ local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(result)
+message(result, true)
 message:output()
 end
 
