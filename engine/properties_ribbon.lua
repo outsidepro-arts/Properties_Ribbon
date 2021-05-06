@@ -445,7 +445,7 @@ if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
 (string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output()
-restorePreviousLayout()return
+return
 end
 end
 else
