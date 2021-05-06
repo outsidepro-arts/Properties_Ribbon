@@ -25,7 +25,7 @@ return true
 end
 
 parentLayout:registerSublayout("reaperPrefs", "REAPER ")
-parentLayout:registerSublayout("extPrefs", "Extensions ")
+parentLayout:registerSublayout("osaraLayout", "OSARA extension")
 if reaper.APIExists("ReaPack_AboutInstalledPackage") == true then
 parentLayout:registerSublayout("reaPackLayout", "ReaPack extension ")
 end
@@ -82,7 +82,9 @@ parentLayout.reaperPrefs:registerProperty(getUsualProperty(40619, "Show external
 
 -- OSARA configuration
 -- We will not check OSARA install status,cuz it's supposet should be installed there
-parentLayout.extPrefs:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"), "OSARA configuration"))
+parentLayout.osaraLayout:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"), "OSARA configuration"))
+parentLayout.osaraLayout:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_OSARA_PEAKWATCHER"), "Peak Watcher"))
+parentLayout.osaraLayout:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_OSARA_ABOUT"), "About currently installed OSARA"))
 
 -- ReaPack actions
 if parentLayout.reaPackLayout then
