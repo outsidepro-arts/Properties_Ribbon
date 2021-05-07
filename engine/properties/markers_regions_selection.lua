@@ -45,7 +45,9 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
-return string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+restorePreviousLayout()
+return
 end
 if propertyNum then
 if propertyNum > 1 then
@@ -59,19 +61,22 @@ end
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
-return string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))
+(string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output()
+return
 end
 end
 else
-return string.format("There are no elements %s be provided for.", layout.name:format(""))
+(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+restorePreviousLayout()
+return
 end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 4)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
-message(tostring(result))
-return tostring(message)
+message(result)
+message:output()
 end
 end
 end
