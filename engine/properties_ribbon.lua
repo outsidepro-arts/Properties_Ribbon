@@ -45,7 +45,6 @@ local mt = setmetatable({
 -- type prompts initialization method
 -- The type prompts adds the string message set by default to the end of value message.
 -- Parameters:
--- level (number): the level number of type prompts by default.
 -- infinite parameters (string): the prompts messages in supported order.
 -- returns none.
 initType = function(self, ...)
@@ -238,6 +237,10 @@ end
 function proposeLayout(forced)
 forced = forced or false
 local context, contextLayout, curLayout = reaper.GetCursorContext(), nil, extstate.currentLayout
+-- Sometimes REAPER returns bizarre contexts...
+if context == -1 then
+context = extstate.lastKnownContext or context
+end
 if context == 0 then
 if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
 contextLayout = "mastertrack_properties"
@@ -271,8 +274,16 @@ end
 end
 
 function restorePreviousLayout()
-if config.getboolean("allowLayoutsrestorePrev", true) == true and extstate.previousLayout then
+if config.getboolean("allowLayoutsrestorePrev", true) == true then
+if config.getboolean("automaticLayoutLoading", false) == true then
+currentLayout = proposeLayout(true)
+speakLayout = true
+else
+if extstate.previousLayout then
 currentLayout = extstate.previousLayout
+speakLayout = true
+end
+end
 end
 end
 
@@ -297,6 +308,8 @@ end
 if shouldSpeakLayout == nil then
 if extstate.currentLayout ~= newLayout then
 speakLayout = true
+else
+speakLayout = extstate.speakLayout
 end
 else
 speakLayout = shouldSpeakLayout
@@ -477,5 +490,8 @@ if layout then
 extstate[layout.section] = layout.pIndex
 extstate.currentLayout = currentLayout
 extstate.speakLayout = speakLayout
+if reaper.GetCursorContext() ~= -1 then 
+extstate.lastKnownContext = reaper.GetCursorContext()
+end
 end
 end
