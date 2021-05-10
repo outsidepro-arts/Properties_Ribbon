@@ -51,12 +51,7 @@ return
 end
 if propertyNum then
 if propertyNum > 1 then
-local numstr = tostring(curnum)
-local newPropNum = ""
-for i = 1, numstr:len()-1 do
-newPropNum = newPropNum.."0"
-end
-propertyNum = math.ceil(tonumber(tostring(propertyNum-1)..newPropNum)*(propertyNum*0.025))+1
+propertyNum = math.floor((curnum*propertyNum)*0.1)
 end
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
