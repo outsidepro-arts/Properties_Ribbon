@@ -32,7 +32,12 @@ return "no one"
 end
 end
 })
-local result = where()
+local result = nil
+if type(where) == "function" then
+result = where()
+else
+result = where
+end
 return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(result ~= 1)])
 end
 
@@ -41,7 +46,14 @@ if sublayout == "contextLayout" and context == 0 and reaper.GetLastTouchedTrack(
 sublayout = "masterTrackLayout"
 end
 
+local function getCurrentChainAction()
+local result = extstate[sublayout.."_currentAction"] or 1
+return result
+end
 
+local function setCurrentChainAction(action)
+extstate[sublayout.."_currentAction"] = action
+end
 
 
 local fxActionsLayout = initLayout("%sFX actions")
@@ -65,6 +77,11 @@ if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
 fxActionsLayout.contextLayout:registerProperty(contextualFXChain)
 end
 
+contextualFXChain.actions = {
+"View FX chain for %s with %s",
+"View input FX chain for %s with %s"
+}
+
 function contextualFXChain.getValue()
 if context == 0 then
 return reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()), reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
@@ -75,29 +92,67 @@ end
 
 function contextualFXChain:get()
 local message = initOutputMessage()
-message:initType(("Perform this property to show the %s FX chain."):format(contexts[context]), "Performable")
+message:initType(("Adjust this property to choose which %s FX chain you wish to open. Perform this property to show the chosen FX chain."):format(contexts[context]), "Adjustable, performable")
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
 end
-message(("View FX chain for %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
+local state = nil
+if context == 0 then
+state = getCurrentChainAction()
+else
+state = 1
+end
+message(self.actions[state]:format(contexts[context], getStringPluginsCount(self.getValue)))
 return message
 end
 
 function contextualFXChain:set(action)
+local message = initOutputMessage()
 local commands = {
 [0]=40291,
 [1]=40638
--- [true]=40846
 }
 if action == nil then
+local curAction = nil
+if context == 0 then
+curAction = getCurrentChainAction()
+else
+curAction = 1
+end
+if curAction == 1 then
 reaper.Main_OnCommand(commands[context], 0)
+else
+reaper.Main_OnCommand(40844, 0)
+end
 restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
+elseif action == true then
+if context == 0 then
+local curAction = getCurrentChainAction()
+if (curAction+1) <= #self.actions then
+setCurrentChainAction(curAction+1)
 else
-return "This property is performable only."
+message("No more next action.")
 end
+else
+return ("The %s has not any extended actions."):format(contexts[context])
+end
+elseif action == false then
+if context == 0 then
+local curAction = getCurrentChainAction()
+if (curAction-1) >= 1 then
+setCurrentChainAction(curAction-1)
+else
+message("No more previous action.")
+end
+else
+return ("The %s has not any extended actions."):format(contexts[context])
+end
+end
+message(self:get())
+return message
 end
 
 -- FX chain for master track
@@ -238,7 +293,7 @@ message:changeType("Unavailable", 2)
 end
 message(("View OSARA FX parameters for %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
 if context == 0 and inputCount > 0 then
-message(string.format(" and input FX chain with %s", getStringPluginsCount(function() return inputCount end)))
+message(string.format(" and input FX chain with %s", getStringPluginsCount(inputCount)))
 end
 return message
 end,
@@ -280,7 +335,7 @@ message:changeType("Unavailable", 2)
 end
 message(("View OSARA FX parameters for master track with %s"):format(getStringPluginsCount(self.getValue)))
 if monitoringCount > 0 then
-message((" and monitoring section with %s"):format(getStringPluginsCount(function() return monitoringCount end)))
+message((" and monitoring section with %s"):format(getStringPluginsCount(monitoringCount)))
 end
 return message
 end,
