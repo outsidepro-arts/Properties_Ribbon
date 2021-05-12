@@ -8,7 +8,9 @@ License: MIT License
 -- Unfortunately, not all functions written here I remembered where grabbed, because I wrote it at the start of complex coding and did not planned to git this..
 -- If you outraged of, please let me know about via issues in the repository.
 
-function round(num, numDecimalPlaces)
+local utils = {}
+
+function utils.round(num, numDecimalPlaces)
 local negative = false
 if num < 0 then
 negative = true
@@ -23,7 +25,7 @@ end
 end
 
 -- These two functions have been based on project WDL (https://github.com/justinfrankel/WDL)
-function numtodecibels(num)
+function utils.numtodecibels(num)
 local v = 0
 if num < 0.0000000298023223876953125 then
 return -150.0
@@ -32,11 +34,11 @@ v = math.log(num)*8.6858896380650365530225783783321
 if v < -150 then
 return -150.0
 else
-return round(v, 2)
+return utils.round(v, 2)
 end
 end
 
-function decibelstonum(db)
+function utils.decibelstonum(db)
 if db == "-inf" then
 return 0
 end
@@ -45,16 +47,16 @@ end
 -- .
 
 -- This function originaly written by @electrik-spb in PureBasic and rewritten by me for LUA.
-function numtopercent(num)
+function utils.numtopercent(num)
 return math.floor(num/(1/100))
 end
 
 -- This function based on previous function but just reversed.
-function percenttonum(perc)
+function utils.percenttonum(perc)
 return perc/(1*100)
 end
 
-function toboolean(value)
+function utils.toboolean(value)
 if type(value) == "string" then
 return ({["false"] = false, ["true"] = true})[value]
 else
@@ -64,13 +66,13 @@ end
 
 -- This function written by @electrik-spb in PureBasic and rewritten by me for LUA.
 -- Thank you for help with, Sergey!
-function getBitValue(value, first, last)
+function utils.getBitValue(value, first, last)
 return ((value & ((1<<last)-1)) >> (first-1))
 end
 
-function splitstring(str, delimiter, mode)
+function utils.splitstring(str, delimiter, mode)
 delimiter = delimiter or "%s"
-mode = nor(mode) or true
+mode = utils.nor(mode) or true
 local t, spos = {}, 1
 while string.find(str, delimiter, spos, mode) ~= nil do
 local startFindPos, endFindPos = str:find(delimiter, spos, mode)
@@ -81,18 +83,18 @@ table.insert(t, str:sub(spos))
 return t
 end
 
-function delay(ms)
+function utils.delay(ms)
 ms = ms*0.001
 local curTime = os.clock()
 while (os.clock()-curTime) <= ms do end
 end
 
-function removeSpaces(str)
+function utils.removeSpaces(str)
 preproc = str:gsub("%s.", string.upper):gsub("%s", "")
   return  preproc:gsub("^.", string.lower)
 end
 
-function nor(state)
+function utils.nor(state)
 if type(state) == "number" then
 if state <= 1 then
 state = state~1
@@ -111,6 +113,8 @@ function debug(str)
 reaper.ShowMessageBox(str, "Debug", 0)
 end
 
-function getScriptPath()
+function utils.getScriptPath()
 return ({reaper.get_action_context()})[2]:match('^.+[\\//]').."engine\\"
 end
+
+return utils

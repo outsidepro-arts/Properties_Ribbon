@@ -225,10 +225,10 @@ setmetatable({},
 local msg = ""
 local states = folderStateProperty.states
 local compactStates = folderStateProperty.compactStates
-local state = tonumber(splitstring(key, "|")[1])
+local state = tonumber(utils.splitstring(key, "|")[1])
 if state == 0 or state == 1 then
 if state == 1 then
-local compactState = tonumber(splitstring(key, "|")[2])
+local compactState = tonumber(utils.splitstring(key, "|")[2])
 msg = msg..compactStates[compactState].." "
 end
 msg = msg..states[state]
@@ -375,13 +375,13 @@ for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
 if action == true then
 if state < 3.981071705535 then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
 state = 3.981071705535
 end
 elseif action == false then
 if state > 0 then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 end
@@ -393,15 +393,15 @@ end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
 if action == true then
-if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+if state < utils.decibelstonum(12.0) then
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = decibelstonum(12.0)
+state = utils.decibelstonum(12.0)
 message("maximum volume. ")
 end
 elseif action == false then
-if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+if utils.numtodecibels(state) ~= "-inf" then
+state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -442,9 +442,9 @@ function panProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue) or 0.01
+ajustingValue = utils.percenttonum(ajustingValue) or 0.01
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue) or -0.01
+ajustingValue = -utils.percenttonum(ajustingValue) or -0.01
 else
 message("reset, ")
 ajustingValue = nil
@@ -453,7 +453,7 @@ if type(tracks) == "table" then
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
@@ -467,7 +467,7 @@ end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Right boundary. ")
@@ -496,11 +496,11 @@ end
 message:addType(" Perform this property to reset the value to 100 percent.", 1)
 if type(tracks) == "table" then
 message("tracks width: ")
-message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", numtopercent(state)) end})))
+message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", utils.numtopercent(state)) end})))
 else
 message(string.format("Track %s width ", getTrackID(tracks)))
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-message(string.format("%s%%", numtopercent(state)))
+message(string.format("%s%%", utils.numtopercent(state)))
 end
 return message
 end
@@ -509,9 +509,9 @@ function widthProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue)
+ajustingValue = -utils.percenttonum(ajustingValue)
 else
 message("reset, ")
 ajustingValue = nil
@@ -520,7 +520,7 @@ if type(tracks) == "table" then
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
@@ -534,7 +534,7 @@ end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Maximum width. ")
@@ -601,7 +601,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_MUTE", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_MUTE", state)
 end
 message(self:get())
@@ -733,7 +733,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECARM", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECARM", state)
 end
 message(self:get())
@@ -827,27 +827,27 @@ if val < 0 then
 message("no input")
 elseif val >= 4096 then
 message("MIDI, ")
-local channel = getBitValue(val, 1, 5)
+local channel = utils.getBitValue(val, 1, 5)
 if channel == 0 then
 message("all channels, ")
 else
 message(string.format("channel %u, ", channel))
 end
-if getBitValue(val, 6, 12) == 62 then
+if utils.getBitValue(val, 6, 12) == 62 then
 message("from Virtual MIDI Keyboard")
-elseif getBitValue(val, 6, 12) == 63 then
+elseif utils.getBitValue(val, 6, 12) == 63 then
 message("from all devices")
 else
-local result, name = recInputsProperty.getMIDIInputName(getBitValue(val, 6, 12))
+local result, name = recInputsProperty.getMIDIInputName(utils.getBitValue(val, 6, 12))
 if result == true then
 message(string.format("from %s", name))
 else
-message(string.format("from unknown device with ID %u", getBitValue(val, 6, 12)))
+message(string.format("from unknown device with ID %u", utils.getBitValue(val, 6, 12)))
 end
 end
 else
 message("audio, ")
-local input = getBitValue(val, 1, 11)
+local input = utils.getBitValue(val, 1, 11)
 if input >= 0 and input <= 1023 then
 message("mono, ")
 if input < 512 then
@@ -869,7 +869,7 @@ end
 function recInputsProperty.calc(state, action)
 if action == true then
 if (state+1) >= 0 and (state+1) < 1024 then
-if reaper.GetInputChannelName(getBitValue(state+1, 1, 11)) then
+if reaper.GetInputChannelName(utils.getBitValue(state+1, 1, 11)) then
 return state+1
 else
 return 1024
@@ -883,8 +883,8 @@ if (state+1) <= (#inputs+1023) then
 return state+1
 else
 for i = 4096, 8192 do
-local channel = getBitValue(i, 1, 5)
-local result, _ = recInputsProperty.getMIDIInputName(getBitValue(i, 6, 12))
+local channel = utils.getBitValue(i, 1, 5)
+local result, _ = recInputsProperty.getMIDIInputName(utils.getBitValue(i, 6, 12))
 if result == true and channel <= 16 then
 return i
 end
@@ -895,8 +895,8 @@ end
 end
 elseif (state+1) >= 4096 and (state+1) < 8192 then
 for i = (state+1), 8192 do
-local channel = getBitValue(i, 1, 5)
-local result, _ = recInputsProperty.getMIDIInputName(getBitValue(i, 6, 12))
+local channel = utils.getBitValue(i, 1, 5)
+local result, _ = recInputsProperty.getMIDIInputName(utils.getBitValue(i, 6, 12))
 if result == true and channel <= 16 then
 return i
 end
@@ -910,8 +910,8 @@ end
 elseif action == false then
 if (state-1)>= 4096 and (state-1) < 8192 then
 for i = (state-1), 4096, -1 do
-local channel = getBitValue(i, 1, 5)
-local result, _ = recInputsProperty.getMIDIInputName(getBitValue(i, 6, 12))
+local channel = utils.getBitValue(i, 1, 5)
+local result, _ = recInputsProperty.getMIDIInputName(utils.getBitValue(i, 6, 12))
 if result == true and channel <= 16 then
 return i
 end
@@ -951,8 +951,8 @@ elseif state >= 0 and state < 512 then
 return 1024
 elseif state >= 1024 and state < 4096 then
 for i = 4096, 8192 do
-local channel = getBitValue(i, 1, 5)
-local result, _ = recInputsProperty.getMIDIInputName(getBitValue(i, 6, 12))
+local channel = utils.getBitValue(i, 1, 5)
+local result, _ = recInputsProperty.getMIDIInputName(utils.getBitValue(i, 6, 12))
 if result == true and channel <= 16 then
 return i
 end
@@ -961,10 +961,10 @@ return -1
 end
 end
 elseif state > 4096 then
-local result, device = recInputsProperty.getMIDIInputName(getBitValue(state, 6, 12))
+local result, device = recInputsProperty.getMIDIInputName(utils.getBitValue(state, 6, 12))
 if result == true then
 for i = state, 8192 do
-local curResult, curDevice = recInputsProperty.getMIDIInputName(getBitValue(i, 6, 12))
+local curResult, curDevice = recInputsProperty.getMIDIInputName(utils.getBitValue(i, 6, 12))
 if curResult == true and curDevice ~= device then
 return i
 end
@@ -1266,7 +1266,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_PHASE", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_PHASE", state)
 end
 message(self:get())
@@ -1292,7 +1292,7 @@ return tostring(reaper.GetMediaTrackInfo_Value(track, "B_MAINSEND")).."|"..tostr
 end,
 setmetatable({}, {
 __index = function(self, key)
-local msg, state, masterOrParent = "", tonumber(splitstring(key, "|")[1]), toboolean(splitstring(key, "|")[2])
+local msg, state, masterOrParent = "", tonumber(utils.splitstring(key, "|")[1]), utils.toboolean(utils.splitstring(key, "|")[2])
 msg = mainSendProperty.states[state].." to "
 if masterOrParent then
 msg = msg.."parent"
@@ -1345,7 +1345,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_MAINSEND", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_MAINSEND", state)
 end
 message(self:get())
@@ -1403,7 +1403,7 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "B_FREEMODE", ajustingValue)
 end
 reaper.UpdateTimeline()
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_FREEMODE", state)
 reaper.UpdateTimeline()
 end
@@ -1545,7 +1545,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMONITEMS", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS"))
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECMONITEMS", state)
 end
 message(self:get())
@@ -1603,7 +1603,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS", ajustingValue&1)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1)
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "I_PERFFLAGS")&1)
 reaper.SetMediaTrackInfo_Value(tracks, "I_PERFFLAGS", state&1)
 end
 message(self:get())
@@ -1696,7 +1696,7 @@ if type(tracks) == "table" then
 message("Tracks color: ")
 message(composeMultipleTrackMessage(function(track) return table.concat(({self.getValue(track)}), "|") end, setmetatable({}, {
 __index = function(self, key)
-state, visualApplied = tonumber(splitstring(key, "|")[1]), tonumber(splitstring(key, "|")[2])
+state, visualApplied = tonumber(utils.splitstring(key, "|")[1]), tonumber(utils.splitstring(key, "|")[2])
 msg = colors:getName(reaper.ColorFromNative(state))
 if state ~= visualApplied then
 if visualApplied == 0 then
@@ -1737,7 +1737,31 @@ self.setValue(tracks, state)
 message(self:get())
 end
 else
-message("Compose a color in color composer first.")
+if type(tracks) == "table" then
+local fixed = 0
+for _, track in ipairs(tracks) do
+local curColor, visualApplied = self.getValue(track)
+if curColor ~= visualApplied then
+self.setValue(track, curColor)
+fixed = fixed+1
+end
+end
+if fixed > 0 then
+message(string.format("The non-visual color has been applied for %u tracks.", fixed))
+message(self:get())
+else
+message("There are no tracks to fix non-visual color.")
+end
+else
+local curColor, visualApplied = self.getValue(tracks)
+if curColor ~= visualApplied then
+self.setValue(tracks, curColor)
+message("Fixing the non-visual color.")
+message(self:get())
+else
+message("This track is not requires for fix.")
+end
+end
 end
 else
 message("This property is performable only.")
@@ -1796,7 +1820,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER", state)
 end
 message(self:get())
@@ -1854,7 +1878,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
+local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
 reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINTCP", state)
 end
 message(self:get())

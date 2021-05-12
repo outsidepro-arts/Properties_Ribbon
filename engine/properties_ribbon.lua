@@ -9,7 +9,7 @@ config = require "config_provider"
 config.section = "Properties_Ribbon_script"
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
-require "specfuncs"
+utils = require "utils"
 
 -- Including the byte words module
 -- SWS has own byte operations, but what if has an user not SWS installed?
@@ -183,7 +183,7 @@ end
 function initLayout(str)
 local t = {
 name = str,
-section = string.format(removeSpaces(str), ""),
+section = string.format(utils.removeSpaces(str), ""),
 ofCount = 0,
 
 -- slID (string) - the ID of sublayout in parent layout
@@ -191,7 +191,7 @@ ofCount = 0,
 registerSublayout = function(self, slID, slName)
 self[slID] = setmetatable({
 subname = slName,
-section = removeSpaces(string.format(self.name, slName)),
+section = utils.removeSpaces(string.format(self.name, slName)),
 properties = {}
 }, {
 __index = self})
@@ -332,7 +332,7 @@ if currentLayout == nil or currentLayout == "" then
 ("Switch one action group first."):output()
 return nil
 end
-layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
+layout = dofile(string.format("%sproperties\\%s.lua", utils.getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
@@ -362,7 +362,7 @@ else
 ("No previous category."):output() return
 end
 end
-layout = dofile(string.format("%sproperties\\%s.lua", getScriptPath(), currentLayout))
+layout = dofile(string.format("%sproperties\\%s.lua", utils.getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 restorePreviousLayout()

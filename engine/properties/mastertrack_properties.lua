@@ -54,15 +54,15 @@ end
 local ajustStep = config.getinteger("dbStep", 0.1)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 if action == true then
-if state < decibelstonum(12.0) then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+if state < utils.decibelstonum(12.0) then
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = decibelstonum(12.0)
+state = utils.decibelstonum(12.0)
 message("maximum volume. ")
 end
 elseif action == false then
-if numtodecibels(state) ~= "-inf" then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+if utils.numtodecibels(state) ~= "-inf" then
+state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -91,16 +91,16 @@ function panProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue)
+ajustingValue = -utils.percenttonum(ajustingValue)
 else
 message("reset, ")
 ajustingValue = nil
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Right boundary. ")
@@ -123,7 +123,7 @@ function widthProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired width value for master track. Perform this property to reset the value to 100 percent.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-message(string.format("Master width %s%%", numtopercent(state)))
+message(string.format("Master width %s%%", utils.numtopercent(state)))
 return message
 end
 
@@ -131,16 +131,16 @@ function widthProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue)
+ajustingValue = -utils.percenttonum(ajustingValue)
 else
 message("reset, ")
 ajustingValue = nil
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Maximum width. ")
@@ -248,7 +248,7 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 if reaper.TrackFX_GetCount(master) > 0 then
-local state = nor(reaper.GetToggleCommandState(16))
+local state = utils.nor(reaper.GetToggleCommandState(16))
 reaper.Main_OnCommand(16, state)
 message(self:get())
 else
@@ -272,7 +272,7 @@ function monoProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = nor(reaper.GetToggleCommandState(40917))
+local state = utils.nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
 -- OSARA reports this state by itself
 setUndoLabel(self:get())
@@ -287,7 +287,7 @@ function playrateProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1.", "adjustable, performable")
 local state = reaper.Master_GetPlayRate(0)
-message(string.format("Master play rate %s%%", numtopercent(state)))
+message(string.format("Master play rate %s%%", utils.numtopercent(state)))
 return message
 end
 
@@ -325,7 +325,7 @@ local message = initOutputMessage()
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = nor(reaper.GetToggleCommandState(40671))
+local state = utils.nor(reaper.GetToggleCommandState(40671))
 reaper.Main_OnCommand(40671, state)
 message(self:get())
 return message
@@ -341,7 +341,7 @@ function tempoProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
 local state = reaper.Master_GetTempo()
-message(string.format("Master tempo %s BPM", round(state, 3)))
+message(string.format("Master tempo %s BPM", utils.round(state, 3)))
 return message
 end
 
@@ -390,7 +390,7 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
-local state = nor(self.getValue())
+local state = utils.nor(self.getValue())
 if state == false then
 if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", 1) == 1 then
 self:setValue(state)
@@ -433,7 +433,7 @@ return "This property is toggleable only."
 end
 local message = initOutputMessage()
 local state = self.getValue()
-self.setValue(nor(state))
+self.setValue(utils.nor(state))
 message(self:get())
 return message
 end

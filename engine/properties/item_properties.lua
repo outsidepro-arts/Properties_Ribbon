@@ -325,7 +325,7 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-self.setValue(items, nor(self.getValue(items)))
+self.setValue(items, utils.nor(self.getValue(items)))
 end
 message(self:get())
 return message
@@ -370,14 +370,14 @@ if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true then
-if state < decibelstonum(12.0) then
-self.setValue(items[k], decibelstonum(numtodecibels(state)+ajustStep))
+if state < utils.decibelstonum(12.0) then
+self.setValue(items[k], utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
 else
-self.setValue(items[k], decibelstonum(maxDBValue))
+self.setValue(items[k], utils.decibelstonum(maxDBValue))
 end
 elseif action == false then
-if numtodecibels(state) ~= "-inf" then
-self.setValue(items[k], decibelstonum(numtodecibels(state, true)-ajustStep))
+if utils.numtodecibels(state) ~= "-inf" then
+self.setValue(items[k], utils.decibelstonum(utils.numtodecibels(state, true)-ajustStep))
 else
 self.setValue(items[k], 0)
 end
@@ -389,15 +389,15 @@ message(self:get())
 else
 local state = self.getValue(items)
 if action == true then
-if state < decibelstonum(12.0) then
-self.setValue(items, decibelstonum(numtodecibels(state)+ajustStep))
+if state < utils.decibelstonum(12.0) then
+self.setValue(items, utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
 else
-self.setValue(items, decibelstonum(12.0))
+self.setValue(items, utils.decibelstonum(12.0))
 message("maximum volume.")
 end
 elseif action == false then
-if numtodecibels(state) ~= "-inf" then
-self.setValue(items, decibelstonum(numtodecibels(state)-ajustStep))
+if utils.numtodecibels(state) ~= "-inf" then
+self.setValue(items, utils.decibelstonum(utils.numtodecibels(state)-ajustStep))
 else
 self.setValue(items, 0)
 message("Minimum volume.")
@@ -461,7 +461,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_MUTE", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
+local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
 reaper.SetMediaItemInfo_Value(items, "B_MUTE", state)
 state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
 end
@@ -520,7 +520,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_LOOPSRC", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
+local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
 reaper.SetMediaItemInfo_Value(items, "B_LOOPSRC", state)
 end
 message(self:get())
@@ -578,7 +578,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
+local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
 reaper.SetMediaItemInfo_Value(items, "B_ALLTAKESPLAY", state)
 end
 message(self:get())
@@ -729,7 +729,7 @@ for k = 1, #items do
 reaper.SetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH", ajustingValue)
 end
 else
-local state = nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
+local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
 reaper.SetMediaItemInfo_Value(items, "C_AUTOSTRETCH", state)
 end
 message(self:get())
@@ -761,7 +761,7 @@ message("Items snap offset:")
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
 local state = self.getValue(items)
-message(string.format("Item %u snap offset %s", getItemNumber(items), representation.timesec[round(state, 3)]))
+message(string.format("Item %u snap offset %s", getItemNumber(items), representation.timesec[utils.round(state, 3)]))
 end
 return message
 end
@@ -1013,7 +1013,7 @@ ajustingValue = -ajustingValue
 elseif action == nil then
 local result, str = reaper.get_config_var_string("deffadelen")
 if result == true then
-ajustingValue = round(tonumber(str), 3)
+ajustingValue = utils.round(tonumber(str), 3)
 message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
@@ -1059,9 +1059,9 @@ fadeinDirProperty.states = setmetatable({
 }, {
 __index = function(self, key)
 if key >0 then
-return ("%s%% to the right"):format(numtopercent(key))
+return ("%s%% to the right"):format(utils.numtopercent(key))
 elseif key < 0 then
-return ("%s%% to the left"):format(-numtopercent(key))
+return ("%s%% to the left"):format(-utils.numtopercent(key))
 end
 end
 })
@@ -1095,9 +1095,9 @@ function  fadeinDirProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue)
+ajustingValue = -utils.percenttonum(ajustingValue)
 else
 message("reset, ")
 ajustingValue = nil
@@ -1106,7 +1106,7 @@ if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
@@ -1120,7 +1120,7 @@ end
 else
 local state = self.getValue(items)
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Right curve boundary. ")
@@ -1249,7 +1249,7 @@ ajustingValue = -ajustingValue
 elseif action == nil then
 local result, str = reaper.get_config_var_string("deffadelen")
 if result == true then
-ajustingValue = round(tonumber(str), 3)
+ajustingValue = utils.round(tonumber(str), 3)
 message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
@@ -1321,9 +1321,9 @@ function  fadeoutDirProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue)
+ajustingValue = -utils.percenttonum(ajustingValue)
 else
 message("reset, ")
 ajustingValue = nil
@@ -1332,7 +1332,7 @@ if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
@@ -1346,7 +1346,7 @@ end
 else
 local state = self.getValue(items)
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Right curve boundary. ")
@@ -1411,7 +1411,7 @@ ajustingValue = -ajustingValue
 elseif action == nil then
 local result, str = reaper.get_config_var_string("defsplitxfadelen")
 if result == true then
-ajustingValue = round(tonumber(str), 3)
+ajustingValue = utils.round(tonumber(str), 3)
 message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
@@ -1514,7 +1514,7 @@ ajustingValue = -ajustingValue
 elseif action == nil then
 local result, str = reaper.get_config_var_string("defsplitxfadelen")
 if result == true then
-ajustingValue = round(tonumber(str), 3)
+ajustingValue = utils.round(tonumber(str), 3)
 message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
@@ -1713,16 +1713,16 @@ end
 for k = 1, #items do
 if action == true then
 local state = self.getValue(items[k])
-if state < decibelstonum(maxDBValue) then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+if state < utils.decibelstonum(maxDBValue) then
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = decibelstonum(12.0)
+state = utils.decibelstonum(12.0)
 end
 self.setValue(items[k], state)
 elseif action == false then
 local state = self.getValue(items[k])
-if numtodecibels(state) ~= -150 then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+if utils.numtodecibels(state) ~= -150 then
+state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 end
@@ -1732,16 +1732,16 @@ end
 else
 local state = self.getValue(items)
 if action == true then
-if state < decibelstonum(maxDBValue) then
-state = decibelstonum(numtodecibels(state)+ajustStep)
+if state < utils.decibelstonum(maxDBValue) then
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = decibelstonum(12.0)
+state = utils.decibelstonum(12.0)
 message("maximum volume. ")
 end
 self.setValue(items, state)
 elseif action == false then
-if numtodecibels(state) ~= -150.00 then
-state = decibelstonum(numtodecibels(state)-ajustStep)
+if utils.numtodecibels(state) ~= -150.00 then
+state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 message("Minimum volume. ")
@@ -1791,9 +1791,9 @@ function takePanProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = percenttonum(ajustingValue) or 0.01
+ajustingValue = utils.percenttonum(ajustingValue) or 0.01
 elseif action == false then
-ajustingValue = -percenttonum(ajustingValue) or -0.01
+ajustingValue = -utils.percenttonum(ajustingValue) or -0.01
 else
 message("reset, ")
 ajustingValue = nil
@@ -1802,7 +1802,7 @@ if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
@@ -1816,7 +1816,7 @@ end
 else
 local state = self.getValue(items)
 if ajustingValue then
-state = round((state+ajustingValue), 3)
+state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
 message("Right boundary. ")
@@ -1908,7 +1908,7 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-self.setValue(items, nor(self.getValue(items)))
+self.setValue(items, utils.nor(self.getValue(items)))
 end
 message(self:get())
 return message
@@ -2056,10 +2056,10 @@ end
 message:addType(" Perform this property to reset  playrate to 1.000 for.", 1)
 if type(items) == "table" then
 message("Takes playrate: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", numtopercent(state)) end})))
+message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", utils.numtopercent(state)) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u playrate %s%%", getItemNumber(items), getTakeNumber(items), numtopercent(state)))
+message(string.format("Item %u take %u playrate %s%%", getItemNumber(items), getTakeNumber(items), utils.numtopercent(state)))
 end
 return message
 end
@@ -2141,7 +2141,7 @@ for k = 1, #items do
 self.setValue(items[k], ajustingValue)
 end
 else
-self.setValue(items, nor(self.getValue(items)))
+self.setValue(items, utils.nor(self.getValue(items)))
 end
 message(self:get())
 return message
@@ -2492,7 +2492,7 @@ end,
 setmetatable({}, {
 __index = function(self, key)
 local msg = ""
-local raw = splitstring(key, "|")
+local raw = utils.splitstring(key, "|")
 local state = tonumber(raw[1])
 local visualApplied = tonumber(raw[2])
 msg = colors:getName(reaper.ColorFromNative(state))

@@ -23,11 +23,11 @@ v = math.log(key)*8.6858896380650365530225783783321
 if v < -150 then
 key =  "-inf"
 else
-key = round(v, 2)
+key = utils.round(v, 2)
 end
 end
 if not tonumber(key)then return key end
-local predb = splitstring(string.format("%.2f", key), ".")
+local predb = utils.splitstring(string.format("%.2f", key), ".")
 local udb, ddb = tonumber(predb[1]), tonumber(predb[2])
 local msg = ""
 if tonumber(key) < 0 then
@@ -59,7 +59,7 @@ end
 
 representation.timesec = setmetatable({},
 {__index = function(self, key)
-local pretime = splitstring(string.format("%.3f", key), ".")
+local pretime = utils.splitstring(string.format("%.3f", key), ".")
 local s, ms = tonumber(pretime[1]), tonumber(pretime[2])
 local msg = ""
 if s == 0 and ms == 0 then
@@ -79,7 +79,7 @@ end
 
 representation.pitch = setmetatable({},
 {__index = function(self, key)
-local prepitch = splitstring(string.format("%.2f", key), ".")
+local prepitch = utils.splitstring(string.format("%.2f", key), ".")
 local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
 local msg = ""
 if s == 0 and c == 0 then

@@ -8,6 +8,15 @@ License: MIT License
 
 local config = {}
 
+-- A few local functions
+function toboolean(value)
+if type(value) == "string" then
+return ({["false"] = false, ["true"] = true})[value]
+else
+return (value > 0)
+end
+end
+
 
 function config.getboolean(key, defvalue)
 local state = reaper.GetExtState(config.section, "cfg_"..key)

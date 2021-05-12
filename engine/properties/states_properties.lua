@@ -60,7 +60,7 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
-local state = nor(self.getValue())
+local state = utils.nor(self.getValue())
 self.setValue(state)
 message(string.format(self.msg, self.states[self.getValue()]))
 return message
@@ -75,7 +75,7 @@ return "This property is toggleable only."
 end
 local message = initOutputMessage()
 self.states = {[0] = "closed", [1] = "opened"}
-local state = nor(self.getValue())
+local state = utils.nor(self.getValue())
 self.setValue(state)
 message(string.format("%s has been %s", self.msg:sub(4), self.states[self.getValue()]))
 if self.getValue() == 0 then

@@ -138,7 +138,7 @@ function resetSublayoutProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = nor(config.getboolean("rememberSublayout", true))
+local state = utils.nor(config.getboolean("rememberSublayout", true))
 config.setboolean("rememberSublayout", state)
 local message = initOutputMessage() message(self:get())
 return message
@@ -153,7 +153,7 @@ function dbStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("Decibel step adjustment %s", representation.db[-decibelstonum(state)]))
+message(string.format("Decibel step adjustment %s", representation.db[-utils.decibelstonum(state)]))
 return message
 end
 
@@ -364,14 +364,14 @@ configLayout.stepAdjustment:registerProperty( pitchStepProperty)
 function pitchStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
-local state = round(config.getinteger("pitchStep", 1.00), 2)
+local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
 message(string.format("Pitch step adjustment %s", representation.pitch[state]))
 return message
 end
 
 function pitchStepProperty:set(action)
 local message = initOutputMessage()
-local state = round(config.getinteger("pitchStep", 1.00), 2)
+local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
 local ajustingValue
 if action == true then
 if state >= 0.01 and state < 0.50 then
@@ -429,7 +429,7 @@ function multiSelectionSupportProperty:set(action)
 if action ~= nil then
 return "This property is toggleable only."
 end
-local state = nor(config.getboolean("multiSelectionSupport", true))
+local state = utils.nor(config.getboolean("multiSelectionSupport", true))
 config.setboolean("multiSelectionSupport", state)
 local message = initOutputMessage() message(self:get())
 return message
@@ -449,7 +449,7 @@ end
 
 function reportNameProperty:set(action)
 local message = initOutputMessage()
-config.setboolean("reportName", nor(config.getboolean("reportName", false)))
+config.setboolean("reportName", utils.nor(config.getboolean("reportName", false)))
 message(self:get())
 return message
 end
@@ -468,7 +468,7 @@ end
 function autoProposeLayoutProperty:set(action)
 local message = initOutputMessage()
 if action == nil then
-config.setboolean("automaticLayoutLoading", nor(config.getboolean("automaticLayoutLoading", false)))
+config.setboolean("automaticLayoutLoading", utils.nor(config.getboolean("automaticLayoutLoading", false)))
 message(self:get())
 return message
 else
@@ -490,7 +490,7 @@ end
 function allowRestorePreviousProperty:set(action)
 if action == nil then
 local message = initOutputMessage()
-config.setboolean("allowLayoutsrestorePrev", nor(config.getboolean("allowLayoutsrestorePrev", true)))
+config.setboolean("allowLayoutsrestorePrev", utils.nor(config.getboolean("allowLayoutsrestorePrev", true)))
 message(self:get())
 return message
 else

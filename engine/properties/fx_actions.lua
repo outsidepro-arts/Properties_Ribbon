@@ -228,7 +228,7 @@ return "This property is unavailable because no plugin is set there."
 end
 local state = nil
 if context == 0 then
-state = nor(reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN"))
+state = utils.nor(reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN"))
 else
 state = 0
 end
@@ -264,7 +264,7 @@ set = function(self, action)
 if action == nil then
 if self.getValue() > 0 then
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
-reaper.Main_OnCommand(16, nor(state))
+reaper.Main_OnCommand(16, utils.nor(state))
 setUndoLabel(self:get())
 return ""
 else
@@ -410,7 +410,7 @@ set = function(self, action)
 if action == nil then
 if self.getValue() > 0 then
 local state = reaper.GetToggleCommandState(41884)
-reaper.Main_OnCommand(41884, nor(state))
+reaper.Main_OnCommand(41884, utils.nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
