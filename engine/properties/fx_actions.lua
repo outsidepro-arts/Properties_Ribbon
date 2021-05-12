@@ -300,7 +300,7 @@ end,
 set = function(self, action)
 if action == nil then
 local chainCount, inputCount = self.getValue()
-if chainCount > 0 or inputCount > 0 then
+if chainCount > 0 or (inputCount and inputCount > 0) then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
