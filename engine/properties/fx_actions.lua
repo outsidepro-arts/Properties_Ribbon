@@ -15,12 +15,11 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-local sublayout = extstate[currentLayout.."_sublayout"] or "mainLayout"
+local sublayout = extstate[currentLayout.."_sublayout"] or "contextLayout"
 
 local contexts = {
 [0]="Current track",
 [1]="Selected item take",
-[true]="Master track"
 }
 
 local function getStringPluginsCount(where)
@@ -29,73 +28,67 @@ __index = function(self, key)
 if tonumber(key) ~= 0 then
 return string.format("%s", key)
 else
-return "no"
+return "no one"
 end
 end
 })
-if where == 1 then
-local result = reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack())
-return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(result ~= 1)])
-elseif where == 2 then
-local result = reaper.TrackFX_GetRecCount(reaper.GetMasterTrack())
+local result = where()
 return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(result ~= 1)])
 end
+
+local context = reaper.GetCursorContext()
+if sublayout == "contextLayout" and context == 0 and reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
+sublayout = "masterTrackLayout"
 end
 
-local context = nil
-if not reaper.GetLastTouchedTrack() or reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0) then
-context = true
-else
-context = reaper.GetCursorContext()
-end
 
--- Checking availableness of context perform
-local function isAvailable()
-return (context == 0 and reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()) > 0) or (context == 1 and reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))) > 0) or (context == true and reaper.TrackFX_GetCount(reaper.GetMasterTrack()) > 0)
-end
 
-local fxActionsLayout = nil
--- We should check the monitoring section FX count to solve create a sublayouts or not
-if reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) == 0 then
-fxActionsLayout = initLayout(("%s FX actions"):format(contexts[context]))
-else
-fxActionsLayout = initLayout("%sFX actions")
-fxActionsLayout:registerSublayout("mainLayout", contexts[context])
-fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring")
+
+local fxActionsLayout = initLayout("%sFX actions")
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+fxActionsLayout:registerSublayout("contextLayout", contexts[context].." ")
 end
+fxActionsLayout:registerSublayout("masterTrackLayout", "Master track ")
+fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring ")
 
 
 function fxActionsLayout.canProvide()
-local context = reaper.GetCursorContext()
 if reaper.GetLastTouchedTrack() then
-return (context == 0 or context == 1 or context == true)
+return (context == 0 or context == 1)
 end
 return false
 end
 
--- Registering properties macros
--- We need this because it forces us check a sublayout existing each time
-local function registerProperty(sl, property)
-if fxActionsLayout[sl] then
-fxActionsLayout[sl]:registerProperty(property)
-else
-fxActionsLayout:registerProperty(property)
+-- Contextual FX chain action
+local contextualFXChain = {}
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+fxActionsLayout.contextLayout:registerProperty(contextualFXChain)
+end
+
+function contextualFXChain.getValue()
+if context == 0 then
+return reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()), reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
+elseif context == 1 then
+return reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0,0)))
 end
 end
 
--- FX chain action
-registerProperty("mainLayout", {
-get = function(self)
+function contextualFXChain:get()
 local message = initOutputMessage()
 message:initType(("Perform this property to show the %s FX chain."):format(contexts[context]), "Performable")
-message(("View FX chain for %s with %s"):format(contexts[context], getStringPluginsCount(1)))
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
+message(("View FX chain for %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
 return message
-end,
-set = function(self, action)
+end
+
+function contextualFXChain:set(action)
 local commands = {
 [0]=40291,
-[1]=40638,
-[true]=40846
+[1]=40638
+-- [true]=40846
 }
 if action == nil then
 reaper.Main_OnCommand(commands[context], 0)
@@ -106,77 +99,153 @@ else
 return "This property is performable only."
 end
 end
-})
 
--- Bypass all FX action
--- It must not be created if context is items and SWS is not installed
-if context ~= 1 or (context == 1 and reaper.APIExists("CF_GetSWSVersion")) then
-registerProperty("mainLayout", {
-states = {
-[0]="Activate",
-[1]="Bypass"
-},
-commands = {
-[0]=40298,
-[1]=reaper.NamedCommandLookup("_S&M_TGL_TAKEFX_BYP"),
-[true]=16
-},
-get = function(self)
-local message = initOutputMessage()
-message:initType(("Toggle this property to bypass or activate the %s FX chain."):format(contexts[context]), "Toggleable")
-if not isAvailable() then
-message:addType(" This action is unavailable right now because there are no FX.", 1)
-message:changeType("Unavailable", 2)
+-- FX chain for master track
+local masterTrackFXChain = {}
+fxActionsLayout.masterTrackLayout:registerProperty(masterTrackFXChain)
+
+function masterTrackFXChain.getValue()
+return reaper.TrackFX_GetCount(reaper.GetMasterTrack()), reaper.TrackFX_GetRecCount(reaper.GetMasterTrack())
 end
- local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
-message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(1), contexts[context]))
+
+function masterTrackFXChain:get()
+local message = initOutputMessage()
+message:initType("Perform this action to view the FX chain of master track.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
+message(string.format("View FX chain of master track with %s", getStringPluginsCount(self.getValue)))
 return message
-end,
-set = function(self, action)
+end
+
+function masterTrackFXChain:set(action)
 if action == nil then
-if isAvailable() then
-local state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
-reaper.Main_OnCommand(self.commands[context], nor(state))
+reaper.Main_OnCommand(40846, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
-return "This action is unavailable right now because no one FX is set there."
+return "This property is performable only."
 end
+end
+
+
+-- Bypass all FX action for contextual case
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+fxActionsLayout.contextLayout:registerProperty{
+states = {
+[0]="Activate",
+[1]="Bypass",
+[2]="Bypass or activate"
+},
+commands = {
+[0]=40298,
+[1]=reaper.NamedCommandLookup("_S&M_TGL_TAKEFX_BYP")
+},
+getValue = contextualFXChain.getValue,
+get = function(self)
+local message = initOutputMessage()
+message:initType(("Toggle this property to bypass or activate the FX chain of %s."):format(contexts[context]), "Toggleable")
+if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
+return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
+end
+if self.getValue() == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
+local state = nil
+if context == 0 then
+state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
+elseif context == 1 then
+state = 2
+end
+message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(self.getValue), contexts[context]))
+return message
+end,
+set = function(self, action)
+if action == nil then
+if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
+return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
+end
+if self.getValue() == 0 then
+return "This property is unavailable because no plugin is set there."
+end
+local state = nil
+if context == 0 then
+state = nor(reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN"))
+else
+state = 0
+end
+reaper.Main_OnCommand(self.commands[context], state)
+restorePreviousLayout()
+setUndoLabel(self:get())
+return ""
 else
 return "This property is performable only."
 end
 end
-})
+}
 end
 
--- OSARA FX parameters action
-registerProperty("mainLayout", {
+fxActionsLayout.masterTrackLayout:registerProperty{
+states = {
+[0]="Activate",
+[1]="Bypass"
+},
+getValue = masterTrackFXChain.getValue,
+get = function(self)
+local message = initOutputMessage()
+message:initType("Toggle this property to bypass or activate all FX of master track.", "Toggleable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
+local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
+message(string.format("%s %s for master track", self.states[state], getStringPluginsCount(self.getValue)))
+return message
+end,
+set = function(self, action)
+if action == nil then
+if self.getValue() > 0 then
+local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
+reaper.Main_OnCommand(16, nor(state))
+setUndoLabel(self:get())
+return ""
+else
+return "This property is unavailable because there is no plugins."
+end
+else
+return "This property is toggleable only."
+end
+end
+}
+
+-- Contextual OSARA FX parameters action
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+fxActionsLayout.contextLayout:registerProperty{
+getValue = contextualFXChain.getValue,
 get = function(self)
 local message = initOutputMessage()
 message:initType(("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]), "Performable")
-if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
-message:addType(" The FX which have being added to monitoring section will display also here.", 1)
-elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
+local chainCount, inputCount = self.getValue()
+if context == 0 and inputCount > 0 then
 message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
 end
-local available = (isAvailable() or (context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) or (context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0))
-if not available then
+if chainCount == 0 then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
 end
-message(("View OSARA FX parameters for %s with %s"):format(contexts[context], getStringPluginsCount(1)))
-if context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
-message((" and monitoring section with %s"):format(getStringPluginsCount(2)))
-elseif context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0 then
-message(" and input FX chain")
+message(("View OSARA FX parameters for %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
+if context == 0 and inputCount > 0 then
+message(string.format(" and input FX chain with %s", getStringPluginsCount(function() return inputCount end)))
 end
 return message
 end,
 set = function(self, action)
 if action == nil then
-local available = (isAvailable() or (context == true and reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0) or (context == 0 and reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack()) > 0))
-if available then
+local chainCount, inputCount = self.getValue()
+if chainCount > 0 or inputCount > 0 then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
@@ -188,20 +257,71 @@ else
 return "This property is performable only."
 end
 end
-})
+}
+end
 
--- Monitoring FX actions
--- To these action will be available, an user should activate the monitoring FX chain from the appropriated menu and set some there, so anyone shouldn't see the superfluous sublayouts.
- if reaper.TrackFX_GetRecCount(reaper.GetMasterTrack()) > 0 then
--- Monitoring FX chain
-registerProperty("monitoringLayout", {
+-- OSARA FX parameters for master track
+fxActionsLayout.masterTrackLayout:registerProperty{
+getValue = masterTrackFXChain.getValue,
 get = function(self)
 local message = initOutputMessage()
-message:initType("Perform this property to show the monitoring FX chain.", "Performable")
-message(("View FX chain for monitoring FX with %s"):format(getStringPluginsCount(2)))
+message:initType("Perform this property to show the FX parameters for master track using OSARA.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
+local chainCount, monitoringCount = self.getValue()
+if monitoringCount > 0 then
+message:addType(" The FX which have being added to monitoring FX chain will display also here.", 1)
+end
+if chainCount == 0 and monitoringCount == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
+message(("View OSARA FX parameters for master track with %s"):format(getStringPluginsCount(self.getValue)))
+if monitoringCount > 0 then
+message((" and monitoring section with %s"):format(getStringPluginsCount(function() return monitoringCount end)))
+end
 return message
 end,
 set = function(self, action)
+if action == nil then
+local chainCount, monitoringCount = self.getValue()
+if chainCount > 0 or monitoringCount > 0 then
+reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMSMASTER"), 0)
+restorePreviousLayout()
+setUndoLabel(self:get())
+return ""
+else
+return "This action is unavailable right now because no one FX is set there."
+end
+else
+return "This property is performable only."
+end
+end
+}
+
+-- Monitoring FX actions
+-- Monitoring FX chain
+local monitorFXChainAction = {}
+fxActionsLayout.monitoringLayout:registerProperty(monitorFXChainAction)
+
+function monitorFXChainAction.getValue()
+return reaper.TrackFX_GetRecCount(reaper.GetMasterTrack())
+end
+
+function monitorFXChainAction:get()
+local message = initOutputMessage()
+message:initType("Perform this property to show the monitoring FX chain.", "Performable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
+message(("View FX chain for monitoring FX with %s"):format(getStringPluginsCount(self.getValue)))
+return message
+end
+
+function monitorFXChainAction:set(action)
 if action == nil then
 reaper.Main_OnCommand(41882, 0)
 restorePreviousLayout()
@@ -211,36 +331,41 @@ else
 return "This property is performable only."
 end
 end
-})
+
 
 -- Monitoring bypass
-registerProperty("monitoringLayout", {
+fxActionsLayout.monitoringLayout:registerProperty{
 states = {
 [0]="Bypass",
 [1]="Activate"
 },
+getValue = monitorFXChainAction.getValue,
 get = function(self)
 local message = initOutputMessage()
 message:initType("Toggle this property to bypass or activate all monitoring FX.", "Toggleable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
 local state = reaper.GetToggleCommandState(41884)
-message(("%s all monitoring FX"):format(self.states[state]))
+message(("%s %s in monitoring section"):format(self.states[state], getStringPluginsCount(self.getValue)))
 return message
 end,
 set = function(self, action)
 if action == nil then
+if self.getValue() > 0 then
 local state = reaper.GetToggleCommandState(41884)
 reaper.Main_OnCommand(41884, nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
+return "This property is unavailable because no plugins is set there."
+end
+else
 return "This property is performable only."
 end
 end
-})
+}
 
 return fxActionsLayout[sublayout]
-end
-
-
-return fxActionsLayout
