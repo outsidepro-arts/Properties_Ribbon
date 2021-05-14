@@ -49,6 +49,27 @@ local function getTakeNumber(item)
 return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
 end
 
+-- We should obey the configuration to report the take's name
+local function getTakeID(item)
+local cfg = config.getboolean("reportName", false)
+if cfg == true then
+local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)
+if retval then
+-- Stupid REAPER adds the file extensions to the take's name!
+if config.getboolean("clearFileExts", true) == true then
+name = name:match("^(.+)[.].+$")
+end
+return ("take %s"):format(name)
+else
+goto numcompose
+end
+end
+::numcompose::
+return ("take %u"):format(getTakeNumber(item))
+end
+
+
+
 -- Reading the color from color composer specified section
 local function getItemComposedColor()
 return extstate.colcom_item_curValue
@@ -101,9 +122,9 @@ local state, takeIDX = func(items[k]), getTakeNumber(items[k])
 local prevState, prevTakeIDX if items[k-1] then prevState, prevTakeIDX = func(items[k-1]), getTakeNumber(items[k-1]) end
 local nextState, nextTakeIDX if items[k+1] then nextState, nextTakeIDX = func(items[k+1]), getTakeNumber(items[k+1]) end
 if (state ~= prevState and state == nextState) and (takeIDX ~= prevTakeIDX and takeIDX == nextTakeIDX) then
-message(string.format("take %u of items from %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
+message(string.format("%s of items from %u ", getTakeID(items[k]), getItemNumber(items[k])))
 elseif (state == prevState and state ~= nextState) and (takeIDX == prevTakeIDX and takeIDX ~= nextTakeIDX) then
-message(string.format("to %u ", getItemNumber(items[k])))
+message(string.format("to %s of item %u", getTakeID(items[k]), getItemNumber(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -114,7 +135,7 @@ message(", ")
 end
 elseif (state == prevState and state == nextState) and (takeIDX == prevTakeIDX and takeIDX == nextTakeIDX) then
 else
-message(string.format("take %u of item %u ", getTakeNumber(items[k]), getItemNumber(items[k])))
+message(string.format("%s of item %u ", getTakeID(items[k]), getItemNumber(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -1614,7 +1635,7 @@ end
 else
 local state = self.getValue(items)
 local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("Item %u take %u, %s", getItemNumber(items), getTakeNumber(items), name))
+message(string.format("Item %u %s, %s", getItemNumber(items), getTakeID(items), name))
 end
 return message
 end
@@ -1697,7 +1718,7 @@ message("Takes volume: ")
 message(composeMultipleTakeMessage(self.getValue, representation.db))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u volume %s", getItemNumber(items), getTakeNumber(items), representation.db[state]))
+message(string.format("Item %u %s volume %s", getItemNumber(items), getTakeID(items), representation.db[state]))
 end
 return message
 end
@@ -1780,7 +1801,7 @@ if type(items) == "table" then
 message("Takes pan: ")
 message(composeMultipleTakeMessage(self.getValue, representation.pan))
 else
-message(string.format("Item %u take %u pan ", getItemNumber(items), getTakeNumber(items)))
+message(string.format("Item %u %s pan ", getItemNumber(items), getTakeID(items)))
 local state = self.getValue(items)
 message(string.format("%s", representation.pan[state]))
 end
@@ -1873,7 +1894,7 @@ message("Takes phase: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("item %u take %u phase %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+message(string.format("item %u %s phase %s", getItemNumber(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -1960,7 +1981,7 @@ message("Takes channel mode: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u channel mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+message(string.format("Item %u %s channel mode %s", getItemNumber(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2059,7 +2080,7 @@ message("Takes playrate: ")
 message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", utils.numtopercent(state)) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u playrate %s%%", getItemNumber(items), getTakeNumber(items), utils.numtopercent(state)))
+message(string.format("Item %u %s playrate %s%%", getItemNumber(items), getTakeID(items), utils.numtopercent(state)))
 end
 return message
 end
@@ -2106,7 +2127,7 @@ message("Takes preserve pitch when playrate changes: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("item %u take %u pitch %s when playrate changes", getItemNumber(items), getTakeNumber(items), self.states[state]))
+message(string.format("item %u %s pitch %s when playrate changes", getItemNumber(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2171,7 +2192,7 @@ message("Takes pitch: ")
 message(composeMultipleTakeMessage(self.getValue, representation.pitch))
 else
 local state = self.getValue(items)
-message(string.format("Item %u  take %u pitch %s", getItemNumber(items), getTakeNumber(items), representation.pitch[state]))
+message(string.format("Item %u %s pitch %s", getItemNumber(items), getTakeID(items), representation.pitch[state]))
 end
 return message
 end
@@ -2253,7 +2274,7 @@ message("Takes pitch shifter: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u pitch shifter %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+message(string.format("Item %u %s pitch shifter %s", getItemNumber(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2386,7 +2407,7 @@ message("Takes pitch shifter modes: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u shifter mode %s", getItemNumber(items), getTakeNumber(items), self.states[state]))
+message(string.format("Item %u %s shifter mode %s", getItemNumber(items), getTakeID(items), self.states[state]))
 if state == -1 then
 message:changeType(string.format("The Property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1]), 1)
 message:changeType("unavailable", 2)
@@ -2562,7 +2583,7 @@ message("Take  color:")
 message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return colors:getName(reaper.ColorFromNative(state)) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u take %u color %s", getItemNumber(items), getTakeNumber(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("Item %u %s color %s", getItemNumber(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
 end
 return message
 end
@@ -2580,7 +2601,7 @@ end
 else
 self.setValue(items, state)
 local state = self.getValue(items)
-message(string.format("Item %u take %u colorized to %s", getItemNumber(items), getTakeNumber(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("Item %u %s colorized to %s", getItemNumber(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
 end
 else
 message("Compose a color in color composer first.")
@@ -2618,7 +2639,7 @@ extstate.itemProperties_smrkaction = nil
 else
 message(self.states[extstate.itemProperties_smrkaction])
 end
-message(string.format("Item %u take %u stretch marker %u", getItemNumber(self.marker.item), getTakeNumber(self.marker.item), self.marker.idx+1))
+message(string.format("Item %u %s stretch marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
 return message
 end,
 set = function(self, action)
@@ -2686,7 +2707,7 @@ marker = takeMarker,
 get = function(self)
 local message = initOutputMessage()
 message:initType("Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
-message(string.format("Item %u take %u take marker %u", getItemNumber(self.marker.item), getTakeNumber(self.marker.item), self.marker.idx+1))
+message(string.format("Item %u %s take marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
 if self.marker.color > 0 then
 message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.marker.color))))
 end
