@@ -498,5 +498,29 @@ return "This property is toggleable only."
 end
 end
 
+local clearFileExtsProperty = {}
+configLayout.main:registerProperty(clearFileExtsProperty)
+
+function clearFileExtsProperty:get()
+local message = initOutputMessage()
+message:initType("Toggle this property to decide the Properties Ribbon scripts should try to detect the file extensions in names and remove them.", "Toggleable")
+local state = config.getboolean("clearFileExts", true)
+message(string.format("Properties Ribbon should %s to clear a file extensions in some names", ({[true]="try",[false]="not try"})[state]))
+return message
+end
+
+function clearFileExtsProperty:set(action)
+if action == nil then
+local message = initOutputMessage()
+local state = config.getboolean("clearFileExts", true)
+config.setboolean("clearFileExts", utils.nor(state))
+message(self:get())
+return message
+else
+return "This property is toggleable only."
+end
+end
+
+
 
 return configLayout[sublayout]
