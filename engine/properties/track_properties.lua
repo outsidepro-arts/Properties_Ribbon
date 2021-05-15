@@ -80,7 +80,11 @@ if cfg == true then
 local retval, name = reaper.GetTrackName(track)
 if retval then
 if  name:find("Track") and name:match("%d+") then
+if state == 0 then
+name = name:match("%d+")
+else
 name = "Track "..name:match("%d+")
+end
 end
 message(name)
 end
