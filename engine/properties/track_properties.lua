@@ -60,14 +60,19 @@ local compactStates = {
 [1] = "small",
 [2] = "closed"
 }
+if reaper.GetParentTrack(track) then
+message("Child ")
+end
 local state = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")
 if state == 0 or state == 1 then
 if state == 1 then
+message:clearMessage()
 local compactState = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
 message(compactStates[compactState])
 end
 message(string.format(" %s", states[state]))
 elseif state < 0 then
+message:clearMessage()
 state = -(state-1)
 if state < 3 then
 message(string.format(" %s", states[state]))
