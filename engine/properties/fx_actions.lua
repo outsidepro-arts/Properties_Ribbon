@@ -316,9 +316,12 @@ end
 end
 
 -- OSARA FX parameters for master track
-fxActionsLayout.masterTrackLayout:registerProperty{
-getValue = masterTrackFXChain.getValue,
-get = function(self)
+local osaraMasterFXParametersProperty = {}
+fxActionsLayout.masterTrackLayout:registerProperty(osaraMasterFXParametersProperty)
+
+osaraMasterFXParametersProperty.getValue = masterTrackFXChain.getValue
+
+function osaraMasterFXParametersProperty:get()
 local message = initOutputMessage()
 message:initType("Perform this property to show the FX parameters for master track using OSARA.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) then
@@ -338,8 +341,9 @@ if monitoringCount > 0 then
 message((" and monitoring section with %s"):format(getStringPluginsCount(monitoringCount)))
 end
 return message
-end,
-set = function(self, action)
+end
+
+function osaraMasterFXParametersProperty:set(action)
 if action == nil then
 local chainCount, monitoringCount = self.getValue()
 if chainCount > 0 or monitoringCount > 0 then
@@ -354,7 +358,7 @@ else
 return "This property is performable only."
 end
 end
-}
+
 
 -- Monitoring FX actions
 -- Monitoring FX chain
@@ -422,5 +426,8 @@ return "This property is performable only."
 end
 end
 }
+
+-- The monitoring sections has not the OSARA proposed FX parameters. I think that the decision about has dictated by using the TrackFX_GetRecCount both on a track and on a master track. Therefore we just copy this property to monitoring section also.
+fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
 return fxActionsLayout[sublayout]
