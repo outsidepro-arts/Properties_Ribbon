@@ -256,6 +256,10 @@ if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
 end
+if self.getValue() == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 message(string.format("%s %s for master track", self.states[state], getStringPluginsCount(self.getValue)))
 return message
@@ -405,6 +409,10 @@ message:initType("Toggle this property to bypass or activate all monitoring FX."
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
+end
+if self.getValue() == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
 end
 local state = reaper.GetToggleCommandState(41884)
 message(("%s %s in monitoring section"):format(self.states[state], getStringPluginsCount(self.getValue)))
