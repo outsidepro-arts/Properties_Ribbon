@@ -103,7 +103,7 @@ state = getCurrentChainAction()
 else
 state = 1
 end
-message(self.actions[state]:format(contexts[context], getStringPluginsCount(self.getValue)))
+message(self.actions[state]:format(contexts[context], getStringPluginsCount(({self.getValue()})[state])))
 return message
 end
 
