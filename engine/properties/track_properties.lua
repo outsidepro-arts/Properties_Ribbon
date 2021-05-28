@@ -50,10 +50,10 @@ end
 local function getTrackID(track)
 local message = initOutputMessage()
 local states = {
-[0]="track",
-[1]="folder",
-[2]="end of folder",
-[3]="end of %u folders"
+[0]="track ",
+[1]="folder ",
+[2]="end of folder ",
+[3]="end of %u folder s"
 }
 local compactStates = {
 [0] = "opened",
