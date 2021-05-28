@@ -110,7 +110,7 @@ return state
 end
 
 function debug(str)
-reaper.ShowMessageBox(str, "Debug", 0)
+reaper.ShowMessageBox(tostring(str), "Debug", 0)
 end
 
 function utils.getScriptPath()
