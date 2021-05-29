@@ -114,7 +114,12 @@ return representation.pan[-state]
 end
 })
 elseif extracted:find"width" then
-envelopeType = 2
+envelopeType = 6
+envelopeRepresentation = setmetatable({}, {
+__index = function(self, state)
+return string.format("%i%%", utils.numtopercent(state))
+end
+})
 elseif extracted:find"rate" then
 envelopeType = 3
 envelopeRepresentation = setmetatable({}, {
@@ -249,6 +254,26 @@ else
 local state = self.getValue(points)
 self.setValue(points, state-adjustStep)
 end
+elseif envelopeType == 6 then
+local adjustStep = config.getinteger("percentStep", 1)
+if type(points) == "table" then
+for _, point in ipairs(points) do
+local state = self.getValue(point)
+if utils.numtopercent(state)-adjustStep >= -100 then
+self.setValue(point, utils.percenttonum(utils.numtopercent(state)-adjustStep))
+else
+self.setValue(point, utils.percenttonum(-100))
+end
+end
+else
+local state = self.getValue(points)
+if utils.numtopercent(state)-adjustStep >= -100 then
+self.setValue(points, utils.percenttonum(utils.numtopercent(state)-adjustStep))
+else
+self.setValue(points, utils.percenttonum(-100))
+message("Minimal width value.")
+end
+end
 else
 reaper.Main_OnCommand(42382, 0)
 end
@@ -312,6 +337,26 @@ self.setValue(point, self.getValue(point)+adjustStep)
 end
 else
 self.setValue(points, self.getValue(points)+adjustStep)
+end
+elseif envelopeType == 6 then
+local adjustStep = config.getinteger("percentStep", 1)
+if type(points) == "table" then
+for _, point in ipairs(points) do
+local state = self.getValue(point)
+if utils.numtopercent(state)+adjustStep <= 100 then
+self.setValue(point, utils.percenttonum(utils.numtopercent(state)+adjustStep))
+else
+self.setValue(point, utils.percenttonum(100))
+end
+end
+else
+local state = self.getValue(points)
+if utils.numtopercent(state)+adjustStep <= 100 then
+self.setValue(points, utils.percenttonum(utils.numtopercent(state)+adjustStep))
+else
+self.setValue(points, utils.percenttonum(100))
+message("Maximal width value.")
+end
 end
 else
 reaper.Main_OnCommand(42381, 0)
