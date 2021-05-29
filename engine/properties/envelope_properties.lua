@@ -394,13 +394,13 @@ end
 else
 local retval, answer = nil
 if type(points) == "table" then
-if envelopeType > 0 and envelopeType < 5 then
+if envelopeType > 0 and envelopeType < 5 or envelopeType == 6 then
 retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, "Type a new value for selected points in humanbeing presented format:", "")
 else
 retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, "Type a new raw value for selected points:", "")
 end
 else
-if envelopeType > 0 and envelopeType < 5 then
+if envelopeType > 0 and envelopeType < 5 or envelopeType == 6 then
 retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1, "Type a new value for selected point in humanbeing presented format:", envelopeRepresentation[self.getValue(points)])
 else
 retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1, "Type a new raw value for selected point:", self.getValue(points))
@@ -429,7 +429,7 @@ self.setValue(points, 1)
 end
 end
 elseif envelopeType == 2 then
-if answer:find('%%') or answer:match("^[-+]?%d+[.]?%d*([lrc])") then
+if answer:match("^[-+]?%d+[.]?%d*([lrc])") then
 local converted = answer:match("^([-]?%d+)")
 if converted == nil then
 reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", 0)
@@ -501,6 +501,24 @@ else
 self.setvalue(points, 0.0)
 end
 end
+elseif envelopeType == 6 then
+answer = tonumber(answer:match("^([-]?%d+)%%?"))
+if answer then
+if answer > 100 then
+answer = 100
+elseif answer < -100 then
+answer = -100
+end
+if type(points) == "table" then
+for _, point in ipairs(points) do
+self.setValue(point, utils.percenttonum(answer))
+end
+else
+self.setValue(points, utils.percenttonum(answer))
+end
+else
+message("Nothing changed. ")
+end
 else
 if type(points) == "table" then
 for _, point in ipairs(points) do
@@ -524,11 +542,11 @@ end
 local shapeProperty = {}
 envelopePointsLayout:registerProperty(shapeProperty)
 shapeProperty.states = setmetatable({
-[0] = "Linear",
-[1] = "Square",
-[2] = "Slow start and end",
-[3] = "Fast start",
-[4] = "Fast end",
+[0] = "linear",
+[1] = "square",
+[2] = "slow start and end",
+[3] = "fast start",
+[4] = "fast end",
 [5] = "Bezier"
 }, {
 __index = function(self, key)
