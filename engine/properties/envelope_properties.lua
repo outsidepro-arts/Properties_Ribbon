@@ -10,7 +10,7 @@ local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 -- Prepare the envelopes and its points
 local envelope = reaper.GetSelectedEnvelope(0)
 local points = nil
-do
+if envelope then
 local countEnvelopePoints = reaper.CountEnvelopePoints(envelope)
 if multiSelectionSupport == true then
 points = {}
@@ -84,10 +84,9 @@ end
 return message
 end
 
-
-retval, name = reaper.GetEnvelopeName(envelope)
-if retval == false then
-name = "Unknown"
+local name = ""
+if envelope then
+_, name = reaper.GetEnvelopeName(envelope)
 end
 
 -- Define with which envelope we are interracting
@@ -98,6 +97,7 @@ __index = function(self, state)
 return reaper.Envelope_FormatValue(envelope, state)
 end
 })
+if envelope then
 if reaper.GetEnvelopeScalingMode(envelope) == 0 then
 local extracted = string.match(name:lower(), "^(%w+)")
 -- This method will not works with non-english REAPER locales
@@ -132,6 +132,7 @@ envelopeType = 4
 envelopeRepresentation = representation.pitch
 elseif extracted:find"mute" then
 envelopeType = 5
+end
 end
 end
 
