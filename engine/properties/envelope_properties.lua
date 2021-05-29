@@ -417,10 +417,10 @@ answer = answer:match("^(%d+[.]?%d*)")
 if answer then
 if type(points) == "table" then
 for _, point in ipairs(points) do
-self.setValue(point, tonumber(answer))
+self.setValue(point, tonumber(utils.percenttonum(answer)))
 end
 else
-self.setValue(points, tonumber(answer))
+self.setValue(points, tonumber(utils.percenttonum(answer)))
 end
 else
 message("Nothing changed. ")
