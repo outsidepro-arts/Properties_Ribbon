@@ -20,6 +20,7 @@ local sublayout = extstate[currentLayout.."_sublayout"] or "contextLayout"
 local contexts = {
 [0]="Current track",
 [1]="Selected item take",
+[2] = "Envelopes"
 }
 
 local function getStringPluginsCount(where)
