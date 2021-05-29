@@ -87,6 +87,7 @@ end
 local name = ""
 if envelope then
 _, name = reaper.GetEnvelopeName(envelope)
+name = name:gsub("(.+)%s[/]%s(.+)", "%1 of %2 plugin")
 end
 
 -- Define with which envelope we are interracting
@@ -135,7 +136,6 @@ envelopeType = 5
 end
 end
 end
-
 
 local envelopePointsLayout = initLayout(string.format("%s envelope points properties", name))
 
