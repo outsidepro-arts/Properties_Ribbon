@@ -656,9 +656,13 @@ parentLayout.playbackLayout:registerProperty(soloProperty)
 
 function soloProperty:get()
 local message = initOutputMessage()
-message:initType("Toggle this property to solo or unsolo selected track.", "Toggleable")
+message:initType("Toggle this property to solo or unsolo selected track using default configuration of solo-in-place set in REAPER preferences.", "Toggleable, adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, the solo state will be set to oposite value depending of moreness tracks with the same value.", 1)
+end
+message:addType(" Adjust this property to choose needed solo mode for selected tracks.", 1)
+if multiSelectionSupport == true then
+message:addType(string.format(' If the group of tracks has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the solo state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
 if type(tracks) == "table" then
 message("tracks solo: ")
@@ -675,10 +679,80 @@ local message = initOutputMessage()
 local retval, soloInConfig = reaper.get_config_var_string("soloip")
 if retval then
 soloInConfig = tonumber(soloInConfig)+1
+else
+soloInConfig = 1
 end
-if action ~= nil then
-return "This property is toggleable only."
+if action == false then
+if type(tracks) == "table" then
+local allIsSame = true
+for idx, track in ipairs(tracks) do
+local state = reaper.GetMediaTrackInfo_Value(track, "I_SOLO")
+if idx > 1 then
+local prevstate = reaper.GetMediaTrackInfo_Value(tracks[idx-1], "I_SOLO")
+if state ~= prevstate then
+allIsSame = false
+break
 end
+end
+end
+local state = nil
+if allIsSame == true then
+state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
+if (state-1) >= 0 then
+state = state-1
+end
+else
+state = 0
+end
+message(string.format("Set all selected tracks solo to %s.", self.states[state]))
+for _, track in ipairs(tracks) do
+reaper.SetMediaTrackInfo_Value(track, "I_SOLO", state)
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
+if (state-1) >= 0 then
+reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state-1)
+else
+message"No more previous property values. "
+end
+end
+elseif action == true then
+if type(tracks) == "table" then
+local allIsSame = true
+for idx, track in ipairs(tracks) do
+local state = reaper.GetMediaTrackInfo_Value(track, "I_SOLO")
+if idx > 1 then
+local prevstate = reaper.GetMediaTrackInfo_Value(tracks[idx-1], "I_SOLO")
+if state ~= prevstate then
+allIsSame = false
+break
+end
+end
+end
+local state = nil
+if allIsSame == true then
+state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
+if (state+1) <= 6 then
+state = state+1
+elseif (state+1) >= 2 and (state+1) <= 5 then
+state = 5
+end
+else
+state = 0
+end
+message(string.format("Set all selected tracks solo to %s.", self.states[state]))
+for _, track in ipairs(tracks) do
+reaper.SetMediaTrackInfo_Value(track, "I_SOLO", state)
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
+if (state+1) <= #self.states then
+reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state+1)
+else
+message"No more next property values. "
+end
+end
+else
 if type(tracks) == "table" then
 local soloedTracks, notSoloedTracks = 0, 0
 for k = 1, #tracks do
@@ -711,6 +785,7 @@ else
 state = soloInConfig
 end
 reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state)
+end
 end
 message(self:get())
 return message
