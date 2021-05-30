@@ -672,16 +672,13 @@ end
 
 function soloProperty:set(action)
 local message = initOutputMessage()
-local soloInConfig = reaper.get_config_var_string("soloip")
-if soloInConfig == true	 then
-soloInConfig = 2
-else
-soloInConfig = 1
+local retval, soloInConfig = reaper.get_config_var_string("soloip")
+if retval then
+soloInConfig = tonumber(soloInConfig)+1
 end
 if action ~= nil then
 return "This property is toggleable only."
 end
-
 if type(tracks) == "table" then
 local soloedTracks, notSoloedTracks = 0, 0
 for k = 1, #tracks do

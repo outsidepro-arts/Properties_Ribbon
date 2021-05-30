@@ -209,11 +209,9 @@ if action ~= nil then
 return "This property is adjustable only."
 end
 local message = initOutputMessage()
-local soloInConfig = reaper.get_config_var_string("soloip")
-if soloInConfig == true then
-soloInConfig = 2
-else
-soloInConfig = 1
+local retval, soloInConfig = reaper.get_config_var_string("soloip")
+if retval then
+soloInConfig = soloInConfig+1
 end
 local state = ({reaper.GetTrackState(master)})[2]&16
 if state > 0 then
