@@ -87,7 +87,6 @@ end
 local name = ""
 if envelope then
 _, name = reaper.GetEnvelopeName(envelope)
-name = name:gsub("(.+)%s[/]%s(.+)", "%1 of %2 plugin")
 end
 
 -- Define with which envelope we are interracting
@@ -100,13 +99,13 @@ end
 })
 if envelope then
 if reaper.GetEnvelopeScalingMode(envelope) == 0 then
-local extracted = string.match(name:lower(), "^(%w+)")
+if not name:find" / " then
 -- This method will not works with non-english REAPER locales
 -- I'm waiting for alternative methods for definition
-if extracted:find"volume" or extracted:find"trim" then
+if name:lower():find"volume" then
 envelopeType = 1 -- decibels value
 envelopeRepresentation = representation.db
-elseif extracted:find"pan" then
+elseif name:lower():find"pan" then
 envelopeType = 2 -- percentage value
 -- Curious REAPER: the pan envelope has inverted values...
 envelopeRepresentation = setmetatable({}, {
@@ -114,28 +113,32 @@ __index = function(self, state)
 return representation.pan[-state]
 end
 })
-elseif extracted:find"width" then
+elseif name:lower():find"width" then
 envelopeType = 6
 envelopeRepresentation = setmetatable({}, {
 __index = function(self, state)
 return string.format("%i%%", utils.numtopercent(state))
 end
 })
-elseif extracted:find"rate" then
+elseif name:lower():find"rate" then
 envelopeType = 3
 envelopeRepresentation = setmetatable({}, {
 __index = function(self,state)
 return string.format("%u%%", utils.numtopercent(state))
 end
 })
-elseif extracted:find"pitch" then
+elseif name:lower():find"pitch" then
 envelopeType = 4
 envelopeRepresentation = representation.pitch
-elseif extracted:find"mute" then
+elseif name:lower():find"mute" then
 envelopeType = 5
 end
 end
 end
+end
+
+-- We are ready to fix non-readable name parts
+name = name:gsub("(.+)%s[/]%s(.+)", "%1 of %2 plugin")
 
 local envelopePointsLayout = initLayout(string.format("%s envelope points properties", name))
 
