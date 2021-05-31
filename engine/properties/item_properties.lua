@@ -57,7 +57,7 @@ local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(
 if retval then
 -- Stupid REAPER adds the file extensions to the take's name!
 if config.getboolean("clearFileExts", true) == true then
-name = name:match("^(.+)[.].+$")
+name = name:match("^(.+)[.]?.*$")
 end
 return ("take %s"):format(name)
 else
