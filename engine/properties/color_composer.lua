@@ -671,4 +671,4 @@ end
 
 parentLayout.defaultSublayout = sublayout
 
-return parentLayout[sublayout]
+return parentLayout
