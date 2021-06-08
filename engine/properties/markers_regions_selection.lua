@@ -15,8 +15,6 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "markersLayout"
 
 -- Before define which sublayout we will load when no sublayout found, just load all marker/regions data.
 -- Also, it will be used in other cases
@@ -452,5 +450,6 @@ return parentLayout.regionsLayout.properties[#parentLayout.regionsLayout.propert
 end
 })
 
+parentLayout.defaultSublayout = "markersLayout"
 
-return parentLayout[sublayout]
+return parentLayout

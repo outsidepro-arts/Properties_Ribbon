@@ -13,9 +13,6 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "main"
-
 -- global pseudoclass initialization
 local configLayout = initLayout("%sConfiguration properties")
 
@@ -521,6 +518,6 @@ return "This property is toggleable only."
 end
 end
 
+configLayout.defaultSublayout = "main"
 
-
-return configLayout[sublayout]
+return configLayout

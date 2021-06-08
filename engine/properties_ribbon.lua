@@ -287,6 +287,8 @@ end
 end
 end
 
+
+
 -- Main body
 
 layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
@@ -337,6 +339,10 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
 end
+if not layout.properties then
+local sublayout = extstate[currentLayout.."_sublayout"] or layout.defaultSublayout
+layout = layout[sublayout]
+end
 setUndoLabel(("Switch properties layout to %s"):format((layout.name):format("")))
 layout.pIndex = extstate[layout.section] or 1
 return layout
@@ -362,15 +368,10 @@ else
 ("No previous category."):output() return
 end
 end
-layout = dofile(string.format("%sproperties\\%s.lua", utils.getScriptPath(), currentLayout))
-if layout == nil then
-reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
+if not script_init(currentLayout, true) then
 restorePreviousLayout()
 return
 end
-setUndoLabel(("Switch category to %s"):format((layout.name):format(layout.subname)))
-speakLayout = true
-layout.pIndex = extstate[layout.section] or 1
 script_reportOrGotoProperty()
 else
 (("The %s layout has no category. "):format(layout.name:format(""))):output()

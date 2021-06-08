@@ -15,7 +15,6 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-local sublayout = extstate[currentLayout.."_sublayout"] or "contextLayout"
 
 local contexts = {
 [0]="Current track",
@@ -439,4 +438,6 @@ end
 -- The monitoring sections has not the OSARA proposed FX parameters. I think that the decision about has dictated by using the TrackFX_GetRecCount both on a track and on a master track. Therefore we just copy this property to monitoring section also.
 fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
-return fxActionsLayout[sublayout]
+fxActionsLayout.defaultSublayout = sublayout
+
+return fxActionsLayout

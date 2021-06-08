@@ -15,9 +15,6 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "reaperPrefs"
-
 local parentLayout = initLayout("%spreferences actions")
 
 function parentLayout.canProvide()
@@ -32,6 +29,7 @@ end
 if reaper.APIExists("CF_GetSWSVersion") == true then
 parentLayout:registerSublayout("swsLayout", "SWS extension ")
 end
+
 
 
 
@@ -105,4 +103,6 @@ parentLayout.swsLayout:registerProperty(getUsualProperty(reaper.NamedCommandLook
 parentLayout.swsLayout:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK"), "Check for new SWS version"))
 end
 
-return parentLayout[sublayout]
+parentLayout.defaultSublayout = "reaperPrefs"
+
+return parentLayout

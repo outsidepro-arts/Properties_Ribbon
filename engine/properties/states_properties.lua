@@ -13,9 +13,6 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "areas"
-
 -- global pseudoclass initialization
 local parentLayout = initLayout("%sstatement")
 
@@ -291,4 +288,6 @@ setWindow
 )
 )
 
-return parentLayout[sublayout]
+parentLayout.defaultSublayout = "areas"
+
+return parentLayout

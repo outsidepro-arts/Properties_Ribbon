@@ -15,9 +15,6 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "embededLayout"
-
 
 local parentLayout = initLayout("%seditor selection")
 
@@ -151,4 +148,6 @@ return "This property is performable only."
 end
 end
 
-return parentLayout[sublayout]
+parentLayout.defaultSublayout = "embededLayout"
+
+return parentLayout

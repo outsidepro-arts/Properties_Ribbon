@@ -13,9 +13,6 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"] or "playbackLayout"
-
 -- Preparing all needed configs which will be used not one time
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
@@ -1993,4 +1990,6 @@ message(self:get())
 return message
 end
 
-return parentLayout[sublayout]
+parentLayout.defaultSublayout = "playbackLayout"
+
+return parentLayout

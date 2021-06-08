@@ -14,10 +14,8 @@ After this preambula, let me begin.
 ]]--
 
 
--- Reading the sublayout
-local sublayout = extstate[currentLayout.."_sublayout"]
-if sublayout == nil then
 -- This layout should define current context
+local sublayout = nil
 local context = reaper.GetCursorContext()
 if context == 0 then
 sublayout = "track"
@@ -25,7 +23,6 @@ elseif context == 1 then
 sublayout = "item"
 else
 sublayout = "track"
-end
 end
 
 -- This layout should have the self-providing service methods
@@ -672,6 +669,6 @@ return "This property is performable only."
 end
 end
 
-
+parentLayout.defaultSublayout = sublayout
 
 return parentLayout[sublayout]
