@@ -368,7 +368,7 @@ else
 ("No previous category."):output() return
 end
 end
-if not script_init(currentLayout, true) then
+if not script_init(nil, true) then
 restorePreviousLayout()
 return
 end
