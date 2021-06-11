@@ -42,6 +42,10 @@ return ("%s plugin%s"):format(preproc[result], ({[true] = "s", [false] = ""})[(r
 end
 
 local context = reaper.GetCursorContext()
+if context == -1 then
+context = extstate.lastKnownContext or context
+end
+
 if sublayout == "contextLayout" and context == 0 and reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
 sublayout = "masterTrackLayout"
 end
