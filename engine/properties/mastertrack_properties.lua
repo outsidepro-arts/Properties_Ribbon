@@ -494,6 +494,4 @@ message(self:get())
 return message
 end
 
-parentLayout.defaultSublayout = "playbackLayout"
-
 return parentLayout

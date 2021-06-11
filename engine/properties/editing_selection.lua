@@ -148,6 +148,5 @@ return "This property is performable only."
 end
 end
 
-parentLayout.defaultSublayout = "embededLayout"
 
 return parentLayout

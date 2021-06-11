@@ -103,6 +103,4 @@ parentLayout.swsLayout:registerProperty(getUsualProperty(reaper.NamedCommandLook
 parentLayout.swsLayout:registerProperty(getUsualProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK"), "Check for new SWS version"))
 end
 
-parentLayout.defaultSublayout = "reaperPrefs"
-
 return parentLayout
