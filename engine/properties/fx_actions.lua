@@ -47,7 +47,7 @@ sublayout = "masterTrackLayout"
 end
 
 local function getCurrentChainAction()
-local result = extstate[sublayout.."_currentAction"] or 1
+local result = extstate[currentSublayout.."_currentAction"] or 1
 return result
 end
 
@@ -438,6 +438,5 @@ end
 -- The monitoring sections has not the OSARA proposed FX parameters. I think that the decision about has dictated by using the TrackFX_GetRecCount both on a track and on a master track. Therefore we just copy this property to monitoring section also.
 fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
-fxActionsLayout.defaultSublayout = sublayout
 
 return fxActionsLayout

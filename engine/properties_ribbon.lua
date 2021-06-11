@@ -287,11 +287,39 @@ end
 end
 end
 
+function isHasSublayouts(lt)
+if not lt.properties then
+for _, field in pairs(lt) do
+if type(field) == "table" then
+if (field.nextSubLayout or field.previousSubLayout) and field.properties then
+return true
+end
+end
+end
+end
+return false
+end
+
+
+
+function findDefaultSublayout(lt)
+for fieldName, field in pairs(lt) do
+if type(field) == "table" then
+if field.properties then
+if not field.previousSubLayout and field.nextSubLayout then
+return fieldName
+end
+end
+end
+end
+end
+
+
 
 
 -- Main body
 
-layout, currentLayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
+layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
 
 -- The main initialization function
 -- newLayout (string, optional): new layout name which Properties Ribbon should switch to. If it is omited, the last layout will be loaded.
@@ -339,9 +367,10 @@ if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
 end
-if not layout.properties then
-local sublayout = extstate[currentLayout.."_sublayout"] or layout.defaultSublayout
+if isHasSublayouts(layout) then
+local sublayout = extstate[currentLayout.."_sublayout"] or layout.defaultSublayout or findDefaultSublayout(layout)
 layout = layout[sublayout]
+currentSublayout = sublayout
 end
 setUndoLabel(("Switch properties layout to %s"):format((layout.name):format("")))
 layout.pIndex = extstate[layout.section] or 1

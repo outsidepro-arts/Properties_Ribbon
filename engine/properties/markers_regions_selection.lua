@@ -450,6 +450,5 @@ return parentLayout.regionsLayout.properties[#parentLayout.regionsLayout.propert
 end
 })
 
-parentLayout.defaultSublayout = "markersLayout"
 
 return parentLayout
