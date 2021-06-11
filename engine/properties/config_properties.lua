@@ -518,6 +518,5 @@ return "This property is toggleable only."
 end
 end
 
-configLayout.defaultSublayout = "main"
 
 return configLayout
