@@ -319,7 +319,7 @@ end
 
 -- Main body
 
-layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, false, "Unknown Change via Properties Ribbon script"
+layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, nil, false, "Unknown Change via Properties Ribbon script"
 
 -- The main initialization function
 -- newLayout (string, optional): new layout name which Properties Ribbon should switch to. If it is omited, the last layout will be loaded.
