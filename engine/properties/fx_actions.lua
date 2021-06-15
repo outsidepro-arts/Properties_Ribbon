@@ -52,7 +52,7 @@ return result
 end
 
 local function setCurrentChainAction(action)
-extstate[sublayout.."_currentAction"] = action
+extstate[currentSublayout.."_currentAction"] = action
 end
 
 
