@@ -46,10 +46,6 @@ if context == -1 then
 context = extstate.lastKnownContext or context
 end
 
-if sublayout == "contextLayout" and context == 0 and reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
-sublayout = "masterTrackLayout"
-end
-
 local function getCurrentChainAction()
 local result = extstate[currentSublayout.."_currentAction"] or 1
 return result
@@ -61,11 +57,13 @@ end
 
 
 local fxActionsLayout = initLayout("%sFX actions")
-if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
 fxActionsLayout:registerSublayout("contextLayout", contexts[context].." ")
-end
 fxActionsLayout:registerSublayout("masterTrackLayout", "Master track ")
 fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring ")
+if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
+fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
+fxActionsLayout.masterTrackLayout.previousSubLayout = nil
+end
 
 
 function fxActionsLayout.canProvide()
