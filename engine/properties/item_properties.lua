@@ -48,7 +48,18 @@ return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
 end
 
 -- We should obey the configuration to report the take's name
+local function getItemID(item)
+local message = initOutputMessage()
+message(("Item %u"):format(getItemNumber(item)))
+local color = reaper.GetDisplayedMediaItemColor(item)
+if color ~= 0 then
+message((" color %s"):format(colors:getName(reaper.ColorFromNative(color))))
+end
+return message:extract()
+end
+
 local function getTakeID(item)
+local message = initOutputMessage()
 local cfg = config.getboolean("reportName", false)
 if cfg == true then
 local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)
@@ -57,13 +68,18 @@ if retval then
 if config.getboolean("clearFileExts", true) == true then
 name = name:gsub("(.+)[.](%w+)$", "%1")
 end
-return ("take %s"):format(name)
+message(("take %s"):format(name))
 else
-goto numcompose
+message(("take %u"):format(getTakeNumber(item)))
 end
+else
+message(("take %u"):format(getTakeNumber(item)))
 end
-::numcompose::
-return ("take %u"):format(getTakeNumber(item))
+local color = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
+if color ~= 0 then
+message((" color %s"):format(colors:getName(reaper.ColorFromNative(color))))
+end
+return message:extract()
 end
 
 
@@ -86,9 +102,9 @@ local state = func(items[k])
 local prevState if items[k-1] then prevState = func(items[k-1]) end
 local nextState if items[k+1] then nextState = func(items[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("items from %u ", getItemNumber(items[k])))
+message(string.format("items from %u ", getItemID(items[k])))
 elseif state == prevState and state ~= nextState then
-message(string.format("to %u ", getItemNumber(items[k])))
+message(string.format("to %u ", getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -99,7 +115,7 @@ message(", ")
 end
 elseif state == prevState and state == nextState then
 else
-message(string.format("item %u ", getItemNumber(items[k])))
+message(string.format("%s ", getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -120,9 +136,9 @@ local state, takeIDX = func(items[k]), getTakeNumber(items[k])
 local prevState, prevTakeIDX if items[k-1] then prevState, prevTakeIDX = func(items[k-1]), getTakeNumber(items[k-1]) end
 local nextState, nextTakeIDX if items[k+1] then nextState, nextTakeIDX = func(items[k+1]), getTakeNumber(items[k+1]) end
 if (state ~= prevState and state == nextState) and (takeIDX ~= prevTakeIDX and takeIDX == nextTakeIDX) then
-message(string.format("%s of items from %u ", getTakeID(items[k]), getItemNumber(items[k])))
+message(string.format("%s of items from %u ", getTakeID(items[k]), getItemID(items[k])))
 elseif (state == prevState and state ~= nextState) and (takeIDX == prevTakeIDX and takeIDX ~= nextTakeIDX) then
-message(string.format("to %s of item %u", getTakeID(items[k]), getItemNumber(items[k])))
+message(string.format("to %s of item %u", getTakeID(items[k]), getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -133,7 +149,7 @@ message(", ")
 end
 elseif (state == prevState and state == nextState) and (takeIDX == prevTakeIDX and takeIDX == nextTakeIDX) then
 else
-message(string.format("%s of item %u ", getTakeID(items[k]), getItemNumber(items[k])))
+message(string.format("%s of %s ", getTakeID(items[k]), getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -241,7 +257,7 @@ if type(items) == "table" then
 message("Takes names: ")
 for k = 1, #items do
 local name = self.getValue(items[k])
-message(string.format("Take of item %u ", getItemNumber(items[k])))
+message(string.format("Take of %s ", getItemID(items[k])))
 if name and name ~= "" then
 message(string.format("named as %s", name))
 else
@@ -254,9 +270,9 @@ end
 else
 local name = self.getValue(items)
 if name and name ~= "" then
-message(string.format("Item %u current take name %s", getItemNumber(items), name))
+message(string.format("%s current take name %s", getItemID(items), name))
 else
-message(string.format("Item %u current take unnamed", getItemNumber(items)))
+message(string.format("%s current take unnamed", getItemID(items)))
 end
 end
 return message
@@ -277,7 +293,7 @@ message(string.format("The name %s has been set for %u items.", answer, #items))
 end
 else
 local name = self.getValue(items)
-local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemNumber(items)), 1, 'Type new item name:', name)
+local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemID(items)), 1, 'Type new item name:', name)
 if aState == true then
 self.setValue(items, answer)
 end
@@ -309,7 +325,7 @@ message("Items locking: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("item %u %s", getItemNumber(items), self.states[state]))
+message(string.format("%s %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -374,7 +390,7 @@ message("items volume:")
 message(composeMultipleItemMessage(self.getValue, representation.db))
 else
 local state = self.getValue(items)
-message(string.format("Item %u volume %s", getItemNumber(items), representation.db[state]))
+message(string.format("%s volume %s", getItemID(items), representation.db[state]))
 end
 return message
 end
@@ -445,7 +461,7 @@ message("Items mute:")
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_MUTE") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
-message(string.format("item %u %s", getItemNumber(items), self.states[state]))
+message(string.format("%s %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -504,7 +520,7 @@ message("Items source loop: ")
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_LOOPSRC") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC")
-message(string.format("item %u source %s", getItemNumber(items), self.states[state]))
+message(string.format("%s source %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -562,7 +578,7 @@ message("Items all takes playing: ")
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "B_ALLTAKESPLAY") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY")
-message(string.format("item %u all takes %s", getItemNumber(items), self.states[state]))
+message(string.format("%s all takes %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -631,7 +647,7 @@ message("Items timebase: ")
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "C_BEATATTACHMODE") end, self.states, 1))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")
-message(string.format("Item %u timebase %s", getItemNumber(items), self.states[state+1]))
+message(string.format("%s timebase %s", getItemID(items), self.states[state+1]))
 end
 return message
 end
@@ -713,7 +729,7 @@ message("Items Auto-stretch at project tempo: ")
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "C_AUTOSTRETCH") end, self.states))
 else
 local state = reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH")
-message(string.format("item %u auto-stretch at project tempo %s", getItemNumber(items), self.states[state]))
+message(string.format("%s auto-stretch at project tempo %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -780,7 +796,7 @@ message("Items snap offset:")
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
 local state = self.getValue(items)
-message(string.format("Item %u snap offset %s", getItemNumber(items), representation.timesec[utils.round(state, 3)]))
+message(string.format("%s snap offset %s", getItemID(items), representation.timesec[utils.round(state, 3)]))
 end
 return message
 end
@@ -858,7 +874,7 @@ message("Items group numbers: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(("Item %u %s"):format(getItemNumber(items), self.states[state]))
+message(("%s %s"):format(getItemID(items), self.states[state]))
 end
 return message
 end
@@ -895,10 +911,10 @@ else
 local state = self.getValue(items)
 if state+ajustingValue > 0 then
 self.setValue(items, state+ajustingValue)
-message(("Item %u  set to group %u"):format(getItemNumber(items), self.getValue(items)))
+message(("%s  set to group %u"):format(getItemID(items), self.getValue(items)))
 elseif state+ajustingValue == 0 then
 self.setValue(items, 0)
-message(("Item %u not in a group"):format(getItemNumber(items)))
+message(("%s not in a group"):format(getItemID(items)))
 elseif state+ajustingValue < 0 then
 message("No more group in this direction")
 end
@@ -944,7 +960,7 @@ message("Items fadein shape: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u fadein shape %s", getItemNumber(items), self.states[state]))
+message(string.format("%s fadein shape %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -1019,7 +1035,7 @@ if type(items) == "table" then
 message("Items fadein length: ")
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
-message(("Item %u fadein length %s"):format(getItemNumber(items), representation.timesec[self.getValue(items)]))
+message(("%s fadein length %s"):format(getItemID(items), representation.timesec[self.getValue(items)]))
 end
 return message
 end
@@ -1105,7 +1121,7 @@ message("Items fadein curve: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(("Item %u fadein curve %s"):format(getItemNumber(items), self.states[state]))
+message(("%s fadein curve %s"):format(getItemID(items), self.states[state]))
 end
 return message
 end
@@ -1180,7 +1196,7 @@ message("Items fadeout shape: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u fadeout shape %s", getItemNumber(items), self.states[state]))
+message(string.format("%s fadeout shape %s", getItemID(items), self.states[state]))
 end
 return message
 end
@@ -1255,7 +1271,7 @@ if type(items) == "table" then
 message("Items fadeout length: ")
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
 else
-message(("Item %u fadeout length %s"):format(getItemNumber(items), representation.timesec[self.getValue(items)]))
+message(("%s fadeout length %s"):format(getItemID(items), representation.timesec[self.getValue(items)]))
 end
 return message
 end
@@ -1331,7 +1347,7 @@ message("Items fadeout curve: ")
 message(composeMultipleItemMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(("Item %u fadeout curve %s"):format(getItemNumber(items), self.states[state]))
+message(("%s fadeout curve %s"):format(getItemID(items), self.states[state]))
 end
 return message
 end
@@ -1414,9 +1430,9 @@ end
 else
 local state = self.getValue(items)
 if state >= 0 then
-message(("Item %u automatic fadein length %s"):format(getItemNumber(items), representation.timesec[state]))
+message(("%s automatic fadein length %s"):format(getItemID(items), representation.timesec[state]))
 else
-message(("Item %u automatic fadein off"):format(getItemNumber(items)))
+message(("%s automatic fadein off"):format(getItemID(items)))
 end
 end
 return message
@@ -1517,9 +1533,9 @@ end
 else
 local state = self.getValue(items)
 if state >= 0 then
-message(("Item %u automatic fadeout length %s"):format(getItemNumber(items), representation.timesec[state]))
+message(("%s automatic fadeout length %s"):format(getItemID(items), representation.timesec[state]))
 else
-message(("Item %u automatic fadeout off"):format(getItemNumber(items)))
+message(("%s automatic fadeout off"):format(getItemID(items)))
 end
 end
 return message
@@ -1614,16 +1630,16 @@ local state, IDX = self.getValue(items[k]), getTakeNumber(items[k])
 local prevState, prevIDX  if items[k-1] then prevState, prevIDX = self.getValue(items[k-1]), getTakeNumber(items[k-1]) end
 local nextState, nextIDX if items[k+1] then nextState, nextIDX = self.getValue(items[k+1]), getTakeNumber(items[k+1]) end
 if IDX ~= prevIDX and IDX == nextIDX then
-message(string.format("items from %u ", getItemNumber(items[k])))
+message(string.format("items from %u ", getItemID(items[k])))
 elseif IDX == prevIDX and IDX ~= nextIDX then
-message(string.format("to %u ", getItemNumber(items[k])))
+message(string.format("to %u ", getItemID(items[k])))
 message(string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k])))
 if k < #items then
 message(", ")
 end
 elseif IDX == prevIDX and IDX == nextIDX then
 else
-message(string.format("item %u ", getItemNumber(items[k])))
+message(string.format("%s ", getItemID(items[k])))
 message(string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k])))
 if k < #items then
 message(", ")
@@ -1633,7 +1649,7 @@ end
 else
 local state = self.getValue(items)
 local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
-message(string.format("Item %u %s, %s", getItemNumber(items), getTakeID(items), name))
+message(string.format("%s %s, %s", getItemID(items), getTakeID(items), name))
 end
 return message
 end
@@ -1716,7 +1732,7 @@ message("Takes volume: ")
 message(composeMultipleTakeMessage(self.getValue, representation.db))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s volume %s", getItemNumber(items), getTakeID(items), representation.db[state]))
+message(string.format("%s %s volume %s", getItemID(items), getTakeID(items), representation.db[state]))
 end
 return message
 end
@@ -1799,7 +1815,7 @@ if type(items) == "table" then
 message("Takes pan: ")
 message(composeMultipleTakeMessage(self.getValue, representation.pan))
 else
-message(string.format("Item %u %s pan ", getItemNumber(items), getTakeID(items)))
+message(string.format("%s %s pan ", getItemID(items), getTakeID(items)))
 local state = self.getValue(items)
 message(string.format("%s", representation.pan[state]))
 end
@@ -1892,7 +1908,7 @@ message("Takes phase: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("item %u %s phase %s", getItemNumber(items), getTakeID(items), self.states[state]))
+message(string.format("%s %s phase %s", getItemID(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -1979,7 +1995,7 @@ message("Takes channel mode: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s channel mode %s", getItemNumber(items), getTakeID(items), self.states[state]))
+message(string.format("%s %s channel mode %s", getItemID(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2078,7 +2094,7 @@ message("Takes playrate: ")
 message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", utils.numtopercent(state)) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s playrate %s%%", getItemNumber(items), getTakeID(items), utils.numtopercent(state)))
+message(string.format("%s %s playrate %s%%", getItemID(items), getTakeID(items), utils.numtopercent(state)))
 end
 return message
 end
@@ -2125,7 +2141,7 @@ message("Takes preserve pitch when playrate changes: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("item %u %s pitch %s when playrate changes", getItemNumber(items), getTakeID(items), self.states[state]))
+message(string.format("%s %s pitch %s when playrate changes", getItemID(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2190,7 +2206,7 @@ message("Takes pitch: ")
 message(composeMultipleTakeMessage(self.getValue, representation.pitch))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s pitch %s", getItemNumber(items), getTakeID(items), representation.pitch[state]))
+message(string.format("%s %s pitch %s", getItemID(items), getTakeID(items), representation.pitch[state]))
 end
 return message
 end
@@ -2272,7 +2288,7 @@ message("Takes pitch shifter: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s pitch shifter %s", getItemNumber(items), getTakeID(items), self.states[state]))
+message(string.format("%s %s pitch shifter %s", getItemID(items), getTakeID(items), self.states[state]))
 end
 return message
 end
@@ -2405,7 +2421,7 @@ message("Takes pitch shifter modes: ")
 message(composeMultipleTakeMessage(self.getValue, self.states))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s shifter mode %s", getItemNumber(items), getTakeID(items), self.states[state]))
+message(string.format("%s %s shifter mode %s", getItemID(items), getTakeID(items), self.states[state]))
 if state == -1 then
 message:changeType(string.format("The Property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1]), 1)
 message:changeType("unavailable", 2)
@@ -2431,7 +2447,7 @@ local lastState = self.getValue(items[1])
 for k = 1, #items do
 local state = self.getValue(items[k])
 if state == -1 then
-return string.format("The shifter of take %u item %u is set to %s. Set any otherwise  shifter on this take before  setting up the shifter mode.", getTakeNumber(items[k]), getItemNumber(items[k]), takePitchShifterProperty.states[-1])
+return string.format("The shifter of take %u %s is set to %s. Set any otherwise  shifter on this take before  setting up the shifter mode.", getTakeNumber(items[k]), getItemID(items[k]), takePitchShifterProperty.states[-1])
 end
 if lastState ~= state then
 ajustingValue = 0
@@ -2523,7 +2539,7 @@ end
 })))
 else
 local state, visualApplied = self.getValue(items)
-message(string.format("Item %u color %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("%s color %s", getItemID(items), colors:getName(reaper.ColorFromNative(state))))
 if state ~= visualApplied then
 message(string.format(", but visually looks as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
 end
@@ -2544,7 +2560,7 @@ end
 else
 self.setValue(items, state)
 local state, visualApplied = self.getValue(items)
-message(string.format("Item %u colorized to %s", getItemNumber(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("%s colorized to %s", getItemID(items), colors:getName(reaper.ColorFromNative(state))))
 if state ~= visualApplied then
 message(string.format(", but visually displayed as %s", colors:getName(reaper.ColorFromNative(visualApplied))))
 end
@@ -2581,7 +2597,7 @@ message("Take  color:")
 message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return colors:getName(reaper.ColorFromNative(state)) end})))
 else
 local state = self.getValue(items)
-message(string.format("Item %u %s color %s", getItemNumber(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("%s %s color %s", getItemID(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
 end
 return message
 end
@@ -2599,7 +2615,7 @@ end
 else
 self.setValue(items, state)
 local state = self.getValue(items)
-message(string.format("Item %u %s colorized to %s", getItemNumber(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
+message(string.format("%s %s colorized to %s", getItemID(items), getTakeID(items), colors:getName(reaper.ColorFromNative(state))))
 end
 else
 message("Compose a color in color composer first.")
@@ -2637,7 +2653,7 @@ extstate.itemProperties_smrkaction = nil
 else
 message(self.states[extstate.itemProperties_smrkaction])
 end
-message(string.format("Item %u %s stretch marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
+message(string.format("%s %s stretch marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
 return message
 end,
 set = function(self, action)
@@ -2705,7 +2721,7 @@ marker = takeMarker,
 get = function(self)
 local message = initOutputMessage()
 message:initType("Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
-message(string.format("Item %u %s take marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
+message(string.format("%s %s take marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
 if self.marker.color > 0 then
 message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.marker.color))))
 end

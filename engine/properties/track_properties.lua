@@ -93,6 +93,10 @@ end
 else
 message(string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")))
 end
+local color = reaper.GetTrackColor(track)
+if color ~= 0 then
+message(string.format(" color %s", colors:getName(reaper.ColorFromNative(color))))
+end
 return message:extract()
 end
 
