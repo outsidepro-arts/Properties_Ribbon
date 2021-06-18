@@ -35,25 +35,26 @@ end
 
 -- The properties functions template
 
-local function getUsualProperty(_cmd, _msg)
-local usual = {
+local function getUsualProperty(
 -- the Main_OnCommand ID
-cmd = _cmd,
+cmd,
 -- The property label
-msg = _msg,
+msg
+)
+local usual = {
 get = function(self)
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to open the %s dialog.", self.msg), "Performable")
+message:initType(string.format("Perform this property to open the %s dialog.", msg), "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
 end
-message(self.msg)
+message(msg)
 return message
 end,
 set = function(self, action)
 if action == nil then
-reaper.Main_OnCommand(self.cmd, 1)
+reaper.Main_OnCommand(cmd, 1)
 restorePreviousLayout()
 setUndoLabel(self:get())
 return ""

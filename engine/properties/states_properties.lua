@@ -31,35 +31,34 @@ local usualAreaStates = {[0] = "hidden", [1] = "shown"}
 local usualWindowStates = {[0] = "Open", [1] = "Close"}
 
 -- The properties functions template
--- _states (table): a table filled by specified values for getting needed state
--- _cmd (number): an action ID
--- _msg (string): a message formatted by %s which ill be replaced to needed state
--- _type (table): an array of type prompts
--- _get, _set (functions): optional parameters, will change the standart functions
-local function getUsualProperty(_states, _cmd, _msg, _type, _get, _set)
+-- states (table): a table filled by specified values for getting needed state
+-- cmd (number): an action ID
+-- msg (string): a message formatted by %s which will be replaced to needed state
+-- type (table): an array of type prompts
+-- getFunction, setFunction (functions): optional parameters, will change the standart functions
+local function getUsualProperty(states, cmd, msg, type, getFunction, setFunction)
 local usual = {
-states = _states,
-msg = _msg,
+["msg"] = msg,
 getValue = function()
-return reaper.GetToggleCommandState(_cmd)
+return reaper.GetToggleCommandState(cmd)
 end,
 setValue = function(value)
-reaper.Main_OnCommand(_cmd, value)
+reaper.Main_OnCommand(cmd, value)
 end,
-get = _get or function(self)
+get = getFunction or function(self)
 local message = initOutputMessage()
-message:initType(_type[1], _type[2])
-message(string.format(self.msg, self.states[self.getValue()]))
+message:initType(type[1], type[2])
+message(string.format(msg, states[self.getValue()]))
 return message
 end,
-set = _set or function(self, action)
+set = setFunction or function(self, action)
 if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 self.setValue(state)
-message(string.format(self.msg, self.states[self.getValue()]))
+message(self:get())
 return message
 end
 }
@@ -71,10 +70,11 @@ if action ~= nil then
 return "This property is toggleable only."
 end
 local message = initOutputMessage()
-self.states = {[0] = "closed", [1] = "opened"}
+states = {[0] = "closed", [1] = "opened"}
 local state = utils.nor(self.getValue())
 self.setValue(state)
-message(string.format("%s has been %s", self.msg:sub(4), self.states[self.getValue()]))
+local label = self:get():extract(false)
+message(string.format("%s has been %s", label:match("^%w+%s(.+)"), states[self.getValue()]))
 if self.getValue() == 0 then
 return message
 end
