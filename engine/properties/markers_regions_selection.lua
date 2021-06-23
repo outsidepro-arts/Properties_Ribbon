@@ -29,9 +29,9 @@ end
 -- Hack the engine to make the navigation using script_reportOrGotoProperty function more comfort
 do
 local curnum = 0
-if sublayout == "markersLayout" then
+if currentSublayout == "markersLayout" then
 curnum = numMarkers
-elseif sublayout == "regionsLayout" then
+elseif currentSublayout == "regionsLayout" then
 curnum = numRegions
 end
 if curnum > 10 then
