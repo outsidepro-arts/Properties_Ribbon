@@ -364,13 +364,15 @@ if currentLayout == nil or currentLayout == "" then
 ("Switch one action group first."):output()
 return nil
 end
+-- Some layouts has executes the linear code... Woops...
+currentSublayout = extstate[currentLayout.."_sublayout"]
 layout = dofile(string.format("%sproperties\\%s.lua", utils.getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
 end
 if isHasSublayouts(layout) then
-local sublayout = extstate[currentLayout.."_sublayout"] or layout.defaultSublayout or findDefaultSublayout(layout)
+local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
 layout = layout[sublayout]
 currentSublayout = sublayout
 end
