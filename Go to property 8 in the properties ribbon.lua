@@ -15,6 +15,5 @@ end
 
 if script_init(proposedLayout) then
  script_reportOrGotoProperty(8)
-script_finish()
 end
 reaper.Undo_EndBlock(g_undoState, -1)

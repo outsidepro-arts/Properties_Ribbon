@@ -11,6 +11,5 @@ require "properties_ribbon"
 
 if script_init("config_properties", true) then
 script_reportOrGotoProperty()
-script_finish()
 end
 reaper.Undo_EndBlock(g_undoState, -1)

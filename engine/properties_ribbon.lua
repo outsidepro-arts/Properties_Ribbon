@@ -385,6 +385,7 @@ function script_switchSublayout(action)
 if layout.canProvide() ~= true then
 (string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 if layout.nextSubLayout or layout.previousSubLayout then
@@ -392,23 +393,29 @@ if (action == true or action == nil) then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
 else
-("No next category."):output() return
+("No next category."):output()
+script_finish()
+return
 end
 elseif action == false then
 if layout.previousSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.previousSubLayout
 else
-("No previous category."):output() return
+("No previous category."):output()
+script_finish()
+return
 end
 end
 if not script_init(nil, true) then
 restorePreviousLayout()
+script_finish()
 return
 end
 script_reportOrGotoProperty()
 else
 (("The %s layout has no category. "):format(layout.name:format(""))):output()
 end
+script_finish()
 end
 
 function script_nextProperty()
@@ -421,6 +428,7 @@ if layout.canProvide() == true then
 if #layout.properties < 1 then
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 if layout.pIndex+1 <= #layout.properties then
@@ -431,6 +439,7 @@ end
 else
 (string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
@@ -441,6 +450,7 @@ end
 message(result, true)
 setUndoLabel(message:extract(false))
 message:output()
+script_finish()
 end
 
 function script_previousProperty()
@@ -453,6 +463,7 @@ if layout.canProvide() == true then
 if #layout.properties < 1 then
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 if layout.pIndex-1 > 0 then
@@ -463,6 +474,7 @@ end
 else
 (string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
@@ -473,6 +485,7 @@ end
 message(result, true)
 setUndoLabel(message:extract(false))
 message:output()
+script_finish()
 end
 
 function script_reportOrGotoProperty(propertyNum)
@@ -485,6 +498,7 @@ if layout.canProvide() == true then
 if #layout.properties < 1 then
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 if propertyNum then
@@ -492,12 +506,14 @@ if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
 (string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output()
+script_finish()
 return
 end
 end
 else
 (string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
 restorePreviousLayout()
+script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
@@ -507,6 +523,7 @@ result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(result, true)
 message:output()
+script_finish()
 end
 
 function script_ajustProperty(value)
@@ -517,6 +534,7 @@ msg:output()
 else
 (string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))):output()
 end
+script_finish()
 end
 
 function script_finish()

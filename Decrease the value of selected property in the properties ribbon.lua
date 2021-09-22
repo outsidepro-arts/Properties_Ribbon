@@ -11,6 +11,5 @@ require "properties_ribbon"
 
 if script_init() then
 script_ajustProperty(false)
-script_finish()
 end
 reaper.Undo_EndBlock(g_undoState, -1)

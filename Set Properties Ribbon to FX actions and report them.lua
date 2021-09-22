@@ -11,7 +11,6 @@ require "properties_ribbon"
 
 if script_init("fx_actions", true) then
 script_reportOrGotoProperty()
-script_finish()
 end
 
 reaper.Undo_EndBlock(g_undoState, -1)
