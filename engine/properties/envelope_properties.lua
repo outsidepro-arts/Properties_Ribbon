@@ -283,7 +283,7 @@ reaper.Main_OnCommand(42382, 0)
 end
 elseif action == true then
 if envelopeType == 1 then
-local adjustStep = config.getinteger("dbStep", 0,1)
+local adjustStep = config.getinteger("dbStep", 0.1)
 if type(points) == "table" then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
