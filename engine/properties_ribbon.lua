@@ -247,7 +247,13 @@ if context == 0 then
 if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
 contextLayout = "mastertrack_properties"
 else
+if reaper.CountTracks(0) > 0 then
 contextLayout = "track_properties"
+else
+if (reaper.GetMasterTrackVisibility()&1) == 1 then
+contextLayout = "mastertrack_properties"
+end
+end
 end
 elseif context == 1 then
 contextLayout = "item_properties"
