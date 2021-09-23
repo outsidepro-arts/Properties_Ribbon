@@ -186,7 +186,7 @@ function valueProperty:set(action)
 local message = initOutputMessage()
 if action == false then
 if envelopeType == 1 then
-local adjustStep = config.getinteger("dbStep", 0,1)
+local adjustStep = config.getinteger("dbStep", 0.1)
 if type(points) == "table" then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
