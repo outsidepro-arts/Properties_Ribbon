@@ -252,6 +252,8 @@ contextLayout = "track_properties"
 else
 if (reaper.GetMasterTrackVisibility()&1) == 1 then
 contextLayout = "mastertrack_properties"
+else
+contextLayout = "track_properties"
 end
 end
 end
