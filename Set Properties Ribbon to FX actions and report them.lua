@@ -9,7 +9,7 @@ reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
 
-if script_init("fx_actions", true) then
+if script_init({section="actions",layout="fx_actions"}, true) then
 script_reportOrGotoProperty()
 end
 

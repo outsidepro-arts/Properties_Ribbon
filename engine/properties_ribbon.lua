@@ -245,24 +245,24 @@ context = extstate.lastKnownContext or context
 end
 if context == 0 then
 if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
-contextLayout = "mastertrack_properties"
+contextLayout = "properties//mastertrack_properties"
 else
 if reaper.CountTracks(0) > 0 then
-contextLayout = "track_properties"
+contextLayout = "properties//track_properties"
 else
 if (reaper.GetMasterTrackVisibility()&1) == 1 then
-contextLayout = "mastertrack_properties"
+contextLayout = "properties//mastertrack_properties"
 else
-contextLayout = "track_properties"
+contextLayout = "properties//track_properties"
 end
 end
 end
 elseif context == 1 then
-contextLayout = "item_properties"
+contextLayout = "properties//item_properties"
 elseif context == 2 then
-contextLayout = "envelope_properties"
+contextLayout = "properties//envelope_properties"
 end
-if forced == true or curLayout == "mastertrack_properties" or curLayout == "track_properties" or curLayout == "item_properties" or curLayout == "envelope_properties" then
+if forced == true or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
 return contextLayout
 end
 return nil
@@ -340,6 +340,11 @@ if not reaper.APIExists("osara_outputMessage") then
 reaper.ShowMessageBox("Seems you haven't OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.", "Properties Ribbon error", 0)
 return nil
 end
+if newLayout then
+if type(newLayout) == "table" then
+newLayout = newLayout.section.."//"..newLayout.layout or nil
+end
+end
 if newLayout ~= nil then
 currentLayout = newLayout
 if config.getboolean("allowLayoutsrestorePrev", true) == true and newLayout ~= extstate.currentLayout then
@@ -374,7 +379,7 @@ return nil
 end
 -- Some layouts has executes the linear code... Woops...
 currentSublayout = extstate[currentLayout.."_sublayout"]
-layout = dofile(string.format("%sproperties\\%s.lua", utils.getScriptPath(), currentLayout))
+layout = dofile(string.format("%s%s.lua", utils.getScriptPath(), currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
