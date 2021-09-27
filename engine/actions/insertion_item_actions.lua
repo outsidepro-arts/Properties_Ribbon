@@ -30,49 +30,6 @@ end
 
 -- The properties functions template
 
-local function getUsualProperty(
--- the Main_OnCommand ID
-cmd,
--- The property label
-msg
-)
-local usual = {
-get = function(self)
-local message = initOutputMessage()
-message:initType(string.format("Perform this property to call the %s action.", msg), "Performable")
-if config.getboolean("allowLayoutsrestorePrev", true) == true then
-message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
-message:addType(", onetime", 2)
-end
--- If user has SWS installed, omit the msg parameter
-if reaper.APIExists("CF_GetCommandText") then
-msg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
-msg = msg:gsub("[.]+$", "")
-end
-message(msg)
-return message
-end,
-set = function(self, action)
-if action == nil then
-restorePreviousLayout()
-local oldItemsCount = reaper.CountMediaItems(0)
-reaper.Main_OnCommand(cmd, 1)
-local newItemsCount = reaper.CountMediaItems(0)
-if oldItemsCount < newItemsCount then
-return string.format("%u items added", newItemsCount-oldItemsCount)
-elseif oldItemsCount > newItemsCount then
-return string.format("%u items removed", oldItemsCount-newItemsCount)
-end
-setUndoLabel(self:get())
-return ""
-else
-return "This property is performable only."
-end
-end
-}
-return usual
-end
-
 insertionLayout:registerProperty(getUsualProperty(40214, "Insert new MIDI item"))
 insertionLayout:registerProperty(getUsualProperty(40142, "Insert empty item"))
 insertionLayout:registerProperty(getUsualProperty(41748, "Insert time on tracks and paste items"))

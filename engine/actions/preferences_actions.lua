@@ -35,6 +35,7 @@ end
 
 -- The properties functions template
 
+--[[
 local function getUsualProperty(
 -- the Main_OnCommand ID
 cmd,
@@ -65,7 +66,7 @@ end
 }
 return usual
 end
-
+]]--
 
 -- REAPER preferences
 parentLayout.reaperPrefs:registerProperty(getUsualProperty(40016, "Global preferences"))
