@@ -18,16 +18,16 @@ msg
 )
 local usual = {
 get = function(self)
+-- If user has SWS installed, omit the msg parameter
+if reaper.APIExists("CF_GetCommandText") then
+msg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
+msg = msg:gsub("[.]+$", "")
+end
 local message = initOutputMessage()
 message:initType(string.format("Perform this property to call the %s action.", msg), "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
-end
--- If user has SWS installed, omit the msg parameter
-if reaper.APIExists("CF_GetCommandText") then
-msg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
-msg = msg:gsub("[.]+$", "")
 end
 message(msg)
 return message
