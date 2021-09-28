@@ -60,7 +60,7 @@ local fxActionsLayout = initLayout("%sFX actions")
 fxActionsLayout:registerSublayout("contextLayout", contexts[context].." ")
 fxActionsLayout:registerSublayout("masterTrackLayout", "Master track ")
 fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring ")
-if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
+if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
 fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
 fxActionsLayout.masterTrackLayout.previousSubLayout = nil
 end
@@ -70,12 +70,15 @@ function fxActionsLayout.canProvide()
 if reaper.GetLastTouchedTrack() then
 return (context == 0 or context == 1)
 end
+if reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
+return true
+end
 return false
 end
 
 -- Contextual FX chain action
 local contextualFXChain = {}
-if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
 fxActionsLayout.contextLayout:registerProperty(contextualFXChain)
 end
 
@@ -189,7 +192,7 @@ end
 
 
 -- Bypass all FX action for contextual case
-if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
 fxActionsLayout.contextLayout:registerProperty{
 states = {
 [0]="Activate",
@@ -283,7 +286,7 @@ end
 }
 
 -- Contextual OSARA FX parameters action
-if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() then
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
 fxActionsLayout.contextLayout:registerProperty{
 getValue = contextualFXChain.getValue,
 get = function(self)
