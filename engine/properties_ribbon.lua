@@ -379,12 +379,12 @@ return nil
 end
 -- Some layouts has executes the linear code... Woops...
 currentSublayout = extstate[currentLayout.."_sublayout"]
-local mcr = io.open(string.format("%s%s//macros.lua", utils.getScriptPath(), currentLayout:match('^(.+)//')))
+local mcr = io.open(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"), "r")
 if mcr then
-dofile(string.format("%s%s//macros.lua", utils.getScriptPath(), currentLayout:match('^(.+)//')))
+dofile(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"))
 mcr:close()
 end
-layout = dofile(string.format("%s%s.lua", utils.getScriptPath(), currentLayout))
+layout = dofile(package.path:gsub("?", currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
 return nil
