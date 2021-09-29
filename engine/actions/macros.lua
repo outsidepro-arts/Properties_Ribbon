@@ -33,18 +33,30 @@ message(msg)
 return message
 end,
 set = function(self, action)
+local message = initOutputMessage()
 if action == nil then
 restorePreviousLayout()
-local oldTracksCount = reaper.CountTracks(0)
+local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
 reaper.Main_OnCommand(cmd, 1)
-local newTracksCount = reaper.CountTracks(0)
+local newTracksCount, newItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
 if oldTracksCount < newTracksCount then
-return string.format("%u tracks added", newTracksCount-oldTracksCount)
+message(string.format("%u tracks added", newTracksCount-oldTracksCount))
 elseif oldTracksCount > newTracksCount then
-return string.format("%u tracks removed", oldTracksCount-newTracksCount)
+message(string.format("%u tracks removed", oldTracksCount-newTracksCount))
+end
+if oldItemsCount < newItemsCount then
+if message:extract() ~= "" then
+message(" and ")
+end
+message(string.format("%u items added", newItemsCount-oldItemsCount))
+elseif oldItemsCount > newItemsCount then
+if message:extract() ~= "" then
+message(" and ")
+end
+message(string.format("%u items removed", oldItemsCount-newItemsCount))
 end
 setUndoLabel(self:get())
-return ""
+return message
 else
 return "This property is performable only."
 end
