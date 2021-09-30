@@ -122,9 +122,7 @@ end,
 -- shouldExtractType (boolean, optional):  Should the type prommpt be extracted with composed message. By default is true
 -- Returns composed string without type prompt. If there are no string, returns nil.
 extract = function(self, shouldExtractType)
-if shouldExtractType == nil then
-shouldExtractType = true
-end
+shouldExtractType = shouldExtractType or true
 if shouldExtractType == true then
 local message = ""
 if self.msg then
@@ -269,17 +267,12 @@ return nil
 end
 
 function setUndoLabel(label)
-if type(label) == "table" then
-local result = initOutputMessage()
-result(label)
-label = tostring(result)
-end
 if not label then
 g_undoState = ""
 elseif label == "" then
 -- do nothing
 else
-g_undoState = string.format("Properties Ribbon: %s", label)
+g_undoState = string.format("Properties Ribbon: %s", label:extract(false))
 end
 end
 
