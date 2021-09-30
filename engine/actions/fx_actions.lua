@@ -207,6 +207,10 @@ getValue = contextualFXChain.getValue,
 get = function(self)
 local message = initOutputMessage()
 message:initType(("Toggle this property to bypass or activate the FX chain of %s."):format(contexts[context]), "Toggleable")
+if config.getboolean("allowLayoutsrestorePrev", true) then
+message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
+message:addType(", onetime", 2)
+end
 if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
 return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
 end
@@ -274,6 +278,7 @@ if action == nil then
 if self.getValue() > 0 then
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 reaper.Main_OnCommand(16, utils.nor(state))
+restorePreviousLayout()
 setUndoLabel(self:get())
 return ""
 else
