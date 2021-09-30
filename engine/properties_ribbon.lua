@@ -122,7 +122,9 @@ end,
 -- shouldExtractType (boolean, optional):  Should the type prommpt be extracted with composed message. By default is true
 -- Returns composed string without type prompt. If there are no string, returns nil.
 extract = function(self, shouldExtractType)
-shouldExtractType = shouldExtractType or true
+if shouldExtractType== nil then
+shouldExtractType = true
+end
 if shouldExtractType == true then
 local message = ""
 if self.msg then
