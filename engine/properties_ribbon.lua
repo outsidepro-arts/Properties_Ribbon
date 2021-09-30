@@ -550,6 +550,10 @@ end
 script_finish()
 end
 
+function script_reportLayout()
+(composeSubLayout()):output()
+end
+
 function script_finish()
 if layout then
 extstate[layout.section] = layout.pIndex
