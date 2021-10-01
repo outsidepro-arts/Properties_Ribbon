@@ -136,9 +136,9 @@ local state, takeIDX = func(items[k]), getTakeNumber(items[k])
 local prevState, prevTakeIDX if items[k-1] then prevState, prevTakeIDX = func(items[k-1]), getTakeNumber(items[k-1]) end
 local nextState, nextTakeIDX if items[k+1] then nextState, nextTakeIDX = func(items[k+1]), getTakeNumber(items[k+1]) end
 if (state ~= prevState and state == nextState) and (takeIDX ~= prevTakeIDX and takeIDX == nextTakeIDX) then
-message(string.format("%s of items from %u ", getTakeID(items[k]), getItemID(items[k])))
+message(string.format("%s of items from %s ", getTakeID(items[k]), getItemID(items[k])))
 elseif (state == prevState and state ~= nextState) and (takeIDX == prevTakeIDX and takeIDX ~= nextTakeIDX) then
-message(string.format("to %s of item %u", getTakeID(items[k]), getItemID(items[k])))
+message(string.format("to %s of item %s", getTakeID(items[k]), getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
