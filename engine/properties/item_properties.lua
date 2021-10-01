@@ -102,9 +102,9 @@ local state = func(items[k])
 local prevState if items[k-1] then prevState = func(items[k-1]) end
 local nextState if items[k+1] then nextState = func(items[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("items from %u ", getItemID(items[k])))
+message(string.format("items from %s ", getItemID(items[k])))
 elseif state == prevState and state ~= nextState then
-message(string.format("to %u ", getItemID(items[k])))
+message(string.format("to %s ", getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
