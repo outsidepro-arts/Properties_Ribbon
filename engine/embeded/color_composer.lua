@@ -16,6 +16,9 @@ After this preambula, let me begin.
 
 -- This layout should define current context
 local sublayout = nil
+if currentSublayout then
+sublayout = currentSublayout
+else
 local context = reaper.GetCursorContext()
 if context == 0 then
 sublayout = "track"
@@ -23,6 +26,7 @@ elseif context == 1 then
 sublayout = "item"
 else
 sublayout = "track"
+end
 end
 
 -- This layout should have the self-providing service methods
