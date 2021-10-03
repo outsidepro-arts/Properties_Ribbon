@@ -215,7 +215,7 @@ if (lastAction-1) > 0 then
 extstate.mrkregLayout_mrkstate = lastAction-1
 elseif (lastAction-1) == 0 then
 extstate.mrkregLayout_mrkstate = nil
-message("Move to")
+message("Jump to")
 else
 message("No more previous marker actions.")
 end
@@ -241,7 +241,7 @@ reaper.DeleteProjectMarker(0, self.mIndex, false)
 return string.format("Marker %u has been deleted.", self.mIndex)
 else
 reaper.SetEditCurPos(self.position, true, true)
-message("Moving to")
+message("Jumping to")
 end
 end
 message(self:get(true))
@@ -357,7 +357,7 @@ local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.Enum
 if retval and isrgn then
 parentLayout.regionsLayout:registerProperty({
 states = setmetatable({
-[1] = "Move to end of ",
+[1] = "Jump to end of ",
 [2] = "Edit ",
 [3] = "Colorize ",
 [4] = "Delete "
@@ -404,7 +404,7 @@ if (lastAction-1) > 0 then
 extstate.mrkregLayout_rgnstate = lastAction-1
 elseif (lastAction-1) == 0 then
 extstate.mrkregLayout_rgnstate = nil
-message("Move to start of")
+message("Jump to start of")
 else
 message("No more previous region actions.")
 end
@@ -432,7 +432,7 @@ reaper.DeleteProjectMarker(0, self.rIndex, true)
 return string.format("Region %u deleted.", self.rIndex)
 else
 reaper.SetEditCurPos(self.position, true, true)
-message("Moving to")
+message("Jumping to")
 end
 end
 message(self:get(true))
