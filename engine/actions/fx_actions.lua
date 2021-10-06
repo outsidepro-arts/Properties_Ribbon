@@ -58,7 +58,9 @@ end
 
 local fxActionsLayout = initLayout("%sFX actions")
 fxActionsLayout:registerSublayout("contextLayout", contexts[context].." ")
+if reaper.GetMasterTrackVisibility()&1 == 1 then
 fxActionsLayout:registerSublayout("masterTrackLayout", "Master track ")
+end
 fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring ")
 if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
 fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
@@ -162,7 +164,9 @@ end
 
 -- FX chain for master track
 local masterTrackFXChain = {}
+if reaper.GetMasterTrackVisibility()&1 == 1 then
 fxActionsLayout.masterTrackLayout:registerProperty(masterTrackFXChain)
+end
 
 function masterTrackFXChain.getValue()
 return reaper.TrackFX_GetCount(reaper.GetMasterTrack()), reaper.TrackFX_GetRecCount(reaper.GetMasterTrack())
@@ -252,6 +256,7 @@ end
 }
 end
 
+if reaper.GetMasterTrackVisibility()&1 == 1 then
 fxActionsLayout.masterTrackLayout:registerProperty{
 states = {
 [0]="Activate",
@@ -289,6 +294,7 @@ return "This property is toggleable only."
 end
 end
 }
+end
 
 -- Contextual OSARA FX parameters action
 if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
@@ -331,7 +337,9 @@ end
 
 -- OSARA FX parameters for master track
 local osaraMasterFXParametersProperty = {}
+if reaper.GetMasterTrackVisibility()&1 == 1 then
 fxActionsLayout.masterTrackLayout:registerProperty(osaraMasterFXParametersProperty)
+end
 
 osaraMasterFXParametersProperty.getValue = masterTrackFXChain.getValue
 
