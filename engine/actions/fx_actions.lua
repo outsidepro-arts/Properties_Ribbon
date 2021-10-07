@@ -164,7 +164,7 @@ end
 
 -- FX chain for master track
 local masterTrackFXChain = {}
-if reaper.GetMasterTrackVisibility()&1 == 1 then
+if fxActionsLayout.masterTrackLayout then
 fxActionsLayout.masterTrackLayout:registerProperty(masterTrackFXChain)
 end
 
@@ -256,7 +256,7 @@ end
 }
 end
 
-if reaper.GetMasterTrackVisibility()&1 == 1 then
+if fxActionsLayout.masterTrackLayout then
 fxActionsLayout.masterTrackLayout:registerProperty{
 states = {
 [0]="Activate",
@@ -337,7 +337,7 @@ end
 
 -- OSARA FX parameters for master track
 local osaraMasterFXParametersProperty = {}
-if reaper.GetMasterTrackVisibility()&1 == 1 then
+if fxActionsLayout.masterTrackLayout then
 fxActionsLayout.masterTrackLayout:registerProperty(osaraMasterFXParametersProperty)
 end
 
