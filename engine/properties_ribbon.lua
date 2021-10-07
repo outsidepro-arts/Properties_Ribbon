@@ -456,7 +456,7 @@ script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
-local cfg = config.getinteger("reportPos", 4)
+local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
@@ -491,7 +491,7 @@ script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
-local cfg = config.getinteger("reportPos", 4)
+local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
@@ -530,7 +530,7 @@ script_finish()
 return
 end
 local result = layout.properties[layout.pIndex]:get()
-local cfg = config.getinteger("reportPos", 4)
+local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
