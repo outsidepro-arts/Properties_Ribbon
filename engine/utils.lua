@@ -110,7 +110,7 @@ return state
 end
 
 function debug(str)
-reaper.ShowMessageBox(tostring(str), "Debug", 0)
+reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
 end
 
 return utils
