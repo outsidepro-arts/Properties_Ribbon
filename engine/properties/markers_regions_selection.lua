@@ -165,7 +165,7 @@ return message
 end
 
 if numMarkers > 0 then
-for i = 0, numMarkers-1 do
+for i = 0, (numMarkers+numRegions)-1 do
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, i)
 if retval and not isrgn then
 parentLayout.markersLayout:registerProperty({
@@ -327,7 +327,7 @@ return "There are no regions which to be renumbered."
 end
 elseif state == 6 then
 local countDeletedRegions = 0
-for i = 0, numRegions do
+for i = 0, (numMarkers+numRegions) do
 if reaper.DeleteProjectMarker(0, i, true) then
 countDeletedRegions = countDeletedRegions+1
 end
@@ -352,7 +352,7 @@ return message
 end
 
 if numRegions > 0 then
-for i = 0, numRegions-1 do
+for i = 0, (numMarkers+numRegions)-1 do
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, i)
 if retval and isrgn then
 parentLayout.regionsLayout:registerProperty({
