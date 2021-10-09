@@ -2653,7 +2653,7 @@ extstate.itemProperties_smrkaction = nil
 else
 message(self.states[extstate.itemProperties_smrkaction])
 end
-message(string.format("%s %s stretch marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
+message(string.format("Stretch marker %u of %s %s", self.marker.idx+1, getItemID(self.marker.item), getTakeID(self.marker.item)))
 return message
 end,
 set = function(self, action)
