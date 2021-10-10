@@ -335,8 +335,9 @@ if not reaper.APIExists("osara_outputMessage") then
 reaper.ShowMessageBox("Seems you haven't OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.", "Properties Ribbon error", 0)
 return nil
 end
+local rememberCFG = config.getinteger("rememberSublayout", 3)
 if newLayout then
-if type(newLayout) == "table" then
+if type(newLayout) == "table" then                  
 newLayout = newLayout.section.."//"..newLayout.layout or nil
 end
 end
@@ -354,7 +355,7 @@ end
 else
 speakLayout = shouldSpeakLayout
 end
-if config.getboolean("rememberSublayout", true) == false and extstate.currentLayout ~= currentLayout then
+if (rememberCFG ~= 1 and rememberCFG ~= 3) and extstate.currentLayout ~= currentLayout then
 -- Let REAPER do not request the extstate superfluously
 if  extstate[newLayout.."_sublayout"] ~= "" then
 extstate[newLayout.."_sublayout"] = nil
@@ -391,7 +392,7 @@ currentSublayout = sublayout
 end
 setUndoLabel(("Switch properties layout to %s"):format((layout.name):format("")))
 layout.pIndex = extstate[layout.section] or 1
-return layout
+return (layout)
 end
 
 function script_switchSublayout(action)
@@ -433,8 +434,12 @@ end
 
 function script_nextProperty()
 local message = initOutputMessage()
+local rememberCFG = config.getinteger("rememberSublayout", 3)
 if speakLayout == true then
 message(composeSubLayout())
+if rememberCFG ~= 2 and rememberCFG ~= 3 then
+layout.pIndex = 0
+end
 speakLayout = false
 end
 if layout.canProvide() == true then
@@ -468,8 +473,12 @@ end
 
 function script_previousProperty()
 local message = initOutputMessage()
+local rememberCFG = config.getinteger("rememberSublayout", 3)
 if speakLayout == true then
 message(composeSubLayout())
+if rememberCFG ~= 2 and rememberCFG ~= 3 then
+layout.pIndex = 2
+end
 speakLayout = false
 end
 if layout.canProvide() == true then
@@ -503,8 +512,12 @@ end
 
 function script_reportOrGotoProperty(propertyNum)
 local message = initOutputMessage()
+local rememberCFG = config.getinteger("rememberSublayout", 3)
 if speakLayout == true then
 message(composeSubLayout())
+if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum then
+layout.pIndex = 1
+end
 speakLayout = false
 end
 if layout.canProvide() == true then

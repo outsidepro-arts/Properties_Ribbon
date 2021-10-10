@@ -123,23 +123,43 @@ end
 -- Remember the last sublayout property
 local resetSublayoutProperty = {}
 configLayout.main:registerProperty( resetSublayoutProperty)
+resetSublayoutProperty.states = {
+[0]="for not any ",
+[1]="Only for categories",
+[2]="Only for properties",
+[3]="both for categories and properties"
+}
 function resetSublayoutProperty:get()
 local message = initOutputMessage()
-message:initType("Toggle this property to switch the position remembering when you are loading a properties layout which was been loaded earlier.", "Toggleable")
-local state = config.getboolean("rememberSublayout", true)
-message(string.format("%s position in layouts when loading", ({[true] = "remember", [false] = "forget"})[state]))
+message:initType("Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.", "Adjustable")
+local state = config.getinteger("rememberSublayout", 3)
+message(string.format("Remember position in layouts when loading %s", self.states[state]))
 return message
 end
 
 function resetSublayoutProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
+local message = initOutputMessage()
+if action == nil then
+return "This property is adjustable only."
 end
-local state = utils.nor(config.getboolean("rememberSublayout", true))
-config.setboolean("rememberSublayout", state)
-local message = initOutputMessage() message(self:get())
+local state = config.getinteger("rememberSublayout", 3)
+if action == true then
+if (state+1) <= #self.states then
+config.setinteger("rememberSublayout", (state+1))
+else
+message("No more next property values. ")
+end
+elseif action == false then
+if (state-1) >= 0 then
+config.setinteger("rememberSublayout", (state-1))
+else
+message("No more previous property values. ")
+end
+end
+message(self:get())
 return message
 end
+
 
 
 -- DB step specify methods
