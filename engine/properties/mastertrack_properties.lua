@@ -38,7 +38,7 @@ local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty( volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for master track. Perform this property to reset the volume to zero DB.", "adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for master track. Perform this property to set the value manualy.", "adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 message(string.format("Master volume %s", representation.db[state]))
 return message
@@ -46,9 +46,6 @@ end
 
 function volumeProperty:set(action)
 local message = initOutputMessage()
-if action == nil then
-message("reset, ")
-end
 local ajustStep = config.getinteger("dbStep", 0.1)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 if action == true then
@@ -66,9 +63,18 @@ state = 0
 message("Minimum volume. ")
 end
 else
-state = 1
+local retval, answer = reaper.GetUserInputs("New volume value for master track", 1, prepareUserData.db.formatCaption, representation.db[state])
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.db.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 message(self:get())
 return message
 end
@@ -79,7 +85,7 @@ parentLayout.playbackLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for master track. Perform this property to set the pan to center.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pan value for master track. Perform this property to set the pan value manualy.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 message(string.format("Master pan %s", representation.pan[state]))
 return message
@@ -92,12 +98,9 @@ if action == true then
 ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue)
-else
-message("reset, ")
-ajustingValue = nil
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-if ajustingValue then
+if action then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -107,9 +110,18 @@ state = -1
 message("Left boundary. ")
 end
 else
-state = 0
+local retval, answer = reaper.GetUserInputs("New pan value for master track", 1, prepareUserData.pan.formatCaption, representation.pan[state])
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.pan.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 message(self:get())
 return message
 end
@@ -119,7 +131,7 @@ local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for master track. Perform this property to reset the value to 100 percent.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired width value for master track. Perform this property to set the value manualy.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 message(string.format("Master width %s%%", utils.numtopercent(state)))
 return message
@@ -132,12 +144,9 @@ if action == true then
 ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue)
-else
-message("reset, ")
-ajustingValue = nil
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-if ajustingValue then
+if action then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -147,9 +156,18 @@ state = -1
 message("Minimum width. ")
 end
 else
-state = 1
+local retval, answer = reaper.GetUserInputs("New width value for master track", 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.percent.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 message(self:get())
 return message
 end
