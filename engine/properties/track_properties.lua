@@ -390,7 +390,7 @@ message:initType("Adjust this property to set the desired volume value for selec
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to reset the volume to zero DB.", 1)
+message:addType(" Perform this property to type the volume value manualy.", 1)
 if type(tracks) == "table" then
 message("tracks volume:")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, representation.db))
@@ -403,11 +403,15 @@ end
 
 function volumeProperty:set(action)
 local message = initOutputMessage()
-if action == nil then
-message("reset, ")
-end
 local ajustStep = config.getinteger("dbStep", 0.1)
 if type(tracks) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("New volume value for %u selected tracks", #tracks), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
 if action == true then
@@ -423,9 +427,11 @@ else
 state = 0
 end
 else
-state = 1
+state = prepareUserData.db.process(answer, state)
 end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_VOL", state)
+end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
@@ -444,10 +450,19 @@ state = 0
 message("Minimum volume. ")
 end
 else
-state = 1
+local retval, answer = reaper.GetUserInputs(string.format("New volume value for %s", getTrackID(tracks)), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")])
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.db.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
- end
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
+end
  message(self:get())
 return message
 end
@@ -463,7 +478,7 @@ message:initType("Adjust this property to set the desired pan value for selected
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to set the pan to center.", 1)
+message:addType(" Perform this property to set the pan value manualy.", 1)
 if type(tracks) == "table" then
 message("tracks pan: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, representation.pan))
@@ -479,14 +494,18 @@ function panProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 if action == true then
-ajustingValue = utils.percenttonum(ajustingValue) or 0.01
+ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
-ajustingValue = -utils.percenttonum(ajustingValue) or -0.01
-else
-message("reset, ")
-ajustingValue = nil
+ajustingValue = -utils.percenttonum(ajustingValue)
 end
 if type(tracks) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("New pan value for %u selected tracks", #tracks), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
 if ajustingValue then
@@ -497,13 +516,15 @@ elseif state <= -1 then
 state = -1
 end
 else
-state = 0
+state = prepareUserData.pan.process(answer, state)
 end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_PAN", state)
+end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -513,9 +534,18 @@ state = -1
 message("Left boundary. ")
 end
 else
-state = 0
+local retval, answer = reaper.GetUserInputs(string.format("New pan value for %s", getTrackID(tracks)), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")])
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.pan.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 end
 message(self:get())
 return message
@@ -530,7 +560,7 @@ message:initType("Adjust this property to set the desired width value for select
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to reset the value to 100 percent.", 1)
+message:addType(" Perform this property to set the width value manualy", 1)
 if type(tracks) == "table" then
 message("tracks width: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", utils.numtopercent(state)) end})))
@@ -549,11 +579,15 @@ if action == true then
 ajustingValue = utils.percenttonum(ajustingValue)
 elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue)
-else
-message("reset, ")
-ajustingValue = nil
 end
 if type(tracks) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("New width value for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, representation.percent[reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")])
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
 if ajustingValue then
@@ -564,13 +598,15 @@ elseif state <= -1 then
 state = -1
 end
 else
-state = 0
+state = prepareUserData.percent.process(answer, state)
 end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_WIDTH", state)
+end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -580,10 +616,19 @@ state = -1
 message("Minimum width. ")
 end
 else
-state = 1
+local retval, answer = reaper.GetUserInputs(string.format("New width value for %s", getTrackID(tracks)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH"))))
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.percent.process(answer, state)
+end
+if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
- end
+ else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
+end
  message(self:get())
 return message
 end
