@@ -100,7 +100,7 @@ elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-if action then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -146,7 +146,7 @@ elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-if action then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
