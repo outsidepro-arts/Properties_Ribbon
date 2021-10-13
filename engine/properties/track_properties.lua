@@ -407,7 +407,7 @@ local ajustStep = config.getinteger("dbStep", 0.1)
 if type(tracks) == "table" then
 local retval, answer = nil
 if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("New volume value for %u selected tracks", #tracks), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
+retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected tracks", #tracks), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
 if not retval then
 return "Canceled"
 end
@@ -450,7 +450,7 @@ state = 0
 message("Minimum volume. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("New volume value for %s", getTrackID(tracks)), 1, prepareUserData.db.formatCaption, representation.db[state])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks)), 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
 return "Canceled"
 end
@@ -501,7 +501,7 @@ end
 if type(tracks) == "table" then
 local retval, answer = nil
 if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("New pan value for %u selected tracks", #tracks), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
+retval, answer = reaper.GetUserInputs(string.format("Pan for %u selected tracks", #tracks), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
 if not retval then
 return "Canceled"
 end
@@ -534,7 +534,7 @@ state = -1
 message("Left boundary. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("New pan value for %s", getTrackID(tracks)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
@@ -583,7 +583,7 @@ end
 if type(tracks) == "table" then
 local retval, answer = nil
 if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("New width value for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, representation.percent[reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")])
+retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, representation.percent[reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")])
 if not retval then
 return "Canceled"
 end
@@ -616,7 +616,7 @@ state = -1
 message("Minimum width. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("New width value for %s", getTrackID(tracks)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end
