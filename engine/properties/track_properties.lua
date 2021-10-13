@@ -583,14 +583,14 @@ end
 if type(tracks) == "table" then
 local retval, answer = nil
 if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, representation.percent[reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")])
+retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
 if not retval then
 return "Canceled"
 end
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
