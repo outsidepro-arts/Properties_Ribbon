@@ -163,8 +163,31 @@ end
 return nil
 end
 
-function prepareUserData.pitch(udata, curvalue)
+-- The macro for prepare the values with pitch values.
+prepareUserData.pitch = {
+formatCaption = [[
+Type the humanbeeing pitch value. The following formats are supported:
+2 semitones 34 cents
+-3s2c
+1.25
+<3s (means relative value i.e. the current pitch value will be decreased by this value)
+>5 (means relative value i.e. the current pitch value will be increased by this value)
+original [or orig or o] (will set a pitch value to original pitch)
+]]}
+
+function prepareUserData.pitch.process(udata, curvalue)
 udata = prepareUserData.basic(udata)
+if udata:find("^[o]%w*") then
+return 0.0
+end
+local relative = nil
+if udata:match("^[<]") then
+relative = 1
+udata = udata:gsub("^[<]", "")
+elseif udata:match("^[>]") then
+relative = 2
+udata = udata:gsub("^[>]", "")
+end
 local converted = udata:match("^[-+]?%d+$")
 if not converted then
 converted = udata:match("^([-+]?%d+[.]%d+)")
@@ -179,7 +202,13 @@ converted = converted.."."..tostring(maybeCents)
 end
 end
 if converted then
+if relative == 1 then
+return curvalue-tonumber(converted)
+elseif relative == 2 then
+return curvalue+tonumber(converted)
+else
 return tonumber(converted)
+end
 end
 return nil
 end

@@ -2280,28 +2280,43 @@ local message = initOutputMessage()
 local ajustingValue = config.getinteger("pitchStep", 1)
 if action == false then
 ajustingValue = -ajustingValue
-elseif action == nil then
-message("Reset,")
-ajustingValue = 0
 end
 if type(items) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1, prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true or action == false then
 state = state+ajustingValue
 else
-state = ajustingValue
+state = prepareUserData.pitch.process(answer, state)
 end
+if state then
 self.setValue(items[k], state)
+end
 end
 else
 local state = self.getValue(items)
 if action == true or action == false then
 state = state+ajustingValue
 else
-state = ajustingValue
+local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.pitch.process(answer, state)
+end
+if state then
 self.setValue(items, state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 end
 message(self:get())
 return message
