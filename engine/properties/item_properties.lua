@@ -384,7 +384,7 @@ message:initType("Adjust this property to set the desired volume value for selec
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" Perform this property to reset the volume to zero DB.", 1)
+message:addType(" Perform this property to set the volume value manualy.", 1)
 if type(items) == "table" then
 message("items volume:")
 message(composeMultipleItemMessage(self.getValue, representation.db))
@@ -397,11 +397,15 @@ end
 
 function itemVolumeProperty:set(action)
 local message = initOutputMessage()
-if action == nil then
-message("reset,")
-end
 local ajustStep = config.getinteger("dbStep", 0.1)
 if type(items) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true then
@@ -417,7 +421,10 @@ else
 self.setValue(items[k], 0)
 end
 else
-self.setValue(items[k], 1)
+state = prepareUserData.db.process(answer, state)
+if state then
+self.setValue(items[k], state)
+end
 end
 end
 message(self:get())
@@ -438,7 +445,17 @@ self.setValue(items, 0)
 message("Minimum volume.")
 end
 else
-self.setValue(items, 1)
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
+if not retval then
+return "Canceled"
+end
+state = prepareUserData.db.process(answer, state)
+if state then
+self.setValue(items, state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 end
 message(self:get())
 end
@@ -1723,10 +1740,7 @@ message:initType("Adjust this property to set the desired volume value for activ
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
-message:addType(" Perform this property to normalize the volume for.", 1)
-if multiSelectionSupport == true then
-message:addType(" If the group of items has been selected, normalize to common gain will be applied.", 1)
-end
+message:addType(" Perform this property to set the volume value manualy or perform some proposed commands.", 1)
 if type(items) == "table" then
 message("Takes volume: ")
 message(composeMultipleTakeMessage(self.getValue, representation.db))
@@ -1741,9 +1755,22 @@ function takeVolumeProperty:set(action)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 if type(items) == "table" then
+local retval, answer = nil
 if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume per every active take of selected item.\nnormalize common gain (or ncg or nc) - will normalize active takes of selected items to common gain.', representation.db[self.getValue(items[1])])
+if not retval then
+return "Canceled"
+end
+local normCmdExecuted = false
+if prepareUserData.basic(answer):find("^[n]%w*[c]%w*[g]?%w*") then
 message("Normalizing item takes to common gain, ")
 reaper.Main_OnCommand(40254, 0)
+normCmdExecuted = true
+elseif prepareUserData.basic(answer):find("^[n]") then
+message("Normalize items takes volume")
+reaper.Main_OnCommand(40108, 0)
+normCmdExecuted = true
+end
 end
 for k = 1, #items do
 if action == true then
@@ -1762,6 +1789,14 @@ else
 state = 0
 end
 self.setValue(items[k], state)
+elseif action == nil then
+if not normCmdExecuted then
+local state = self.getValue(items[k])
+state = prepareUserData.db.process(answer, state)
+if state then
+self.setValue(items[k], state)
+end
+end
 end
 end
 else
@@ -1783,8 +1818,22 @@ message("Minimum volume. ")
 end
 self.setValue(items, state)
 else
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
+if not retval then
+return "Canceled"
+end
+if prepareUserData.basic(answer):find("^[n]") then
 message("Normalize item take volume")
 reaper.Main_OnCommand(40108, 0)
+else
+state = prepareUserData.db.process(answer, state)
+if state then
+self.setValue(items, state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
+end
 end
 end
 message(self:get())
@@ -1829,11 +1878,15 @@ if action == true then
 ajustingValue = utils.percenttonum(ajustingValue) or 0.01
 elseif action == false then
 ajustingValue = -utils.percenttonum(ajustingValue) or -0.01
-else
-message("reset, ")
-ajustingValue = nil
 end
 if type(items) == "table" then
+local retval, answer = nil
+if action == nil then
+retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1, prepareUserData.pan.formatCaption, representation.pan[self.getValue(items[1])])
+if not retval then
+return "Canceled"
+end
+end
 for k = 1, #items do
 local state = self.getValue(items[k])
 if ajustingValue then
@@ -1844,13 +1897,15 @@ elseif state <= -1 then
 state = -1
 end
 else
-state = 0
+state = prepareUserData.pan.process(answer, state)
 end
+if state then
 self.setValue(items[k], state)
+end
 end
 else
 local state = self.getValue(items)
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -1860,9 +1915,18 @@ state = -1
 message("Left boundary. ")
 end
 else
-state = 0
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+if not retval then
+return "Canceled"
 end
+state = prepareUserData.pan.process(answer, state)
+end
+if state then
 self.setValue(items, state)
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+return ""
+end
 end
 message(self:get())
 return message
