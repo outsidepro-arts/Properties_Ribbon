@@ -58,8 +58,8 @@ Type the humanbeeing pan value. The following formats are supported:
 25% left
 30%r
 50l
-<3% (means relative value i.e. the current volume value will be decreased by this value)
->5 (means relative value i.e. the current volume value will be increased by this value)
+<3% (means relative value i.e. the current pan value will be decreased by this value)
+>5 (means relative value i.e. the current pan value will be increased by this value)
 center (will set a pan value to center)
 c (like in previous case))
 ]]}
@@ -104,11 +104,11 @@ end
 
 prepareUserData.percent = {
 formatCaption = [[
-Type the humanbeeing volume value. The following formats are supported:
+Type the humanbeeing percentage value. The following formats are supported:
 20%
 -50
-<30% (means relative value i.e. the current volume value will be decreased by this value)
->5 (means relative value i.e. the current volume value will be increased by this value)
+<30% (means relative value i.e. the current percent value will be decreased by this value)
+>5 (means relative value i.e. the current percent value will be increased by this value)
 ]]}
 
 function prepareUserData.percent.process(udata, curvalue)
