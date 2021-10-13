@@ -508,7 +508,7 @@ end
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
