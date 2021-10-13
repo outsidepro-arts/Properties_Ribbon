@@ -1889,7 +1889,7 @@ end
 end
 for k = 1, #items do
 local state = self.getValue(items[k])
-if ajustingValue then
+if action == true or action == false then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
