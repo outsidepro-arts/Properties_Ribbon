@@ -12,12 +12,20 @@ License: MIT License
 
 prepareUserData = {}
 
+-- Basic user typed data preparation
+-- Parameters:
+-- udata (string): user typed data.
+-- Returns cleared off the string value. The string will be lowered and cleared off spaces.
 function prepareUserData.basic(udata)
 udata = udata:lower()
 return udata:gsub("%s", "")
 end
 
+
+-- The macro for prepare the values with decibels values.
 prepareUserData.db = {
+-- These fields are format prompt captions. You may assign the third parameter in reaper.GetUserInputs method by these fields.
+-- Please note: avoid the coma symbols (,) using, the reaper.GetUserInputs method is used, so coma means the CSV separation! I don't know what you will trip out this case, but REAPER doesn't proposes any other method to wait the typed value from an user.
 formatCaption = [[
 Type the humanbeeing volume value. The following formats are supported:
 1.25 dB
@@ -26,8 +34,13 @@ Type the humanbeeing volume value. The following formats are supported:
 >5 (means relative value i.e. the current volume value will be increased by this value)
 inf (will set the infinite negative value means silence)
 ]]}
--- Please note: avoid the coma symbols (,) using, the reaper.GetUserInputs method is used, so coma means the CSV separation! I don't know what you will trip out this case, but REAPER doesn't proposes any other method to wait the typed value from an user.
 
+-- The methods like method below prepares the appropriate humanbeeing user typed data to REAPER's  values.
+-- Parameters:
+-- udata (string): user typed data.
+-- curvalue (number): The current num value which currently set. Needs when user uses the relative commands.
+-- Returns values which REAPER waits in appropriate elements or nil if couldn't get any.
+-- Please note: all that methods below have the same destination, so I'll not comment every method of.
 function prepareUserData.db.process(udata, curvalue)
 udata = prepareUserData.basic(udata)
 if udata:find("inf") then
@@ -52,6 +65,7 @@ end
 return nil
 end
 
+-- The macro for prepare the values with pan values.
 prepareUserData.pan = {
 formatCaption = [[
 Type the humanbeeing pan value. The following formats are supported:
@@ -102,6 +116,7 @@ end
 return nil
 end
 
+-- The macro for prepare the values with percentage values.
 prepareUserData.percent = {
 formatCaption = [[
 Type the humanbeeing percentage value. The following formats are supported:
