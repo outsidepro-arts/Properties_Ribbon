@@ -18,7 +18,7 @@ prepareUserData = {}
 -- Returns cleared off the string value. The string will be lowered and cleared off spaces.
 function prepareUserData.basic(udata)
 udata = udata:lower()
-return udata:gsub("%s", "")
+return udata:gsub("%s([%d])", ".%1")
 end
 
 
@@ -28,11 +28,12 @@ prepareUserData.db = {
 -- Please note: avoid the coma symbols (,) using, the reaper.GetUserInputs method is used, so coma means the CSV separation! I don't know what you will trip out this case, but REAPER doesn't proposes any other method to wait the typed value from an user.
 formatCaption = [[
 Type the humanbeeing volume value. The following formats are supported:
-1.25 dB
+1 25 dB
 -2.36
 <3.50db (means relative value i.e. the current volume value will be decreased by this value)
 >5 (means relative value i.e. the current volume value will be increased by this value)
 inf (will set the infinite negative value means silence)
+Please note: these format may be combined with eachother.
 ]]}
 
 -- The methods like method below prepares the appropriate humanbeeing user typed data to REAPER's  values.
@@ -76,6 +77,7 @@ Type the humanbeeing pan value. The following formats are supported:
 >5 (means relative value i.e. the current pan value will be increased by this value)
 center (will set a pan value to center)
 c (like in previous case))
+Please note: these format may be combined with eachother.
 ]]}
 
 function prepareUserData.pan.process(udata, curvalue)
@@ -124,6 +126,7 @@ Type the humanbeeing percentage value. The following formats are supported:
 -50
 <30% (means relative value i.e. the current percent value will be decreased by this value)
 >5 (means relative value i.e. the current percent value will be increased by this value)
+Please note: these format may be combined with eachother.
 ]]}
 
 function prepareUserData.percent.process(udata, curvalue)
@@ -173,6 +176,7 @@ Type the humanbeeing pitch value. The following formats are supported:
 <3s (means relative value i.e. the current pitch value will be decreased by this value)
 >5 (means relative value i.e. the current pitch value will be increased by this value)
 original [or orig or o] (will set a pitch value to original pitch)
+Please note: these format may be combined with eachother.
 ]]}
 
 function prepareUserData.pitch.process(udata, curvalue)
