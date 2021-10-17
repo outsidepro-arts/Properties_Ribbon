@@ -103,6 +103,9 @@ end
 
 representation.playrate = setmetatable({}, {
 __index = function(self, key)
+if key == 1.000 then
+return "original"
+end
 local preproc = utils.splitstring(tostring(key), ".")
 local msg = tostring(preproc[1])
 if tonumber(preproc[2]) ~= 0 then
