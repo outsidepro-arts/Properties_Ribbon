@@ -101,4 +101,16 @@ return msg
 end
 })
 
+representation.playrate = setmetatable({}, {
+__index = function(self, key)
+local preproc = utils.splitstring(tostring(key), ".")
+local msg = tostring(preproc[1])
+if tonumber(preproc[2]) ~= 0 then
+msg = msg..string.format(" %u", tonumber(tostring(utils.round(tonumber("0."..preproc[2]), 3)):match("^%d+[.](%d+)")))
+end
+msg = msg.." X"
+return msg
+end
+})
+
 return representation

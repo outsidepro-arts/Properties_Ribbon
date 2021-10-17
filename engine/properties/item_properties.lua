@@ -2152,13 +2152,13 @@ message:initType("Adjust this property to set the desired playrate value for act
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
-message:addType(" Perform this property to reset  playrate to 1.000 for.", 1)
+message:addType(" Perform this property to reset  playrate to 1 X for.", 1)
 if type(items) == "table" then
 message("Takes playrate: ")
-message(composeMultipleTakeMessage(self.getValue, setmetatable({}, {__index = function(self, state) return string.format("%u%%", utils.numtopercent(state)) end})))
+message(composeMultipleTakeMessage(self.getValue, representation.playrate))
 else
 local state = self.getValue(items)
-message(string.format("%s %s playrate %s%%", getItemID(items), getTakeID(items), utils.numtopercent(state)))
+message(string.format("%s %s playrate %s", getItemID(items), getTakeID(items), representation.playrate[state]))
 end
 return message
 end
