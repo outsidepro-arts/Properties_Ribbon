@@ -390,7 +390,7 @@ message:initType("Adjust this property to set the desired volume value for selec
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to type the volume value manualy.", 1)
+message:addType(" Perform this property to input custom volume value.", 1)
 if type(tracks) == "table" then
 message("tracks volume:")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, representation.db))
@@ -478,7 +478,7 @@ message:initType("Adjust this property to set the desired pan value for selected
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to set the pan value manualy.", 1)
+message:addType(" Perform this property to input custom pan value.", 1)
 if type(tracks) == "table" then
 message("tracks pan: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, representation.pan))
@@ -560,7 +560,7 @@ message:initType("Adjust this property to set the desired width value for select
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to set the width value manualy", 1)
+message:addType(" Perform this property to input custom width value.", 1)
 if type(tracks) == "table" then
 message("tracks width: ")
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", utils.numtopercent(state)) end})))

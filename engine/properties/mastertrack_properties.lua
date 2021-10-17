@@ -38,7 +38,7 @@ local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty( volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for master track. Perform this property to set the value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for master track. Perform this property to input custom value.", "adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 message(string.format("Master volume %s", representation.db[state]))
 return message
@@ -85,7 +85,7 @@ parentLayout.playbackLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for master track. Perform this property to set the pan value manualy.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pan value for master track. Perform this property to input custom pan value.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 message(string.format("Master pan %s", representation.pan[state]))
 return message
@@ -131,7 +131,7 @@ local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for master track. Perform this property to set the value manualy.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired width value for master track. Perform this property to input custom width value.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 message(string.format("Master width %s%%", utils.numtopercent(state)))
 return message
