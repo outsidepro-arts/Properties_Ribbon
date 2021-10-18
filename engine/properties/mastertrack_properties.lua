@@ -301,7 +301,7 @@ function playrateProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.", "adjustable, performable")
 local state = reaper.Master_GetPlayRate(0)
-message(string.format("Master play rate %s%%", representation.playrate[state]))
+message(string.format("Master play rate %s", representation.playrate[state]))
 return message
 end
 
