@@ -13,6 +13,8 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
+
 
 -- get the master track
 local master = reaper.GetMasterTrack(0)
@@ -47,12 +49,13 @@ end
 function volumeProperty:set(action)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 if action == true then
-if state < utils.decibelstonum(12.0) then
+if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = utils.decibelstonum(12.0)
+state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
 end
 elseif action == false then

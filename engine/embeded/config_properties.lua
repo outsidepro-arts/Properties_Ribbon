@@ -221,6 +221,57 @@ message(self:get())
 return message
 end
 
+-- Maximum decibels value
+local maxDbProperty = {}
+configLayout.stepAdjustment:registerProperty( maxDbProperty)
+
+function maxDbProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.", "adjustable, performable")
+local state = config.getinteger("maxDBValue", 12.0)
+message(string.format("Maximum decibels value %s", representation.db[-utils.decibelstonum(state)]))
+return message
+end
+
+function maxDbProperty:set(action)
+local message = initOutputMessage()
+local state = config.getinteger("maxDBValue", 12.0)
+local ajustingValue
+if action == true then
+if state >= 6.0 and state < 12.0 then
+ajustingValue = 12.0
+elseif state >= 12.0 and state < 18.0 then
+ajustingValue = 18.0
+elseif state >= 18.0 and state < 24.0 then
+ajustingValue = 24.0
+else
+return "Maximal value"
+end
+elseif action == false then
+if state > 24.0 then
+ajustingValue = 24.0
+elseif state <= 24.0 and state > 18.0 then
+ajustingValue = 18.0
+elseif state <= 18.0 and state > 12.0 then
+ajustingValue = 12.0
+elseif state <= 12.0 and state > 6.0 then
+ajustingValue = 6.0
+else
+return "Minimal value"
+end
+else
+local result, answer = reaper.GetUserInputs("Maximum decibels value", 1, 'Type the needed value which every property with DB value will cancel to increase in decimal format but no more two digits after decimal separator (0.1, 1.25 and etc):', state)
+if result == true then
+ajustingValue = tonumber(answer)
+else
+return "Canceled."
+end
+end
+config.setinteger("maxDBValue", ajustingValue)
+message(self:get())
+return message
+end
+
 -- Percentage step adjustment methods
 local percentagestepProperty = {}
 configLayout.stepAdjustment:registerProperty( percentagestepProperty)

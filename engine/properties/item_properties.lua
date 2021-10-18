@@ -16,7 +16,6 @@ After this preambula, let me begin.
 
 -- Reading the some config which will be used everyhere
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
-local maxDBValue = config.getinteger("maxDBValue", 12.0)
 
 -- For comfort coding, we are making the items array as global
 
@@ -398,6 +397,7 @@ end
 function itemVolumeProperty:set(action)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(items) == "table" then
 local retval, answer = nil
 if action == nil then
@@ -409,7 +409,7 @@ end
 for k = 1, #items do
 local state = self.getValue(items[k])
 if action == true then
-if state < utils.decibelstonum(12.0) then
+if state < utils.decibelstonum(maxDBValue) then
 self.setValue(items[k], utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
 else
 self.setValue(items[k], utils.decibelstonum(maxDBValue))
@@ -431,10 +431,10 @@ message(self:get())
 else
 local state = self.getValue(items)
 if action == true then
-if state < utils.decibelstonum(12.0) then
+if state < utils.decibelstonum(maxDBValue) then
 self.setValue(items, utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
 else
-self.setValue(items, utils.decibelstonum(12.0))
+self.setValue(items, utils.decibelstonum(maxDBValue))
 message("maximum volume.")
 end
 elseif action == false then
@@ -1754,6 +1754,7 @@ end
 function takeVolumeProperty:set(action)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(items) == "table" then
 local retval, answer = nil
 if action == nil then
@@ -1778,7 +1779,7 @@ local state = self.getValue(items[k])
 if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = utils.decibelstonum(12.0)
+state = utils.decibelstonum(maxDBValue)
 end
 self.setValue(items[k], state)
 elseif action == false then
@@ -1805,7 +1806,7 @@ if action == true then
 if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = utils.decibelstonum(12.0)
+state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
 end
 self.setValue(items, state)

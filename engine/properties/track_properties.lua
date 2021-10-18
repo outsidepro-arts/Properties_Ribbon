@@ -404,6 +404,7 @@ end
 function volumeProperty:set(action)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(tracks) == "table" then
 local retval, answer = nil
 if action == nil then
@@ -415,10 +416,10 @@ end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
 if action == true then
-if state < 3.981071705535 then
+if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = 3.981071705535
+state = utils.decibelstonum(maxDBValue)
 end
 elseif action == false then
 if state > 0 then
@@ -436,10 +437,10 @@ end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
 if action == true then
-if state < utils.decibelstonum(12.0) then
+if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
-state = utils.decibelstonum(12.0)
+state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
 end
 elseif action == false then
