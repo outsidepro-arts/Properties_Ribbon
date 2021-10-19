@@ -50,7 +50,7 @@ local states = {
 [0]="track ",
 [1]="folder ",
 [2]="end of folder ",
-[3]="end of %u folder s"
+[3]="end of %u folders"
 }
 local compactStates = {
 [0] = "opened",
@@ -58,7 +58,7 @@ local compactStates = {
 [2] = "closed"
 }
 if reaper.GetParentTrack(track) then
-message("Child ")
+message("child ")
 end
 local state = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")
 if state == 0 or state == 1 then
@@ -67,7 +67,7 @@ message:clearMessage()
 local compactState = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
 message(compactStates[compactState])
 end
-message(string.format(" %s", states[state]))
+message(string.format("%s", states[state]))
 elseif state < 0 then
 message:clearMessage()
 state = -(state-1)
@@ -95,8 +95,9 @@ message(string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBE
 end
 local color = reaper.GetTrackColor(track)
 if color ~= 0 then
-message(string.format(" color %s", colors:getName(reaper.ColorFromNative(color))))
+message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
 end
+message.msg = message.msg:gsub("^%w", string.upper)
 return message:extract()
 end
 

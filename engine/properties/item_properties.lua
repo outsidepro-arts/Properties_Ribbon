@@ -49,11 +49,15 @@ end
 -- We should obey the configuration to report the take's name
 local function getItemID(item)
 local message = initOutputMessage()
-message(("Item %u"):format(getItemNumber(item)))
 local color = reaper.GetDisplayedMediaItemColor(item)
 if color ~= 0 then
-message((" color %s"):format(colors:getName(reaper.ColorFromNative(color))))
+message(colors:getName(reaper.ColorFromNative(color)).." ")
 end
+local idmsg = "Item %u"
+if #message > 0 then
+idmsg = idmsg:lower()
+end
+message(idmsg:format(getItemNumber(item)))
 return message:extract()
 end
 
@@ -76,7 +80,7 @@ message(("take %u"):format(getTakeNumber(item)))
 end
 local color = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
 if color ~= 0 then
-message((" color %s"):format(colors:getName(reaper.ColorFromNative(color))))
+message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
 end
 return message:extract()
 end
