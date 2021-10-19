@@ -9,7 +9,7 @@ reaper.Undo_BeginBlock()
 package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
 require "properties_ribbon"
 
-if script_init({section="embeded", layout="color_composer"}, true) then
+if script_init({section="embedded", layout="color_composer"}, true) then
 script_reportOrGotoProperty()
 end
 reaper.Undo_EndBlock(g_undoState, -1)
