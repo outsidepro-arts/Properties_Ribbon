@@ -176,6 +176,12 @@ else
 return str
 end
 end,
+__len = function(self)
+if self.msg then
+return self.msg:len()
+end
+return 0
+end
 })
 return mt
 end
