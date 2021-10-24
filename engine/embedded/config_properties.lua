@@ -201,9 +201,9 @@ else
 return "Minimal step value"
 end
 else
-local result, answer = reaper.GetUserInputs("Decibel step input", 1, 'Type the needed step which every property with DB value will change per one adjustment in decimal format but no more two digits after decimal separator (0.1, 1.25 and etc):', state)
+local result, answer = reaper.GetUserInputs("Decibel step input", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
-ajustingValue = tonumber(answer)
+ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.numtodecibels(state)))
 else
 return "Canceled."
 end
@@ -260,9 +260,9 @@ else
 return "Minimal value"
 end
 else
-local result, answer = reaper.GetUserInputs("Maximum decibels value", 1, 'Type the needed value which every property with DB value will cancel to increase in decimal format but no more two digits after decimal separator (0.1, 1.25 and etc):', state)
+local result, answer = reaper.GetUserInputs("Maximum decibels value", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
-ajustingValue = tonumber(answer)
+ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.decibelstonum(state)))
 else
 return "Canceled."
 end
@@ -307,9 +307,9 @@ else
 return "Minimal step value"
 end
 else
-local result, answer = reaper.GetUserInputs("Percent step input", 1, 'Type the needed percentage step (2, 45 and etc):', state)
+local result, answer = reaper.GetUserInputs("Percent step input", 1, prepareUserData.percent.formatCaption, string.format("%u%%", state))
 if result == true then
-ajustingValue = tonumber(answer)
+ajustingValue = utils.numtopercent(prepareUserData.percent.process(answer, utils.percenttonum(state)))
 else
 return "Canceled."
 end
@@ -464,9 +464,9 @@ else
 return "Minimal proposed step value"
 end
 else
-local result, answer = reaper.GetUserInputs("Pitch step input", 1, 'Type the needed step which every property with pitch value will change per one adjustment in decimal format but no more two digits after decimal separator (0.01=0 semitones, 1 cent), 1.25=1 semitone, 25 cents and etc):', state)
+local result, answer = reaper.GetUserInputs("Pitch step input", 1, prepareUserData.pitch.formatCaption, representation.pitch[state])
 if result == true then
-ajustingValue = tonumber(answer)
+ajustingValue = prepareUserData.pitch.process(answer, state)
 else
 return "Canceled."
 end
