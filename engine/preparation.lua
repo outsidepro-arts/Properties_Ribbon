@@ -7,9 +7,6 @@ License: MIT License
 ]]--
 
 
--- This file contains a macros for properties at this directory.
--- You don't need to include this file. The engine will do it itself.
-
 prepareUserData = {}
 
 -- Basic user typed data preparation
@@ -217,3 +214,4 @@ end
 return nil
 end
 
+return prepareUserData

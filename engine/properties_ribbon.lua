@@ -24,6 +24,8 @@ extstate._section = config.section
 -- Including the humanbeing representations metamethods
 representation = require "representations"
 
+prepareUserData = require "preparation"
+
 
 -- Little injections
 -- Make string type as outputable to OSARA directly
