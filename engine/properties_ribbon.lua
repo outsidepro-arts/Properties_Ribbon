@@ -24,6 +24,7 @@ extstate._section = config.section
 -- Including the humanbeing representations metamethods
 representation = require "representations"
 
+-- The preparation of typed data by an user when sets the custom values using input dialogs
 prepareUserData = require "preparation"
 
 
