@@ -9,7 +9,7 @@ License: MIT License
 local config = {}
 
 -- A few local functions
-function toboolean(value)
+local function toboolean(value)
 if type(value) == "string" then
 return ({["false"] = false, ["true"] = true})[value]
 else
