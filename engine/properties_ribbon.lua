@@ -384,10 +384,8 @@ return nil
 end
 -- Some layouts has executes the linear code... Woops...
 currentSublayout = extstate[currentLayout.."_sublayout"]
-local mcr = io.open(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"), "r")
-if mcr then
+if reaper.file_exists(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"), "r") then
 dofile(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"))
-mcr:close()
 end
 layout = dofile(package.path:gsub("?", currentLayout))
 if layout == nil then
