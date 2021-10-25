@@ -105,9 +105,9 @@ local state = func(items[k])
 local prevState if items[k-1] then prevState = func(items[k-1]) end
 local nextState if items[k+1] then nextState = func(items[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("items from %s ", getItemID(items[k])))
+message(string.format("items from %s ", getItemID(items[k]):gsub("Item ", "")))
 elseif state == prevState and state ~= nextState then
-message(string.format("to %s ", getItemID(items[k])))
+message(string.format("to %s ", getItemID(items[k]):gsub("Item ", "")))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
@@ -139,9 +139,9 @@ local state, takeIDX = func(items[k]), getTakeNumber(items[k])
 local prevState, prevTakeIDX if items[k-1] then prevState, prevTakeIDX = func(items[k-1]), getTakeNumber(items[k-1]) end
 local nextState, nextTakeIDX if items[k+1] then nextState, nextTakeIDX = func(items[k+1]), getTakeNumber(items[k+1]) end
 if (state ~= prevState and state == nextState) and (takeIDX ~= prevTakeIDX and takeIDX == nextTakeIDX) then
-message(string.format("from %s of %s ", getTakeID(items[k]), getItemID(items[k])))
+message(string.format("takes from %s of %s ", getTakeID(items[k]):gsub("take ", ""), getItemID(items[k])))
 elseif (state == prevState and state ~= nextState) and (takeIDX == prevTakeIDX and takeIDX ~= nextTakeIDX) then
-message(string.format("to %s of %s ", getTakeID(items[k]), getItemID(items[k])))
+message(string.format("to %s of %s ", getTakeID(items[k]):gsub("take ", ""), getItemID(items[k])))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else

@@ -109,9 +109,9 @@ local state = func(tracks[k])
 local prevState if tracks[k-1] then prevState = func(tracks[k-1]) end
 local nextState if tracks[k+1] then nextState = func(tracks[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("tracks from %s ", getTrackID(tracks[k])))
+message(string.format("tracks from %s ", getTrackID(tracks[k]):gsub("Track ", "")))
 elseif state == prevState and state ~= nextState then
-message(string.format("to %s ", getTrackID(tracks[k])))
+message(string.format("to %s ", getTrackID(tracks[k]):gsub("Track ", "")))
 if inaccuracy and type(state) == "number" then
 message(string.format("%s", states[state+inaccuracy]))
 else
