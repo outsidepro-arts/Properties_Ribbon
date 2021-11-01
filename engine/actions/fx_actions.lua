@@ -70,7 +70,10 @@ end
 
 function fxActionsLayout.canProvide()
 if reaper.GetLastTouchedTrack() then
-return (context == 0 or context == 1)
+if context == 0 then return true
+elseif context == 1 then
+return (reaper.GetSelectedMediaItem(0,0) ~= nil)
+end
 end
 if reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
 return true
