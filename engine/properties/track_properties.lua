@@ -53,9 +53,9 @@ local states = {
 [3]="end of %u folders"
 }
 local compactStates = {
-[0] = "opened",
-[1] = "small",
-[2] = "closed"
+[0] = "opened ",
+[1] = "small ",
+[2] = "closed "
 }
 if reaper.GetParentTrack(track) then
 message("child ")
