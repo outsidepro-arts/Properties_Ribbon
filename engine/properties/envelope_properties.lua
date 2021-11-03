@@ -438,7 +438,7 @@ if answer:match("^[-+]?%d+[.]?%d*([lrc])") then
 local converted = answer:match("^([-]?%d+)")
 if converted == nil then
 reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", 0)
-return ""
+return
 end
 if tonumber(converted) > 100 then
 converted = 100

@@ -124,7 +124,7 @@ if state == 1 then
 reaper.Main_OnCommand(40171, 0)
 -- OSARA reports the marker creation events
 setUndoLabel(self:get(true))
-return ""
+return
 elseif state == 2 then
 if numMarkers > 0 then
 if reaper.ShowMessageBox("Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?", "Please note", 4) == 6 then
@@ -140,7 +140,7 @@ elseif state == 3 then
 reaper.Main_OnCommand(40420, 0)
 -- OSARA reports the marker creation events
 setUndoLabel(self:get(true))
-return ""
+return
 elseif state == 4 then
 local countDeletedMarkers = 0
 for i = 0, numMarkers do
@@ -157,7 +157,7 @@ else
 reaper.Main_OnCommand(40157, 0)
 -- OSARA reports the marker creation events
 setUndoLabel(self:get(true))
-return ""
+return
 end
 end
 message(self:get(true))
@@ -175,7 +175,7 @@ states = setmetatable({
 [3] = "Delete "
 }, {
 __index = function(self, action)
-return ""
+return
 end
 }),
 position = pos,
@@ -227,7 +227,7 @@ reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40614, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
 setUndoLabel(self:get(true))
-return ""
+return
 elseif lastAction == 2 then
 local precolor = getMarkersComposedColor()
 if precolor then
@@ -304,14 +304,14 @@ if state == 1 then
 reaper.Main_OnCommand(40306, 0)
 -- OSARA reports the marker creation events
 setUndoLabel(self:get(true))
-return ""
+return
 elseif state == 2 then
 reaper.Main_OnCommand(40348, 0)
 elseif state == 3 then
 reaper.Main_OnCommand(40393, 0)
 -- OSARA reports the marker creation events
 setUndoLabel(self:get(true))
-return ""
+return
 elseif state == 4 then
 reaper.Main_OnCommand(41664, 0)
 elseif state == 5 then
@@ -338,7 +338,7 @@ end
 else
 reaper.Main_OnCommand(40174, 0)
 -- OSARA reports the marker creation events
-return ""
+return
 end
 end
 local _, _, newNumRegions = reaper.CountProjectMarkers(0)
@@ -363,7 +363,7 @@ states = setmetatable({
 [4] = "Delete "
 }, {
 __index = function(self, action)
-return ""
+return
 end
 }),
 position = pos,
@@ -418,7 +418,7 @@ reaper.SetEditCurPos(self.position, false, false)
 reaper.Main_OnCommand(40616, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
 setUndoLabel(self:get(true))
-return ""
+return
 elseif lastAction == 3 then
 local precolor = getMarkersComposedColor()
 if precolor then

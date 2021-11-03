@@ -137,7 +137,7 @@ reaper.Main_OnCommand(40844, 0)
 end
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 elseif action == true then
 if context == 0 then
 local curAction = getCurrentChainAction()
@@ -191,7 +191,7 @@ if action == nil then
 reaper.Main_OnCommand(40846, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is performable only."
 end
@@ -251,7 +251,7 @@ end
 reaper.Main_OnCommand(self.commands[context], state)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is performable only."
 end
@@ -288,7 +288,7 @@ local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 reaper.Main_OnCommand(16, utils.nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is unavailable because there is no plugins."
 end
@@ -327,7 +327,7 @@ if chainCount > 0 or (inputCount and inputCount > 0) then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This action is unavailable right now because no one FX is set there."
 end
@@ -375,7 +375,7 @@ if chainCount > 0 or monitoringCount > 0 then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMSMASTER"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This action is unavailable right now because no one FX is set there."
 end
@@ -410,7 +410,7 @@ if action == nil then
 reaper.Main_OnCommand(41882, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is performable only."
 end
@@ -446,7 +446,7 @@ local state = reaper.GetToggleCommandState(41884)
 reaper.Main_OnCommand(41884, utils.nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is unavailable because no plugins is set there."
 end

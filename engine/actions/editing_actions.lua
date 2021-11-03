@@ -52,7 +52,7 @@ if action == nil then
 reaper.Main_OnCommand(self.command, 1)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return ""
+return
 else
 return "This property is performable only."
 end

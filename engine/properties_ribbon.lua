@@ -562,6 +562,10 @@ end
 function script_ajustProperty(value)
 if layout.canProvide() == true then
 local msg = layout.properties[layout.pIndex]:set(value)
+if not msg then
+script_finish()
+return
+end
 setUndoLabel(msg:extract(false))
 msg:output()
 else

@@ -76,7 +76,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 message(self:get())
 return message
@@ -123,7 +123,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 message(self:get())
 return message
@@ -169,7 +169,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 message(self:get())
 return message
@@ -293,7 +293,7 @@ local state = utils.nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
 -- OSARA reports this state by itself
 setUndoLabel(self:get())
-return ""
+return
 end
 
 -- Play rate methods
@@ -372,7 +372,7 @@ reaper.Main_OnCommand(1134, 0)
 end
 -- OSARA provides the state value for tempo
 setUndoLabel(self:get())
-return ""
+return
 end
 
 -- Master visibility methods

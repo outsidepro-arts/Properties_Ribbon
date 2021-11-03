@@ -462,7 +462,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 end
  message(self:get())
@@ -546,7 +546,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 end
 message(self:get())
@@ -628,7 +628,7 @@ if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
  else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
-return ""
+return
 end
 end
  message(self:get())
