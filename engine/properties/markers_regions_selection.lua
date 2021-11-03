@@ -393,7 +393,6 @@ if self.clr > 0 then
 msg = msg:gsub("^%w", string.lower)
 end
 message(msg)
-debug(message:extract())
 if self.str ~= "" then
 message(string.format(", %s", self.str))
 end
