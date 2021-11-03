@@ -196,7 +196,7 @@ if self.clr > 0 then
 message(colors:getName(reaper.ColorFromNative(self.clr)).. " ")
 end
 local msg = string.format("Marker %u", self.mIndex)
-if self.clr then
+if self.clr > 0 then
 msg = msg:gsub("^%w", string.lower)
 end
 message(msg)
@@ -385,12 +385,17 @@ else
 --message:addType(" Perform this property to move the edit cursor to the start position of this region.", 1)
 extstate.mrkregLayout_rgnstate = nil
 end
-message(string.format("Region %u", self.rIndex))
+if self.clr > 0 then
+message(string.format("%s ", colors:getName(reaper.ColorFromNative(self.clr))))
+end
+local msg = string.format("Region %u", self.rIndex)
+if self.clr > 0 then
+msg = msg:gsub("^%w", string.lower)
+end
+message(msg)
+debug(message:extract())
 if self.str ~= "" then
 message(string.format(", %s", self.str))
-end
-if self.clr > 0 then
-message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
 end
 return message
 end,
