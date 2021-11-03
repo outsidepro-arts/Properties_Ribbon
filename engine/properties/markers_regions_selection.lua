@@ -192,12 +192,16 @@ else
 --message:addType(" Perform this property to move the edit cursor to the marker position.", 1)
 extstate.mrkregLayout_mrkstate = nil
 end
-message(string.format("Marker %u", self.mIndex))
+if self.clr > 0 then
+message(colors:getName(reaper.ColorFromNative(self.clr)).. " ")
+end
+local msg = string.format("Marker %u", self.mIndex)
+if self.clr then
+msg = msg:gsub("^%w", string.lower)
+end
+message(msg)
 if self.str ~= "" then
 message(string.format(", %s", self.str))
-end
-if self.clr > 0 then
-message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.clr))))
 end
 return message
 end,
