@@ -589,5 +589,22 @@ return "This property is toggleable only."
 end
 end
 
+local percentageNavigation = {}
+configLayout.main:registerProperty(percentageNavigation)
+
+function percentageNavigation:get()
+local message = initOutputMessage()
+message:initType("Toggle this property to switch the percentage navigation type off or on. When percentage navigation is on, the actions which sets the property by digits will orient by percentage ratio instead of choosing   a property by digists strictly when properties amount more than ten.", "Toggleable")
+local state = config.getboolean("percentagePropertyNavigation", false)
+message(string.format("Percentage navigation %s", ({[false]="disabled",[true]="enabled"})[state]))
+return message
+end
+
+function percentageNavigation:set(action)
+local message = initOutputMessage()
+config.setboolean("percentagePropertyNavigation", utils.nor(config.getboolean("percentagePropertyNavigation", false)))
+message(self:get())
+return message
+end
 
 return configLayout

@@ -26,54 +26,6 @@ local function getMarkersComposedColor()
 return extstate.colcom_marker_curValue
 end
 
--- Hack the engine to make the navigation using script_reportOrGotoProperty function more comfort
-do
-local curnum = 0
-if currentSublayout == "markersLayout" then
-curnum = numMarkers
-elseif currentSublayout == "regionsLayout" then
-curnum = numRegions
-end
-if curnum > 10 then
-_G["script_reportOrGotoProperty"] = function(propertyNum)
-local message = initOutputMessage()
-if speakLayout == true then
-message(composeSubLayout())
-speakLayout = false
-end
-if layout.canProvide() == true then
-if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
-restorePreviousLayout()
-return
-end
-if propertyNum then
-if propertyNum > 1 then
-propertyNum = math.floor((curnum*propertyNum)*0.1)
-end
-if propertyNum <= #layout.properties then
-layout.pIndex = propertyNum
-else
-(string.format("No property with number %s in %s layout.", propertyNum, layout.name:format(layout.subname))):output()
-return
-end
-end
-else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
-restorePreviousLayout()
-return
-end
-local result = layout.properties[layout.pIndex]:get()
-local cfg = config.getinteger("reportPos", 4)
-if cfg == 2 or cfg == 3 then
-result((", %u of %u"):format(layout.pIndex, #layout.properties))
-end
-message(result)
-message:output()
-end
-end
-end
-
 -- Main class initialization
 local parentLayout = initLayout("%sruller")
 
