@@ -195,7 +195,7 @@ end
 
 function valueProperty:set(action)
 local message = initOutputMessage()
-if action == false then
+if action == actions.set.decrease then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
@@ -293,7 +293,7 @@ end
 else
 reaper.Main_OnCommand(42382, 0)
 end
-elseif action == true then
+elseif action == actions.set.increase then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 if type(points) == "table" then
@@ -495,7 +495,7 @@ end
 
 function shapeProperty:set(action)
 local message = initOutputMessage()
-if action == true then
+if action == actions.set.increase then
 if type(points) == "table" then
 local adjustingValue = nil
 for idx, point in ipairs(points) do
@@ -528,7 +528,7 @@ else
 message("No more next property values. ")
 end
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if type(points) == "table" then
 local adjustingValue = nil
 for idx, point in ipairs(points) do
@@ -639,7 +639,7 @@ end
 function tensionProperty:set(action)
 local message = initOutputMessage()
 local adjustStep = config.getinteger("percentStep", 1)
-if action == false then
+if action == actions.set.decrease then
 if type(points) == "table" then
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then
@@ -664,7 +664,7 @@ else
 return string.format("This property is unavailable because the shape of this point is not %s.", shapeProperty.states[5])
 end
 end
-elseif action == true then
+elseif action == actions.set.increase then
 if type(points) == "table" then
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then

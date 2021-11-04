@@ -51,14 +51,14 @@ local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
-if action == true then
+if action == actions.set.increase then
 if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
 state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if utils.numtodecibels(state) ~= "-inf" then
 state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
@@ -97,13 +97,13 @@ end
 function panProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == true then
+if action == actions.set.increase then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -143,13 +143,13 @@ end
 function widthProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == true then
+if action == actions.set.increase then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -315,7 +315,7 @@ local actions= {
 {[false]=40525,[true]=40524},
 {[false]=40523, [true]=40522}
 }
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 reaper.Main_OnCommand(actions[config.getinteger("rateStep", 1)][action], 0)
 else
 message("Reset, ")
@@ -363,9 +363,9 @@ return message
 end
 
 function tempoProperty:set(action)
-if action == true then
+if action == actions.set.increase then
 reaper.Main_OnCommand(41129, 0)
-elseif action == false then
+elseif action == actions.set.decrease then
 reaper.Main_OnCommand(41130, 0)
 else
 reaper.Main_OnCommand(1134, 0)
@@ -496,13 +496,13 @@ end
 function masterTrackMixerPosProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == true then
+if action == actions.set.increase then
 if self.states[state+1] then
 self.setValue(state+1)
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if self.states[state-1] then
 self.setValue(state-1)
 else

@@ -14,7 +14,7 @@ proposedLayout = proposeLayout()
 end
 
 if script_init(proposedLayout) then
-script_switchSublayout(true)
+script_switchSublayout(actions.sublayout_next)
 end
 
 reaper.Undo_EndBlock(g_undoState, -1)

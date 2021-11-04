@@ -28,6 +28,20 @@ representation = require "representations"
 prepareUserData = require "preparation"
 
 
+-- Actions for set methods or some another cases
+actions = {
+set = {
+perform = nil,
+toggle = nil,
+increase = 0x000001,
+next = 0x000001,
+decrease = 0x000010,
+prev = 0x000010
+},
+sublayout_next = 0x000001,
+sublayout_prev = 0x000010
+}
+
 -- Little injections
 -- Make string type as outputable to OSARA directly
 function string:output()
@@ -410,7 +424,7 @@ script_finish()
 return
 end
 if layout.nextSubLayout or layout.previousSubLayout then
-if (action == true or action == nil) then
+if action == actions.sublayout_next then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
 else
@@ -418,7 +432,7 @@ else
 script_finish()
 return
 end
-elseif action == false then
+elseif action == actions.sublayout_prev then
 if layout.previousSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.previousSubLayout
 else

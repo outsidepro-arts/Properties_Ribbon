@@ -59,13 +59,13 @@ end
 function markerActionsProperty:set(action)
 local message = initOutputMessage()
 local state = extstate.mrkregLayout_mrkstate or 0
-if action == true then
+if action == actions.set.increase then
 if (state+1) <= #self.states then
 extstate.mrkregLayout_mrkstate = state+1
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (state-1) >= 0 then
 extstate.mrkregLayout_mrkstate = state-1
 else
@@ -160,13 +160,13 @@ end,
 set = function(self, action)
 local message = initOutputMessage()
 local lastAction = extstate.mrkregLayout_mrkstate or 0
-if action == true then
+if action == actions.set.increase then
 if (lastAction+1) <= #self.states then
 extstate.mrkregLayout_mrkstate = lastAction+1
 else
 message("No more next marker actions.")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (lastAction-1) > 0 then
 extstate.mrkregLayout_mrkstate = lastAction-1
 elseif (lastAction-1) == 0 then
@@ -243,13 +243,13 @@ end
 function regionActionsProperty:set(action)
 local message = initOutputMessage()
 local state = extstate.mrkregLayout_rgnstate or 0
-if action == true then
+if action == actions.set.increase then
 if (state+1) <= #self.states then
 extstate.mrkregLayout_rgnstate = state+1
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (state-1) >= 0 then
 extstate.mrkregLayout_rgnstate = state-1
 else
@@ -353,13 +353,13 @@ end,
 set = function(self, action)
 local message = initOutputMessage()
 local lastAction = extstate.mrkregLayout_rgnstate or 0
-if action == true then
+if action == actions.set.increase then
 if (lastAction+1) <= #self.states then
 extstate.mrkregLayout_rgnstate = lastAction+1
 else
 message("No more next region actions.")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (lastAction-1) > 0 then
 extstate.mrkregLayout_rgnstate = lastAction-1
 elseif (lastAction-1) == 0 then

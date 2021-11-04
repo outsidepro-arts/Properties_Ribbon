@@ -31,8 +31,8 @@ configLayout:registerSublayout("stepAdjustment", "Step adjustment ")
 Before the properties list fill get started, let describe this subclass methods:
 Method get: gets no one parameter, returns a message string which will be reported in the navigating scripts.
 Method set: gets parameter action. Expects false, true or nil.
-action == true: the property must changed upward
-action == false: the property must changed downward
+action == actions.set.increase: the property must changed upward
+action == actions.set.decrease: the property must changed downward
 action == nil: The property must be toggled or performed default action
 Returns a message string which will be reported in the navigating scripts.
 
@@ -63,13 +63,13 @@ return "This property is adjustable only."
 end
 local message = initOutputMessage()
 local state = config.getinteger("typeLevel", 1)
-if action == true then
+if action == actions.set.increase then
 if self.states[state+1] then
 config.setinteger("typeLevel", state+1)
 else
 message("No more next property values.")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if self.states[state-1] then
 config.setinteger("typeLevel", state-1)
 else
@@ -103,13 +103,13 @@ return "This property is adjustable only."
 end
 local message = initOutputMessage()
 local state = config.getinteger("reportPos", 3)
-if action == true then
+if action == actions.set.increase then
 if (state+1) <= #self.states then
 config.setinteger("reportPos", state+1)
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (state-1) >= 0 then
 config.setinteger("reportPos", state-1)
 else
@@ -143,13 +143,13 @@ if action == nil then
 return "This property is adjustable only."
 end
 local state = config.getinteger("rememberSublayout", 3)
-if action == true then
+if action == actions.set.increase then
 if (state+1) <= #self.states then
 config.setinteger("rememberSublayout", (state+1))
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (state-1) >= 0 then
 config.setinteger("rememberSublayout", (state-1))
 else
@@ -178,7 +178,7 @@ function dbStepProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("dbStep", 0.1)
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 if state >= 0.01 and state < 0.1 then
 ajustingValue = 0.1
 elseif state >= 0.1 and state < 0.5 then
@@ -188,7 +188,7 @@ ajustingValue = 1.0
 else
 return "Maximal step value"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 1.0 then
 ajustingValue = 1.0
 elseif state <= 1.0 and state > 0.5 then
@@ -237,7 +237,7 @@ function maxDbProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("maxDBValue", 12.0)
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 if state >= 6.0 and state < 12.0 then
 ajustingValue = 12.0
 elseif state >= 12.0 and state < 18.0 then
@@ -247,7 +247,7 @@ ajustingValue = 24.0
 else
 return "Maximal value"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 24.0 then
 ajustingValue = 24.0
 elseif state <= 24.0 and state > 18.0 then
@@ -288,7 +288,7 @@ function percentagestepProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("percentStep", 1)
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 if state >= 1 and state < 5 then
 ajustingValue = 5
 elseif state >= 5 and state < 10 then
@@ -296,7 +296,7 @@ ajustingValue = 10
 else
 return "Maximal step value"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 10 then
 ajustingValue = 10
 elseif state <= 10 and state > 5 then
@@ -343,7 +343,7 @@ function timeStepProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("timeStep", 0.001)
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 if state >= 0.001 and state < 0.010 then
 ajustingValue = 0.010
 elseif state >= 0.010 and state < 0.100 then
@@ -353,7 +353,7 @@ ajustingValue = 1.000
 else
 return "Maximal step value"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 1.000 then
 ajustingValue = 1.000
 elseif state <= 1.000 and state > 0.100 then
@@ -402,13 +402,13 @@ end
 function playrateStepProperty:set(action)
 local message = initOutputMessage()
 local state = config.getinteger("ratestep", 1)
-if action == true then
+if action == actions.set.increase then
 if (state+1) <= #self.states then
 state = state+1
 else
 return "No more next property values"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > #self.states then
 state = #self.states
 end
@@ -441,7 +441,7 @@ function pitchStepProperty:set(action)
 local message = initOutputMessage()
 local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 if state >= 0.01 and state < 0.50 then
 ajustingValue = 0.50
 elseif state >= 0.50 and state < 1.00 then
@@ -451,7 +451,7 @@ ajustingValue = 12.00
 else
 return "Maximal proposed step value"
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 12.00 then
 ajustingValue = 12.00
 elseif state <= 12.00 and state > 1.00 then

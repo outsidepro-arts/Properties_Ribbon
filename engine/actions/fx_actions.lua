@@ -138,7 +138,7 @@ end
 restorePreviousLayout()
 setUndoLabel(self:get())
 return
-elseif action == true then
+elseif action == actions.set.increase then
 if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction+1) <= #self.actions then
@@ -149,7 +149,7 @@ end
 else
 return ("The %s has not any extended actions."):format(contexts[context])
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction-1) >= 1 then

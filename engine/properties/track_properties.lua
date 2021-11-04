@@ -165,8 +165,8 @@ parentLayout:registerSublayout("recordingLayout", " recording")
 Before the properties list fill get started, let describe this subclass methods:
 Method get: gets no one parameter, returns a message string which will be reported in the navigating scripts.
 Method set: gets parameter action. Expects false, true or nil.
-action == true: the property must changed upward
-action == false: the property must changed downward
+action == actions.set.increase: the property must changed upward
+action == actions.set.decrease: the property must changed downward
 action == nil: The property must be toggled or performed default action
 Returns a message string which will be reported in the navigating scripts.
 
@@ -315,7 +315,7 @@ if type(tracks) == "table"then
 return "No group action for this property."
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-if action == true then
+if action == actions.set.increase then
 if state == 0 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH", 1)
 elseif state == 1 then
@@ -331,7 +331,7 @@ if reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH") == state then
 message("No more next folder depth. ")
 end
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state == 0 then
 message("No more previous inner state. ")
 elseif state == 1 then
@@ -416,13 +416,13 @@ end
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
-if action == true then
+if action == actions.set.increase then
 if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
 state = utils.decibelstonum(maxDBValue)
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state > 0 then
 state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
@@ -437,14 +437,14 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-if action == true then
+if action == actions.set.increase then
 if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
 else
 state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if utils.numtodecibels(state) ~= "-inf" then
 state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
@@ -495,9 +495,9 @@ end
 function panProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == true then
+if action == actions.set.increase then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 if type(tracks) == "table" then
@@ -510,7 +510,7 @@ end
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
@@ -526,7 +526,7 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -577,9 +577,9 @@ end
 function widthProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == true then
+if action == actions.set.increase then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 if type(tracks) == "table" then
@@ -592,7 +592,7 @@ end
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
@@ -608,7 +608,7 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -730,7 +730,7 @@ soloInConfig = tonumber(soloInConfig)+1
 else
 soloInConfig = 1
 end
-if action == false then
+if action == actions.set.decrease then
 if type(tracks) == "table" then
 local allIsSame = true
 for idx, track in ipairs(tracks) do
@@ -764,7 +764,7 @@ else
 message"No more previous property values. "
 end
 end
-elseif action == true then
+elseif action == actions.set.increase then
 if type(tracks) == "table" then
 local allIsSame = true
 for idx, track in ipairs(tracks) do
@@ -923,9 +923,9 @@ end
 function recmonitoringProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 else
 return "This property adjustable only."
@@ -1023,7 +1023,7 @@ return message:extract()
 end
 
 function recInputsProperty.calc(state, action)
-if action == true then
+if action == actions.set.increase then
 if (state+1) >= 0 and (state+1) < 1024 then
 if reaper.GetInputChannelName(utils.getBitValue(state+1, 1, 11)) then
 return state+1
@@ -1063,7 +1063,7 @@ end
 else
 return 8192
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if (state-1)>= 4096 and (state-1) < 8192 then
 for i = (state-1), 4096, -1 do
 local channel = utils.getBitValue(i, 1, 5)
@@ -1158,9 +1158,9 @@ end
 function recInputsProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 end
 if type(tracks) == "table" then
@@ -1189,13 +1189,13 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECINPUT", state)
 end
 else
 local state = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), action)
-if action == true then
+if action == actions.set.increase then
 if state < 8192 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state >= -1 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
 else
@@ -1253,9 +1253,9 @@ end
 function recmodeProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 else
 return "This property adjustable only."
@@ -1328,9 +1328,9 @@ end
 function automationModeProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 else
 return "This property adjustable only."
@@ -1598,15 +1598,15 @@ end
 function timebaseProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == true then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == false then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 else
 ajustingValue = -1
 end
 if type(tracks) == "table" then
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 local st = {0, 0, 0, 0}
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE")
@@ -1633,7 +1633,7 @@ end
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
-if action == true or action == false then
+if action == actions.set.increase or action == actions.set.decrease then
 if state+ajustingValue > #self.states-1 then
 message("No more next property values. ")
 elseif state+ajustingValue < -1 then

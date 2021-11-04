@@ -207,13 +207,13 @@ end
 function presetsProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == true then
+if action == actions.set.increase then
 if #self.states > 0 and (state+1) <= #self.states then
 state = state+1
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if #self.states > 0 and (state-1) > 0 then
 state = state-1
 else
@@ -310,7 +310,7 @@ function shadeProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
 local filter = getFilter()
-if action == true then
+if action == actions.set.increase then
 if filter then
 local somethingFound = false
 for i = (state+1), #colors.colorList do
@@ -332,7 +332,7 @@ else
 message("No more next property values. ")
 end
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if filter then
 local somethingFound = false
 for i = (state-1), 1, -1 do
@@ -412,7 +412,7 @@ end
 function rgbRProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == true then
+if action == actions.set.increase then
 if state+1 <= 255 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state+1), 255 do
@@ -425,7 +425,7 @@ end
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state-1 >= 0 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state-1), 0, -1 do
@@ -482,7 +482,7 @@ end
 function rgbGProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == true then
+if action == actions.set.increase then
 if state+1 <= 255 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state+1), 255 do
@@ -495,7 +495,7 @@ end
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state-1 >= 0 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state-1), 0, -1 do
@@ -552,7 +552,7 @@ end
 function rgbBProperty:set(action)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == true then
+if action == actions.set.increase then
 if state+1 <= 255 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state+1), 255 do
@@ -565,7 +565,7 @@ end
 else
 message("No more next property values. ")
 end
-elseif action == false then
+elseif action == actions.set.decrease then
 if state-1 >= 0 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state-1), 0, -1 do

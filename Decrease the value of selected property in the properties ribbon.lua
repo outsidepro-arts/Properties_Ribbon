@@ -10,6 +10,6 @@ package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\'
 require "properties_ribbon"
 
 if script_init() then
-script_ajustProperty(false)
+script_ajustProperty(actions.set.decrease)
 end
 reaper.Undo_EndBlock(g_undoState, -1)
