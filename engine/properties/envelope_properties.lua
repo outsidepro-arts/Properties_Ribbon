@@ -92,11 +92,13 @@ end
 -- Define with which envelope we are interracting
 -- I know about the Envelope_FormatValue, but using this converting method, we cannot get the humanbeing value back versa to raw data.
 local envelopeType = 0
-envelopeRepresentation = setmetatable({}, {
+local envelopeRepresentation = setmetatable({}, {
 __index = function(self, state)
 return reaper.Envelope_FormatValue(envelope, state)
 end
 })
+local envelopeFormatCaption = "Type a new raw value for selected points:"
+envelopeProcess = function(udata) return udata end
 if envelope then
 if reaper.GetEnvelopeScalingMode(envelope) == 0 then
 if not name:find" / " then
@@ -105,6 +107,8 @@ if not name:find" / " then
 if name:lower():find"volume" then
 envelopeType = 1 -- decibels value
 envelopeRepresentation = representation.db
+envelopeFormatCaption = prepareUserData.db.formatCaption
+envelopeProcess = prepareUserData.db.process
 elseif name:lower():find"pan" then
 envelopeType = 2 -- percentage value
 -- Curious REAPER: the pan envelope has inverted values...
@@ -113,6 +117,13 @@ __index = function(self, state)
 return representation.pan[-state]
 end
 })
+envelopeFormatCaption = prepareUserData.pan.formatCaption
+envelopeProcess = function(udata, curvalue)
+udata = prepareUserData.pan.process(udata, curvalue)
+if udata then
+return -udata
+end
+end
 elseif name:lower():find"width" then
 envelopeType = 6
 envelopeRepresentation = setmetatable({}, {
@@ -120,16 +131,16 @@ __index = function(self, state)
 return string.format("%i%%", utils.numtopercent(state))
 end
 })
+envelopeFormatCaption = prepareUserData.percent.formatCaption
+envelopeProcess = prepareUserData.percent.process
 elseif name:lower():find"rate" then
 envelopeType = 3
-envelopeRepresentation = setmetatable({}, {
-__index = function(self,state)
-return string.format("%u%%", utils.numtopercent(state))
-end
-})
+envelopeRepresentation = representation.playrate
 elseif name:lower():find"pitch" then
 envelopeType = 4
 envelopeRepresentation = representation.pitch
+envelopeFormatCaption = prepareUserData.pitch.formatCaption
+envelopeProcess = prepareUserData.pitch.process
 elseif name:lower():find"mute" then
 envelopeType = 5
 end
@@ -397,146 +408,44 @@ if state < 0 then state = -state end
 self.setValue(points, utils.nor(utils.round(state, 0)))
 end
 else
-local retval, answer = nil
+local retval, answer, curvalue, oldRepresentation = nil
+-- The playrate converting methods aren't written, so we have to do a little substitution the representation metatable to an user was seeing the raw data instead of real representation.
+if envelopeType == 3 then
+ oldRepresentation = getmetatable(envelopeRepresentation)
+envelopeRepresentation = setmetatable({}, {
+__index = function(self, key)
+return reaper.Envelope_FormatValue(envelope, key)
+end
+})
+envelopeFormatCaption = "Type the REAPER proposed format playrate value:"
+end
 if type(points) == "table" then
-if envelopeType > 0 and envelopeType < 5 or envelopeType == 6 then
-retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, "Type a new value for selected points in humanbeing presented format:", "")
+retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, envelopeFormatCaption, envelopeRepresentation[self.getValue(points[1])])
+curvalue = self.getValue(points[1])
 else
-retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, "Type a new raw value for selected points:", "")
+retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1, envelopeFormatCaption, envelopeRepresentation[self.getValue(points)])
+curvalue = self.getValue(points)
 end
-else
-if envelopeType > 0 and envelopeType < 5 or envelopeType == 6 then
-retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1, "Type a new value for selected point in humanbeing presented format:", envelopeRepresentation[self.getValue(points)])
-else
-retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1, "Type a new raw value for selected point:", self.getValue(points))
-end
+-- If oldRepresentation contains any metatable, we have to return back this. If do not do this, the get method will report the raw data instead of real representation. The case when the metatable substitutes we already defined.
+if oldRepresentation then
+envelopeRepresentation = setmetatable({}, oldRepresentation)
 end
 if retval then
-answer = answer:lower()
-answer = answer:gsub("%s", "")
-if envelopeType == 1 then
-answer = answer:match("^([-+]?%d+[.]?%d*)")
+answer = envelopeProcess(answer, curvalue)
 if answer then
 if type(points) == "table" then
 for _, point in ipairs(points) do
-self.setValue(point, utils.decibelstonum(answer))
+self.setValue(point, answer)
 end
 else
-self.setValue(points, utils.decibelstonum(answer))
+self.setValue(points, answer)
 end
 else
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, 1)
-end
-else
-self.setValue(points, 1)
-end
-end
-elseif envelopeType == 2 then
-if answer:match("^[-+]?%d+[.]?%d*([lrc])") then
-local converted = answer:match("^([-]?%d+)")
-if converted == nil then
-reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", 0)
+reaper.ShowMessageBox("Couldn't convert any specified value.", "Properties Ribbon error", 0)
 return
 end
-if tonumber(converted) > 100 then
-converted = 100
-end
-if answer:match("^.+([r])") then
-converted = -converted
-end
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, utils.percenttonum(converted))
-end
 else
-self.setValue(points, utils.percenttonum(converted))
-end
-else
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, 0)
-end
-else
-self.setValue(points, 0)
-end
-end
-elseif envelopeType == 3 then
-answer = answer:match("^(%d+[.]?%d*)")
-if answer then
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, tonumber(utils.percenttonum(answer)))
-end
-else
-self.setValue(points, tonumber(utils.percenttonum(answer)))
-end
-else
-message("Nothing changed. ")
-end
-elseif envelopeType == 4 then
-local converted = answer:match("^[-+]?%d+$")
-if not converted then
-converted = answer:match("^([-+]?%d+[.]%d+)")
-end
-if not converted then
-local maybeSemitones, maybeCents = answer:match("^([-+]?%d+)[s][a-z]*(%d+)[c].*")
-if maybeSemitones then
-converted = tostring(maybeSemitones)
-end
-if maybeCents then
-converted = converted.."."..tostring(maybeCents)
-end
-end
-if converted then
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, tonumber(converted))
-end
-else
-self.setValue(points, tonumber(converted))
-end
-else
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, 0.0)
-end
-else
-self.setvalue(points, 0.0)
-end
-end
-elseif envelopeType == 6 then
-answer = tonumber(answer:match("^([-]?%d+)%%?"))
-if answer then
-if answer > 100 then
-answer = 100
-elseif answer < -100 then
-answer = -100
-end
-if type(points) == "table" then
-for _, point in ipairs(points) do
-self.setValue(point, utils.percenttonum(answer))
-end
-else
-self.setValue(points, utils.percenttonum(answer))
-end
-else
-message("Nothing changed. ")
-end
-else
-if type(points) == "table" then
-for _, point in ipairs(points) do
-if tonumber(answer) then
-self.setValue(point, tonumber(answer))
-end
-end
-else
-if tonumber(answer) then
-self.setValue(points, tonumber(answer))
-end
-end
-end
+return
 end
 end
 end
