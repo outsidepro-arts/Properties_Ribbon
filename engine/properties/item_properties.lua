@@ -218,8 +218,7 @@ parentLayout:registerSublayout("takeLayout", " current take")
 parentLayout:registerSublayout("stretchMarkersLayout", " take stretch markers")
 
 -- Take markers
--- Currently is not finaly written, so  now it is commented at this time.
---parentLayout:registerSublayout("takeMarkersLayout", " take markers")
+parentLayout:registerSublayout("takeMarkersLayout", " take markers")
 
 
 --[[
@@ -2794,33 +2793,114 @@ end
 end
  
  local function formTakeMarkersProperties(item)
- for i = 0, reaper.GetNumTakeMarkers(reaper.GetActiveTake(item)) do
+ if not parentLayout.canProvide() then
+return
+end
+-- REAPER doesn't sort the take markers and not provides any method to get the ordered list even with non-sorted indexes. So, we will sort this manualy.
+local takeMarkers = {}
+for i = 0, reaper.GetNumTakeMarkers(reaper.GetActiveTake(item)) do
  local takeMarker = {}
 takeMarker.item = item
 takeMarker.idx = i
-takeMarker.retval, takeMarker.name, takeMarker.color = reaper.GetTakeMarker(reaper.GetActiveTake(item), i)
+takeMarker.pos, takeMarker.name, takeMarker.color = reaper.GetTakeMarker(reaper.GetActiveTake(item), i)
 if takeMarker.retval ~= -1 then
+table.insert(takeMarkers, takeMarker)
+end
+end
+table.sort(takeMarkers, 
+function(a, b)
+if a.pos < b.pos then
+return true
+end
+return false
+end
+)
+for i, val in ipairs(takeMarkers) do
+val.num = i-1
+end
+-- Clearing off the start take marker cuz it just start point
+table.remove(takeMarkers, 1)
+for _, takeMarker in ipairs(takeMarkers) do
 parentLayout.takeMarkersLayout:registerProperty({
+states = {
+[0] = "Jump to ",
+[1] = "Colorize ",
+[2] = "Edit ",
+[3] = "Delete "
+},
 marker = takeMarker,
-get = function(self)
+get = function(self, shouldSaveAction)
 local message = initOutputMessage()
 message:initType("Adjust this take marker property to choose aproppriate action to be performed. Perform this take marker to either jump to its position or to perform chosen earlier action on.", "Adjustable, performable")
-message(string.format("%s %s take marker %u", getItemNumber(self.marker.item), getTakeID(self.marker.item), self.marker.idx+1))
+if extstate.itemProperties_tmrkaction and not shouldSaveAction then
+extstate.itemProperties_tmrkaction = nil
+else
+message(self.states[extstate.itemProperties_tmrkaction])
+end
 if self.marker.color > 0 then
-message(string.format(", color %s", colors:getName(reaper.ColorFromNative(self.marker.color))))
+message(colors:getName(reaper.ColorFromNative(self.marker.color)).." ")
+end
+if self.marker.num == 0 then
+message("Start take marker")
+else
+message(string.format("Take marker %u", self.marker.num))
 end
 if self.marker.name then
 message(string.format(", %s", self.marker.name))
-else
-message(", unnamed")
+--else
+--message(", unnamed")
 end
+message(string.format(" in %s of %s", getTakeID(self.marker.item), getItemID(self.marker.item)))
 return message
 end,
 set = function(self, action)
-return "Doesn't supported yet" 
+local message = initOutputMessage()
+local maction = extstate.itemProperties_tmrkaction or 0
+if action == true then
+if (maction+1) <= #self.states then
+maction = maction+1
+extstate.itemProperties_tmrkaction = maction
+else
+message("No more next take marker actions. ")
+end
+elseif action == false then
+if (maction-1) >= 0 then
+maction = maction-1
+extstate.itemProperties_tmrkaction = maction
+else
+message("No more previous take marker actions. ")
+end
+elseif action == nil then
+if maction == 1 then
+local precolor = getTakeComposedColor()
+if precolor == 0 then
+return "Compose any color in color composer first."
+end
+reaper.SetTakeMarker(reaper.GetActiveTake(self.marker.item), self.marker.idx, self.marker.name, self.marker.pos, precolor)
+elseif maction == 2 then
+local curpos = reaper.GetCursorPosition()
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.Main_OnCommand(42385, 0)
+reaper.SetEditCurPos(curpos, false, false)
+setUndoLabel(self:get(true))
+return
+elseif maction == 3 then
+message(self:get())
+if reaper.DeleteTakeMarker(reaper.GetActiveTake(self.marker.item), self.marker.idx) then
+message("has been deleted.")
+else
+message("cannot be deleted.")
+end
+return message
+else
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+message(self.states[0])
+end
+end
+message(self:get(true))
+return message
 end
 })
-end
 end
 end
 
@@ -2919,7 +2999,6 @@ return parentLayout.stretchMarkersLayout.properties[#parentLayout.stretchMarkers
 end
 })
 
---[[
 local takeMarkersActionsProperty = {}
 parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
 takeMarkersActionsProperty.states = {
@@ -2963,18 +3042,21 @@ message("No more previous property values. ")
 end
 elseif action == nil then
 if state == 2 then
-local suitableItem = getItemAtCursor()
+local precolor = getTakeComposedColor()
+if precolor == nil then
+return "Compose any color in color composer first."
+end
+local suitableItem = getSelectedItemAtCursor()
 if suitableItem then
-local retval = reaper.SetTakeMarker(suitableItem, -1, "", time_globalToRelative(suitableItem), getTakeComposedColor())
+local retval = reaper.SetTakeMarker(reaper.GetActiveTake(suitableItem), -1, "", pos_globalToRelative(suitableItem), precolor)
 if retval >= 0 then
-message(string.format("Take marker %u has been added.", retval))
+message(string.format("Take marker %u with color %s has been added.", retval+1, colors:getName(reaper.ColorFromNative(getTakeComposedColor()))))
 end
 end
 elseif state == 3 then
-reaper.Main_OnCommand(41842, 0)
-reaper.Main_OnCommand(41988, 0)
+reaper.Main_OnCommand(42385, 0)
 elseif state == 4 then
-reaper.Main_OnCommand(41844, 0)
+reaper.Main_OnCommand(42387, 0)
 else
 reaper.Main_OnCommand(42390, 0)
 end
@@ -2998,7 +3080,6 @@ parentLayout.pIndex = #parentLayout.takeMarkersLayout.properties
 return parentLayout.takeMarkersLayout.properties[#parentLayout.takeMarkersLayout.properties]
 end
 })
-]]--
 
 parentLayout.defaultSublayout = "itemLayout"
 
