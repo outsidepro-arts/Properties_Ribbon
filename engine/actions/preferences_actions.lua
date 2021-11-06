@@ -22,7 +22,7 @@ return true
 end
 
 parentLayout:registerSublayout("reaperPrefs", "REAPER ")
-parentLayout:registerSublayout("osaraLayout", "OSARA extension")
+parentLayout:registerSublayout("osaraLayout", "OSARA extension ")
 if reaper.APIExists("ReaPack_AboutInstalledPackage") == true then
 parentLayout:registerSublayout("reaPackLayout", "ReaPack extension ")
 end
@@ -53,7 +53,7 @@ message(msg)
 return message
 end,
 set = function(self, action)
-if action == nil then
+if action == actions.set.perform then
 reaper.Main_OnCommand(cmd, 1)
 restorePreviousLayout()
 setUndoLabel(self:get())
