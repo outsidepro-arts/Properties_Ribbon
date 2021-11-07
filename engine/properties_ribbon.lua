@@ -552,6 +552,7 @@ if propertyNum then
 if config.getboolean("percentagePropertyNavigation", false) == true and #layout.properties > 10 then
 if propertyNum > 1 then
 propertyNum = math.floor((#layout.properties*propertyNum)*0.1)
+message(string.format("Percentage navigation to %u, ", propertyNum))
 end
 end
 if propertyNum <= #layout.properties then
