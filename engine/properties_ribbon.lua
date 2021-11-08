@@ -248,11 +248,15 @@ end
 
 function composeSubLayout()
 local message = initOutputMessage()
-message(string.format("%s, ", (layout.name):format(layout.subname)))
+message((layout.name):format(layout.subname))
+if (layout.nextSubLayout or layout.previousSubLayout) then
+message(" category")
+end
 local cfg = config.getinteger("reportPos", 3)
 if (cfg == 1 or cfg == 3) and (layout.nextSubLayout or layout.previousSubLayout) then
-message(string.format("%u of %u, ", layout.slIndex, layout.ofCount))
+message(string.format(" %u of %u, ", layout.slIndex, layout.ofCount))
 end
+message(", ")
 return message:extract()
 end
 
