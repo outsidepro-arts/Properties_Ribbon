@@ -197,6 +197,18 @@ setWindow
 )
 )
 
+
+-- Move envelope points with items
+parentLayout.options:registerProperty(
+getUsualProperty(
+ usualOptStates,
+ 40070,
+ "Move envelope points with media items and razor edits %s",
+{"Toggle this property to switch the movement an envelope points with items on these position when they are coppied, cutted or moved.","Toggleable"}
+)
+)
+
+
 -- Repeat option property
 parentLayout.options:registerProperty(
 getUsualProperty(
