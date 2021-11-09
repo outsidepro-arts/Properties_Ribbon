@@ -16,15 +16,15 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 
-local parentLayout = initLayout("%seditor selection")
+local parentLayout = initLayout("Editor selection")
 
 function parentLayout.canProvide()
 -- Just check one of items has been selected
 return (reaper.GetSelectedMediaItem(0, 0) ~= nil)
 end
 
-parentLayout:registerSublayout("embededLayout", "Build-in ")
-parentLayout:registerSublayout("externalLayout", "External ")
+parentLayout:registerSublayout("embededLayout", "Build-in")
+parentLayout:registerSublayout("externalLayout", "External")
 
 local midiEditor = {}
 parentLayout.embededLayout:registerProperty(midiEditor)

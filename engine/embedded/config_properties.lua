@@ -14,7 +14,7 @@ After this preambula, let me begin.
 ]]--
 
 -- global pseudoclass initialization
-local configLayout = initLayout("%sConfiguration properties")
+local configLayout = initLayout("Properties Ribbon configuration")
 
 -- the function which gives green light to call any method from this class
 function configLayout.canProvide()
@@ -24,8 +24,8 @@ end
 
 -- sub-layouts
 -- Main sub-layout
-configLayout:registerSublayout("main", "general ")
-configLayout:registerSublayout("stepAdjustment", "Step adjustment ")
+configLayout:registerSublayout("main", "General")
+configLayout:registerSublayout("stepAdjustment", "Step adjustment")
 
 --[[
 Before the properties list fill get started, let describe this subclass methods:

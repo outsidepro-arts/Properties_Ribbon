@@ -27,14 +27,14 @@ return extstate.colcom_marker_curValue
 end
 
 -- Main class initialization
-local parentLayout = initLayout("%sruller")
+local parentLayout = initLayout("Markers and regions management")
 
 -- This layout is available always because here creating markers/regions property is.
 function parentLayout.canProvide()
 return true
 end
 
-parentLayout:registerSublayout("markersLayout", "Markers ")
+parentLayout:registerSublayout("markersLayout", "Markers")
 
 local markerActionsProperty = {}
 parentLayout.markersLayout:registerProperty(markerActionsProperty)
@@ -217,7 +217,7 @@ end
 
 
 -- Regions loading
-parentLayout:registerSublayout("regionsLayout", "Regions ")
+parentLayout:registerSublayout("regionsLayout", "Regions")
 local regionActionsProperty = {}
 parentLayout.regionsLayout:registerProperty(regionActionsProperty)
 regionActionsProperty.states = {

@@ -56,12 +56,12 @@ extstate[currentSublayout.."_currentAction"] = action
 end
 
 
-local fxActionsLayout = initLayout("%sFX actions")
-fxActionsLayout:registerSublayout("contextLayout", contexts[context].." ")
+local fxActionsLayout = initLayout("FX actions")
+fxActionsLayout:registerSublayout("contextLayout", contexts[context])
 if reaper.GetMasterTrackVisibility()&1 == 1 then
-fxActionsLayout:registerSublayout("masterTrackLayout", "Master track ")
+fxActionsLayout:registerSublayout("masterTrackLayout", "Master track")
 end
-fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring ")
+fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring")
 if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
 fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
 fxActionsLayout.masterTrackLayout.previousSubLayout = nil

@@ -248,15 +248,16 @@ end
 
 function composeSubLayout()
 local message = initOutputMessage()
-message((layout.name):format(layout.subname))
 if (layout.nextSubLayout or layout.previousSubLayout) then
-message(" category")
+message(string.format("%s category of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
+else
+message(layout.name)
 end
+message(", ")
 local cfg = config.getinteger("reportPos", 3)
 if (cfg == 1 or cfg == 3) and (layout.nextSubLayout or layout.previousSubLayout) then
 message(string.format(" %u of %u, ", layout.slIndex, layout.ofCount))
 end
-message(", ")
 return message:extract()
 end
 
@@ -415,14 +416,14 @@ local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSubl
 layout = layout[sublayout]
 currentSublayout = sublayout
 end
-setUndoLabel(("Switch properties layout to %s"):format((layout.name):format("")))
+setUndoLabel(("Switch properties layout to %s"):format(layout.name))
 layout.pIndex = extstate[layout.section] or 1
 return (layout)
 end
 
 function script_switchSublayout(action)
 if layout.canProvide() ~= true then
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
 return
@@ -452,7 +453,7 @@ return
 end
 script_reportOrGotoProperty()
 else
-(("The %s layout has no category. "):format(layout.name:format(""))):output()
+(("The %s layout has no category. "):format(layout.name)):output()
 end
 script_finish()
 end
@@ -480,7 +481,7 @@ else
 message("last property. ")
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
 return
@@ -519,7 +520,7 @@ else
 message("first property. ")
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
 return
@@ -568,7 +569,7 @@ return
 end
 end
 else
-(string.format("There are no elements %s be provided for.", layout.name:format(""))):output()
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
 return
@@ -593,7 +594,7 @@ end
 setUndoLabel(msg:extract(false))
 msg:output()
 else
-(string.format("There are no element to ajust or perform any action for %s.", layout.name:format(""))):output()
+(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 end
 script_finish()
 end

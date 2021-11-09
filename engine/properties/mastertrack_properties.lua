@@ -20,7 +20,7 @@ local maxDBValue = config.getinteger("maxDBValue", 12.0)
 local master = reaper.GetMasterTrack(0)
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Master track%s properties")
+local parentLayout = initLayout("Master track properties")
 
 function parentLayout.canProvide()
 -- We will check the TCP visibility only
@@ -31,8 +31,8 @@ return false
 end
 end
 
-parentLayout:registerSublayout("playbackLayout", " playback")
-parentLayout:registerSublayout("visualLayout", " visual")
+parentLayout:registerSublayout("playbackLayout", "Playback")
+parentLayout:registerSublayout("visualLayout", "Visualization")
 
 
 -- volume methods

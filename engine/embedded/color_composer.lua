@@ -147,7 +147,7 @@ end
 
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Color composer%s")
+local parentLayout = initLayout("Color composer")
 
 -- the function which gives green light to call any method from this class
 -- The color composer is available always, so we will just return true.
@@ -158,17 +158,17 @@ end
 
 -- sublayouts
 -- Track properties
-parentLayout:registerSublayout("track", " for tracks")
+parentLayout:registerSublayout("track", "Tracks")
 
 
 -- Item properties
-parentLayout:registerSublayout("item", " for items")
+parentLayout:registerSublayout("item", " Items")
 
 -- Take sublayout
-parentLayout:registerSublayout("take", " for item takes")
+parentLayout:registerSublayout("take", "Item takes")
 
 -- Markers
-parentLayout:registerSublayout("marker", " for markers and regions")
+parentLayout:registerSublayout("marker", "Markers and regions")
 
 -- The creating new property macros
 -- Here a special case, so we will not  use the native layout's methods as is

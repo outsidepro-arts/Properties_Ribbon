@@ -139,7 +139,7 @@ return message
 end
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Track%s properties")
+local parentLayout = initLayout("Track properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -153,13 +153,13 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout:registerSublayout("visualLayout", " visual")
+parentLayout:registerSublayout("visualLayout", "Visualisation")
 
 -- Playback properties
-parentLayout:registerSublayout("playbackLayout", " playback")
+parentLayout:registerSublayout("playbackLayout", "Playback")
 
 -- Recording properties
-parentLayout:registerSublayout("recordingLayout", " recording")
+parentLayout:registerSublayout("recordingLayout", "Recording")
 
 --[[
 Before the properties list fill get started, let describe this subclass methods:

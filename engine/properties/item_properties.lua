@@ -196,7 +196,7 @@ end
 
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Item%s properties")
+local parentLayout = initLayout("Item and take properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
@@ -205,20 +205,19 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout:registerSublayout("visualLayout", " visual")
+parentLayout:registerSublayout("visualLayout", "Visualization")
 
 --Item properties
--- The second parameter is empty string cuz the parent layout's name and this sublayout's name is identical
-parentLayout:registerSublayout("itemLayout", "")
+parentLayout:registerSublayout("itemLayout", "Item")
 
 -- Current take properties
-parentLayout:registerSublayout("takeLayout", " current take")
+parentLayout:registerSublayout("takeLayout", "Current take")
 
 -- Stretch markers
-parentLayout:registerSublayout("stretchMarkersLayout", " take stretch markers")
+parentLayout:registerSublayout("stretchMarkersLayout", "Stretch markers")
 
 -- Take markers
-parentLayout:registerSublayout("takeMarkersLayout", " take markers")
+parentLayout:registerSublayout("takeMarkersLayout", "Take markers")
 
 
 --[[
@@ -353,10 +352,10 @@ ajustingValue = 0
 message("Locking selected items.")
 elseif lockedItems < notLockedItems then
 ajustingValue = 1
-message("Unlocking selected  items.")
+message("Locking selected  items.")
 else
 ajustingValue = 0
-message("Locking selected selected items.")
+message("Unlocking selected items.")
 end
 for k = 1, #items do
 self.setValue(items[k], ajustingValue)

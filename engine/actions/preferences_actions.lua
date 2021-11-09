@@ -15,19 +15,19 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-local parentLayout = initLayout("%spreferences actions")
+local parentLayout = initLayout("preferences actions")
 
 function parentLayout.canProvide()
 return true
 end
 
-parentLayout:registerSublayout("reaperPrefs", "REAPER ")
-parentLayout:registerSublayout("osaraLayout", "OSARA extension ")
+parentLayout:registerSublayout("reaperPrefs", "REAPER")
+parentLayout:registerSublayout("osaraLayout", "OSARA extension")
 if reaper.APIExists("ReaPack_AboutInstalledPackage") == true then
-parentLayout:registerSublayout("reaPackLayout", "ReaPack extension ")
+parentLayout:registerSublayout("reaPackLayout", "ReaPack extension")
 end
 if reaper.APIExists("CF_GetSWSVersion") == true then
-parentLayout:registerSublayout("swsLayout", "SWS extension ")
+parentLayout:registerSublayout("swsLayout", "SWS extension")
 end
 
 
