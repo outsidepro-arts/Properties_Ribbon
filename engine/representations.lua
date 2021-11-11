@@ -77,14 +77,13 @@ return msg
 end
 })
 
-representation.pitch = setmetatable({},
+representation.pitch = setmetatable({
+[0.00]="original"
+},
 {__index = function(self, key)
 local prepitch = utils.splitstring(string.format("%.2f", key), ".")
 local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
 local msg = ""
-if s == 0 and c == 0 then
-return "original"
-end
 if tonumber(key) < 0 then
 msg = msg.."Minus "
 s = -s
@@ -101,11 +100,10 @@ return msg
 end
 })
 
-representation.playrate = setmetatable({}, {
+representation.playrate = setmetatable({
+[1.000]="original"
+}, {
 __index = function(self, key)
-if key == 1.000 then
-return "original"
-end
 local preproc = utils.splitstring(tostring(key), ".")
 local msg = tostring(preproc[1])
 if tonumber(preproc[2]) ~= 0 then
