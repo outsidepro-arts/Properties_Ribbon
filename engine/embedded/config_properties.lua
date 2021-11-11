@@ -58,23 +58,22 @@ return message
 end
 
 function typeLevelProperty:set(action)
-if action == nil then
-return "This property is adjustable only."
-end
 local message = initOutputMessage()
 local state = config.getinteger("typeLevel", 1)
-if action == actions.set.increase then
+if action == actions.set.next then
 if self.states[state+1] then
 config.setinteger("typeLevel", state+1)
 else
 message("No more next property values.")
 end
-elseif action == actions.set.decrease then
+elseif action == actions.set.prev then
 if self.states[state-1] then
 config.setinteger("typeLevel", state-1)
 else
 message("No more previous property values.")
 end
+else
+return "This property is adjustable only."
 end
 message(self:get())
 return message
@@ -98,23 +97,22 @@ return message
 end
 
 function reportPosProperty:set(action)
-if action == nil then
-return "This property is adjustable only."
-end
 local message = initOutputMessage()
 local state = config.getinteger("reportPos", 3)
-if action == actions.set.increase then
+if action == actions.set.next then
 if (state+1) <= #self.states then
 config.setinteger("reportPos", state+1)
 else
 message("No more next property values. ")
 end
-elseif action == actions.set.decrease then
+elseif action == actions.set.prev then
 if (state-1) >= 0 then
 config.setinteger("reportPos", state-1)
 else
 message("No more previous property values. ")
 end
+else
+return "This property is adjustable only."
 end
 message(self:get())
 return message
@@ -139,22 +137,21 @@ end
 
 function resetSublayoutProperty:set(action)
 local message = initOutputMessage()
-if action == nil then
-return "This property is adjustable only."
-end
 local state = config.getinteger("rememberSublayout", 3)
-if action == actions.set.increase then
+if action == actions.set.next then
 if (state+1) <= #self.states then
 config.setinteger("rememberSublayout", (state+1))
 else
 message("No more next property values. ")
 end
-elseif action == actions.set.decrease then
+elseif action == actions.set.prev then
 if (state-1) >= 0 then
 config.setinteger("rememberSublayout", (state-1))
 else
 message("No more previous property values. ")
 end
+else
+return "This property is adjustable only."
 end
 message(self:get())
 return message
@@ -200,7 +197,7 @@ ajustingValue = 0.01
 else
 return "Minimal step value"
 end
-else
+elseif action == actions.set.perform then
 local result, answer = reaper.GetUserInputs("Decibel step input", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
 ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.numtodecibels(state)))
@@ -259,7 +256,7 @@ ajustingValue = 6.0
 else
 return "Minimal value"
 end
-else
+elseif action == actions.set.perform then
 local result, answer = reaper.GetUserInputs("Maximum decibels value", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
 ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.decibelstonum(state)))
@@ -306,7 +303,7 @@ ajustingValue = 1
 else
 return "Minimal step value"
 end
-else
+elseif action == actions.set.perform then
 local result, answer = reaper.GetUserInputs("Percent step input", 1, prepareUserData.percent.formatCaption, string.format("%u%%", state))
 if result == true then
 ajustingValue = utils.numtopercent(prepareUserData.percent.process(answer, utils.percenttonum(state)))
@@ -365,7 +362,7 @@ ajustingValue = 0.001
 else
 return "Minimal step value"
 end
-else
+elseif action == actions.set.perform then
 local result, answer = reaper.GetUserInputs("Time step input", 1, 'Type the needed step which every property with time value will change per one adjustment in decimal format but no more three digits after decimal separator (0.1, 1.25, 3.201 and etc):', state)
 if result == true then
 ajustingValue = tonumber(answer)
@@ -463,7 +460,7 @@ ajustingValue = 0.01
 else
 return "Minimal proposed step value"
 end
-else
+elseif action == actions.set.perform then
 local result, answer = reaper.GetUserInputs("Pitch step input", 1, prepareUserData.pitch.formatCaption, representation.pitch[state])
 if result == true then
 ajustingValue = prepareUserData.pitch.process(answer, state)
@@ -494,13 +491,14 @@ return message
 end
 
 function multiSelectionSupportProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
-end
+if action == actions.set.toggle then
 local state = utils.nor(config.getboolean("multiSelectionSupport", true))
 config.setboolean("multiSelectionSupport", state)
 local message = initOutputMessage() message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- Report name methods
@@ -516,10 +514,14 @@ return message
 end
 
 function reportNameProperty:set(action)
+if action == actions.set.toggle then
 local message = initOutputMessage()
 config.setboolean("reportName", utils.nor(config.getboolean("reportName", false)))
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- Automaticaly propose contextual layouts
@@ -534,8 +536,8 @@ return message
 end
 
 function autoProposeLayoutProperty:set(action)
+if action == actions.set.toggle then
 local message = initOutputMessage()
-if action == nil then
 config.setboolean("automaticLayoutLoading", utils.nor(config.getboolean("automaticLayoutLoading", false)))
 message(self:get())
 return message
@@ -556,7 +558,7 @@ return message
 end
 
 function allowRestorePreviousProperty:set(action)
-if action == nil then
+if action == actions.set.toggle then
 local message = initOutputMessage()
 config.setboolean("allowLayoutsrestorePrev", utils.nor(config.getboolean("allowLayoutsrestorePrev", true)))
 message(self:get())
@@ -578,7 +580,7 @@ return message
 end
 
 function clearFileExtsProperty:set(action)
-if action == nil then
+if action == actions.set.toggle then
 local message = initOutputMessage()
 local state = config.getboolean("clearFileExts", true)
 config.setboolean("clearFileExts", utils.nor(state))
@@ -601,10 +603,14 @@ return message
 end
 
 function percentageNavigation:set(action)
+if action == actions.set.toggle then
 local message = initOutputMessage()
 config.setboolean("percentagePropertyNavigation", utils.nor(config.getboolean("percentagePropertyNavigation", false)))
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 return configLayout
