@@ -249,7 +249,7 @@ end
 function composeSubLayout()
 local message = initOutputMessage()
 if (layout.nextSubLayout or layout.previousSubLayout) then
-message(string.format("%s category of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
+message(string.format("%s of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
 else
 message(layout.name)
 end
