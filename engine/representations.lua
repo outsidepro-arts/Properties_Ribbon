@@ -85,7 +85,7 @@ local msg = ""
 if s == 0 and c == 0 then
 return "original"
 end
-if s < 0 then
+if tonumber(key) < 0 then
 msg = msg.."Minus "
 s = -s
 end
