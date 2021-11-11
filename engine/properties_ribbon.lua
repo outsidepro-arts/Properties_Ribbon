@@ -539,6 +539,7 @@ end
 function script_reportOrGotoProperty(propertyNum)
 local message = initOutputMessage()
 local rememberCFG = config.getinteger("rememberSublayout", 3)
+local percentageNavigationApplied = false
 if speakLayout == true then
 message(composeSubLayout())
 if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum then
@@ -557,7 +558,8 @@ if propertyNum then
 if config.getboolean("percentagePropertyNavigation", false) == true and #layout.properties > 10 then
 if propertyNum > 1 then
 propertyNum = math.floor((#layout.properties*propertyNum)*0.1)
-message(string.format("Percentage navigation to %u, ", propertyNum))
+--message(string.format("Percentage navigation to %u, ", propertyNum))
+percentageNavigationApplied = true
 end
 end
 if propertyNum <= #layout.properties then
@@ -580,6 +582,10 @@ if cfg == 2 or cfg == 3 then
 result((", %u of %u"):format(layout.pIndex, #layout.properties))
 end
 message(result, true)
+if percentageNavigationApplied then
+message = message:extract(true):gsub("(.+)([.])$", "%1")
+message = message..string.format(". Percentage navigation chosed property %u", propertyNum)
+end
 message:output()
 script_finish()
 end
