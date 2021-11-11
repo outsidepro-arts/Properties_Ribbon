@@ -65,7 +65,7 @@ else
 state = 0
 message("Minimum volume. ")
 end
-else
+elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Volume for master track", 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
 return "Canceled"
@@ -112,7 +112,7 @@ elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
-else
+elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Pan for master track", 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
@@ -158,7 +158,7 @@ elseif state < -1 then
 state = -1
 message("Minimum width. ")
 end
-else
+elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
@@ -196,9 +196,7 @@ end
 function muteProperty:set(action)
 local message = initOutputMessage()
 local states = {[0]="not muted", [1]="muted"}
-if action ~= nil then
-return "This property is toggleable only."
-end
+if action == actions.set.toggle then
 local _, state = reaper.GetTrackUIMute(master)
 if state == true then
 state = 0
@@ -208,6 +206,9 @@ end
 reaper.SetMediaTrackInfo_Value(master, "B_MUTE", state)
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- Solo methods
@@ -224,9 +225,7 @@ return message
 end
 
 function soloProperty:set(action)
-if action ~= nil then
-return "This property is adjustable only."
-end
+if action == actions.set.toggle then
 local message = initOutputMessage()
 local retval, soloInConfig = reaper.get_config_var_string("soloip")
 if retval then
@@ -241,6 +240,9 @@ end
 reaper.SetMediaTrackInfo_Value(master, "I_SOLO", state)
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- FX bypass methods
@@ -260,10 +262,8 @@ return message
 end
 
 function masterFXProperty:set(action)
+if action == actions.set.toggle then
 local message = initOutputMessage()
-if action ~= nil then
-return "This property is toggleable only."
-end
 if reaper.TrackFX_GetCount(master) > 0 then
 local state = utils.nor(reaper.GetToggleCommandState(16))
 reaper.Main_OnCommand(16, state)
@@ -272,6 +272,9 @@ else
 return "This property  is unavailable nowbecause no one FX in master track FX chain found."
 end
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- Mono/stereo methods
@@ -286,14 +289,15 @@ return message
 end
 
 function monoProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
-end
+if action == actions.set.toggle then
 local state = utils.nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
 -- OSARA reports this state by itself
 setUndoLabel(self:get())
 return
+else
+return "This property is toggleable only."
+end
 end
 
 -- Play rate methods
@@ -311,13 +315,13 @@ end
 function playrateProperty:set(action)
 local message = initOutputMessage()
 -- Cockos are surprisingly strange... There are is over two methods to get master playrate but no one method to set this. But we aren't offend!
-local actions= {
-{[false]=40525,[true]=40524},
-{[false]=40523, [true]=40522}
+local cmds= {
+{[actions.set.decrease]=40525,[actions.set.increase]=40524},
+{[actions.set.decrease]=40523, [actions.set.increase]=40522}
 }
 if action == actions.set.increase or action == actions.set.decrease then
-reaper.Main_OnCommand(actions[config.getinteger("rateStep", 1)][action], 0)
-else
+reaper.Main_OnCommand(cmds[config.getinteger("rateStep", 1)][action], 0)
+elseif action == actions.set.perform then
 message("Reset, ")
 reaper.Main_OnCommand(40521, 0)
 end
@@ -338,14 +342,15 @@ return message
 end
 
 function pitchPreserveProperty:set(action)
+if action == actions.set.toggle then
 local message = initOutputMessage()
-if action ~= nil then
-return "This property is toggleable only."
-end
 local state = utils.nor(reaper.GetToggleCommandState(40671))
 reaper.Main_OnCommand(40671, state)
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 
@@ -367,7 +372,7 @@ if action == actions.set.increase then
 reaper.Main_OnCommand(41129, 0)
 elseif action == actions.set.decrease then
 reaper.Main_OnCommand(41130, 0)
-else
+elseif action == actions.set.perform then
 reaper.Main_OnCommand(1134, 0)
 end
 -- OSARA provides the state value for tempo
@@ -403,9 +408,7 @@ return message
 end
 
 function tcpVisibilityProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
-end
+if action == actions.set.toggle then
 local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 if state == false then
@@ -415,6 +418,9 @@ end
 end
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- MCP visibility
@@ -445,14 +451,15 @@ return message
 end
 
 function mcpVisibilityProperty:set(action)
-if action ~= nil then
-return "This property is toggleable only."
-end
+if action == actions.set.toggle then
 local message = initOutputMessage()
 local state = self.getValue()
 self.setValue(utils.nor(state))
 message(self:get())
 return message
+else
+return "This property is toggleable only."
+end
 end
 
 -- Master track position in mixer panel
@@ -477,8 +484,8 @@ return 0
 end
 
 function masterTrackMixerPosProperty.setValue(value)
-local actions = {41610, 41636, 40389}
-reaper.Main_OnCommand (actions[value], 1)
+local cmds = {41610, 41636, 40389}
+reaper.Main_OnCommand (cmds[value], 1)
 end
 
 function masterTrackMixerPosProperty:get()
