@@ -168,7 +168,10 @@ parentLayout:registerSublayout("item", " Items")
 parentLayout:registerSublayout("take", "Item takes")
 
 -- Markers
-parentLayout:registerSublayout("marker", "Markers and regions")
+parentLayout:registerSublayout("marker", "Markers")
+
+-- Regions
+parentLayout:registerSublayout("region", "Regions")
 
 -- The creating new property macros
 -- Here a special case, so we will not  use the native layout's methods as is
@@ -595,6 +598,145 @@ message(string.format("Color blue intensity %u, closest color is %s", self.getVa
 return message
 end
 
+-- Apply the cosen color methods
+local applyColorProperty = {}
+registerProperty(applyColorProperty)
+applyColorProperty.states = {
+["track"] = "selected or last touched tracks",
+["item"] = "selected items",
+["take"] = "active take of selected items",
+["marker"] = "marker near cursor",
+["region"]="region near cursor"
+}
+
+function applyColorProperty.setValue(value)
+local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
+if sublayout == "track" then
+local tracks = nil
+if multiSelectionSupport == true then
+local countSelectedTracks = reaper.CountSelectedTracks(0)
+if countSelectedTracks > 1 then
+tracks = {}
+for i = 0, countSelectedTracks-1 do
+table.insert(tracks, reaper.GetSelectedTrack(0, i))
+end
+else
+tracks = reaper.GetSelectedTrack(0, 0)
+end
+else
+local lastTouched = reaper.GetLastTouchedTrack()
+if lastTouched ~= reaper.GetMasterTrack(0) then
+tracks = lastTouched
+end
+end
+if type(tracks) == "table" then
+for _, track in ipairs(tracks) do
+reaper.SetTrackColor(track, value)
+end
+return #tracks
+elseif type(tracks) == "userdata" then
+reaper.SetTrackColor(tracks, value)
+return 1
+else
+return
+end
+elseif sublayout == "item" then
+local items = nil
+if multiSelectionSupport == true then
+local countSelectedItems = reaper.CountSelectedMediaItems(0)
+if countSelectedItems > 1 then
+items = {}
+for i = 0, countSelectedItems-1 do
+table.insert(items, reaper.GetSelectedMediaItem(0, i))
+end
+else
+items = reaper.GetSelectedMediaItem(0, 0)
+end
+else
+items = reaper.GetSelectedMediaItem(0, 0)
+end
+if type(items) == "table" then
+for _, item in ipairs(items) do
+reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", value|0x100000)
+end
+return #items
+elseif type(items) == "userdata" then
+reaper.SetMediaItemInfo_Value(items, "I_CUSTOMCOLOR", value|0x100000)
+return 1
+end
+elseif sublayout == "take" then
+local takes = nil
+if multiSelectionSupport == true then
+local countSelectedItems = reaper.CountSelectedMediaItems(0)
+if countSelectedItems > 1 then
+takes = {}
+for i = 0, countSelectedItems-1 do
+table.insert(takes, reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)))
+end
+else
+takes = reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
+end
+else
+takes = reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
+end
+if type(takes) == "table" then
+for _, take in ipairs(takes) do
+reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", value|0x100000)
+end
+return #takes
+elseif type(takes) == "userdata" then
+reaper.SetMediaItemTakeInfo_Value(takes, "I_CUSTOMCOLOR", value|0x100000)
+return 1
+else
+return
+end
+elseif sublayout == "marker" then
+local markeridx, _ = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
+if markeridx then
+local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, markeridx)
+reaper.SetProjectMarker4(0, markrgnindexnumber, false, pos, 0, name, value|0x1000000, 0)
+return 1
+end
+return 
+elseif sublayout == "region" then
+local _, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
+if regionidx then
+local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, regionidx)
+reaper.SetProjectMarker4(0, markrgnindexnumber, true, pos, rgnend, name, value|0x1000000, 0)
+return 1
+end
+return
+end
+return
+end
+
+function applyColorProperty:get()
+local message = initOutputMessage()
+message:initType(string.format("Perform this property to apply composed color to %s.", self.states[sublayout]), "Performable")
+message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), self.states[sublayout]))
+return message
+end
+
+function applyColorProperty:set(action)
+if action == actions.set.perform then
+local message = initOutputMessage()
+local result = self.setValue(getColor())
+if result then
+message(string.format("%u %s colorized to %s color.", result, self.states[sublayout], colors:getName(reaper.ColorFromNative(getColor()))))
+else
+message(string.format("Could not colorize any %s.", self.states[sublayout]))
+end
+return message
+end
+return "This property performable only."
+end
+
+
+
+
+
+
+
 -- Grabbing a color from an elements methods
 local grabColorProperty = {}
 registerProperty(grabColorProperty)
@@ -602,7 +744,8 @@ grabColorProperty.states = {
 ["track"] = "last touched track",
 ["item"] = "first selected item",
 ["take"] = "active take of selected item",
-["marker"] = "marker or region near cursor"
+["marker"] = "marker near cursor",
+["region"]="region near cursor"
 }
 
 function grabColorProperty.getValue()
@@ -622,21 +765,16 @@ return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(reaper.GetSelected
 end
 return nil
 elseif sublayout == "marker" then
-local markeridx, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
+local markeridx, _ = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 if markeridx then
 local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, markeridx)
 return color
-elseif regionidx then
-local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
-return color
-elseif markeridx and regionidx then
-if reaper.ShowMessageBox('This position contains both a marker and a region. Press \"Yes\" button to grab a color from current marker and \"No\" button for grab a color from region. ', "Make a choice", 4) == 6 then
-local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, markeridx)
-return color
-else
-local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
-return color
 end
+elseif sublayout == "region" then
+local _, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
+if regionidx then
+local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
+return color
 end
 return nil
 end
