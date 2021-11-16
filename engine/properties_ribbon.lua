@@ -606,7 +606,23 @@ script_finish()
 end
 
 function script_reportLayout()
-(composeSubLayout()):output()
+local message = initOutputMessage()
+if (layout.nextSubLayout or layout.previousSubLayout) then
+message(string.format("%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
+else
+message(string.format("%s layout", layout.name))
+end
+message(" currently loaded, ")
+if (layout.nextSubLayout or layout.previousSubLayout) then
+message(string.format(" this category encountered as  %u of all %u categor%s", layout.slIndex, layout.ofCount, ({[false]="y",[true]="ies"})[(layout.ofCount > 1)]))
+end
+if #layout.properties > 0 then
+message(string.format(", summary here is %u propert%s", #layout.properties, ({[false]="y",[true]="ies"})[(#layout.properties > 1)]))
+else
+message(", here is no properties")
+end
+message(".")
+message:output()
 end
 
 function script_finish()
