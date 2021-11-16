@@ -85,17 +85,6 @@ end
 return message:extract()
 end
 
-
-
--- Reading the color from color composer specified section
-local function getItemComposedColor()
-return extstate.colcom_item_curValue
-end
-
-local function getTakeComposedColor()
-return extstate.colcom_take_curValue
-end
-
 -- The macros for compose when group of items selected
 local function composeMultipleItemMessage(func, states, inaccuracy)
 inaccuracy = inaccuracy or 0

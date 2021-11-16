@@ -37,11 +37,6 @@ end
 end
 end
 
--- Reading the color from color composer specified section
-local function getTrackComposedColor()
-return extstate.colcom_track_curValue
-end
-
 
 -- We have to define the track reporting by configuration
 local function getTrackID(track)
