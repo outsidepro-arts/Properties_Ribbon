@@ -251,6 +251,9 @@ function composeSubLayout()
 local message = initOutputMessage()
 if (layout.nextSubLayout or layout.previousSubLayout) then
 message(string.format("%s of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
+if string.match(layout.section, "[.](.+)$") == layout.defaultSublayout then
+message(" (default)")
+end
 else
 message(layout.name)
 end
