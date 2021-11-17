@@ -214,9 +214,10 @@ ofCount = 0,
 -- slID (string) - the ID of sublayout in parent layout
 -- slName (string) - The sub-name of the sublayout which will be reported in main class format name
 registerSublayout = function(self, slID, slName)
+local parentName = self.name
 self[slID] = setmetatable({
 subname = slName,
-section = utils.removeSpaces(string.format(self.name, slName)),
+section = string.format("%s.%s", utils.removeSpaces(parentName), slID),
 properties = {}
 }, {
 __index = self})
