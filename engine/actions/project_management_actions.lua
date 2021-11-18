@@ -21,8 +21,8 @@ function projectLayout.canProvide()
 return true
 end
 
-projectLayout:registerProperty(getUsualProperty(40021, "Project settings"))
-projectLayout:registerProperty(getUsualProperty(40015, "Render project to disk"))
-projectLayout:registerProperty(getUsualProperty(40098, "Clean current project directory"))
+projectLayout:registerProperty(composeSimpleProperty(40021, "Project settings"))
+projectLayout:registerProperty(composeSimpleProperty(40015, "Render project to disk"))
+projectLayout:registerProperty(composeSimpleProperty(40098, "Clean current project directory"))
 
 return projectLayout

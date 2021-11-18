@@ -30,9 +30,9 @@ end
 
 -- The properties functions template
 
-insertionLayout:registerProperty(getUsualProperty(40214, "Insert new MIDI item"))
-insertionLayout:registerProperty(getUsualProperty(40142, "Insert empty item"))
-insertionLayout:registerProperty(getUsualProperty(41748, "Insert time on tracks and paste items"))
-insertionLayout:registerProperty(getUsualProperty(42069, "Insert or extend MIDI items to fill time selection"))
+insertionLayout:registerProperty(composeSimpleProperty(40214, "Insert new MIDI item"))
+insertionLayout:registerProperty(composeSimpleProperty(40142, "Insert empty item"))
+insertionLayout:registerProperty(composeSimpleProperty(41748, "Insert time on tracks and paste items"))
+insertionLayout:registerProperty(composeSimpleProperty(42069, "Insert or extend MIDI items to fill time selection"))
 
 return insertionLayout
