@@ -447,7 +447,7 @@ state = 0
 message("Minimum volume. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks)), 1, prepareUserData.db.formatCaption, representation.db[state])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
 return "Canceled"
 end
@@ -531,7 +531,7 @@ state = -1
 message("Left boundary. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
@@ -613,7 +613,7 @@ state = -1
 message("Minimum width. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end

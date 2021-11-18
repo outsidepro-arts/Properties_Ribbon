@@ -439,7 +439,7 @@ self.setValue(items, 0)
 message("Minimum volume.")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
 end
@@ -1835,7 +1835,7 @@ message("Minimum volume. ")
 end
 self.setValue(items, state)
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
 end
@@ -1932,7 +1932,7 @@ state = -1
 message("Left boundary. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
@@ -2324,7 +2324,7 @@ local state = self.getValue(items)
 if action == actions.set.increase or action == actions.set.decrease then
 state = state+ajustingValue
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items), getItemID(items)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
+local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
 return "Canceled"
 end
