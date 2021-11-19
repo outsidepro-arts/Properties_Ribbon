@@ -47,11 +47,14 @@ return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
 end
 
 -- We should obey the configuration to report the take's name
-local function getItemID(item)
+local function getItemID(item, shouldSilentColor)
+shouldSilentColor = shouldSilentColor or false
 local message = initOutputMessage()
+if shouldSilentColor == false then
 local color = reaper.GetDisplayedMediaItemColor(item)
 if color ~= 0 then
 message(colors:getName(reaper.ColorFromNative(color)).." ")
+end
 end
 local idmsg = "Item %u"
 if #message > 0 then
@@ -61,7 +64,8 @@ message(idmsg:format(getItemNumber(item)))
 return message:extract()
 end
 
-local function getTakeID(item)
+local function getTakeID(item, shouldSilentColor)
+shouldSilentColor = shouldSilentColor or false
 local message = initOutputMessage()
 local cfg = config.getboolean("reportName", false)
 if cfg == true then
@@ -78,9 +82,11 @@ end
 else
 message(("take %u"):format(getTakeNumber(item)))
 end
+if shouldSilentColor == false then
 local color = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
 if color ~= 0 then
 message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
+end
 end
 return message:extract()
 end
@@ -439,7 +445,7 @@ self.setValue(items, 0)
 message("Minimum volume.")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
 end
@@ -1835,7 +1841,7 @@ message("Minimum volume. ")
 end
 self.setValue(items, state)
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
 end
@@ -1932,7 +1938,7 @@ state = -1
 message("Left boundary. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
@@ -2324,7 +2330,7 @@ local state = self.getValue(items)
 if action == actions.set.increase or action == actions.set.decrease then
 state = state+ajustingValue
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items):gsub("^%w", string.lower), getItemID(items):gsub("^%w", string.lower)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
+local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
 return "Canceled"
 end

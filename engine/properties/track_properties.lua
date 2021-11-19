@@ -39,7 +39,8 @@ end
 
 
 -- We have to define the track reporting by configuration
-local function getTrackID(track)
+local function getTrackID(track, shouldSilentColor)
+shouldSilentColor = shouldSilentColor or false
 local message = initOutputMessage()
 local states = {
 [0]="track ",
@@ -88,11 +89,13 @@ end
 else
 message(string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")))
 end
+if shouldSilentColor == false then
 local color = reaper.GetTrackColor(track)
 if color ~= 0 then
 message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
 end
 message.msg = message.msg:gsub("^%w", string.upper)
+end
 return message:extract()
 end
 
@@ -447,7 +450,7 @@ state = 0
 message("Minimum volume. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
 return "Canceled"
 end
@@ -531,7 +534,7 @@ state = -1
 message("Left boundary. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
@@ -613,7 +616,7 @@ state = -1
 message("Minimum width. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end
