@@ -216,6 +216,7 @@ ofCount = 0,
 registerSublayout = function(self, slID, slName)
 local parentName = self.name
 self[slID] = setmetatable({
+type="sublayout",
 subname = slName,
 section = string.format("%s.%s", utils.removeSpaces(parentName), slID),
 properties = {}
@@ -249,7 +250,7 @@ end
 
 function composeSubLayout()
 local message = initOutputMessage()
-if (layout.nextSubLayout or layout.previousSubLayout) then
+if layout.type == "sublayout" then
 message(string.format("%s of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
 if string.match(layout.section, "[.](.+)$") == layout.defaultSublayout then
 message(" (default)")
@@ -259,7 +260,7 @@ message(layout.name)
 end
 message(", ")
 local cfg = config.getinteger("reportPos", 3)
-if (cfg == 1 or cfg == 3) and (layout.nextSubLayout or layout.previousSubLayout) then
+if (cfg == 1 or cfg == 3) and (layout.type == "sublayout") then
 message(string.format(" %u of %u, ", layout.slIndex, layout.ofCount))
 end
 return message:extract()
@@ -328,7 +329,7 @@ function isHasSublayouts(lt)
 if not lt.properties then
 for _, field in pairs(lt) do
 if type(field) == "table" then
-if (field.nextSubLayout or field.previousSubLayout) and field.properties then
+if field.type == "sublayout" then
 return true
 end
 end
@@ -342,8 +343,8 @@ end
 function findDefaultSublayout(lt)
 for fieldName, field in pairs(lt) do
 if type(field) == "table" then
-if field.properties then
-if not field.previousSubLayout and field.nextSubLayout then
+if field.type == "sublayout" then
+if not field.previousSubLayout or field.nextSubLayout then
 return fieldName
 end
 end
@@ -432,7 +433,7 @@ restorePreviousLayout()
 script_finish()
 return
 end
-if layout.nextSubLayout or layout.previousSubLayout then
+if layout.type == "sublayout" then
 if action == actions.sublayout_next then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
@@ -611,13 +612,13 @@ end
 
 function script_reportLayout()
 local message = initOutputMessage()
-if (layout.nextSubLayout or layout.previousSubLayout) then
+if layout.type == "sublayout" then
 message(string.format("%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
 else
 message(string.format("%s layout", layout.name))
 end
 message(" currently loaded, ")
-if (layout.nextSubLayout or layout.previousSubLayout) then
+if layout.type == "sublayout" then
 message(string.format(" this category encountered as  %u of all %u categor%s", layout.slIndex, layout.ofCount, ({[false]="y",[true]="ies"})[(layout.ofCount > 1)]))
 end
 if #layout.properties > 0 then
