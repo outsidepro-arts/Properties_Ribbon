@@ -344,7 +344,7 @@ function findDefaultSublayout(lt)
 for fieldName, field in pairs(lt) do
 if type(field) == "table" then
 if field.type == "sublayout" then
-if not field.previousSubLayout or field.nextSubLayout then
+if field.slIndex == 1 then
 return fieldName
 end
 end
