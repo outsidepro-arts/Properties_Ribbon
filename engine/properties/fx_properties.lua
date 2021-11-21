@@ -27,7 +27,7 @@ _contextObj = {
 [0]=function() return reaper.GetLastTouchedTrack() end,
 [1]=function()
 if reaper.GetSelectedMediaItem(0, 0) then
-reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
+return reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
 end
 return nil
 end
@@ -69,7 +69,19 @@ capi.GetParamName(fxIndex, parmIndex)
 ```
 ]]--
 
-local fxLayout = initLayout(string.format("%s FX properties", ({[0]="Track",[1]="Take"})[context]))
+-- Find the appropriated context prompt for newly created layout
+local contextPrompt = nil
+if context == 0 then
+if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
+contextPrompt = "Master track"
+else
+contextPrompt = "Track"
+end
+elseif context == 1 then
+contextPrompt = "Take"
+end
+
+local fxLayout = initLayout(string.format("%s FX properties", contextPrompt))
 
 function fxLayout.canProvide()
 if context == 0 or context == 1 then
