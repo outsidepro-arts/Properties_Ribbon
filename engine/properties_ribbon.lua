@@ -27,6 +27,8 @@ representation = require "representations"
 -- The preparation of typed data by an user when sets the custom values using input dialogs
 prepareUserData = require "preparation"
 
+-- Search utilities
+searcher = require"searcher"
 
 -- Actions for set methods or some another cases
 actions = {
