@@ -192,6 +192,19 @@ return message
 end
 })
 end
+-- Since the sublayouts and its properties are dynamical at this case, we have to make a little hack with to avoid the call of not existing properties and sublayouts.
+setmetatable(fxLayout[sid].properties, {
+__index = function(self, key)
+fxLayout.pIndex = #fxLayout[sid].properties
+return fxLayout[sid].properties[#fxLayout[sid].properties]
+end
+})
+end
+end
+
+if fxLayout.canProvide() then
+if fxLayout[currentSublayout] == nil then
+currentSublayout = findDefaultSublayout(fxLayout)
 end
 end
 
