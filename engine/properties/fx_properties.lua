@@ -38,14 +38,17 @@ _contextPrefix = {
 }
 }, {
 __index = function(self, key)
-if reaper[self._contextPrefix[context]..key] then
 return function(...)
-if reaper[self._contextPrefix[context]..key] then
- return reaper[self._contextPrefix[context]..key](self._contextObj[context](), ...)
- else
+if reaper.APIExists(self._contextPrefix[context]..key) then
+return reaper[self._contextPrefix[context]..key](self._contextObj[context](), ...)
+else
+if context == 0 and key:find("Envelope") then
+ if reaper[key] then
+ return reaper[key](self._contextObj[context](), ...)
+end 
+end
  error(string.format("Contextual API wasn't found method %s", self._contextPrefix[context]..key))
  end
-end
 end
 end
 })
@@ -108,18 +111,19 @@ sm_labels = {
 "Set minimal parameter value",
 "Set maximal parameter value",
 "Type raw parameter data",
-"Search for parameter value"
+"Search for parameter value",
+"Create envelope with this parameter"
 },
 fxIndex=i,
-parmIndex = tonumber(k),
+parmIndex = k,
 get = function(self, shouldSaveMode)
 local message = initOutputMessage()
-local mode = layoutExtstate.fxParmMode
+local mode = extstate._layout.fxParmMode
 shouldSaveMode = shouldSaveMode or false
 if shouldSaveMode == false then
 if mode and mode > 0 then
 message("Adjusting mode. ")
-layoutExtstate.fxParmMode = nil
+extstate._layout.fxParmMode = nil
 mode = nil
 end
 end
@@ -128,7 +132,7 @@ if mode > 0 then
 message:initType("Adjust this property to choose needed setting mode for this parameter. Perform this property to activate selected setting.", "Adjustable, performable")
 message(self.sm_labels[mode])
 elseif mode == 0 then
-message:initType("Adjust this property to set necessary value for this parameter.", "Adjustable")
+message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
 message(string.format("Parameter %u ", self.parmIndex+1))
 message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2].." ")
 local retval, state = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
@@ -143,7 +147,7 @@ return message
 end,
 set = function(self, action)
 local message = initOutputMessage()
-local mode = layoutExtstate.fxParmMode or 0
+local mode = extstate._layout.fxParmMode or 0
 if mode == 0 then
 local ajustingValue = config.getinteger("fxParmStep", 0.00001)
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
@@ -222,7 +226,7 @@ end
 end
 elseif action == actions.set.toggle then
 message("Setting mode.")
-layoutExtstate.fxParmMode = 1
+extstate._layout.fxParmMode = 1
 message(self:get(true), true)
 return message
 end
@@ -231,20 +235,20 @@ return message
 elseif mode > 0 then
 if action == actions.set.increase then
 if (mode+1) <= #self.sm_labels then
-layoutExtstate.fxParmMode = mode+1
+extstate._layout.fxParmMode = mode+1
 else
 message("No more next parameter settings.")
 end
 elseif action == actions.set.decrease then
 if (mode-1) > 0 then
-layoutExtstate.fxParmMode = mode-1
+extstate._layout.fxParmMode = mode-1
 else
 message("No more previous parameter settings.")
 end
 elseif action == actions.set.perform then
 if mode == 1 then
 message("Adjusting mode. ")
-layoutExtstate.fxParmMode = 0
+extstate._layout.fxParmMode = 0
 message(self:get())
 return message
 elseif mode == 2 then
@@ -271,6 +275,10 @@ local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmInde
 if retval then
 local retval, answer = reaper.GetUserInputs("Search parameter value", 1, "Type either a part of value string or full string:", curValue)
 if retval then
+if not extstate._layout._forever.searchProcessNotify then
+reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
+extstate._layout._forever.searchProcessNotify = true
+end
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
 local searchState = minState
@@ -296,9 +304,28 @@ capi.EndParamEdit(self.fxIndex, self.parmIndex)
 return
 end
 end
-end
 else
-return "This setting is currently unavailable because here's no string  value."
+return "This setting is currently cannot be performed because here's no string  value."
+end
+elseif mode == 6 then
+if capi.GetFXEnvelope(self.fxIndex, self.parmIndex, true) then
+local fxParmName = ({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2]
+local obj = capi._contextObj[context]()
+local name = nil
+if context == 0 then
+local retval, buf = reaper.GetTrackName(obj)
+if retval then
+name = buf
+end
+elseif context == 1 then
+local retval, buf = reaper.GetSetMediaItemTakeInfo_String(obj, "P_NAME", "", false)
+if retval then
+name = buf
+end
+end
+setUndoLabel(self:get(true))
+return string.format("The envelope for %s created on %s %s.", fxParmName, contextPrompt:lower(), name)
+end
 end
 end
 message(self:get(true))
