@@ -195,7 +195,16 @@ local parentLayout = initLayout("Item and take properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
-return (reaper.CountSelectedMediaItems(0) > 0)
+-- We do not support the empty lanes
+local itemsCount = reaper.CountSelectedMediaItems(0)
+local isEmptyLanes = false
+for i = 0, itemsCount-1 do
+if reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)) == nil then
+isEmptyLanes = true
+break
+end
+end
+return (itemsCount > 0 and isEmptyLanes == false)
 end
 
 -- sublayouts
@@ -1718,16 +1727,33 @@ else
 local state = self.getValue(items)
 local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
 if action == actions.set.increase then
-if idx+1 < reaper.CountTakes(items) then
-state = reaper.GetTake(items, idx+1)
-else
+local takesCount = reaper.CountTakes(items)
+for i = idx+1, takesCount do
+local curTake = reaper.GetTake(items, i)
+if curTake then
+state = curTake
+break
+end
+if i+1 >= takesCount then
 message("No more next property values. ")
+if curTake then
+state = curTake
+end
+end
 end
 elseif action == actions.set.decrease then
-if idx-1 >= 0 then
-state = reaper.GetTake(items, idx-1)
-else
+for i = idx-1, 0, -1 do
+local curTake = reaper.GetTake(items, i)
+if curTake then
+state = curTake
+break
+end
+if i-1 == -1 then
 message("No more previous property values. ")
+if curTake then
+state = curTake
+end
+end
 end
 end
 self.setValue(items, state)
