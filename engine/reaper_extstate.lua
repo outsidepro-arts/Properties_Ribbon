@@ -6,6 +6,8 @@ Allows to interract with ReaScript Extstate functions such as reaper.GetExtState
 The metatable has two specific fields:
 _section: The group section in extstate. First parameter in any ExtState function. You have to assign this field before interract with metatable. This field never resets.
 _forever: If you will try to assign any extstate key and value through this field, the it will stored physicaly in respective INI-file. Reading a value through this field will redirected to uplevel table. In other cases this table looks like usual table.
+_layout: This is a copy of uplevel table, but it especialized for layouts use. This table calls the uplevel metatable methods and passes there specified unique string key, which differents the values from layout to layout. Please note: you have to layout or sublayout initialized to use this field.
+
 Usualy Extstate values stores  as string type. The metatable tries to convert it to appropriate type before return the value. The metatable supports the following types:
 string
 number
@@ -15,7 +17,10 @@ nil (when reading from, it means that no any value for this key read. When assig
 
 local extstate = {
 _section = "",
-_forever ={}
+_forever ={},
+_layout = {
+_forever = {}
+}
 }
 
 
@@ -51,7 +56,23 @@ reaper.SetExtState(self._section, key, tostring(value), true)
 end
 end
 
+function extstate._layout.__index(self, key)
+return extstate[string.format("%s.%s", layout.section, key)]
+end
+
+function extstate._layout.__newindex(self, key, value)
+extstate[string.format("%s.%s", layout.section, key)] = value
+end
+
+extstate._layout._forever.__index = extstate._layout
+
+function extstate._layout._forever.__newindex(self, key, value)
+extstate._forever[string.format("%s.%s", layout.section, key)] = value
+end
+
 setmetatable(extstate, extstate)
 setmetatable(extstate._forever, extstate._forever)
+setmetatable(extstate._layout, extstate._layout)
+setmetatable(extstate._layout._forever, extstate._layout._forever)
 
 return extstate
