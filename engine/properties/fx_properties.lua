@@ -19,6 +19,17 @@ After this preambula, let me begin.
 -- get current navigation context
 local context = reaper.GetCursorContext()
 
+
+-- Steps list for adjusting (will be defined using configuration)
+local stepsList = {
+{label="smallest",value=0.000001}, -- less smallest step causes the REAPER freezes
+{label="small",value=0.00001},
+{label="medium",value=0.0001},
+{label="big",value=0.001},
+{label="biggest",value=0.01},
+{label="huge",value=0.1}
+}
+
 -- API simplification to make calls as contextual
 -- capi stands for "contextual API"
 local capi = setmetatable({
@@ -72,6 +83,28 @@ capi.GetParamName(fxIndex, parmIndex)
 ```
 ]]--
 
+-- Some internal functions
+local function makeUniqueKey(fxID, fxParm)
+local firstPart, lastPart = nil
+local retval, fxName = capi.GetFXName(fxID, "")
+if retval then
+firstPart = utils.removeSpaces(fxName)
+end
+local retval, parmName = capi.GetParamName(fxID, fxParm, "")
+if retval then
+secondPart = utils.removeSpaces(parmName)
+end
+return string.format("%s.%s", firstPart, secondPart)
+end
+
+local function getStep(uniqueKey)
+return extstate._layout[uniqueKey..".parmStep"]
+end
+
+local function setStep(uniqueKey, value)
+extstate._layout._forever[uniqueKey..".parmStep"] = value
+end
+
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
 if context == 0 then
@@ -110,6 +143,7 @@ sm_labels = {
 "Switch to adjusting mode",
 "Set minimal parameter value",
 "Set maximal parameter value",
+"Set adjusting step for this parameter (currently %s)",
 "Type raw parameter data",
 "Search for parameter value",
 "Create envelope with this parameter"
@@ -130,7 +164,12 @@ end
 mode = mode or 0
 if mode > 0 then
 message:initType("Adjust this property to choose needed setting mode for this parameter. Perform this property to activate selected setting.", "Adjustable, performable")
+if mode == 4 then
+local stepsDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+message(self.sm_labels[mode]:format(stepsList[stepsDefinition].label))
+else
 message(self.sm_labels[mode])
+end
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
 message(string.format("Parameter %u ", self.parmIndex+1))
@@ -149,7 +188,8 @@ set = function(self, action)
 local message = initOutputMessage()
 local mode = extstate._layout.fxParmMode or 0
 if mode == 0 then
-local ajustingValue = config.getinteger("fxParmStep", 0.00001)
+local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
 if action == actions.set.increase then
@@ -264,13 +304,22 @@ capi.EndParamEdit(self.fxIndex, self.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 message(string.format("%s is set", curValue))
 elseif mode == 4 then
+local curStepIndex = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+if (curStepIndex+1) <= #stepsList then
+curStepIndex = curStepIndex+1
+else
+curStepIndex = 1
+end
+setStep(makeUniqueKey(self.fxIndex, self.parmIndex), curStepIndex)
+return stepsList[curStepIndex].label
+elseif mode == 5 then
 local state = capi.GetParamNormalized(self.fxIndex, self.parmIndex)
 local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:", tostring(utils.round(state, 5)))
 if retval then
 capi.SetParam(self.fxIndex, self.parmIndex, tonumber(answer))
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 end
-elseif mode == 5 then
+elseif mode == 6 then
 local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
 local retval, answer = reaper.GetUserInputs("Search parameter value", 1, "Type either a part of value string or full string:", curValue)
@@ -307,7 +356,7 @@ end
 else
 return "This setting is currently cannot be performed because here's no string  value."
 end
-elseif mode == 6 then
+elseif mode == 7 then
 if capi.GetFXEnvelope(self.fxIndex, self.parmIndex, true) then
 local fxParmName = ({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2]
 local obj = capi._contextObj[context]()
