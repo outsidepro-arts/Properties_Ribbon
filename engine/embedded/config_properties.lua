@@ -613,4 +613,47 @@ return "This property is toggleable only."
 end
 end
 
+local fxParmstepProperty = {}
+configLayout.stepAdjustment:registerProperty(fxParmstepProperty)
+fxParmstepProperty.states = {
+"smallest",
+"small",
+"medium",
+"big",
+"biggest",
+"huge"
+}
+
+function fxParmstepProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.", "Adjustable")
+local state = config.getinteger("fxParmStep", 1)
+message(string.format("FX parameters step adjustment %s", self.states[state]))
+return message
+end
+
+function fxParmstepProperty:set(action)
+local message = initOutputMessage()
+local state = config.getinteger("fxParmStep", 1)
+if action == actions.set.increase then
+if (state+1) <= #self.states then
+config.setinteger("fxParmStep", state+1)
+else
+message("No more next property values.")
+end
+elseif action == actions.set.decrease then
+if (state-1) >= 1 then
+config.setinteger("fxParmStep", state-1)
+else
+message("No more previous property values.")
+end
+else
+return "This property adjustable only."
+end
+message(self:get())
+return message
+end
+
+
+
 return configLayout
