@@ -20,6 +20,9 @@ _section = "",
 _forever ={},
 _layout = {
 _forever = {}
+},
+_sublayout = {
+_forever = {}
 }
 }
 
@@ -57,16 +60,30 @@ end
 end
 
 function extstate._layout.__index(self, key)
-return extstate[string.format("%s.%s", layout.section, key)]
+return extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)]
 end
 
 function extstate._layout.__newindex(self, key, value)
-extstate[string.format("%s.%s", layout.section, key)] = value
+extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
 end
 
 extstate._layout._forever.__index = extstate._layout
 
 function extstate._layout._forever.__newindex(self, key, value)
+extstate._forever[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
+end
+
+function extstate._sublayout.__index(self, key)
+return extstate[string.format("%s.%s", layout.section, key)]
+end
+
+function extstate._sublayout.__newindex(self, key, value)
+extstate[string.format("%s.%s", layout.section, key)] = value
+end
+
+extstate._sublayout._forever.__index = extstate._sublayout
+
+function extstate._sublayout._forever.__newindex(self, key, value)
 extstate._forever[string.format("%s.%s", layout.section, key)] = value
 end
 
@@ -74,5 +91,8 @@ setmetatable(extstate, extstate)
 setmetatable(extstate._forever, extstate._forever)
 setmetatable(extstate._layout, extstate._layout)
 setmetatable(extstate._layout._forever, extstate._layout._forever)
+setmetatable(extstate._sublayout, extstate._sublayout)
+setmetatable(extstate._sublayout._forever, extstate._sublayout._forever)
+
 
 return extstate
