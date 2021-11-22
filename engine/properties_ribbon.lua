@@ -45,16 +45,6 @@ sublayout_prev = 0x000010
 }
 
 
--- The local extstate for layouts
-layoutExtstate = setmetatable({}, {
-__index = function(self, key)
-return extstate[string.format("%s.%s", layout.section, key)]
-end,
-__newindex = function(self, key, value)
-extstate[string.format("%s.%s", layout.section, key)] = value
-end
-})
-
 -- Little injections
 -- Make string type as outputable to OSARA directly
 function string:output()
