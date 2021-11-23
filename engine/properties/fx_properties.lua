@@ -98,7 +98,7 @@ return string.format("%s.%s", firstPart, secondPart)
 end
 
 local function getStep(uniqueKey)
-return extstate._layout["fx."..uniqueKey..".parmStep"]
+return extstate._layout["fx."..uniqueKey..".parmStep"] or config.getinteger("fxParmStep", 4)
 end
 
 local function setStep(uniqueKey, value)
@@ -306,14 +306,129 @@ if shouldBeExcluded(i+fxInaccuracy, k) then
 goto continue
 end
 fxLayout[sid]:registerProperty({
-sm_labels = {
-"Switch to adjusting mode",
-"Set minimal parameter value",
-"Set maximal parameter value",
-"Set adjusting step for this parameter (currently %s)",
-"Type raw parameter data",
-"Search for parameter value",
-"Create envelope with this parameter"
+settingModes = {
+{
+label="Switch to adjusting mode",
+proc = function(obj)
+-- The setting mode will be reset if get method called without any parameters.
+return true, obj:get()
+end
+},
+{
+label="Set minimal parameter value",
+proc=function(obj)
+local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
+capi.SetParam(obj.fxIndex, obj.parmIndex, minState)
+capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
+return ffalse, string.format("%s is set", curValue)
+end
+},
+{
+label="Set maximal parameter value",
+proc=function(obj)
+local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
+capi.SetParam(obj.fxIndex, obj.parmIndex, maxState)
+capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
+return false, string.format("%s is set", curValue)
+end
+},
+{
+label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
+proc=function(obj)
+local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))
+if (curStepIndex+1) <= #stepsList then
+curStepIndex = curStepIndex+1
+else
+if curStepIndex == #stepsList then
+setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), nil)
+return true, "default step adjustment"
+else
+curStepIndex = 1
+end
+end
+setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), curStepIndex)
+return true, stepsList[curStepIndex].label
+end
+},
+{
+label="Type raw parameter data",
+proc=function(obj)
+local state = capi.GetParamNormalized(obj.fxIndex, obj.parmIndex)
+local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:", tostring(utils.round(state, 5)))
+if retval then
+capi.SetParam(obj.fxIndex, obj.parmIndex, tonumber(answer))
+capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+end
+return true, obj:get()
+end
+},
+{
+label="Search for parameter value",
+proc=function(obj)
+local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
+if retval then
+local retval, answer = reaper.GetUserInputs("Search parameter value", 1, "Type either a part of value string or full string:", curValue)
+if retval then
+if not extstate._layout._forever.searchProcessNotify then
+reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
+extstate._layout._forever.searchProcessNotify = true
+end
+local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
+local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(obj.fxIndex, obj.parmIndex)
+local searchState = minState
+while searchState < maxState do
+searchState = searchState+0.000001
+capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
+local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
+if wretval then
+if searcher.simpleSearch(wfxValue, answer) then
+state = searchState
+capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+break
+end
+else
+reaper.ShowMessageBox("The parameter values suddenly have lost any string representation.", "Search error", 0)
+break
+end
+end
+if searchState ~= state then
+reaper.ShowMessageBox(string.format("No any parameter value with %s query.", answer), "No results", 0)
+capi.SetParam(obj.fxIndex, obj.parmIndex, state)
+capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+return true
+end
+end
+else
+return true, "This setting is currently cannot be performed because here's no string  value."
+end
+return true, obj:get()
+end
+},
+{
+label="Create envelope with this parameter",
+proc=function(obj)
+if capi.GetFXEnvelope(obj.fxIndex, obj.parmIndex, true) then
+local fxParmName = ({capi.GetParamName(obj.fxIndex, obj.parmIndex, "")})[2]
+local obj = capi._contextObj[context]()
+local name = nil
+if context == 0 then
+local retval, buf = reaper.GetTrackName(obj)
+if retval then
+name = buf
+end
+elseif context == 1 then
+local retval, buf = reaper.GetSetMediaItemTakeInfo_String(obj, "P_NAME", "", false)
+if retval then
+name = buf
+end
+end
+setUndoLabel(obj:get(true))
+return true, string.format("The envelope for %s created on %s %s.", fxParmName, contextPrompt:lower(), name)
+end
+end
+}
 },
 parmNum = #fxLayout[sid].properties,
 fxIndex=i+fxInaccuracy,
@@ -332,12 +447,7 @@ end
 mode = mode or 0
 if mode > 0 then
 message:initType("Adjust this property to choose needed setting mode for this parameter. Perform this property to activate selected setting.", "Adjustable, performable")
-if mode == 4 then
-local stepsDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 4)
-message(self.sm_labels[mode]:format(stepsList[stepsDefinition].label))
-else
-message(self.sm_labels[mode])
-end
+message(self.settingModes[mode].label)
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
 message(string.format("Parameter %u ", self.parmNum))
@@ -356,7 +466,7 @@ set = function(self, action)
 local message = initOutputMessage()
 local mode = extstate._layout.fxParmMode or 0
 if mode == 0 then
-local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 4)
+local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex))
 local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
@@ -442,7 +552,7 @@ message(self:get())
 return message
 elseif mode > 0 then
 if action == actions.set.increase then
-if (mode+1) <= #self.sm_labels then
+if (mode+1) <= #self.settingModes then
 extstate._layout.fxParmMode = mode+1
 else
 message("No more next parameter settings.")
@@ -454,100 +564,11 @@ else
 message("No more previous parameter settings.")
 end
 elseif action == actions.set.perform then
-if mode == 1 then
-message("Adjusting mode. ")
-extstate._layout.fxParmMode = 0
-message(self:get())
-return message
-elseif mode == 2 then
-local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
-capi.SetParam(self.fxIndex, self.parmIndex, minState)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-message(string.format("%s is set", curValue))
-elseif mode == 3 then
-local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
-capi.SetParam(self.fxIndex, self.parmIndex, maxState)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-message(string.format("%s is set", curValue))
-elseif mode == 4 then
-local curStepIndex = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 4)
-if (curStepIndex+1) <= #stepsList then
-curStepIndex = curStepIndex+1
+local result, str = self.settingModes[mode].proc(self)
+if result == true then
+return str
 else
-if curStepIndex == #stepsList then
-setStep(makeUniqueKey(self.fxIndex, self.parmIndex), nil)
-return "default step adjustment"
-else
-curStepIndex = 1
-end
-end
-setStep(makeUniqueKey(self.fxIndex, self.parmIndex), curStepIndex)
-return stepsList[curStepIndex].label
-elseif mode == 5 then
-local state = capi.GetParamNormalized(self.fxIndex, self.parmIndex)
-local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:", tostring(utils.round(state, 5)))
-if retval then
-capi.SetParam(self.fxIndex, self.parmIndex, tonumber(answer))
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-end
-elseif mode == 6 then
-local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-if retval then
-local retval, answer = reaper.GetUserInputs("Search parameter value", 1, "Type either a part of value string or full string:", curValue)
-if retval then
-if not extstate._layout._forever.searchProcessNotify then
-reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
-extstate._layout._forever.searchProcessNotify = true
-end
-local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
-local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
-local searchState = minState
-while searchState < maxState do
-searchState = searchState+0.000001
-capi.SetParam(self.fxIndex, self.parmIndex, searchState)
-local wretval, wfxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex)
-if wretval then
-if searcher.simpleSearch(wfxValue, answer) then
-state = searchState
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-break
-end
-else
-reaper.ShowMessageBox("The parameter values suddenly have lost any string representation.", "Search error", 0)
-break
-end
-end
-if searchState ~= state then
-reaper.ShowMessageBox(string.format("No any parameter value with %s query.", answer), "No results", 0)
-capi.SetParam(self.fxIndex, self.parmIndex, state)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-return
-end
-end
-else
-return "This setting is currently cannot be performed because here's no string  value."
-end
-elseif mode == 7 then
-if capi.GetFXEnvelope(self.fxIndex, self.parmIndex, true) then
-local fxParmName = ({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2]
-local obj = capi._contextObj[context]()
-local name = nil
-if context == 0 then
-local retval, buf = reaper.GetTrackName(obj)
-if retval then
-name = buf
-end
-elseif context == 1 then
-local retval, buf = reaper.GetSetMediaItemTakeInfo_String(obj, "P_NAME", "", false)
-if retval then
-name = buf
-end
-end
-setUndoLabel(self:get(true))
-return string.format("The envelope for %s created on %s %s.", fxParmName, contextPrompt:lower(), name)
-end
+message(str)
 end
 end
 message(self:get(true))
