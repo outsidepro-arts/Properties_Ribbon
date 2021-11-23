@@ -98,11 +98,11 @@ return string.format("%s.%s", firstPart, secondPart)
 end
 
 local function getStep(uniqueKey)
-return extstate._layout[uniqueKey..".parmStep"]
+return extstate._layout["fx."..uniqueKey..".parmStep"]
 end
 
 local function setStep(uniqueKey, value)
-extstate._layout._forever[uniqueKey..".parmStep"] = value
+extstate._layout._forever["fx."..uniqueKey..".parmStep"] = value
 end
 
 local function getFilter(sid)
@@ -195,25 +195,50 @@ elseif context == 1 then
 contextPrompt = "Take"
 end
 
-local fxLayout = initLayout(string.format("%s FX properties", contextPrompt))
+local fxLayout = initLayout("FX properties")
 
 function fxLayout.canProvide()
-if context == 0 or context == 1 then
-return (capi.GetCount() > 0)
+local result = false
+if context == 0 then
+result = (capi.GetCount() > 0 or capi.GetRecCount() > 0)
+elseif context == 1 then
+if capi._contextObj[context]() ~= nil then
+result = (capi.GetCount() > 0)
 end
-return false
+end
+return result
 end
 
-
+-- We have to abort the linear code executing if canProvide return false
+if fxLayout.canProvide() then
 -- Creating the sublayouts with plug-ins and properties with parameters
 local fxCount = capi.GetCount()
-for i = 0, fxCount-1 do
-local retval, fxName = capi.GetFXName( i, "")
+local fxRecCount = capi.GetRecCount()
+local fullCount = 0
+for i = 0, (fxCount-1)+(fxRecCount+1)-1 do
+local fxInaccuracy, parmInaccuracy = 0, 0
+if i >= fxCount then
+fxInaccuracy = 0x1000000
+end
+local retval, fxName = capi.GetFXName(i+fxInaccuracy, "")
 if retval then
 -- Ah this beautifull prefixes and postfixes
 fxName = fxName:match("^.+[:]%s(.+)%s?[(]?")
-local sid = capi.GetFXGUID(i):gsub("%W", "")
-fxLayout:registerSublayout(sid, fxName)
+local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
+local fxPrefix = contextPrompt.." "
+if fxInaccuracy == 0 and capi.GetInstrument() == i then
+fxPrefix = fxPrefix.."instrument "
+else
+if fxInaccuracy == 0x1000000 then
+if contextPrompt:find("Master") then
+fxPrefix = "Monitoring "
+else
+fxPrefix = fxPrefix.."input "
+end
+end
+fxPrefix = fxPrefix.."FX "
+end
+fxLayout:registerSublayout(sid, fxPrefix..fxName)
 fxLayout[sid]:registerProperty({
 states = {
 string.format("Filter parameters%s", ({[false]="",[true]=string.format(" (currently is set to %s", getFilter(sid))})[(getFilter(sid) ~= nil)]),
@@ -263,9 +288,9 @@ return message
 end
 }
 )
-local fxParmsCount = capi.GetNumParams(i)
+local fxParmsCount = capi.GetNumParams(i+fxInaccuracy)
 for k = 0, fxParmsCount-1 do
-local retval, fxParmName = capi.GetParamName(i, k, "")
+local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
 if getFilter(sid) == nil then
 goto skipFilter
 end
@@ -277,7 +302,7 @@ else
 goto continue
 end
 ::skipFilter::
-if shouldBeExcluded(i, k) then
+if shouldBeExcluded(i+fxInaccuracy, k) then
 goto continue
 end
 fxLayout[sid]:registerProperty({
@@ -290,7 +315,7 @@ sm_labels = {
 "Search for parameter value",
 "Create envelope with this parameter"
 },
-fxIndex=i,
+fxIndex=i+fxInaccuracy,
 parmIndex = k,
 get = function(self, shouldSaveMode)
 local message = initOutputMessage()
@@ -541,7 +566,6 @@ end
 end
 end
 
-if fxLayout.canProvide() then
 if fxLayout[currentSublayout] == nil then
 currentSublayout = findDefaultSublayout(fxLayout)
 end
