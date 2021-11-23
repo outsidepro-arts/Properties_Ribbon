@@ -654,6 +654,174 @@ message(self:get())
 return message
 end
 
+configLayout:registerSublayout("fxExcludeList", "FX parameters exclude list")
+
+local fxMaskList = setmetatable({}, {
+__index=function(self, idx)
+if type(idx) == "number" then
+local fxMask = extstate[string.format("fx_properties.excludeMask%u.fx", idx)]
+local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
+return {["fxMask"]=fxMask,["paramMask"]=parmMask}
+end
+error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
+end,
+__newindex=function(self, idx, maskTable)
+if maskTable then
+if type(maskTable) ~= "table" then
+error(string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+end
+if maskTable.fxMask == nil then
+error("Expected field fxMask")
+end
+if maskTable.paramMask == nil then
+error("Expected field paramMask")
+end
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", idx)] = maskTable.fxMask
+extstate._forever[string.format("fx_properties.excludeMask%u.param", idx)] = maskTable.paramMask
+else
+local i = idx
+while extstate[string.format("fx_properties.excludeMask%u.fx", i)] do
+if i == idx then
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
+elseif i > idx then
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i-1)] = extstate[string.format("fx_properties.excludeMask%u.fx", i)]
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i-1)] = extstate[string.format("fx_properties.excludeMask%u.param", i)]
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
+end
+i = i+1
+end
+end
+end,
+__len=function(self)
+local mCount = 0
+while extstate[string.format("fx_properties.excludeMask%u.fx", mCount+1)] do
+mCount = mCount+1
+end
+return mCount
+end
+})
+
+for i = 1, #fxMaskList do
+local fxExcludeElem = fxMaskList[i]
+configLayout.fxExcludeList:registerProperty({
+states = {
+{
+label="Edit",
+proc = function()
+local retval, answer = reaper.GetUserInputs("Edit exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..fxExcludeElem.fxMask..","..fxExcludeElem.paramMask)
+if retval then
+local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
+if newFxMask == nil then
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+return true
+end
+if newParamMask == nil then
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+return true
+end
+fxMaskList[i] = {
+fxMask = newFxMask,
+paramMask=newParamMask
+}
+end
+end
+},
+{
+label="Delete",
+proc = function()
+if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s', fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", 4) == 6 then
+fxMaskList[i] = nil
+end
+end
+}
+},
+get = function(self, shouldSaveAction)
+local message = initOutputMessage()
+message:initType("Adjust this property to choose desired action for. Perform this property to execute chosen action.", "Adjustable, performable")
+if not shouldSaveAction then
+extstate._sublayout.actionIndex = nil
+end
+local act = extstate._sublayout.actionIndex or 0
+if act == 0 then
+message(string.format("FX mask %s, parameter mask %s", fxExcludeElem.fxMask, fxExcludeElem.paramMask))
+else
+message(self.states[act].label)
+end
+return message
+end,
+set = function(self, action)
+local message = initOutputMessage()
+local state = extstate._sublayout.actionIndex or 0
+if action == actions.set.increase then
+if state == 0 then
+message("Actions, ")
+end
+if (state+1) <= #self.states then
+extstate._sublayout.actionIndex = state+1
+else
+message("No more next property values.")
+end
+elseif action == actions.set.decrease then
+if state == 0 then
+message("Actions, ")
+extstate._sublayout.actionIndex = 1
+end
+if (state-1) >= 1 then
+extstate._sublayout.actionIndex = state-1
+else
+message("No more previous property values.")
+end
+elseif action == actions.set.perform then
+if state == 0 then
+message("Actions, ")
+extstate._sublayout.actionIndex = 1
+else
+if self.states[state].proc() then
+return
+end
+end
+end
+message(self:get(true))
+return message
+end
+})
+end
+
+local addExcludeMaskProperty = {}
+configLayout.fxExcludeList:registerProperty(addExcludeMaskProperty)
+
+function addExcludeMaskProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to add new exclude mask.", "Performable")
+message("Add new exclude mask")
+return message
+end
+
+function addExcludeMaskProperty:set(action)
+if action == actions.set.perform then
+local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,")
+if retval then
+local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
+if newFxMask == nil then
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+return
+end
+if newParamMask == nil then
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+return
+end
+fxMaskList[#fxMaskList+1] = {
+fxMask = newFxMask,
+paramMask=newParamMask
+}
+end
+else
+return "This property is performable only."
+end
+end
+
 
 
 return configLayout
