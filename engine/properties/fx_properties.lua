@@ -315,6 +315,7 @@ sm_labels = {
 "Search for parameter value",
 "Create envelope with this parameter"
 },
+parmNum = #fxLayout[sid].properties,
 fxIndex=i+fxInaccuracy,
 parmIndex = k,
 get = function(self, shouldSaveMode)
@@ -339,7 +340,7 @@ message(self.sm_labels[mode])
 end
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
-message(string.format("Parameter %u ", self.parmIndex+1))
+message(string.format("Parameter %u ", self.parmNum))
 message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2].." ")
 local retval, state = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
