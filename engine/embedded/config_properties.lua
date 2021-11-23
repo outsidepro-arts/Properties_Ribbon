@@ -627,14 +627,14 @@ fxParmstepProperty.states = {
 function fxParmstepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.", "Adjustable")
-local state = config.getinteger("fxParmStep", 1)
+local state = config.getinteger("fxParmStep", 5)
 message(string.format("FX parameters step adjustment %s", self.states[state]))
 return message
 end
 
 function fxParmstepProperty:set(action)
 local message = initOutputMessage()
-local state = config.getinteger("fxParmStep", 1)
+local state = config.getinteger("fxParmStep", 5)
 if action == actions.set.increase then
 if (state+1) <= #self.states then
 config.setinteger("fxParmStep", state+1)

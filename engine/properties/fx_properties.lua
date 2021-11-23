@@ -332,7 +332,7 @@ mode = mode or 0
 if mode > 0 then
 message:initType("Adjust this property to choose needed setting mode for this parameter. Perform this property to activate selected setting.", "Adjustable, performable")
 if mode == 4 then
-local stepsDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+local stepsDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 5)
 message(self.sm_labels[mode]:format(stepsList[stepsDefinition].label))
 else
 message(self.sm_labels[mode])
@@ -355,7 +355,7 @@ set = function(self, action)
 local message = initOutputMessage()
 local mode = extstate._layout.fxParmMode or 0
 if mode == 0 then
-local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 5)
 local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
@@ -471,7 +471,7 @@ capi.EndParamEdit(self.fxIndex, self.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 message(string.format("%s is set", curValue))
 elseif mode == 4 then
-local curStepIndex = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 1)
+local curStepIndex = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or config.getinteger("fxParmStep", 5)
 if (curStepIndex+1) <= #stepsList then
 curStepIndex = curStepIndex+1
 else
