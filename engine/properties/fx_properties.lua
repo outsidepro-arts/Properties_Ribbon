@@ -105,6 +105,84 @@ local function setStep(uniqueKey, value)
 extstate._layout._forever[uniqueKey..".parmStep"] = value
 end
 
+local function getFilter(sid)
+return extstate._layout[string.format("%s.parmFilter", sid)]
+end
+
+local function setFilter(sid, filter)
+extstate._layout[string.format("%s.parmFilter", sid)] = filter
+end
+
+local function shouldBeExcluded(fxId, parmId)
+local fxMaskList = setmetatable({}, {
+__index=function(self, idx)
+if type(idx) == "number" then
+local fxMask = extstate._layout[string.format("excludeMask%u.fx", idx)]
+local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
+return {["fxMask"]=fxMask,["paramMask"]=parmMask}
+end
+error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
+end,
+__newindex=function(self, idx, maskTable)
+if maskTable then
+if type(maskTable) ~= "table" then
+error(string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+end
+if maskTable.fxMask == nil then
+error("Expected field fxMask")
+end
+if maskTable.paramMask == nil then
+error("Expected field paramMask")
+end
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", idx)] = maskTable.fxMask
+extstate._forever[string.format("fx_properties.excludeMask%u.param", idx)] = maskTable.paramMask
+else
+local i = idx
+while extstate[string.format("fx_properties.excludeMask%u.fx", i)] do
+if i == idx then
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
+elseif i > idx then
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i-1)] = extstate[string.format("fx_properties.excludeMask%u.fx", i)]
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i-1)] = extstate[string.format("fx_properties.excludeMask%u.param", i)]
+extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
+extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
+end
+i = i+1
+end
+end
+end,
+__len=function(self)
+local mCount = 0
+while extstate[string.format("fx_properties.excludeMask%u.fx", mCount+1)] do
+mCount = mCount+1
+end
+return mCount
+end
+})
+local retval, fxName = capi.GetFXName(fxId, "")
+if retval == false then
+return false
+end
+local retval, fxParmName = capi.GetParamName(fxId, parmId, "")
+if retval == false then
+return false
+end
+for i = 1, #fxMaskList do
+local maskElement = fxMaskList[i]
+if searcher.simpleSearch(fxName, maskElement.fxMask) then
+if searcher.simpleSearch(fxParmName, maskElement.paramMask) then
+return true
+end
+end
+end
+return false
+end
+
+
+
+
+
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
 if context == 0 then
@@ -136,8 +214,72 @@ if retval then
 fxName = fxName:match("^.+[:]%s(.+)%s?[(]?")
 local sid = capi.GetFXGUID(i):gsub("%W", "")
 fxLayout:registerSublayout(sid, fxName)
+fxLayout[sid]:registerProperty({
+states = {
+string.format("Filter parameters%s", ({[false]="",[true]=string.format(" (currently is set to %s", getFilter(sid))})[(getFilter(sid) ~= nil)]),
+},
+get = function(self, shouldSaveSetting)
+local message = initOutputMessage()
+message:initType("Adjust this property to choose needed setting applied for all parameters in this category. Perform this property when you're chosed any of to perform this.", "Adjustable, performable")
+local setting = extstate._layout.settingIndex
+if not shouldSaveSetting then
+setting= nil
+extstate._layout.settingIndex = nil
+end
+setting = setting or 1
+message(self.states[setting])
+return message
+end,
+set = function(self, action)
+local message = initOutputMessage()
+local setting = extstate._layout.settingIndex or 1
+if action == actions.set.increase then
+if (setting+1) <= #self.states then
+extstate._layout.settingIndex = setting+1
+else
+message("No more next property values.")
+end
+elseif action == actions.set.decrease then
+if (setting-1) >= 1 then
+extstate._layout.settingIndex = setting-1
+else
+message("No more previous property values.")
+end
+elseif action == actions.set.perform then
+if setting == 1 then
+local curFilter = getFilter(sid) or ""
+local retval, answer = reaper.GetUserInputs("Filter parameters by", 1, "Type either full parameter name or a part of (Lua patterns supported):", curFilter)
+if retval then
+if answer ~= "" then
+setFilter(sid, answer)
+else
+setFilter(sid, nil)
+end
+end
+end
+end
+message(self:get(true))
+return message
+end
+}
+)
 local fxParmsCount = capi.GetNumParams(i)
 for k = 0, fxParmsCount-1 do
+local retval, fxParmName = capi.GetParamName(i, k, "")
+if getFilter(sid) == nil then
+goto skipFilter
+end
+if retval then
+if not searcher.simpleSearch(fxParmName, getFilter(sid)) then
+goto continue
+end
+else
+goto continue
+end
+::skipFilter::
+if shouldBeExcluded(i, k) then
+goto continue
+end
 fxLayout[sid]:registerProperty({
 sm_labels = {
 "Switch to adjusting mode",
@@ -308,7 +450,12 @@ local curStepIndex = getStep(makeUniqueKey(self.fxIndex, self.parmIndex)) or con
 if (curStepIndex+1) <= #stepsList then
 curStepIndex = curStepIndex+1
 else
+if curStepIndex == #stepsList then
+setStep(makeUniqueKey(self.fxIndex, self.parmIndex), nil)
+return "default step adjustment"
+else
 curStepIndex = 1
+end
 end
 setStep(makeUniqueKey(self.fxIndex, self.parmIndex), curStepIndex)
 return stepsList[curStepIndex].label
@@ -382,6 +529,7 @@ return message
 end
 end
 })
+::continue::
 end
 -- Since the sublayouts and its properties are dynamical at this case, we have to make a little hack with to avoid the call of not existing properties and sublayouts.
 setmetatable(fxLayout[sid].properties, {
