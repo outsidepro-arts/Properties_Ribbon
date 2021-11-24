@@ -84,6 +84,55 @@ capi.GetParamName(fxIndex, parmIndex)
 ]]--
 
 -- Some internal functions
+-- Exclude masks metatable
+local fxMaskList = setmetatable({}, {
+__index=function(self, idx)
+if type(idx) == "number" then
+local fxMask = extstate._layout[string.format("excludeMask%u.fx", idx)]
+local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
+return {["fxMask"]=fxMask,["paramMask"]=parmMask}
+end
+error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
+end,
+__newindex=function(self, idx, maskTable)
+if maskTable then
+if type(maskTable) ~= "table" then
+error(string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+end
+if maskTable.fxMask == nil then
+error("Expected field fxMask")
+end
+if maskTable.paramMask == nil then
+error("Expected field paramMask")
+end
+extstate._forever._layout[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
+extstate._forever._layout[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
+else
+local i = idx
+while extstate._layout[string.format("excludeMask%u.fx", i)] do
+if i == idx then
+extstate._forever._layout[string.format("excludeMask%u.fx", i)] = nil
+extstate._forever._layout[string.format("excludeMask%u.param", i)] = nil
+elseif i > idx then
+extstate._forever._layout[string.format("excludeMask%u.fx", i-1)] = extstate._layout[string.format("excludeMask%u.fx", i)]
+extstate._forever._layout[string.format("excludeMask%u.param", i-1)] = extstate._layout[string.format("excludeMask%u.param", i)]
+extstate._forever._layout[string.format("excludeMask%u.fx", i)] = nil
+extstate._forever._layout[string.format("excludeMask%u.param", i)] = nil
+end
+i = i+1
+end
+end
+end,
+__len=function(self)
+local mCount = 0
+while extstate._layout[string.format("excludeMask%u.fx", mCount+1)] do
+mCount = mCount+1
+end
+return mCount
+end
+})
+
+
 local function makeUniqueKey(fxID, fxParm)
 local firstPart, lastPart = nil
 local retval, fxName = capi.GetFXName(fxID, "")
@@ -114,52 +163,6 @@ extstate._layout[string.format("%s.parmFilter", sid)] = filter
 end
 
 local function shouldBeExcluded(fxId, parmId)
-local fxMaskList = setmetatable({}, {
-__index=function(self, idx)
-if type(idx) == "number" then
-local fxMask = extstate._layout[string.format("excludeMask%u.fx", idx)]
-local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
-return {["fxMask"]=fxMask,["paramMask"]=parmMask}
-end
-error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
-end,
-__newindex=function(self, idx, maskTable)
-if maskTable then
-if type(maskTable) ~= "table" then
-error(string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
-end
-if maskTable.fxMask == nil then
-error("Expected field fxMask")
-end
-if maskTable.paramMask == nil then
-error("Expected field paramMask")
-end
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", idx)] = maskTable.fxMask
-extstate._forever[string.format("fx_properties.excludeMask%u.param", idx)] = maskTable.paramMask
-else
-local i = idx
-while extstate[string.format("fx_properties.excludeMask%u.fx", i)] do
-if i == idx then
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
-elseif i > idx then
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i-1)] = extstate[string.format("fx_properties.excludeMask%u.fx", i)]
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i-1)] = extstate[string.format("fx_properties.excludeMask%u.param", i)]
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
-end
-i = i+1
-end
-end
-end,
-__len=function(self)
-local mCount = 0
-while extstate[string.format("fx_properties.excludeMask%u.fx", mCount+1)] do
-mCount = mCount+1
-end
-return mCount
-end
-})
 local retval, fxName = capi.GetFXName(fxId, "")
 if retval == false then
 return false
@@ -427,6 +430,30 @@ end
 setUndoLabel(obj:get(true))
 return true, string.format("The envelope for %s created on %s %s.", fxParmName, contextPrompt:lower(), name)
 end
+end
+},
+{
+label="Add exclude mask based on this parameter",
+proc=function(obj)
+local _, fxName = capi.GetFXName(obj.fxIndex, "")
+local _, parmName = capi.GetParamName(obj.fxIndex, obj.parmIndex, "")
+local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..string.format("%s,%s", fxName, parmName))
+if retval then
+local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
+if newFxMask == nil then
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+return true
+end
+if newParamMask == nil then
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+return true
+end
+fxMaskList[#fxMaskList+1] = {
+fxMask = newFxMask,
+paramMask=newParamMask
+}
+end
+return true
 end
 }
 },
