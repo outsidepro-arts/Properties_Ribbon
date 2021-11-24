@@ -47,12 +47,12 @@ context = extstate.lastKnownContext or context
 end
 
 local function getCurrentChainAction()
-local result = extstate[currentSublayout.."_currentAction"] or 1
+local result = extstate._sublayout["currentAction"] or 1
 return result
 end
 
 local function setCurrentChainAction(action)
-extstate[currentSublayout.."_currentAction"] = action
+extstate._sublayout["currentAction"] = action
 end
 
 
@@ -63,8 +63,9 @@ fxActionsLayout:registerSublayout("masterTrackLayout", "Master track")
 end
 fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring")
 if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
-fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
-fxActionsLayout.masterTrackLayout.previousSubLayout = nil
+    fxActionsLayout:destroySublayout("contextLayout")
+    fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
+    fxActionsLayout.masterTrackLayout.previousSublayout = nil
 end
 
 
