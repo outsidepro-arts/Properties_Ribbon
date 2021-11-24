@@ -239,6 +239,28 @@ self[slID].registerProperty = self.registerProperty
 -- If a category has been created, the parent registration methods should be unavailable.
 if self.properties then self.properties = nil end
 end,
+destroySublayout = function(self, slID)
+self[slID] = nil
+self.ofCount = self.ofCount-1
+for slsn, sls in pairs(self) do
+    if type(sls) == "table" then
+    if sls.slIndex == self.ofCount-1 then
+sls.nextSubLayout = slID
+self[slID].previousSubLayout = slsn
+end
+end
+end
+for slsn, sls in pairs(self) do
+    if type(sls) == "table" then
+        sls.slIndex = sls.slIndex-1
+        if sls.slIndex == 1 then
+            sls.previousSubLayout = nil
+        elseif sls.slIndex == self.ofCount then
+            sls.nextSubLayout = nil
+        end
+        end
+    end
+    end,
 properties = {},
 registerProperty = function(self, property)
  return table.insert(self.properties, property)
