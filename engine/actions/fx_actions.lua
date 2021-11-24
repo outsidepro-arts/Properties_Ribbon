@@ -299,6 +299,50 @@ end
 }
 end
 
+-- Contextual Properties Ribbon FX parameters layout
+-- If this script is not installed, we should omit this property rendering
+if reaper.NamedCommandLookup("_RS4e4bbd4cecce51a391e9f9b3b829c6d8144f237a") then
+if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
+fxActionsLayout.contextLayout:registerProperty{
+getValue = contextualFXChain.getValue,
+get = function(self)
+local message = initOutputMessage()
+message:initType(("Perform this property to work with %s FX properties."):format(contexts[context]), "Performable")
+local chainCount, inputCount = self.getValue()
+if context == 0 and inputCount > 0 then
+message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
+end
+if chainCount == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
+message(("FX properties of %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
+if context == 0 and inputCount > 0 then
+message(string.format(" and input FX chain with %s", getStringPluginsCount(inputCount)))
+end
+return message
+end,
+set = function(self, action)
+if action == actions.set.perform then
+local chainCount, inputCount = self.getValue()
+if chainCount > 0 or (inputCount and inputCount > 0) then
+script_finish()
+if script_init({section="properties",layout="fx_properties"}, true) then
+script_reportOrGotoProperty()
+return
+end
+else
+return "This action is unavailable right now because no one FX is set there."
+end
+else
+return "This property is performable only."
+end
+end
+}
+end
+end
+
+
 -- Contextual OSARA FX parameters action
 if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
 fxActionsLayout.contextLayout:registerProperty{
@@ -337,6 +381,52 @@ end
 end
 }
 end
+
+-- FX properties for master track
+-- If this script is not installed, we should omit this property rendering
+local fxPropertiesForMasterTrack = {}
+if fxActionsLayout.masterTrackLayout and reaper.NamedCommandLookup("_RS4e4bbd4cecce51a391e9f9b3b829c6d8144f237a") then
+fxActionsLayout.masterTrackLayout:registerProperty(fxPropertiesForMasterTrack)
+end
+
+fxPropertiesForMasterTrack.getValue = masterTrackFXChain.getValue
+
+function fxPropertiesForMasterTrack:get()
+local message = initOutputMessage()
+message:initType("Perform this property to work with FX parameters for master track.", "Performable")
+local chainCount, monitoringCount = self.getValue()
+if monitoringCount > 0 then
+message:addType(" The FX which have being added to monitoring FX chain will display also here.", 1)
+end
+if chainCount == 0 and monitoringCount == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
+message(("FX properties of master track with %s"):format(getStringPluginsCount(self.getValue)))
+if monitoringCount > 0 then
+message((" and monitoring section with %s"):format(getStringPluginsCount(monitoringCount)))
+end
+return message
+end
+
+function fxPropertiesForMasterTrack:set(action)
+if action == nil then
+local chainCount, monitoringCount = self.getValue()
+if chainCount > 0 or monitoringCount > 0 then
+script_finish()
+if script_init({section="properties",layout="fx_properties"}, true) then
+script_reportOrGotoProperty()
+end
+return
+else
+return "This action is unavailable right now because no one FX is set there."
+end
+else
+return "This property is performable only."
+end
+end
+
+
 
 -- OSARA FX parameters for master track
 local osaraMasterFXParametersProperty = {}
@@ -457,6 +547,8 @@ end
 }
 
 -- The monitoring sections has not the OSARA proposed FX parameters. I think that the decision about has dictated by using the TrackFX_GetRecCount both on a track and on a master track. Therefore we just copy this property to monitoring section also.
+-- So, I decided to do the same
+fxActionsLayout.monitoringLayout:registerProperty(fxPropertiesForMasterTrack)
 fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
 
