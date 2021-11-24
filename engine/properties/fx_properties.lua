@@ -381,11 +381,28 @@ if not extstate._layout._forever.searchProcessNotify then
 reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
 extstate._layout._forever.searchProcessNotify = true
 end
+local searchMode = 0
+if answer:match("^.") == "<" then
+searchMode = 1
+answer = answer:sub(2)
+elseif answer:match("^.") == ">" then
+searchMode = 2
+answer = answer:sub(2)
+end
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(obj.fxIndex, obj.parmIndex)
-local searchState = minState
-while searchState < maxState do
+local searchState = nil
+if searchMode > 0 then
+searchState = state
+else
+searchState = minState
+end
+while searchState <= maxState and searchState >= minState do
+if searchMode == 1 then
+searchState = searchState-0.000001
+else
 searchState = searchState+0.000001
+end
 capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
 local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
 if wretval then
@@ -400,7 +417,14 @@ break
 end
 end
 if searchState ~= state then
-reaper.ShowMessageBox(string.format("No any parameter value with %s query.", answer), "No results", 0)
+local stringForm = 'No any parameter value with \"%s\" query'
+if searchMode == 1 then
+stringForm = stringForm.." relative from previously set value to the left"
+elseif searchMode == 2 then
+stringForm = stringForm.." relative from previously set value to the right"
+end
+stringForm = stringForm.."."
+reaper.ShowMessageBox(string.format(stringForm, answer), "No results", 0)
 capi.SetParam(obj.fxIndex, obj.parmIndex, state)
 capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
 return true
