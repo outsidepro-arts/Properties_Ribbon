@@ -230,7 +230,7 @@ fxName = fxName:match("^.+[:]%s(.+)%s?[(]?")
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
 local fxPrefix = contextPrompt.." "
 if fxInaccuracy == 0 and capi.GetInstrument() == i then
-fxPrefix = fxPrefix.."instrument "
+fxPrefix = "Instrument "
 else
 if fxInaccuracy == 0x1000000 then
 if contextPrompt:find("Master") then
