@@ -146,7 +146,10 @@ end
 return string.format("%s.%s", firstPart, secondPart)
 end
 
-local function getStep(uniqueKey)
+local function getStep(uniqueKey, notRelyConfig)
+if notRelyConfig then
+return extstate._layout["fx."..uniqueKey..".parmStep"]
+end
 return extstate._layout["fx."..uniqueKey..".parmStep"] or config.getinteger("fxParmStep", 4)
 end
 
@@ -340,7 +343,7 @@ end
 {
 label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
 proc=function(obj)
-local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))
+local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 1
 if (curStepIndex+1) <= #stepsList then
 curStepIndex = curStepIndex+1
 else
