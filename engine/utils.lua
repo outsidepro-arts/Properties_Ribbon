@@ -113,4 +113,12 @@ function debug(str)
 reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
 end
 
+function utils.simpleSearch(fullString, searchString)
+if searchString:find("%u") then
+return (fullString:find(searchString))
+else
+return (fullString:lower():find(searchString:lower()))
+end
+end
+
 return utils

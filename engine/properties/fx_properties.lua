@@ -173,8 +173,8 @@ return false
 end
 for i = 1, #fxMaskList do
 local maskElement = fxMaskList[i]
-if searcher.simpleSearch(fxName, maskElement.fxMask) then
-if searcher.simpleSearch(fxParmName, maskElement.paramMask) then
+if utils.simpleSearch(fxName, maskElement.fxMask) then
+if utils.simpleSearch(fxParmName, maskElement.paramMask) then
 return true
 end
 end
@@ -298,7 +298,7 @@ if getFilter(sid) == nil then
 goto skipFilter
 end
 if retval then
-if not searcher.simpleSearch(fxParmName, getFilter(sid)) then
+if not utils.simpleSearch(fxParmName, getFilter(sid)) then
 goto continue
 end
 else
@@ -386,7 +386,7 @@ searchState = searchState+0.000001
 capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
 local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
 if wretval then
-if searcher.simpleSearch(wfxValue, answer) then
+if utils.simpleSearch(wfxValue, answer) then
 state = searchState
 capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
 break
