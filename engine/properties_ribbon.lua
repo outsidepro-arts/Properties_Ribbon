@@ -592,7 +592,11 @@ end
 if propertyNum <= #layout.properties then
 layout.pIndex = propertyNum
 else
+if layout.type == "sublayout" then
 (string.format("No property with number %s in %s category of %s layout.", propertyNum, layout.subname, layout.name)):output()
+else
+(string.format("No property with number %s in %s layout.", propertyNum, layout.name)):output()
+end
 script_finish()
 return
 end
