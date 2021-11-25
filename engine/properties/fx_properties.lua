@@ -349,16 +349,12 @@ end
 {
 label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
 proc=function(obj)
-local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 1
+local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 0
 if (curStepIndex+1) <= #stepsList then
 curStepIndex = curStepIndex+1
-else
-if curStepIndex == #stepsList then
+elseif (curStepIndex+1) > #stepsList then
 setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), nil)
-return true, "default step adjustment"
-else
-curStepIndex = 1
-end
+return true, "Reset to default step adjustment"
 end
 setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), curStepIndex)
 return true, stepsList[curStepIndex].label
