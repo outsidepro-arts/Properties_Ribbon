@@ -403,11 +403,15 @@ searchState = state
 else
 searchState = minState
 end
+local ajustingValue = stepsList[1].value
+if retvalStep then
+ajustingValue = defStep
+end
 while searchState <= maxState and searchState >= minState do
 if searchMode == 1 then
-searchState = searchState-0.000001
+searchState = searchState-ajustingValue
 else
-searchState = searchState+0.000001
+searchState = searchState+ajustingValue
 end
 capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
 local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
@@ -529,9 +533,16 @@ if mode == 0 then
 local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex))
 local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
-local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
+local retvalStep, defStep, smallStep, largeStep, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
 if action == actions.set.increase then
-if not isToggle then
+if retvalStep then
+if (state+defStep) <= maxState then
+capi.SetParam(self.fxIndex, self.parmIndex, state+defStep)
+capi.EndParamEdit(self.fxIndex, self.parmIndex)
+else
+message("No more next parameter values.")
+end
+else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
 while state < maxState do
@@ -558,16 +569,16 @@ else
 message("No more next parameter values.")
 end
 end
-else
-if state ~= maxState then
-capi.SetParam(self.fxIndex, self.parmIndex, maxState)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-else
-message("No more next parameter values.")
-end
 end
 elseif action == actions.set.decrease then
-if not isToggle then
+if retvalStep then
+if (state-defStep) >= minState then
+capi.SetParam(self.fxIndex, self.parmIndex, state-defStep)
+capi.EndParamEdit(self.fxIndex, self.parmIndex)
+else
+message("No more previous parameter values.")
+end
+else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
 while state > minState do
@@ -593,13 +604,6 @@ capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
 message("No more previous parameter values.")
 end
-end
-else
-if state ~= minState then
-capi.SetParam(self.fxIndex, self.parmIndex, minState)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-else
-message("No more previous parameter values.")
 end
 end
 elseif action == actions.set.toggle then
