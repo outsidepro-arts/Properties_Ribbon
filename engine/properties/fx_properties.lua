@@ -157,6 +157,22 @@ local function setStep(uniqueKey, value)
 extstate._layout._forever["fx."..uniqueKey..".parmStep"] = value
 end
 
+local function getFindNearestConfig(uniqueKey, notRelyConfig)
+	if notRelyConfig then
+		return extstate._layout["fx."..uniqueKey..".useFindNearestParmValue"]
+	end
+	-- The boolean value false and value nil are equivalent in Lua
+	local result = extstate._layout["fx."..uniqueKey..".useFindNearestParmValue"]
+	if result == nil then
+		result = config.getboolean("fx_useFindNearestParmValue", true)
+	end
+	return  result
+end
+
+local function setFindNearestConfig(uniqueKey, value)
+	extstate._layout._forever["fx."..uniqueKey..".useFindNearestParmValue"] = value
+end
+
 local function getFilter(sid)
 return extstate._layout[string.format("%s.parmFilter", sid)]
 end
@@ -347,20 +363,6 @@ return true, message
 end
 },
 {
-label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
-proc=function(obj)
-local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 0
-if (curStepIndex+1) <= #stepsList then
-curStepIndex = curStepIndex+1
-elseif (curStepIndex+1) > #stepsList then
-setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), nil)
-return true, "Reset to default step adjustment"
-end
-setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), curStepIndex)
-return true, stepsList[curStepIndex].label
-end
-},
-{
 label="Type raw parameter data",
 proc=function(obj)
 local state = capi.GetParamNormalized(obj.fxIndex, obj.parmIndex)
@@ -466,6 +468,36 @@ end
 end
 },
 {
+	label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
+	proc=function(obj)
+	local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 0
+	if (curStepIndex+1) <= #stepsList then
+	curStepIndex = curStepIndex+1
+	elseif (curStepIndex+1) > #stepsList then
+	setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), nil)
+	return true, "Reset to default step adjustment"
+	end
+	setStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), curStepIndex)
+	return true, stepsList[curStepIndex].label
+	end
+	},
+	{
+		label=string.format("Use find nearest parameter value method for this parameter (currently %s)", ({[false]="disabled",[true]="enabled"})[getFindNearestConfig(makeUniqueKey(i, k))]),
+		proc=function(obj)
+		local cfg= getFindNearestConfig(makeUniqueKey(obj.fxIndex, obj.parmIndex), true)
+		if cfg == false then
+			cfg = true
+		elseif cfg == true then
+			setFindNearestConfig(makeUniqueKey(obj.fxIndex, obj.parmIndex), nil)
+			return true, "Set to default value"
+		elseif cfg == nil then
+			cfg = false
+		end
+		setFindNearestConfig(makeUniqueKey(obj.fxIndex, obj.parmIndex), cfg)
+		return true, ({[false]="Disabled",[true]="Enabled"})[cfg]
+		end
+		},
+		{
 label="Add exclude mask based on this parameter",
 proc=function(obj)
 local _, fxName = capi.GetFXName(obj.fxIndex, "")
@@ -540,7 +572,8 @@ message("No more next parameter values.")
 end
 else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-if retval then
+local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
+if retval and cfg then
 while state < maxState do
 state = state+ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)
@@ -576,7 +609,8 @@ message("No more previous parameter values.")
 end
 else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-if retval then
+local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
+if retval and cfg then
 while state > minState do
 state = state-ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)

@@ -654,6 +654,30 @@ message(self:get())
 return message
 end
 
+configLayout:registerSublayout("fxPropertiesConfig", "FX properties")
+
+local fxUseNearestParmValueProperty = {}
+configLayout.fxPropertiesConfig:registerProperty(fxUseNearestParmValueProperty)
+
+function fxUseNearestParmValueProperty:get()
+	local message= initOutputMessage()
+	message:initType("Toggle this property to switch the configuration which that FX properties will be search nearest parameter value automatically.", "Toggleable")
+	local state = config.getboolean("fx_useFindNearestParmValue", true)
+	message(string.format("Automatic searching nearest parameter value when adjusting is %s", ({[true]="enabled",[false]="disabled"})[state]))
+	return message
+end
+
+function fxUseNearestParmValueProperty:set(action)
+	if action == actions.set.toggle then
+		config.setboolean("fx_useFindNearestParmValue", utils.nor(config.getboolean("fx_useFindNearestParmValue", true)))
+	else
+		return "This property is toggleable only."
+	end
+	local message = initOutputMessage()
+	message(self:get())
+	return message
+end
+
 configLayout:registerSublayout("fxExcludeList", "FX parameters exclude list")
 
 local fxMaskList = setmetatable({}, {
