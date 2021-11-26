@@ -561,7 +561,7 @@ if config.getboolean("reportParmId", true) then
 else	
 	message(string.format("Parameter %u ", self.parmIndex+1))
 end
-message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2].." ")
+message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2]..": ")
 local retval, state = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
 message(state)
