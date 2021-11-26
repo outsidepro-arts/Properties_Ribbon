@@ -594,7 +594,7 @@ if state-ajustingValue < minState then
 message("No more previous parameter values.")
 end
 else
-if state-ajustingValue <= minState then
+if state-ajustingValue >= minState then
 capi.SetParam(self.fxIndex, self.parmIndex, state-ajustingValue)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
@@ -652,5 +652,7 @@ if fxLayout[currentSublayout] == nil then
 currentSublayout = findDefaultSublayout(fxLayout)
 end
 end
+
+
 
 return fxLayout
