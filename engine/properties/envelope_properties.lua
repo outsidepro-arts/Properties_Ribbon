@@ -296,21 +296,22 @@ end
 elseif action == actions.set.increase then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
+local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(points) == "table" then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
-if utils.numtodecibels(state)+adjustStep <= 12 then
+if utils.numtodecibels(state)+adjustStep <= maxDBValue then
 self.setValue(point, utils.decibelstonum(utils.numtodecibels(state)+adjustStep))
 else
-self.setValue(point, utils.decibelstonum(12.0))
+self.setValue(point, utils.decibelstonum(maxDBValue))
 end
 end
 else
 local state = self.getValue(points)
-if utils.numtodecibels(state)+adjustStep <= 12 then
+if utils.numtodecibels(state)+adjustStep <= maxDBValue then
 self.setValue(points, utils.decibelstonum(utils.numtodecibels(state)+adjustStep))
 else
-self.setValue(points, utils.decibelstonum(12.0))
+self.setValue(points, utils.decibelstonum(maxDBValue))
 message("Maximum volume.")
 end
 end
