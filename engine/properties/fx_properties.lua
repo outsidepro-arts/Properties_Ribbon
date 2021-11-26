@@ -220,6 +220,9 @@ end
 local fxLayout = initLayout("FX properties")
 
 function fxLayout.canProvide()
+	if capi._contextObj[context]() == nil then
+		return false
+	end
 local result = false
 if context == 0 then
 result = (capi.GetCount() > 0 or capi.GetRecCount() > 0)
