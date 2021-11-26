@@ -18,6 +18,10 @@ After this preambula, let me begin.
 
 -- get current navigation context
 local context = reaper.GetCursorContext()
+-- Fixing the unexpected items context
+if context == 1 and reaper.GetLastTouchedTrack() == nil then
+	context = 0
+end
 
 
 -- Steps list for adjusting (will be defined using configuration)
@@ -35,7 +39,16 @@ local stepsList = {
 local capi = setmetatable({
 _contextObj = {
 -- REAPER generates error when media item is nil so we have to wrap these handles to function
-[0]=function() return reaper.GetLastTouchedTrack() end,
+[0]=function()
+	local lastTouched = reaper.GetLastTouchedTrack()
+	if lastTouched then
+	return lastTouched
+	else
+		if (reaper.GetMasterTrackVisibility()&1) == 1 then
+			return reaper.GetMasterTrack(0)
+		end
+		end
+end,
 [1]=function()
 if reaper.GetSelectedMediaItem(0, 0) then
 return reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
@@ -227,9 +240,7 @@ local result = false
 if context == 0 then
 result = (capi.GetCount() > 0 or capi.GetRecCount() > 0)
 elseif context == 1 then
-if capi._contextObj[context]() ~= nil then
 result = (capi.GetCount() > 0)
-end
 end
 return result
 end
