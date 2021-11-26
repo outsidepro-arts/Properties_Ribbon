@@ -154,10 +154,28 @@ name = name:gsub("(.+)%s[/]%s(.+)", "%1 of %2 plugin")
 local envelopePointsLayout = initLayout(string.format("%s envelope points properties", name))
 
 function envelopePointsLayout.canProvide()
-return (envelope ~= nil and points ~= nil)
+return (envelope ~= nil)
 end
 
+local addEnvelopePointProperty = {}
 
+function addEnvelopePointProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to add new envelope point at current play or edit cursor position for selected envelope.", "Performable")
+	message(string.format("Add new %s envelope point at cursor", name))
+	return message
+end
+
+function addEnvelopePointProperty:set(action)
+		if action == actions.set.perform then
+			reaper.Main_OnCommand(40915, 0)
+	else
+		return "This property is performable only."
+	end
+	return
+end
+
+if points ~= nil then
 local valueProperty = {}
 envelopePointsLayout:registerProperty(valueProperty)
 
@@ -710,5 +728,8 @@ end
 message(self:get())
 return message
 end
+end
+
+	envelopePointsLayout:registerProperty(addEnvelopePointProperty)
 
 return envelopePointsLayout
