@@ -33,6 +33,9 @@ local stepsList = {
 {label="biggest",value=0.01},
 {label="huge",value=0.1}
 }
+-- Some plug-ins is sluggish, so we have to wait a few time for
+local adjustDelay = 30 -- MS
+
 
 -- API simplification to make calls as contextual
 -- capi stands for "contextual API"
@@ -426,6 +429,7 @@ else
 searchState = searchState+ajustingValue
 end
 capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
+utils.delay(adjustDelay)
 local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
 if wretval then
 if utils.simpleSearch(wfxValue, answer) then
@@ -584,6 +588,7 @@ if action == actions.set.increase then
 if retvalStep then
 if (state+defStep) <= maxState then
 capi.SetParam(self.fxIndex, self.parmIndex, state+defStep)
+utils.delay(adjustDelay)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
 message("No more next parameter values.")
@@ -595,6 +600,7 @@ if retval and cfg then
 while state < maxState do
 state = state+ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)
+utils.delay(adjustDelay)
 local wretval, wfxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex)
 if wretval then
 if fxValue ~= wfxValue then
@@ -611,6 +617,7 @@ end
 else
 if state+ajustingValue <= maxState then
 capi.SetParam(self.fxIndex, self.parmIndex, state+ajustingValue)
+utils.delay(adjustDelay)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
 message("No more next parameter values.")
@@ -621,6 +628,7 @@ elseif action == actions.set.decrease then
 if retvalStep then
 if (state-defStep) >= minState then
 capi.SetParam(self.fxIndex, self.parmIndex, state-defStep)
+utils.delay(adjustDelay)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
 message("No more previous parameter values.")
@@ -632,6 +640,7 @@ if retval and cfg then
 while state > minState do
 state = state-ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)
+utils.delay(adjustDelay)
 local wretval, wfxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex)
 if wretval then
 if fxValue ~= wfxValue then
@@ -648,6 +657,7 @@ end
 else
 if state-ajustingValue >= minState then
 capi.SetParam(self.fxIndex, self.parmIndex, state-ajustingValue)
+utils.delay(adjustDelay)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
 else
 message("No more previous parameter values.")
