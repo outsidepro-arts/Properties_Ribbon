@@ -200,7 +200,11 @@ local itemsCount = reaper.CountSelectedMediaItems(0)
 local isEmptyLanes = false
 for i = 0, itemsCount-1 do
 if reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)) == nil then
-isEmptyLanes = true
+	if not extstate._layout.emptyLanesNotify then
+	reaper.ShowMessageBox("Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout.", "Empty lane", 0)
+	extstate._layout.emptyLanesNotify = true
+	end
+	isEmptyLanes = true
 break
 end
 end
