@@ -467,15 +467,15 @@ label="Create envelope with this parameter",
 proc=function(obj)
 if capi.GetFXEnvelope(obj.fxIndex, obj.parmIndex, true) then
 local fxParmName = ({capi.GetParamName(obj.fxIndex, obj.parmIndex, "")})[2]
-local obj = capi._contextObj[context]()
+local cobj = capi._contextObj[context]()
 local name = nil
 if context == 0 then
-local retval, buf = reaper.GetTrackName(obj)
+local retval, buf = reaper.GetTrackName(cobj)
 if retval then
 name = buf
 end
 elseif context == 1 then
-local retval, buf = reaper.GetSetMediaItemTakeInfo_String(obj, "P_NAME", "", false)
+local retval, buf = reaper.GetSetMediaItemTakeInfo_String(cobj, "P_NAME", "", false)
 if retval then
 name = buf
 end
