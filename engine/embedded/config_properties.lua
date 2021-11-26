@@ -678,6 +678,28 @@ function fxUseNearestParmValueProperty:set(action)
 	return message
 end
 
+local reportRealParmValueProperty = {}
+configLayout.fxPropertiesConfig:registerProperty(reportRealParmValueProperty)
+
+function reportRealParmValueProperty:get()
+	local message = initOutputMessage()
+	message:initType("Toggle this property to switch the reporting parameter number behavior: by real parameter ID or by incremental", "Toggleable")
+	local state = config.getboolean("reportParmId", true)
+	message(string.format("Report %s FX parameter number when navigating", ({[true]="incremental",[false]="real"})[state]))
+	return message
+end
+
+function reportRealParmValueProperty:set(action)
+	if action == actions.set.toggle then
+		config.setboolean("reportParmId", utils.nor(config.getboolean("reportParmId", true)))
+	else
+		return "This property is toggleable only."
+	end
+	local message = initOutputMessage()
+	message(self:get())
+	return message
+end
+
 configLayout:registerSublayout("fxExcludeList", "FX parameters exclude list")
 
 local fxMaskList = setmetatable({}, {

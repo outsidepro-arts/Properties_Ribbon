@@ -542,7 +542,11 @@ message:initType("Adjust this property to choose needed setting mode for this pa
 message(self.settingModes[mode].label)
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
-message(string.format("Parameter %u ", self.parmNum))
+if config.getboolean("reportParmId", true) then
+	message(string.format("Parameter %u ", self.parmNum))
+else	
+	message(string.format("Parameter %u ", self.parmIndex+1))
+end
 message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2].." ")
 local retval, state = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 if retval then
