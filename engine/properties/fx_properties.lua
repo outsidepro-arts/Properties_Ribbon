@@ -34,7 +34,7 @@ local stepsList = {
 {label="huge",value=0.1}
 }
 -- Some plug-ins is sluggish, so we have to wait a few time for
-local adjustDelay = 30 -- MS
+local adjustDelay = 5 -- MS
 
 
 -- API simplification to make calls as contextual
@@ -419,7 +419,7 @@ else
 searchState = minState
 end
 local ajustingValue = stepsList[1].value
-if retvalStep then
+if retvalStep and defStep > 0.0 then
 ajustingValue = defStep
 end
 while searchState <= maxState and searchState >= minState do
@@ -585,8 +585,8 @@ local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, smallStep, largeStep, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
 if action == actions.set.increase then
-if retvalStep then
-if (state+defStep) <= maxState then
+	if retvalStep and defStep > 0.0 then
+	if (state+defStep) <= maxState then
 capi.SetParam(self.fxIndex, self.parmIndex, state+defStep)
 utils.delay(adjustDelay)
 capi.EndParamEdit(self.fxIndex, self.parmIndex)
@@ -597,7 +597,7 @@ else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
-while state < maxState do
+while state <= maxState do
 state = state+ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)
 utils.delay(adjustDelay)
@@ -613,6 +613,9 @@ end
 end
 if state+ajustingValue > maxState then
 message("No more next parameter values.")
+capi.SetParam(self.fxIndex, self.parmIndex, maxState)
+utils.delay(adjustDelay)
+capi.EndParamEdit(self.fxIndex, self.parmIndex)
 end
 else
 if state+ajustingValue <= maxState then
@@ -625,7 +628,7 @@ end
 end
 end
 elseif action == actions.set.decrease then
-if retvalStep then
+if retvalStep and defStep > 0.0 then
 if (state-defStep) >= minState then
 capi.SetParam(self.fxIndex, self.parmIndex, state-defStep)
 utils.delay(adjustDelay)
@@ -637,7 +640,7 @@ else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
-while state > minState do
+while state >= minState do
 state = state-ajustingValue
 capi.SetParam(self.fxIndex, self.parmIndex, state)
 utils.delay(adjustDelay)
@@ -653,6 +656,9 @@ end
 end
 if state-ajustingValue < minState then
 message("No more previous parameter values.")
+capi.SetParam(self.fxIndex, self.parmIndex, state)
+utils.delay(adjustDelay)
+capi.EndParamEdit(self.fxIndex, self.parmIndex)
 end
 else
 if state-ajustingValue >= minState then
