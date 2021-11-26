@@ -1739,20 +1739,22 @@ message("No more next property values. ")
 if curTake then
 state = curTake
 end
+break
 end
 end
 elseif action == actions.set.decrease then
-for i = idx-1, 0, -1 do
+for i = idx-1, -1, -1 do
 local curTake = reaper.GetTake(items, i)
 if curTake then
 state = curTake
 break
 end
-if i-1 == -1 then
+if i-1 <= -1 then
 message("No more previous property values. ")
 if curTake then
 state = curTake
 end
+break
 end
 end
 end
