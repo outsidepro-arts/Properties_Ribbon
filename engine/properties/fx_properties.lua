@@ -99,6 +99,8 @@ capi.GetParamName(fxIndex, parmIndex)
 ```
 ]]--
 
+
+
 -- Some internal functions
 -- Exclude masks metatable
 local fxMaskList = setmetatable({}, {
@@ -217,9 +219,33 @@ end
 return false
 end
 
+local function getStringParmValue(fxId, parmId)
+local fxValue = capi.GetParam(fxId, parmId)
+local retval, buf = capi.FormatParamValue(fxId, parmId, fxValue)
+if retval and buf ~= "" then
+	return buf
+end
+retval, buf = capi.GetFormattedParamValue(fxId, parmId)
+if retval and buf ~= "" then
+return buf
+end
+buf = tostring(utils.numtopercent(capi.GetParamNormalized(fxId, parmId))).."%"
+return buf, (retval and buf ~= "")
+end
 
+local function setParmValue(fxId, parmId, value)
+local fxValue = capi.GetParam(fxId, parmId)
+local result = capi.SetParam(fxId, parmId, value)
+-- Some plugins works assynchronously, so we have to decelerate our code
+utils.delay(5)
+return result
+end
 
-
+local function endParmEdit(fxId, parmId)
+local parmNormalized = capi.GetParamNormalized(fxId, parmId)
+capi.SetParam(fxId, parmId, parmNormalized)
+capi.EndParamEdit(fxId, parmId)
+end
 
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
@@ -358,7 +384,7 @@ label="Set minimal parameter value",
 proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 capi.SetParam(obj.fxIndex, obj.parmIndex, minState)
-capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+endParmEdit(obj.fxIndex, obj.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
 message("Set minimal parameter value.")
@@ -371,7 +397,7 @@ label="Set maximal parameter value",
 proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 capi.SetParam(obj.fxIndex, obj.parmIndex, maxState)
-capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+endParmEdit(obj.fxIndex, obj.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
 message("Set maximal parameter value.")
@@ -386,17 +412,19 @@ local state = capi.GetParamNormalized(obj.fxIndex, obj.parmIndex)
 local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:", tostring(utils.round(state, 5)))
 if retval then
 capi.SetParam(obj.fxIndex, obj.parmIndex, tonumber(answer))
-capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+endParmEdit(obj.fxIndex, obj.parmIndex)
 end
 return true, obj:get()
 end
 },
+-- Temporarelly hidden
+--[[
 {
 label="Search for parameter value",
 proc=function(obj)
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 if retval then
-local retval, answer = reaper.GetUserInputs("Search parameter value", 1, "Type either a part of value string or full string:", curValue)
+local retval, answer = reaper.GetUserInputs("Search for parameter value", 1, "Type either a part of value string or full string:", curValue)
 if retval then
 if not extstate._layout._forever.searchProcessNotify then
 reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
@@ -420,26 +448,31 @@ searchState = minState
 end
 local ajustingValue = stepsList[1].value
 if retvalStep and defStep > 0.0 then
+	if isToggle then
+		reaper.ShowMessageBox("This parameter is toggle. It means it has only two states, therefore here is no point to search something.", "Searching in toggle parameter", 0)
+		return true
+	end
 ajustingValue = defStep
 end
+local searchReportCount = 0
 while searchState <= maxState and searchState >= minState do
 if searchMode == 1 then
 searchState = searchState-ajustingValue
 else
 searchState = searchState+ajustingValue
 end
-capi.SetParam(obj.fxIndex, obj.parmIndex, searchState)
-utils.delay(adjustDelay)
-local wretval, wfxValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex)
-if wretval then
+setParmValue(obj.fxIndex, obj.parmIndex, searchState)
+local wfxValue = getStringParmValue(obj.fxIndex, obj.parmIndex)
 if utils.simpleSearch(wfxValue, answer) then
 state = searchState
-capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+endParmEdit(obj.fxIndex, obj.parmIndex)
 break
 end
-else
-reaper.ShowMessageBox("The parameter values suddenly have lost any string representation.", "Search error", 0)
-break
+if searchReportCount <= 100000 then
+	searchReportCount = searchReportCount+1
+else	
+searchReportCount = 0
+("Searching..."):output()
 end
 end
 if searchState ~= state then
@@ -451,8 +484,8 @@ stringForm = stringForm.." relative from previously set value to the right"
 end
 stringForm = stringForm.."."
 reaper.ShowMessageBox(string.format(stringForm, answer), "No results", 0)
-capi.SetParam(obj.fxIndex, obj.parmIndex, state)
-capi.EndParamEdit(obj.fxIndex, obj.parmIndex)
+setParmValue(obj.fxIndex, obj.parmIndex, state)
+endParmEdit(obj.fxIndex, obj.parmIndex)
 return true
 end
 end
@@ -462,6 +495,7 @@ end
 return true, obj:get()
 end
 },
+]]--
 {
 label="Create envelope with this parameter",
 proc=function(obj)
@@ -565,14 +599,7 @@ if config.getboolean("reportParmId", true) then
 else	
 	message(string.format("Parameter %u ", self.parmIndex+1))
 end
-message(({capi.GetParamName(self.fxIndex, self.parmIndex, "")})[2]..": ")
-local retval, state = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
-if retval then
-message(state)
-else
-local retval = capi.GetParamNormalized(self.fxIndex, self.parmIndex)
-message(tostring(utils.round(retval, 5)))
-end
+message(string.format("%s: %s", ({capi.GetParamName(self.fxIndex, self.parmIndex)})[2], getStringParmValue(self.fxIndex, self.parmIndex)))
 end
 return message
 end,
@@ -584,12 +611,32 @@ local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex))
 local ajustingValue = stepsList[stepDefinition].value
 local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
 local retvalStep, defStep, smallStep, largeStep, isToggle = capi.GetParameterStepSizes(self.fxIndex, self.parmIndex)
+local deltaExists = 0
+do
+local retval, parmName = capi.GetParamName(self.fxIndex, capi.GetNumParams(self.fxIndex)-1)
+if retval then
+if parmName == "Delta" then
+deltaExists = 1
+end
+end
+end
+if self.parmIndex == (fxParmsCount-2-deltaExists) or (deltaExists == 1 and self.parmIndex == (fxParmsCount-1)) then
+retvalStep, isToggle = true, true
+end
 if action == actions.set.increase then
 	if retvalStep and defStep > 0.0 then
 	if (state+defStep) <= maxState then
-capi.SetParam(self.fxIndex, self.parmIndex, state+defStep)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, state+defStep)
+endParmEdit(self.fxIndex, self.parmIndex)
+else
+message("No more next parameter values.")
+setParmValue(self.fxIndex, self.parmIndex, maxState)
+endParmEdit(self.fxIndex, self.parmIndex)
+end
+elseif retvalStep and isToggle then
+if state ~= maxState then
+setParmValue(self.fxIndex, self.parmIndex, maxState)
+endParmEdit(self.fxIndex, self.parmIndex)
 else
 message("No more next parameter values.")
 end
@@ -599,42 +646,45 @@ local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
 while state <= maxState do
 state = state+ajustingValue
-capi.SetParam(self.fxIndex, self.parmIndex, state)
-utils.delay(adjustDelay)
-local wretval, wfxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex)
-if wretval then
+setParmValue(self.fxIndex, self.parmIndex, state)
+local wfxValue, wretval = getStringParmValue(self.fxIndex, self.parmIndex)
 if fxValue ~= wfxValue then
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
-break
-end
-else
+endParmEdit(self.fxIndex, self.parmIndex)
 break
 end
 end
 if state+ajustingValue > maxState then
 message("No more next parameter values.")
-capi.SetParam(self.fxIndex, self.parmIndex, maxState)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, maxState)
+endParmEdit(self.fxIndex, self.parmIndex)
 end
 else
-if state+ajustingValue <= maxState then
-capi.SetParam(self.fxIndex, self.parmIndex, state+ajustingValue)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+if (state+ajustingValue) <= maxState then
+setParmValue(self.fxIndex, self.parmIndex, state+ajustingValue)
+endParmEdit(self.fxIndex, self.parmIndex)
 else
 message("No more next parameter values.")
+setParmValue(self.fxIndex, self.parmIndex, maxState)
+endParmEdit(self.fxIndex, self.parmIndex)
 end
 end
 end
 elseif action == actions.set.decrease then
 if retvalStep and defStep > 0.0 then
 if (state-defStep) >= minState then
-capi.SetParam(self.fxIndex, self.parmIndex, state-defStep)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, state-defStep)
+endParmEdit(self.fxIndex, self.parmIndex)
 else
 message("No more previous parameter values.")
+setParmValue(self.fxIndex, self.parmIndex, minState)
+endParmEdit(self.fxIndex, self.parmIndex)
+end
+elseif retvalStep and isToggle then
+if state ~= minState then
+setParmValue(self.fxIndex, self.parmIndex, minState)
+endParmEdit(self.fxIndex, self.parmIndex)
+else
+message("No previous parameter values.")
 end
 else
 local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
@@ -642,12 +692,11 @@ local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
 while state >= minState do
 state = state-ajustingValue
-capi.SetParam(self.fxIndex, self.parmIndex, state)
-utils.delay(adjustDelay)
-local wretval, wfxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, state)
+local wfxValue, wretval = getStringParmValue(self.fxIndex, self.parmIndex)
 if wretval then
 if fxValue ~= wfxValue then
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+endParmEdit(self.fxIndex, self.parmIndex)
 break
 end
 else
@@ -656,17 +705,17 @@ end
 end
 if state-ajustingValue < minState then
 message("No more previous parameter values.")
-capi.SetParam(self.fxIndex, self.parmIndex, state)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, minState)
+endParmEdit(self.fxIndex, self.parmIndex)
 end
 else
 if state-ajustingValue >= minState then
-capi.SetParam(self.fxIndex, self.parmIndex, state-ajustingValue)
-utils.delay(adjustDelay)
-capi.EndParamEdit(self.fxIndex, self.parmIndex)
+setParmValue(self.fxIndex, self.parmIndex, state-ajustingValue)
+endParmEdit(self.fxIndex, self.parmIndex)
 else
 message("No more previous parameter values.")
+setParmValue(self.fxIndex, self.parmIndex, minState)
+endParmEdit(self.fxIndex, self.parmIndex)
 end
 end
 end
