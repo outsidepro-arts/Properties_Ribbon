@@ -86,7 +86,17 @@ end
 function utils.delay(ms)
 ms = ms*0.001
 local curTime = os.clock()
-while (os.clock()-curTime) <= ms do end
+while (os.clock()-curTime) <= ms do math.pow(2, 64) end
+end
+
+-- The math.pow method is removed from ReaScript platform
+-- This realization is very simple, but takes a CPU loading. We use this method nowhere else that in delay function to decelerate the waiting.
+function math.pow(a, b)
+local r = 1
+for i = 1, b do
+r = r*a
+end
+return r
 end
 
 function utils.removeSpaces(str)
