@@ -392,6 +392,9 @@ return nil
 end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 if newLayout then
+if extstate.gotoMode then
+extstate.gotoMode = nil
+end
 if type(newLayout) == "table" then                  
 newLayout = newLayout.section.."//"..newLayout.layout or nil
 end
@@ -449,6 +452,10 @@ return (layout)
 end
 
 function script_switchSublayout(action)
+if extstate.gotoMode then
+("Goto mode diactivated. "):output()
+extstate.gotoMode = nil
+end
 if layout.canProvide() ~= true then
 (string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
@@ -487,6 +494,10 @@ end
 
 function script_nextProperty()
 local message = initOutputMessage()
+if extstate.gotoMode then
+message("Goto mode diactivated. ")
+extstate.gotoMode = nil
+end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 if speakLayout == true then
 message(composeSubLayout())
@@ -527,6 +538,10 @@ end
 function script_previousProperty()
 local message = initOutputMessage()
 local rememberCFG = config.getinteger("rememberSublayout", 3)
+if extstate.gotoMode then
+message("Goto mode diactivated. ")
+extstate.gotoMode = nil
+end
 if speakLayout == true then
 message(composeSubLayout())
 if rememberCFG ~= 2 and rememberCFG ~= 3 then
@@ -563,8 +578,27 @@ message:output()
 script_finish()
 end
 
-function script_reportOrGotoProperty(propertyNum)
+function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated)
 local message = initOutputMessage()
+local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
+local gotoMode = extstate.gotoMode
+if gotoMode and propertyNum then
+if propertyNum == 10 then
+propertyNum = 0
+end
+if gotoMode == 0 then
+gotoMode = tostring(propertyNum)
+else
+gotoMode = tostring(gotoMode)..tostring(propertyNum)
+end
+(tostring(gotoMode)):output()
+extstate.gotoMode = gotoMode
+return
+elseif gotoMode and propertyNum == nil then
+cfg_percentageNavigation = false
+propertyNum = gotoMode
+extstate.gotoMode = nil
+end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 local percentageNavigationApplied = false
 if speakLayout == true then
@@ -582,7 +616,7 @@ script_finish()
 return
 end
 if propertyNum then
-if config.getboolean("percentagePropertyNavigation", false) == true and #layout.properties > 10 then
+if cfg_percentageNavigation == true and #layout.properties > 10 then
 if propertyNum > 1 then
 propertyNum = math.floor((#layout.properties*propertyNum)*0.1)
 --message(string.format("Percentage navigation to %u, ", propertyNum))
@@ -622,6 +656,11 @@ script_finish()
 end
 
 function script_ajustProperty(value)
+local gotoMode = extstate.gotoMode
+if gotoMode and value == nil then
+script_reportOrGotoProperty()
+return
+end
 if layout.canProvide() == true then
 local msg = layout.properties[layout.pIndex]:set(value)
 if not msg then
@@ -654,6 +693,17 @@ message(", here is no properties")
 end
 message(".")
 message:output()
+end
+
+function script_activateGotoMode()
+local mode = extstate.gotoMode
+if mode == nil then
+("Goto mode activated."):output()
+extstate.gotoMode = 0
+else
+("Goto mode diactivated."):output()
+extstate.gotoMode = nil
+end
 end
 
 function script_finish()
