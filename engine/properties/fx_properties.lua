@@ -611,6 +611,8 @@ end
 return message
 end,
 set = function(self, action)
+-- We have to fix jumping focus
+extstate._layout.lastRealFXID = self.parmIndex
 local message = initOutputMessage()
 local mode = extstate._layout.fxParmMode or 0
 if mode == 0 then
@@ -774,6 +776,20 @@ end
 
 if fxLayout[currentSublayout] == nil then
 currentSublayout = findDefaultSublayout(fxLayout)
+end
+
+-- Here is main jumping focus fix code
+local realFXID = extstate._layout.lastRealFXID
+if realFXID then
+for i = 1, #fxLayout[currentSublayout].properties do
+local v = fxLayout[currentSublayout].properties[i]
+if v.parmIndex then
+if v.parmIndex == realFXID then
+extstate[fxLayout[currentSublayout].section] = i
+extstate._layout.lastRealFXID = nil
+end
+end
+end
 end
 end
 
