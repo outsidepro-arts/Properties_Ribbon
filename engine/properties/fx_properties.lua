@@ -223,11 +223,11 @@ local function getStringParmValue(fxId, parmId)
 local fxValue = capi.GetParam(fxId, parmId)
 local retval, buf = capi.FormatParamValue(fxId, parmId, fxValue)
 if retval and buf ~= "" then
-	return buf
+	return buf, retval
 end
 retval, buf = capi.GetFormattedParamValue(fxId, parmId)
 if retval and buf ~= "" then
-return buf
+return buf, retval
 end
 buf = tostring(utils.numtopercent(capi.GetParamNormalized(fxId, parmId))).."%"
 return buf, (retval and buf ~= "")
@@ -648,7 +648,7 @@ else
 message("No more next parameter values.")
 end
 else
-local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
+local fxValue, retval = getStringParmValue(self.fxIndex, self.parmIndex)
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
 while state <= maxState do
@@ -677,7 +677,7 @@ end
 end
 end
 elseif action == actions.set.decrease then
-if retvalStep and defStep > 0.0 then
+if retvalStep and defStep > 0 then
 if (state-defStep) >= minState then
 setParmValue(self.fxIndex, self.parmIndex, state-defStep)
 endParmEdit(self.fxIndex, self.parmIndex)
@@ -694,7 +694,7 @@ else
 message("No previous parameter values.")
 end
 else
-local retval, fxValue = capi.GetFormattedParamValue(self.fxIndex, self.parmIndex, "")
+local fxValue, retval = getStringParmValue(self.fxIndex, self.parmIndex)
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
 while state >= minState do
