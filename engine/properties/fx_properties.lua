@@ -221,11 +221,11 @@ end
 
 local function getStringParmValue(fxId, parmId)
 local fxValue = capi.GetParam(fxId, parmId)
-local retval, buf = capi.FormatParamValue(fxId, parmId, fxValue)
+local retval, buf = capi.FormatParamValue(fxId, parmId, fxValue, "")
 if retval and buf ~= "" then
 	return buf, retval
 end
-retval, buf = capi.GetFormattedParamValue(fxId, parmId)
+retval, buf = capi.GetFormattedParamValue(fxId, parmId, "")
 if retval and buf ~= "" then
 return buf, retval
 end
