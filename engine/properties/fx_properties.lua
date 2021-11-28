@@ -278,10 +278,13 @@ end
 if fxLayout.canProvide() then
 -- Creating the sublayouts with plug-ins and properties with parameters
 local fxCount = capi.GetCount()
-local fxRecCount = capi.GetRecCount()
+local fxRecCount = 0
+if context == 0 then
+fxRecCount = capi.GetRecCount()
+end
 local fullCount = 0
 for i = 0, (fxCount-1)+(fxRecCount+1)-1 do
-local fxInaccuracy, parmInaccuracy = 0, 0
+local fxInaccuracy = 0, 0
 if i >= fxCount then
 fxInaccuracy = 0x1000000
 end
@@ -291,6 +294,7 @@ if retval then
 fxName = fxName:match("^.+[:]%s(.+)%s?[(]?")
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
 local fxPrefix = contextPrompt.." "
+if context == 0 then
 if fxInaccuracy == 0 and capi.GetInstrument() == i then
 fxPrefix = "Instrument "
 else
@@ -301,6 +305,9 @@ else
 fxPrefix = fxPrefix.."input "
 end
 end
+end
+end
+if not fxPrefix:find("Instrument") then
 fxPrefix = fxPrefix.."FX "
 end
 fxLayout:registerSublayout(sid, fxPrefix..fxName)
