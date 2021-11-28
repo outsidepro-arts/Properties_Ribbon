@@ -527,6 +527,21 @@ end
 end
 },
 {
+label="Compose filter based on this parameter",
+proc = function (obj)
+local _, fxParam = capi.GetParamName(obj.fxIndex, obj.parmIndex)
+local retval, answer = reaper.GetUserInputs("Filter parameters by", 1, "Type either full parameter name or a part of (Lua patterns supported):", fxParam)
+if retval then
+if answer ~= "" then
+setFilter(sid, answer)
+else
+reaper_extstate.ShowMessageBox("You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere.", "Set filter error", 0)
+end
+end
+return true
+end
+},
+{
 	label=string.format("Set adjusting step for this parameter (currently %s)", stepsList[getStep(makeUniqueKey(i, k))].label),
 	proc=function(obj)
 	local curStepIndex = getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex), true) or 0
