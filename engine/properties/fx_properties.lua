@@ -291,7 +291,14 @@ end
 local retval, fxName = capi.GetFXName(i+fxInaccuracy, "")
 if retval then
 -- Ah this beautifull prefixes and postfixes
-fxName = fxName:match("^.+[:]%s(.+)%s?[(]?")
+do
+local startPos = fxName:find(":")+2
+local endPos = fxName:find("[(].+$")
+if endPos then
+endPos = endPos-2
+end
+fxName = fxName:sub(startPos, endPos)
+end
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
 local fxPrefix = contextPrompt.." "
 if context == 0 then
