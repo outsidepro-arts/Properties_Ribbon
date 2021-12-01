@@ -286,10 +286,12 @@ local fxCount = capi.GetCount()
 local fxRecCount = 0
 if context == 0 then
 fxRecCount = capi.GetRecCount()
+if contextPrompt:find("Master") then
 if whichFXCanbeLoaded == "monitoring" then
 fxCount = 0
 elseif whichFXCanbeLoaded == "master" then
 fxRecCount = 0
+end
 end
 end
 local fullCount = 0
