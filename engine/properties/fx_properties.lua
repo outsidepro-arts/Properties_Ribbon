@@ -21,8 +21,13 @@ local context = reaper.GetCursorContext()
 -- Fixing the unexpected items context
 if context == 1 and reaper.GetLastTouchedTrack() == nil then
 	context = 0
+-- Remember of unexpected contexts
+elseif context < 0 then
+context = extstate.lastKnownContext
 end
 
+-- FX section split needs
+local whichFXCanbeLoaded = extstate._layout.loadFX
 
 -- Steps list for adjusting (will be defined using configuration)
 local stepsList = {
@@ -281,6 +286,11 @@ local fxCount = capi.GetCount()
 local fxRecCount = 0
 if context == 0 then
 fxRecCount = capi.GetRecCount()
+if whichFXCanbeLoaded == "monitoring" then
+fxCount = 0
+elseif whichFXCanbeLoaded == "master" then
+fxRecCount = 0
+end
 end
 local fullCount = 0
 for i = 0, (fxCount-1)+(fxRecCount+1)-1 do

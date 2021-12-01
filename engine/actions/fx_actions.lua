@@ -395,26 +395,21 @@ fxPropertiesForMasterTrack.getValue = masterTrackFXChain.getValue
 function fxPropertiesForMasterTrack:get()
 local message = initOutputMessage()
 message:initType("Perform this property to work with FX parameters for master track.", "Performable")
-local chainCount, monitoringCount = self.getValue()
-if monitoringCount > 0 then
-message:addType(" The FX which have being added to monitoring FX chain will display also here.", 1)
-end
-if chainCount == 0 and monitoringCount == 0 then
+local chainCount = self.getValue()
+if chainCount == 0 then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
 message:changeType("Unavailable", 2)
 end
 message(("FX properties of master track with %s"):format(getStringPluginsCount(self.getValue)))
-if monitoringCount > 0 then
-message((" and monitoring section with %s"):format(getStringPluginsCount(monitoringCount)))
-end
 return message
 end
 
 function fxPropertiesForMasterTrack:set(action)
-if action == nil then
-local chainCount, monitoringCount = self.getValue()
-if chainCount > 0 or monitoringCount > 0 then
+if action == actions.set.perform then
+local chainCount = self.getValue()
+if chainCount > 0 then
 script_finish()
+extstate["fx_properties.loadFX"] = "master"
 if script_init({section="properties",layout="fx_properties"}, true) then
 script_reportOrGotoProperty()
 end
@@ -547,9 +542,44 @@ end
 end
 }
 
+-- Monitoring FX properties
+local fxPropertiesForMonitoring = {}
+fxActionsLayout.monitoringLayout:registerProperty(fxPropertiesForMonitoring)
+
+fxPropertiesForMonitoring.getValue = masterTrackFXChain.getValue
+
+function fxPropertiesForMonitoring:get()
+local message = initOutputMessage()
+message:initType("Perform this property to work with FX parameters for monitoring section.", "Performable")
+local _, monitoringCount = self.getValue()
+if monitoringCount == 0 then
+message:addType(" This action is unavailable right now because there are no FX.", 1)
+message:changeType("Unavailable", 2)
+end
+message(("FX properties of monitoring section with %s"):format(getStringPluginsCount(monitoringCount)))
+return message
+end
+
+function fxPropertiesForMonitoring:set(action)
+if action == actions.set.perform then
+local _, monitoringCount = self.getValue()
+if monitoringCount > 0 then
+script_finish()
+extstate["fx_properties.loadFX"] = "monitoring"
+if script_init({section="properties",layout="fx_properties"}, true) then
+script_reportOrGotoProperty()
+end
+return
+else
+return "This action is unavailable right now because no one FX is set there."
+end
+else
+return "This property is performable only."
+end
+end
+
+
 -- The monitoring sections has not the OSARA proposed FX parameters. I think that the decision about has dictated by using the TrackFX_GetRecCount both on a track and on a master track. Therefore we just copy this property to monitoring section also.
--- So, I decided to do the same
-fxActionsLayout.monitoringLayout:registerProperty(fxPropertiesForMasterTrack)
 fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
 
