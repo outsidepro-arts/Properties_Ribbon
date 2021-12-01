@@ -250,7 +250,7 @@ end
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
 if context == 0 then
-if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() then
+if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil then
 contextPrompt = "Master track"
 else
 contextPrompt = "Track"
