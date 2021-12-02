@@ -440,8 +440,13 @@ proc=function(obj)
 local state = capi.GetParamNormalized(obj.fxIndex, obj.parmIndex)
 local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:", tostring(utils.round(state, 5)))
 if retval then
-capi.SetParam(obj.fxIndex, obj.parmIndex, tonumber(answer))
+if tonumber(answer) then
+setParmValue(obj.fxIndex, obj.parmIndex, tonumber(answer))
 endParmEdit(obj.fxIndex, obj.parmIndex)
+else
+reaper.ShowMessageBox("Seems it is not a raw data.", "Raw data error", 0)
+return true
+end
 end
 return true, obj:get()
 end
