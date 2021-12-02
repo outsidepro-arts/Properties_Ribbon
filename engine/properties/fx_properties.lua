@@ -247,8 +247,11 @@ return result
 end
 
 local function endParmEdit(fxId, parmId)
+local retval, fxName = capi.GetFXName(fxId, "")
+if fxName:lower():find("^vst") then
 local parmNormalized = capi.GetParamNormalized(fxId, parmId)
 capi.SetParam(fxId, parmId, parmNormalized)
+end
 capi.EndParamEdit(fxId, parmId)
 end
 
