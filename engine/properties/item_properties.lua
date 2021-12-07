@@ -2921,13 +2921,6 @@ end
 else
 formStretchMarkerProperties(items)
 end
--- Hack our sublayout a little to avoid the engine to call  not existing properties
-setmetatable(parentLayout.stretchMarkersLayout.properties, {
-__index = function(self, key)
-parentLayout.pIndex = #parentLayout.stretchMarkersLayout.properties
-return parentLayout.stretchMarkersLayout.properties[#parentLayout.stretchMarkersLayout.properties]
-end
-})
 
 local takeMarkersActionsProperty = {}
 parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
@@ -3003,13 +2996,6 @@ end
 else
 formTakeMarkersProperties(items)
 end
--- Hack our sublayout a little to avoid the engine to call  not existing properties
-setmetatable(parentLayout.takeMarkersLayout.properties, {
-__index = function(self, key)
-parentLayout.pIndex = #parentLayout.takeMarkersLayout.properties
-return parentLayout.takeMarkersLayout.properties[#parentLayout.takeMarkersLayout.properties]
-end
-})
 
 parentLayout.defaultSublayout = "itemLayout"
 

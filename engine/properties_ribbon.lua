@@ -219,7 +219,12 @@ self[slID] = setmetatable({
 type="sublayout",
 subname = slName,
 section = string.format("%s.%s", utils.removeSpaces(parentName), slID),
-properties = {}
+properties = setmetatable({}, {
+__index = function(t, key)
+self.pIndex = #t
+return rawget(t, #t)
+end
+})
 }, {
 __index = self})
 self.ofCount = self.ofCount+1
@@ -258,7 +263,12 @@ for slsn, sls in pairs(self) do
         end
     end
     end,
-properties = {},
+properties = setmetatable({}, {
+__index = function(self, key)
+layout.pIndex = #self
+return rawget(self, #self)
+end
+}),
 registerProperty = function(self, property)
  return table.insert(self.properties, property)
 end

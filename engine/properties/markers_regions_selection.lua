@@ -207,13 +207,6 @@ end
 end
 end
 end
--- Hack our sublayout a little to avoid the engine to call  not existing properties
-setmetatable(parentLayout.markersLayout.properties, {
-__index = function(self, key)
-parentLayout.pIndex = #parentLayout.markersLayout.properties
-return parentLayout.markersLayout.properties[#parentLayout.markersLayout.properties]
-end
-})
 
 
 -- Regions loading
@@ -402,13 +395,6 @@ end
 end
 end
 end
--- Hack our sublayout a little to avoid the engine to call  not existing properties
-setmetatable(parentLayout.regionsLayout.properties, {
-__index = function(self, key)
-parentLayout.pIndex = #parentLayout.regionsLayout.properties
-return parentLayout.regionsLayout.properties[#parentLayout.regionsLayout.properties]
-end
-})
 
 
 return parentLayout
