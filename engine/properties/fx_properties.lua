@@ -533,7 +533,13 @@ end
 {
 label="Create envelope with this parameter",
 proc=function(obj)
-if capi.GetFXEnvelope(obj.fxIndex, obj.parmIndex, true) then
+local createEnvelope = nil
+if context == 0 then
+createEnvelope = reaper.GetFXEnvelope
+elseif context == 1 then
+createEnvelope = reaper.TakeFX_GetEnvelope
+end
+if createEnvelope(capi._contextObj[context](), obj.fxIndex, obj.parmIndex, true) then
 local fxParmName = ({capi.GetParamName(obj.fxIndex, obj.parmIndex, "")})[2]
 local cobj = capi._contextObj[context]()
 local name = nil
