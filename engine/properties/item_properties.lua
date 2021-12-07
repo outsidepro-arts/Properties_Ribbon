@@ -2666,7 +2666,7 @@ extstate.itemProperties_smrkaction = nil
 else
 message(self.states[extstate.itemProperties_smrkaction])
 end
-message(string.format("Stretch marker %u of %s %s", self.marker.idx+1, getItemID(self.marker.item), getTakeID(self.marker.item)))
+message(string.format("%stretch marker %u of %s %s", ({[false]="S",[true]="Pulled s"})[(self.marker.pos ~= self.marker.srcpos)], self.marker.idx+1, getItemID(self.marker.item), getTakeID(self.marker.item)))
 return message
 end,
 set = function(self, action)
