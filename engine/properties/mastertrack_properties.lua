@@ -251,8 +251,9 @@ parentLayout.playbackLayout:registerProperty(masterFXProperty)
 function masterFXProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the FX activity of master track.", "Toggleable")
-if reaper.TrackFX_GetCount(master) > 0 then
-message(string.format("Master FX %s", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)]))
+local fxCount = reaper.TrackFX_GetCount(master)
+if fxCount > 0 then
+message(string.format("Master FX %s (%u FX in master chain)", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)], fxCount))
 else
 message("Master  FX empty")
 message:addType(" This property  is unavailable now because the master track FX chain is empty.", 1)
