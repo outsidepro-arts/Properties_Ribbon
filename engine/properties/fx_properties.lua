@@ -698,6 +698,7 @@ else
 local fxValue, retval = getStringParmValue(self.fxIndex, self.parmIndex)
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
+if state < maxState then
 while state <= maxState do
 state = state+ajustingValue
 setParmValue(self.fxIndex, self.parmIndex, state)
@@ -707,7 +708,11 @@ endParmEdit(self.fxIndex, self.parmIndex)
 break
 end
 end
-if state+ajustingValue > maxState then
+if state > maxState then
+setParmValue(self.fxIndex, self.parmIndex, maxState)
+endParmEdit(self.fxIndex, self.parmIndex)
+end
+else
 message("No more next parameter values.")
 setParmValue(self.fxIndex, self.parmIndex, maxState)
 endParmEdit(self.fxIndex, self.parmIndex)
@@ -744,6 +749,7 @@ else
 local fxValue, retval = getStringParmValue(self.fxIndex, self.parmIndex)
 local cfg = getFindNearestConfig(makeUniqueKey(self.fxIndex, self.parmIndex))
 if retval and cfg then
+if state > minState then
 while state >= minState do
 state = state-ajustingValue
 setParmValue(self.fxIndex, self.parmIndex, state)
@@ -758,6 +764,10 @@ break
 end
 end
 if state-ajustingValue < minState then
+setParmValue(self.fxIndex, self.parmIndex, minState)
+endParmEdit(self.fxIndex, self.parmIndex)
+end
+else
 message("No more previous parameter values.")
 setParmValue(self.fxIndex, self.parmIndex, minState)
 endParmEdit(self.fxIndex, self.parmIndex)
