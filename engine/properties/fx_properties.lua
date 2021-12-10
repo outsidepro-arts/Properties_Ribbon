@@ -321,13 +321,18 @@ end
 local retval, fxName = capi.GetFXName(i+fxInaccuracy, "")
 if retval then
 -- Ah this beautifull prefixes and postfixes
-do
+if fxName:find("VST") and fxName:find(": ") then
 local startPos = fxName:find(":")+2
 local endPos = fxName:find("[(].+$")
 if endPos then
 endPos = endPos-2
 end
 fxName = fxName:sub(startPos, endPos)
+else
+if extstate._layout.renameNotify then
+reaper.ShowMessageBox("Seems you have renamed the FX which Properties Ribbon tries to load. Note that FX properties defines many process enhancements using real FX name because REAPER does not provide other method to do that. If you're renaming FX which FX properties interract with, the exclude specified parameters and assynchronous plugins definition cannot be work To keep these options working, please leave the original fX name at any string part.", "FX renamed", 0)
+extstate._layout.renameNotify = true
+end
 end
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
 local fxPrefix = contextPrompt.." "
