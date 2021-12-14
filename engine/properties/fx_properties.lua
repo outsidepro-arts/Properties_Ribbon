@@ -41,8 +41,8 @@ local stepsList = {
 
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {
-"MeldaProduction",
-"Pulsar"
+{name="MeldaProduction",delay=6},
+{name="Pulsar",delay=2}
 }
 -- Some plug-ins is sluggish, so we have to wait a few time for
 local adjustDelay = 5 -- MS
@@ -233,8 +233,8 @@ end
 local function checkKnownAssyncPlugin(fxId)
 local _, fxName = capi.GetFXName(fxId, "")
 for _, plugin in ipairs(knownAssyncPlugins) do
-if utils.simpleSearch(fxName, plugin) then
-return true
+if utils.simpleSearch(fxName, plugin.name) then
+return true, plugin.delay
 end
 end
 return false
@@ -258,8 +258,9 @@ local function setParmValue(fxId, parmId, value)
 local fxValue = capi.GetParam(fxId, parmId)
 local result = capi.SetParam(fxId, parmId, value)
 -- Some plugins works assynchronously, so we have to decelerate our code
-if checkKnownAssyncPlugin(fxId) then
-utils.delay(5)
+local retval, fxDelay = checkKnownAssyncPlugin(fxId)
+if retval then
+utils.delay(fxDelay)
 end
 return result
 end
