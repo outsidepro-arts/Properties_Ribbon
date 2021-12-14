@@ -678,24 +678,61 @@ function fxUseNearestParmValueProperty:set(action)
 	return message
 end
 
+local reportParmIndexProperty = {}
+configLayout.fxPropertiesConfig:registerProperty(reportParmIndexProperty)
+
+function reportParmIndexProperty:get()
+local message = initOutputMessage()
+message:initType("Toggle this parameter to switch the report of the parameter identification prefix when navigating.", "Toggleable")
+local state = config.getboolean("reportParmId", true)
+message(string.format("%s parameter indentification when navigating", ({[true]="Report",[false]="Do not report"})[state]))
+return message
+end
+
+function reportParmIndexProperty:set(action)
+if action == actions.set.toggle then
+config.setboolean("reportParmId", utils.nor(config.getboolean("reportParmId", true)))
+else
+return "This property is toggleable only."
+end
+local message = initOutputMessage()
+message(self:get())
+return message
+end
+
 local reportRealParmValueProperty = {}
 configLayout.fxPropertiesConfig:registerProperty(reportRealParmValueProperty)
+reportRealParmValueProperty.states = {
+"incremental",
+"real"
+}
 
 function reportRealParmValueProperty:get()
 	local message = initOutputMessage()
-	message:initType("Toggle this property to switch the reporting parameter number behavior: by real parameter ID or by incremental", "Toggleable")
-	local state = config.getboolean("reportParmId", true)
-	message(string.format("Report %s FX parameter number when navigating", ({[true]="incremental",[false]="real"})[state]))
+	message:initType("Adjust this property to set the reporting parameter number behavior.", "Adjustable")
+	local state = config.getinteger("reportParmMethod", 1)
+	message(string.format("Report %s FX parameter number when navigating", self.states[state]))
 	return message
 end
 
 function reportRealParmValueProperty:set(action)
-	if action == actions.set.toggle then
-		config.setboolean("reportParmId", utils.nor(config.getboolean("reportParmId", true)))
+local message = initOutputMessage()
+	local state = config.getinteger("reportParmMethod", 1)
+	if action == actions.set.increase then
+if (state+1) <= #self.states then
+config.setinteger("reportParmMethod", state+1)
+else
+message("No more next parameter values.")
+end
+elseif action == actions.set.decrease then
+if (state-1) >= 1 then
+config.setinteger("reportParmMethod", state-1)
+else
+message("No more previous property values.")
+end
 	else
-		return "This property is toggleable only."
+		return "This property is adjustable only."
 	end
-	local message = initOutputMessage()
 	message(self:get())
 	return message
 end
