@@ -71,6 +71,8 @@ return ((value & ((1<<last)-1)) >> (first-1))
 end
 
 function utils.splitstring(str, delimiter, mode)
+str = tostring(str)
+delimiter = tostring(delimiter)
 delimiter = delimiter or "%s"
 mode = utils.nor(mode) or true
 local t, spos = {}, 1
@@ -100,6 +102,7 @@ return r
 end
 
 function utils.removeSpaces(str)
+str = tostring(str)
 preproc = str:gsub("%s.", string.upper):gsub("%s", "")
   return  preproc:gsub("^.", string.lower)
 end
@@ -124,6 +127,8 @@ reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
 end
 
 function utils.simpleSearch(fullString, searchString)
+fullString = tostring(fullString)
+searchString = tostring(searchString)
 if searchString:find("%u") then
 return (fullString:find(searchString))
 else
