@@ -309,7 +309,7 @@ end
 end
 local fullCount = 0
 for i = 0, (fxCount-1)+(fxRecCount+1)-1 do
-local fxInaccuracy = 0, 0
+local fxInaccuracy = 0
 if i >= fxCount then
 fxInaccuracy = 0x1000000
 end
