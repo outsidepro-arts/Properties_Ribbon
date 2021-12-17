@@ -125,15 +125,9 @@ error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 end,
 __newindex=function(self, idx, maskTable)
 if maskTable then
-if type(maskTable) ~= "table" then
-error(string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
-end
-if maskTable.fxMask == nil then
-error("Expected field fxMask")
-end
-if maskTable.paramMask == nil then
-error("Expected field paramMask")
-end
+assert(type(maskTable) ~= "table", string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+assert(maskTable.fxMask == nil, "Expected field fxMask")
+assert(maskTable.paramMask == nil, "Expected field paramMask")
 extstate._forever._layout[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
 extstate._forever._layout[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
 else
