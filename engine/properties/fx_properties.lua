@@ -297,7 +297,11 @@ local fxCount = capi.GetCount()
 local fxRecCount = 0
 if context == 0 then
 fxRecCount = capi.GetRecCount()
-if contextPrompt:find("Master") then
+if whichFXCanbeLoaded then
+capi._contextObj[0] = function()
+return reaper.GetMasterTrack(0)
+end
+contextPrompt = "Master track"
 if whichFXCanbeLoaded == "monitoring" then
 fxCount = 0
 elseif whichFXCanbeLoaded == "master" then

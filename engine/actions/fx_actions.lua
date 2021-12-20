@@ -328,6 +328,7 @@ if action == actions.set.perform then
 local chainCount, inputCount = self.getValue()
 if chainCount > 0 or (inputCount and inputCount > 0) then
 script_finish()
+extstate["fx_properties.loadFX"] = nil
 if script_init({section="properties",layout="fx_properties"}, true) then
 script_reportOrGotoProperty()
 return
