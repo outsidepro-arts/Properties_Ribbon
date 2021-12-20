@@ -570,7 +570,10 @@ name = buf
 end
 end
 setUndoLabel(obj:get(true))
-return true, string.format("The envelope for %s created on %s %s.", fxParmName, contextPrompt:lower(), name)
+-- We have to leave the setting mode, and get method resets this when called without any parameters.
+return true, string.format("The envelope for %s created on %s %s. ", fxParmName, contextPrompt:lower(), name)..obj:get()
+else
+return true, "This parameter cannot be added to envelopes. "..obj:get()
 end
 end
 },
