@@ -326,7 +326,7 @@ reaper.ShowMessageBox("Seems you have renamed the FX which Properties Ribbon tri
 extstate._layout.renameNotify = true
 end
 end
-local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")
+local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")..tostring(fxInaccuracy)
 local fxPrefix = contextPrompt.." "
 if context == 0 then
 if fxInaccuracy == 0 and capi.GetInstrument() == i then
