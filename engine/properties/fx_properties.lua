@@ -44,8 +44,6 @@ local knownAssyncPlugins = {
 {name="MeldaProduction",delay=6},
 {name="Pulsar",delay=2}
 }
--- Some plug-ins is sluggish, so we have to wait a few time for
-local adjustDelay = 5 -- MS
 
 
 -- API simplification to make calls as contextual
@@ -307,7 +305,6 @@ fxRecCount = 0
 end
 end
 end
-local fullCount = 0
 for i = 0, (fxCount-1)+(fxRecCount+1)-1 do
 local fxInaccuracy = 0
 if i >= fxCount then
