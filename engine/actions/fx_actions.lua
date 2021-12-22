@@ -124,7 +124,7 @@ local commands = {
 [0]=40291,
 [1]=40638
 }
-if action == nil then
+if action == actions.set.perform then
 local curAction = nil
 if context == 0 then
 curAction = getCurrentChainAction()
@@ -188,7 +188,7 @@ return message
 end
 
 function masterTrackFXChain:set(action)
-if action == nil then
+if action == actions.set.perform then
 reaper.Main_OnCommand(40846, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
@@ -236,7 +236,7 @@ message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(self.g
 return message
 end,
 set = function(self, action)
-if action == nil then
+if action == actions.set.perform then
 if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
 return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
 end
@@ -283,7 +283,7 @@ message(string.format("%s %s for master track", self.states[state], getStringPlu
 return message
 end,
 set = function(self, action)
-if action == nil then
+if action == actions.set.perform then
 if self.getValue() > 0 then
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 reaper.Main_OnCommand(16, utils.nor(state))
@@ -367,7 +367,7 @@ end
 return message
 end,
 set = function(self, action)
-if action == nil then
+if action == actions.set.perform then
 local chainCount, inputCount = self.getValue()
 if chainCount > 0 or (inputCount and inputCount > 0) then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
@@ -456,7 +456,7 @@ return message
 end
 
 function osaraMasterFXParametersProperty:set(action)
-if action == nil then
+if action == actions.set.perform then
 local chainCount, monitoringCount = self.getValue()
 if chainCount > 0 or monitoringCount > 0 then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMSMASTER"), 0)
@@ -493,7 +493,7 @@ return message
 end
 
 function monitorFXChainAction:set(action)
-if action == nil then
+if action == actions.set.perform then
 reaper.Main_OnCommand(41882, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
@@ -527,7 +527,7 @@ message(("%s %s in monitoring section"):format(self.states[state], getStringPlug
 return message
 end,
 set = function(self, action)
-if action == nil then
+if action == actions.set.perform then
 if self.getValue() > 0 then
 local state = reaper.GetToggleCommandState(41884)
 reaper.Main_OnCommand(41884, utils.nor(state))
