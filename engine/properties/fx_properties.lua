@@ -123,9 +123,9 @@ error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 end,
 __newindex=function(self, idx, maskTable)
 if maskTable then
-assert(type(maskTable) ~= "table", string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
-assert(maskTable.fxMask == nil, "Expected field fxMask")
-assert(maskTable.paramMask == nil, "Expected field paramMask")
+assert(type(maskTable) == "table", string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+assert(maskTable.fxMask, "Expected field fxMask")
+assert(maskTable.paramMask, "Expected field paramMask")
 extstate._forever._layout[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
 extstate._forever._layout[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
 else
