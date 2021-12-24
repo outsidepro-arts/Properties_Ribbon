@@ -278,6 +278,15 @@ elseif context == 1 then
 contextPrompt = "Take"
 end
 
+-- Keeping split FX implementation
+if whichFXCanbeLoaded then
+capi._contextObj[0] = function()
+return reaper.GetMasterTrack(0)
+end
+contextPrompt = "Master track"
+context = 0
+end
+
 local fxLayout = initLayout("FX properties")
 
 function fxLayout.canProvide()
@@ -297,17 +306,11 @@ local fxCount = capi.GetCount()
 local fxRecCount = 0
 if context == 0 then
 fxRecCount = capi.GetRecCount()
-if whichFXCanbeLoaded then
-capi._contextObj[0] = function()
-return reaper.GetMasterTrack(0)
 end
-contextPrompt = "Master track"
 if whichFXCanbeLoaded == "monitoring" then
 fxCount = 0
 elseif whichFXCanbeLoaded == "master" then
 fxRecCount = 0
-end
-end
 end
 for i = 0, (fxCount-1)+(fxRecCount+1)-1 do
 local fxInaccuracy = 0
@@ -468,7 +471,6 @@ return true, obj:get()
 end
 },
 -- Temporarelly hidden
---[[
 {
 label="Search for parameter value",
 proc=function(obj)
@@ -545,7 +547,6 @@ end
 return true, obj:get()
 end
 },
-]]--
 {
 label="Create envelope with this parameter",
 proc=function(obj)
