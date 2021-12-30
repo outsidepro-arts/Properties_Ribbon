@@ -42,7 +42,7 @@ local stepsList = {
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {
 {name="MeldaProduction",delay=6},
-{name="Pulsar",delay=2}
+{name="Pulsar",delay=2},
 }
 
 
@@ -258,11 +258,6 @@ return result
 end
 
 local function endParmEdit(fxId, parmId)
-local retval, fxName = capi.GetFXName(fxId, "")
-if fxName:lower():find("^vst") then
-local parmNormalized = capi.GetParamNormalized(fxId, parmId)
-capi.SetParam(fxId, parmId, parmNormalized)
-end
 capi.EndParamEdit(fxId, parmId)
 end
 
