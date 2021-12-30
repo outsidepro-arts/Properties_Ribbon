@@ -694,7 +694,11 @@ message(string.format("%s layout", layout.name))
 end
 message(" currently loaded, ")
 if layout.type == "sublayout" then
-message(string.format(" this category encountered as  %u of all %u categor%s", layout.slIndex, layout.ofCount, ({[false]="y",[true]="ies"})[(layout.ofCount > 1)]))
+if layout.ofCount > 1 then
+message(string.format(" this layout encountered as  %u of all %u categor%s", layout.slIndex, layout.ofCount, ({[false]="y",[true]="ies"})[(layout.ofCount > 1)]))
+else
+message("This layout has only 1 category")
+end
 end
 if #layout.properties > 0 then
 message(string.format(", summary here is %u propert%s", #layout.properties, ({[false]="y",[true]="ies"})[(#layout.properties > 1)]))
