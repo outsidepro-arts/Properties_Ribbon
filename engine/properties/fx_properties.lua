@@ -49,9 +49,10 @@ local knownAssyncPlugins = {
 -- API simplification to make calls as contextual
 -- capi stands for "contextual API"
 local capi = setmetatable({
-_contextObj = {
--- REAPER generates error when media item is nil so we have to wrap these handles to function
-[0]=function()
+_contextObj = setmetatable({}, {
+-- REAPER generates error when media item is nil so we have to wrap these handles to metatable
+__index = function(self, key)
+if key == 0 then
 	local lastTouched = reaper.GetLastTouchedTrack()
 	if lastTouched then
 	return lastTouched
@@ -60,14 +61,14 @@ _contextObj = {
 			return reaper.GetMasterTrack(0)
 		end
 		end
-end,
-[1]=function()
+elseif key == 1 then
 if reaper.GetSelectedMediaItem(0, 0) then
 return reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
 end
 return nil
 end
-},
+end
+}),
 _contextPrefix = {
 [0]="TrackFX_",
 [1]="TakeFX_"
@@ -76,11 +77,11 @@ _contextPrefix = {
 __index = function(self, key)
 return function(...)
 if reaper.APIExists(self._contextPrefix[context]..key) then
-return reaper[self._contextPrefix[context]..key](self._contextObj[context](), ...)
+return reaper[self._contextPrefix[context]..key](self._contextObj[context], ...)
 else
 if context == 0 and key:find("Envelope") then
  if reaper[key] then
- return reaper[key](self._contextObj[context](), ...)
+ return reaper[key](self._contextObj[context], ...)
 end 
 end
  error(string.format("Contextual API wasn't found method %s", self._contextPrefix[context]..key))
@@ -275,9 +276,7 @@ end
 
 -- Keeping split FX implementation
 if whichFXCanbeLoaded then
-capi._contextObj[0] = function()
-return reaper.GetMasterTrack(0)
-end
+capi._contextObj[0] = reaper.GetMasterTrack(0)
 contextPrompt = "Master track"
 context = 0
 end
@@ -551,9 +550,9 @@ createEnvelope = reaper.GetFXEnvelope
 elseif context == 1 then
 createEnvelope = reaper.TakeFX_GetEnvelope
 end
-if createEnvelope(capi._contextObj[context](), obj.fxIndex, obj.parmIndex, true) then
+if createEnvelope(capi._contextObj[context], obj.fxIndex, obj.parmIndex, true) then
 local fxParmName = ({capi.GetParamName(obj.fxIndex, obj.parmIndex, "")})[2]
-local cobj = capi._contextObj[context]()
+local cobj = capi._contextObj[context]
 local name = nil
 if context == 0 then
 local retval, buf = reaper.GetTrackName(cobj)
