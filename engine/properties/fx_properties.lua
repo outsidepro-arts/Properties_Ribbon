@@ -395,7 +395,7 @@ return message
 end
 }
 )
-if currentSublayout == sid then
+if not currentSublayout or currentSublayout == sid then
 local fxParmsCount = capi.GetNumParams(i+fxInaccuracy)
 for k = 0, fxParmsCount-1 do
 local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
@@ -467,14 +467,17 @@ end
 },
 -- Temporarelly hidden
 {
-label="Search for parameter value",
+label=string.format("Search for parameter value%s", ({[false]="",[true]=" (use with caution here)"})[checkKnownAssyncPlugin(i)]),
 proc=function(obj)
+if checkKnownAssyncPlugin(obj.fxIndex) then
+if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to keep start the search process?", "Caution", 4) ~= 6 then return false end
+end
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 if retval then
 local retval, answer = reaper.GetUserInputs("Search for parameter value", 1, "Type either a part of value string or full string:", curValue)
 if retval then
 if not extstate._layout._forever.searchProcessNotify then
-reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with smallest step of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
+reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
 extstate._layout._forever.searchProcessNotify = true
 end
 local searchMode = 0
@@ -493,7 +496,7 @@ searchState = state
 else
 searchState = minState
 end
-local ajustingValue = stepsList[1].value
+local ajustingValue = stepsList[getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))].value
 if retvalStep and defStep > 0.0 then
 	if isToggle then
 		reaper.ShowMessageBox("This parameter is toggle. It means it has only two states, therefore here is no point to search something.", "Searching in toggle parameter", 0)
@@ -501,7 +504,6 @@ if retvalStep and defStep > 0.0 then
 	end
 ajustingValue = defStep
 end
-local searchReportCount = 0
 while searchState <= maxState and searchState >= minState do
 if searchMode == 1 then
 searchState = searchState-ajustingValue
@@ -515,12 +517,6 @@ state = searchState
 endParmEdit(obj.fxIndex, obj.parmIndex)
 break
 end
-if searchReportCount <= 100000 then
-	searchReportCount = searchReportCount+1
-else	
-searchReportCount = 0
-("Searching..."):output()
-end
 end
 if searchState ~= state then
 local stringForm = 'No any parameter value with \"%s\" query'
@@ -529,8 +525,8 @@ stringForm = stringForm.." relative from previously set value to the left"
 elseif searchMode == 2 then
 stringForm = stringForm.." relative from previously set value to the right"
 end
-stringForm = stringForm.."."
-reaper.ShowMessageBox(string.format(stringForm, answer), "No results", 0)
+stringForm = stringForm.." with %s adjusting step. If you're sure that this value exists in this parameter, you may set less adjusting step value for this parameter and run the search process again."
+reaper.ShowMessageBox(string.format(stringForm, answer, stepsList[getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))].label), "No results", 0)
 setParmValue(obj.fxIndex, obj.parmIndex, state)
 endParmEdit(obj.fxIndex, obj.parmIndex)
 return true
