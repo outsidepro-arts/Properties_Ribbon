@@ -660,13 +660,18 @@ message:initType("Adjust this property to choose needed setting mode for this pa
 message(self.settingModes[mode].label)
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
-if config.getboolean("reportParmId", true) then
+local parmIdentification = config.getinteger("reportParmId", 2)
+if parmIdentification > 0 then
+if parmIdentification == 2 then
+message("Parameter ")
+end
 local reportMethod = config.getinteger("reportParmMethod", 1)
 if reportMethod == 1 then
-	message(string.format("Parameter %u ", self.parmNum))
+	message(self.parmNum)
 elseif reportMethod == 2 then
-	message(string.format("Parameter %u ", self.parmIndex+1))
+	message(self.parmIndex+1)
 end
+message(" ")
 end
 message(string.format("%s: %s", ({capi.GetParamName(self.fxIndex, self.parmIndex)})[2], getStringParmValue(self.fxIndex, self.parmIndex)))
 end

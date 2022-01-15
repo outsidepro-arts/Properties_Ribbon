@@ -680,22 +680,38 @@ end
 
 local reportParmIndexProperty = {}
 configLayout.fxPropertiesConfig:registerProperty(reportParmIndexProperty)
+reportParmIndexProperty.states = {
+[0]="off",
+"reports parameter number only",
+"reports parameter prefix and its number"
+}
 
 function reportParmIndexProperty:get()
 local message = initOutputMessage()
-message:initType("Toggle this parameter to switch the report of the parameter identification prefix when navigating.", "Toggleable")
-local state = config.getboolean("reportParmId", true)
-message(string.format("%s parameter indentification when navigating", ({[true]="Report",[false]="Do not report"})[state]))
+message:initType("Adjust this property to choose the report method of the parameter identification prefix when navigating.", "Adjustable")
+local state = config.getinteger("reportParmId", 2)
+message(string.format("Parameter identification when navigating %s", self.states[state]))
 return message
 end
 
 function reportParmIndexProperty:set(action)
-if action == actions.set.toggle then
-config.setboolean("reportParmId", utils.nor(config.getboolean("reportParmId", true)))
-else
-return "This property is toggleable only."
-end
 local message = initOutputMessage()
+local state = config.getinteger("reportParmId", 2)
+if action == actions.set.increase then
+if (state+1) <= #self.states then
+config.setinteger("reportParmId", state+1)
+else
+message("No more next property values.")
+end
+elseif action == actions.set.decrease then
+if (state-1) >= 0 then
+config.setinteger("reportParmId", state-1)
+else
+message("No more previous property values.")
+end
+else
+return "This property is adjustable only."
+end
 message(self:get())
 return message
 end
