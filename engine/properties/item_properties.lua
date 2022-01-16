@@ -685,9 +685,9 @@ end
 function timebaseProperty:set(action)
 local message = initOutputMessage()
 local ajustingValue
-if action == actions.set.next then
+if action == actions.set.increase then
 ajustingValue = 1
-elseif action == actions.set.prev then
+elseif action == actions.set.decrease then
 ajustingValue = -1
 elseif action == actions.set.perform then
 ajustingValue = -1
@@ -838,6 +838,8 @@ local message = initOutputMessage()
 local ajustingValue = config.getinteger("timeStep", 0.001)
 if action == actions.set.decrease then
 ajustingValue = -ajustingValue
+elseif action == actions.set.increase then
+-- This is just a trap for unsupported action fix
 elseif action == actions.set.perform then
 message("Remove the snap offset.")
 else
