@@ -838,7 +838,7 @@ extstate._sublayout.actionIndex = nil
 end
 local act = extstate._sublayout.actionIndex or 0
 if act == 0 then
-message(string.format("FX mask %s, parameter mask %s", fxExcludeElem.fxMask, fxExcludeElem.paramMask))
+message(string.format("FX mask %u %s, parameter mask %s", i, fxExcludeElem.fxMask, fxExcludeElem.paramMask))
 else
 message(self.states[act].label)
 end
