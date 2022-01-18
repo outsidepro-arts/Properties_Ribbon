@@ -395,7 +395,6 @@ return message
 end
 }
 )
-if not currentSublayout or currentSublayout == sid then
 local fxParmsCount = capi.GetNumParams(i+fxInaccuracy)
 for k = 0, fxParmsCount-1 do
 local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
@@ -840,7 +839,6 @@ end
 end
 })
 ::continue::
-end
 end
 end
 end
