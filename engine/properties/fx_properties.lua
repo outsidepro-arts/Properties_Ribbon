@@ -262,6 +262,22 @@ local function endParmEdit(fxId, parmId)
 capi.EndParamEdit(fxId, parmId)
 end
 
+local function getCurrentObjectId()
+local guid = nil
+if context == 0 then
+_, guid = reaper.GetSetMediaTrackInfo_String(capi._contextObj[0], "GUID", "", false)
+elseif context == 1 then
+_, guid = reaper.GetSetMediaItemInfo_String(capi._contextObj[1], "GUID", "", false)
+end
+return guid
+end
+
+-- One FX parms rendering implementation
+-- We have to know the currently rendering FX list has the same sublayouts or not
+if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() then
+extstate._layout.lastObjectId = nil
+end
+
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
 if context == 0 then
@@ -395,8 +411,13 @@ return message
 end
 }
 )
-local fxParmsCount = capi.GetNumParams(i+fxInaccuracy)
-for k = 0, fxParmsCount-1 do
+local fxParmsCount  = capi.GetNumParams(i+fxInaccuracy)
+if extstate._layout.lastObjectId then
+if currentSublayout and currentSublayout ~= sid then
+fxParmsCount = 0
+end
+end
+ for k = 0, fxParmsCount-1 do
 local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
 if getFilter(sid) == nil then
 goto skipFilter
@@ -862,6 +883,8 @@ end
 end
 end
 
-
+-- Finishing the one parm FX rendering implementation
+-- After all rendering cases you have to store current object to next rendering will be fast
+extstate._layout.lastObjectId = getCurrentObjectId()
 
 return fxLayout
