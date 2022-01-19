@@ -724,6 +724,7 @@ function script_finish()
 if layout then
 extstate[layout.section] = layout.pIndex
 extstate.currentLayout = currentLayout
+extstate[currentLayout.."_sublayout"] = currentSublayout
 extstate.speakLayout = speakLayout
 if reaper.GetCursorContext() ~= -1 then 
 extstate.lastKnownContext = reaper.GetCursorContext()
