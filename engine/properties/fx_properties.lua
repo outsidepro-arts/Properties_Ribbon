@@ -419,6 +419,9 @@ if currentSublayout and currentSublayout ~= sid then
 fxParmsCount = 0
 end
 end
+if capi.GetOffline(i+fxInaccuracy) == true then
+fxParmsCount = 0
+end
  for k = 0, fxParmsCount-1 do
 local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
 if getFilter(sid) == nil then
