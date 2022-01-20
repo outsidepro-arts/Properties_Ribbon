@@ -267,7 +267,7 @@ local guid = nil
 if context == 0 then
 _, guid = reaper.GetSetMediaTrackInfo_String(capi._contextObj[0], "GUID", "", false)
 elseif context == 1 then
-_, guid = reaper.GetSetMediaItemInfo_String(capi._contextObj[1], "GUID", "", false)
+_, guid = reaper.GetSetMediaItemTakeInfo_String(capi._contextObj[1], "GUID", "", false)
 end
 return guid
 end
