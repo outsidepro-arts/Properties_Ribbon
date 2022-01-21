@@ -330,7 +330,7 @@ end
 local retval, fxName = capi.GetFXName(i+fxInaccuracy, "")
 if retval then
 -- Ah this beautifull prefixes and postfixes
-if fxName:find("VST") and fxName:find(": ") then
+if fxName:find(":") and fxName:find(": ") then
 local startPos = fxName:find(":")+2
 local endPos = fxName:find("[(].+$")
 if endPos then
