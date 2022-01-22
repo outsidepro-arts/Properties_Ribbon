@@ -451,7 +451,7 @@ end
 label="Set minimal parameter value",
 proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
-capi.SetParam(obj.fxIndex, obj.parmIndex, minState)
+setParmValue(obj.fxIndex, obj.parmIndex, minState)
 endParmEdit(obj.fxIndex, obj.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
@@ -464,7 +464,7 @@ end
 label="Set maximal parameter value",
 proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
-capi.SetParam(obj.fxIndex, obj.parmIndex, maxState)
+setParmValue(obj.fxIndex, obj.parmIndex, maxState)
 endParmEdit(obj.fxIndex, obj.parmIndex)
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
