@@ -27,6 +27,9 @@ representation = require "representations"
 -- The preparation of typed data by an user when sets the custom values using input dialogs
 prepareUserData = require "preparation"
 
+-- Including the sound player
+sound = require"soundplay"
+
 -- Actions for set methods or some another cases
 actions = {
 set = {
@@ -518,6 +521,7 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
+sound.beep("error")
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
 script_finish()
@@ -526,9 +530,11 @@ end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
 else
-message("last property. ")
+--message("last property. ")
+sound.beep("beep")
 end
 else
+sound.beep("error")
 (string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
@@ -561,6 +567,7 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
+sound.beep("error")
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
 script_finish()
@@ -569,9 +576,11 @@ end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
 else
-message("first property. ")
+--message("first property. ")
+sound.beep("beep")
 end
 else
+sound.beep("error")
 (string.format("There are no elements %s be provided for.", layout.name)):output()
 restorePreviousLayout()
 script_finish()
