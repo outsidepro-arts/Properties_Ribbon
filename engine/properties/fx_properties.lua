@@ -127,19 +127,19 @@ if maskTable then
 assert(type(maskTable) == "table", string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
 assert(maskTable.fxMask, "Expected field fxMask")
 assert(maskTable.paramMask, "Expected field paramMask")
-extstate._forever._layout[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
-extstate._forever._layout[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
+extstate._layout._forever[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
+extstate._layout._forever[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
 else
 local i = idx
 while extstate._layout[string.format("excludeMask%u.fx", i)] do
 if i == idx then
-extstate._forever._layout[string.format("excludeMask%u.fx", i)] = nil
-extstate._forever._layout[string.format("excludeMask%u.param", i)] = nil
+extstate._layout._forever[string.format("excludeMask%u.fx", i)] = nil
+extstate._layout._forever[string.format("excludeMask%u.param", i)] = nil
 elseif i > idx then
-extstate._forever._layout[string.format("excludeMask%u.fx", i-1)] = extstate._layout[string.format("excludeMask%u.fx", i)]
-extstate._forever._layout[string.format("excludeMask%u.param", i-1)] = extstate._layout[string.format("excludeMask%u.param", i)]
-extstate._forever._layout[string.format("excludeMask%u.fx", i)] = nil
-extstate._forever._layout[string.format("excludeMask%u.param", i)] = nil
+extstate._layout._forever[string.format("excludeMask%u.fx", i-1)] = extstate._layout[string.format("excludeMask%u.fx", i)]
+extstate._layout._forever[string.format("excludeMask%u.param", i-1)] = extstate._layout[string.format("excludeMask%u.param", i)]
+extstate._layout._forever[string.format("excludeMask%u.fx", i)] = nil
+extstate._layout._forever[string.format("excludeMask%u.param", i)] = nil
 end
 i = i+1
 end
