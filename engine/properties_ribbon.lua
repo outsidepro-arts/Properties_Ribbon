@@ -522,7 +522,7 @@ end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
 sound.beep("error")
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+string.output(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname)))
 restorePreviousLayout()
 script_finish()
 return
@@ -530,12 +530,11 @@ end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
 else
---message("last property. ")
 sound.beep("beep")
 end
 else
 sound.beep("error")
-(string.format("There are no elements %s be provided for.", layout.name)):output()
+string.output(string.format("There are no elements %s be provided for.", layout.name))
 restorePreviousLayout()
 script_finish()
 return
@@ -568,7 +567,7 @@ end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
 sound.beep("error")
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+string.output(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname)))
 restorePreviousLayout()
 script_finish()
 return
@@ -576,12 +575,11 @@ end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
 else
---message("first property. ")
 sound.beep("beep")
 end
 else
 sound.beep("error")
-(string.format("There are no elements %s be provided for.", layout.name)):output()
+string.output(string.format("There are no elements %s be provided for.", layout.name))
 restorePreviousLayout()
 script_finish()
 return
