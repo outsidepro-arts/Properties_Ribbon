@@ -480,7 +480,9 @@ if action == actions.sublayout_next then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
 else
-("No next category."):output()
+sound.beep("beep")
+speakLayout = true
+script_reportOrGotoProperty()
 script_finish()
 return
 end
@@ -488,7 +490,9 @@ elseif action == actions.sublayout_prev then
 if layout.previousSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.previousSubLayout
 else
-("No previous category."):output()
+sound.beep("beep")
+speakLayout = true
+script_reportOrGotoProperty()
 script_finish()
 return
 end
