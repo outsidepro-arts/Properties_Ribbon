@@ -521,8 +521,8 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 sound.beep("error")
-string.output(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname)))
 restorePreviousLayout()
 script_finish()
 return
@@ -533,8 +533,8 @@ else
 sound.beep("beep")
 end
 else
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 sound.beep("error")
-string.output(string.format("There are no elements %s be provided for.", layout.name))
 restorePreviousLayout()
 script_finish()
 return
@@ -566,8 +566,8 @@ speakLayout = false
 end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
+(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 sound.beep("error")
-string.output(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname)))
 restorePreviousLayout()
 script_finish()
 return
@@ -578,8 +578,8 @@ else
 sound.beep("beep")
 end
 else
+(string.format("There are no elements %s be provided for.", layout.name)):output()
 sound.beep("error")
-string.output(string.format("There are no elements %s be provided for.", layout.name))
 restorePreviousLayout()
 script_finish()
 return
@@ -628,6 +628,7 @@ end
 if layout.canProvide() == true then
 if #layout.properties < 1 then
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+sound.beep("error")
 restorePreviousLayout()
 script_finish()
 return
@@ -645,6 +646,7 @@ layout.pIndex = propertyNum
 else
 if layout.type == "sublayout" then
 (string.format("No property with number %s in %s category of %s layout.", propertyNum, layout.subname, layout.name)):output()
+sound.beep("error")
 else
 (string.format("No property with number %s in %s layout.", propertyNum, layout.name)):output()
 end
@@ -654,6 +656,7 @@ end
 end
 else
 (string.format("There are no elements %s be provided for.", layout.name)):output()
+sound.beep("error")
 restorePreviousLayout()
 script_finish()
 return
