@@ -35,7 +35,7 @@ end
 
 function soundplay.file(str)
 assert(str, "The file path should be passed")
-return runPlayer(({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine//sounds' ..str)
+return runPlayer(({reaper.get_action_context()})[2]:match('^.+[\\//]')..string.format('engine//sounds//%s.wav', str))
 end
 
 return soundplay
