@@ -385,6 +385,23 @@ end
 end
 
 
+-- Open a path to defined system
+-- path (string): the physical or web-address
+function openPath(path)
+-- We have to define the operating system to choose needed terminal command.
+-- Currently I don't know another way to define which platform we are using right now.
+local startCmd = nil
+if package.config:sub(1, 1) == "\\" then -- We are on Windows
+startCmd = "start"
+elseif package.config:sub(1, 1) == "/" then -- We are on Unix system which implies that's MacOS
+-- TODO: clarify should the slash be escaped. Currently it works without interpretation errors.
+startCmd = "open"
+end
+if startCmd then
+os.execute(string.format("%s %s", startCmd, path))
+end
+end
+
 
 
 -- Main body
@@ -397,7 +414,9 @@ layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, nil
 function script_init(newLayout, shouldSpeakLayout)
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
-reaper.ShowMessageBox("Seems you haven't OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.", "Properties Ribbon error", 0)
+if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?', "Properties Ribbon error", 4) == 6 then
+openPath("https://osara.reaperaccessibility.com/snapshots/")
+end
 return nil
 end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
