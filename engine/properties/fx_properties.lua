@@ -369,8 +369,22 @@ fxName = fxName..({[true]="",[false]=" (bypassed)"})[capi.GetEnabled(i+fxInaccur
 fxName = fxName..({[false]="",[true]=" (offline)"})[capi.GetOffline(i+fxInaccuracy)]
 fxLayout:registerSublayout(sid, fxPrefix..fxName)
 fxLayout[sid]:registerProperty({
-states = {
-string.format("Filter parameters%s", ({[false]="",[true]=string.format(" (currently is set to %s", getFilter(sid))})[(getFilter(sid) ~= nil)]),
+actionsList = {
+{
+label = string.format("Filter parameters%s", ({[false]="",[true]=string.format(" (currently is set to %s", getFilter(sid))})[(getFilter(sid) ~= nil)]),
+proc = function(obj)
+local curFilter = getFilter(sid) or ""
+local retval, answer = reaper.GetUserInputs("Filter parameters by", 1, "Type either full parameter name or a part of (Lua patterns supported):", curFilter)
+if retval then
+if answer ~= "" then
+setFilter(sid, answer)
+else
+setFilter(sid, nil)
+end
+end
+return false
+end
+}
 },
 get = function(self, shouldSaveSetting)
 local message = initOutputMessage()
@@ -381,14 +395,14 @@ setting= nil
 extstate._layout.settingIndex = nil
 end
 setting = setting or 1
-message(self.states[setting])
+message(self.actionsList[setting].label)
 return message
 end,
 set = function(self, action)
 local message = initOutputMessage()
 local setting = extstate._layout.settingIndex or 1
 if action == actions.set.increase then
-if (setting+1) <= #self.states then
+if (setting+1) <= #self.actionsList then
 extstate._layout.settingIndex = setting+1
 else
 message("No more next property values.")
@@ -400,16 +414,11 @@ else
 message("No more previous property values.")
 end
 elseif action == actions.set.perform then
-if setting == 1 then
-local curFilter = getFilter(sid) or ""
-local retval, answer = reaper.GetUserInputs("Filter parameters by", 1, "Type either full parameter name or a part of (Lua patterns supported):", curFilter)
-if retval then
-if answer ~= "" then
-setFilter(sid, answer)
+local retval, sideMessage = self.actionsList[setting].proc(self)
+if retval == true then
+message(sideMessage)
 else
-setFilter(sid, nil)
-end
-end
+return sideMessage
 end
 end
 message(self:get(true))
