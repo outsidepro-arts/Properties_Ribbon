@@ -803,7 +803,7 @@ states = {
 {
 label="Edit",
 proc = function()
-local retval, answer = reaper.GetUserInputs("Edit exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..fxExcludeElem.fxMask..","..fxExcludeElem.paramMask)
+local retval, answer = reaper.GetUserInputs("Edit exclude mask", 3, "FX plug-in filename mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..fxExcludeElem.fxMask..","..fxExcludeElem.paramMask)
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
@@ -894,7 +894,7 @@ end
 
 function addExcludeMaskProperty:set(action)
 if action == actions.set.perform then
-local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,")
+local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-in filename mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,")
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then

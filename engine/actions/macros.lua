@@ -13,25 +13,39 @@ License: MIT License
 function composeSimpleProperty(
 -- the Main_OnCommand ID or its list
 cmd,
--- The property label
+-- The property label (optional)
 msg
 )
 local usual = {
 get = function(self)
--- If user has SWS installed, omit the msg parameter
-if type(cmd) ~= "table" then
-if reaper.APIExists("CF_GetCommandText") then
-msg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
-msg = msg:gsub("[.]+$", "")
-end
-end
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to call the %s action.", msg), "Performable")
+message:initType("Perform this property to execute this action.", "Performable")
+if msg then
+message(msg)
+else
+if type(cmd) == "table" then
+message:changeType(string.format("Perform this property to execute these %u actions by queued order: ", #cmd),1 )
+message("Multiple actions: ")
+for id, ccmd in ipairs(cmd) do
+local premsg = string.match(reaper.CF_GetCommandText(0, ccmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, ccmd)
+premsg = premsg:gsub("[.]+$", "")
+message(premsg)
+if id < #cmd-1 then
+message(", ")
+elseif id == #cmd-1 then
+message(" and ")
+end
+end
+else
+local premsg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
+premsg = premsg:gsub("[.]+$", "")
+message(premsg)
+end
+end
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
 end
-message(msg)
 return message
 end,
 set = function(self, action)
@@ -76,7 +90,7 @@ end
 function composeSimpleDialogOpenProperty(
 -- the Main_OnCommand ID
 cmd,
--- The property label
+-- The property label (optional)
 msg
 )
 local usual = {
@@ -87,7 +101,13 @@ if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
 end
+if msg then
 message(msg)
+else
+local premsg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
+premsg = premsg:gsub("[.]+$", "")
+message(premsg)
+end
 return message
 end,
 set = function(self, action)
@@ -121,7 +141,15 @@ if shouldBeOnetime and config.getboolean("allowLayoutsrestorePrev", true) == tru
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
 end
+if msg then
 message(string.format(msg, states[self.getValue()]))
+else
+local premsg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
+premsg = premsg:gsub("[.]+$", "")
+message(premsg)
+message(": ")
+message(states[self.getValue()])
+end
 return message
 end,
 set = setFunction or function(self, action)
@@ -160,7 +188,13 @@ if shouldBeOnetime and config.getboolean("allowLayoutsrestorePrev", true) == tru
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
 end
+if msg then
 message(msg)
+else
+local premsg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
+premsg = premsg:gsub("[.]+$", "")
+message(premsg)
+end
 return message
 end,
 set = setFunction or function(self, action)

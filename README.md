@@ -3,7 +3,10 @@
 # Properties_Ribbon
 
 Properties Ribbon is the scripts complex for quick navigating and adjusting of track, item or another controls. This is a ReaScript complex intended for [REAPER](https://reaper.fm/) users with non-visual access and provides the extended control ability.
-*Please note:* The accessibility plugin [OSARA](https://osara.reaperaccessibility.com/) should be installed for provide the speech output.
+
+*Please note:* The following plug-ins should be installed on your REAPER copy:
++ Accessibility plugin [OSARA](https://osara.reaperaccessibility.com/) should be installed for provide the speech output.
++ [SWS extension](https://sws-extension.org/) should be installed for provide the extra API functions .
 ## Why Properties Ribbon? ##
 ### extended elements properties ###
 OSARA provides only basic controls for track or items. You only can adjust the volume, pan and mute/unmute track or item. Yeah, you can use the Reaper actions to set the needed state, but not all parameters you there would find in the actions list. More over you have to set this action to keyboard shortcuts and remember this after. Are you really want to spend your time to cram this in your mind?

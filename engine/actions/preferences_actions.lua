@@ -23,54 +23,46 @@ end
 
 parentLayout:registerSublayout("reaperPrefs", "REAPER")
 parentLayout:registerSublayout("osaraLayout", "OSARA extension")
+parentLayout:registerSublayout("swsLayout", "SWS extension")
 if reaper.APIExists("ReaPack_AboutInstalledPackage") == true then
 parentLayout:registerSublayout("reaPackLayout", "ReaPack extension")
 end
-if reaper.APIExists("CF_GetSWSVersion") == true then
-parentLayout:registerSublayout("swsLayout", "SWS extension")
-end
 
-
-
-
--- The properties functions template
 
 
 -- REAPER preferences
 parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40016, "Global preferences"))
 
 -- Metronome/Pre-roll setings
-parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40363, "Show metronome and pre-roll settings"))
+parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40363))
 
 -- Snap/Grid settings
-parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40071, "Show snap and grid settings"))
+parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40071))
 
 -- External time synchronization settings
-parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40619, "Show external timecode synchronization settings"))
+parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40619))
 
 -- OSARA configuration
 -- We will not check OSARA install status,cuz it's supposet should be installed there
 parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"), "OSARA configuration"))
-parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_PEAKWATCHER"), "Peak Watcher"))
+parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_PEAKWATCHER")))
 parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_ABOUT"), "About currently installed OSARA"))
 
 -- ReaPack actions
 if parentLayout.reaPackLayout then
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_BROWSE"), "Browse packages"))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_IMPORT"), "Import repositories"))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_MANAGE"), "Manage repositories"))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_SYNC"), "Synchronize packages"))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_UPLOAD"), "Upload packages"))
+parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_BROWSE")))
+parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_IMPORT")))
+parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_MANAGE")))
+parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_SYNC")))
+parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_UPLOAD")))
 parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_ABOUT"), "About currently installed ReaPack"))
 end
 
 -- SWS actions
-if parentLayout.swsLayout then
-parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_LOUDNESS_PREF"), "Global loudness preferences"))
-parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_XENAKIOS_DISKSPACECALC"), "Disk space calculator"))
-parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_AUTORENDER_PREFERENCES"), "Autorender: Global Preferences"))
+parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_LOUDNESS_PREF")))
+parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_XENAKIOS_DISKSPACECALC")))
+parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_AUTORENDER_PREFERENCES")))
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_SWS_ABOUT"), "About currently installed SWS extension"))
-parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK"), "Check for new SWS version"))
-end
+parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK")))
 
 return parentLayout

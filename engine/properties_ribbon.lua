@@ -11,10 +11,6 @@ config.section = "Properties_Ribbon_script"
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 utils = require "utils"
 
--- Including the byte words module
--- SWS has own byte operations, but what if has an user not SWS installed?
-bytewords = require "bytewords"
-
 -- including the colors module
 colors = require "colors_provider"
 -- Making the get and set internal ExtState more easier
@@ -416,6 +412,12 @@ function script_init(newLayout, shouldSpeakLayout)
 if not reaper.APIExists("osara_outputMessage") then
 if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?', "Properties Ribbon error", 4) == 6 then
 openPath("https://osara.reaperaccessibility.com/snapshots/")
+end
+return nil
+end
+if not reaper.APIExists("CF_GetSWSVersion") == true then
+if reaper.ShowMessageBox('Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?', "Properties Ribbon error", 4) == 6 then
+openPath("https://sws-extension.org/")
 end
 return nil
 end

@@ -28,31 +28,31 @@ parentLayout:registerSublayout("externalLayout", "External")
 
 parentLayout.embededLayout:registerProperty(composeExtendedProperty(
 40153,
-"Open in built-in MIDI editor (set default behavior in preferences)",
+nil,
 {"Perform this property to open the embedded REAPER MIDI-editor.", "Performable"}
 ))
 
 parentLayout.externalLayout:registerProperty(composeExtendedProperty(
 40132,
-"Open item copies in primary external editor",
+nil,
 {"Perform this property to open copies of selected items to primary editor set in REAPER preferences.", "Performable"}
 ))
 
 parentLayout.externalLayout:registerProperty(composeExtendedProperty(
 40109,
-"Open items in primary external editor",
+nil,
 {"Perform this property to open selected items in primary editor set in REAPER preferences.", "Performable"}
 ))
 
 parentLayout.externalLayout:registerProperty(composeExtendedProperty(
 40203,
-"Open item copies in secondary external editor",
+nil,
 {"Perform this property to open selected items copies to secondary external editor set in REAPER preferences.", "Performable"}
 ))
 
 parentLayout.externalLayout:registerProperty(composeExtendedProperty(
 40202,
-"Open items in secondary external editor",
+nil,
 {"Perform this property to open selected items in secondary external editor set in REAPER preferences.", "Performable"}
 ))
 

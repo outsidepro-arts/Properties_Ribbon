@@ -26,11 +26,11 @@ end
 
 -- The properties functions template
 
-insertionLayout:registerProperty(composeSimpleProperty(40701, "Insert virtual instrument on new track"))
-insertionLayout:registerProperty(composeSimpleProperty(40001, "Insert new track"))
-insertionLayout:registerProperty(composeSimpleProperty({40001,40696}, "Insert new track and name this"))
-insertionLayout:registerProperty(composeSimpleProperty(40702, "Insert new track at end of track list"))
-insertionLayout:registerProperty(composeSimpleProperty(46000, "Insert track from template"))
-insertionLayout:registerProperty(composeSimpleProperty(41067, "Insert multiple new tracks"))
+insertionLayout:registerProperty(composeSimpleProperty(40701))
+insertionLayout:registerProperty(composeSimpleProperty(40001))
+insertionLayout:registerProperty(composeSimpleProperty({40001,40696}))
+insertionLayout:registerProperty(composeSimpleProperty(40702))
+insertionLayout:registerProperty(composeSimpleProperty(46000))
+insertionLayout:registerProperty(composeSimpleProperty(41067))
 
 return insertionLayout

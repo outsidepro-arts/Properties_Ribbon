@@ -2388,7 +2388,7 @@ takePitchShifterProperty.states = setmetatable({[-1] = "project default"},
 {
 __index = function(self, key)
 if tonumber(key) and key >= 0 then
-key = bytewords.getHiWord(key)
+key = reaper.BR_Win32_HIWORD(key)
 local retval, name = reaper.EnumPitchShiftModes(key)
 if retval == true then
 return name
@@ -2456,21 +2456,21 @@ end
 state = self.getValue(items[1])
 if ajustingValue > 0 then
 if state >= 0 then
-for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
-if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(0, i)
+for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, #self.states+1 do
+if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
+state = reaper.BR_Win32_MAKELONG(0, i)
 break
 end
 end
 else
-state = bytewords.makeLong(0, 0)
+state = reaper.BR_Win32_MAKELONG(0, 0)
 end
 elseif ajustingValue < 0 then
 if state >= 0 then
-for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
+for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, -2, -1 do
 if i >= 0 then
-if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(0, i)
+if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
+state = reaper.BR_Win32_MAKELONG(0, i)
 break
 end
 else
@@ -2494,9 +2494,9 @@ else
 local state = self.getValue(items)
 if action == actions.set.increase then
 if state >= 0 then
-for i = bytewords.getHiWord(state)+ajustingValue, #self.states+1 do
-if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(0, i)
+for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, #self.states+1 do
+if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
+state = reaper.BR_Win32_MAKELONG(0, i)
 break
 end
 if i == #self.states then
@@ -2504,14 +2504,14 @@ message("No more next property values. ")
 end
 end
 else
-state = bytewords.makeLong(0, 0)
+state = reaper.BR_Win32_MAKELONG(0, 0)
 end
 elseif action == actions.set.decrease then
 if state >= 0 then
-for i = bytewords.getHiWord(state)+ajustingValue, -2, -1 do
+for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, -2, -1 do
 if i >= 0 then
-if self.states[bytewords.makeLong(bytewords.getLoWord(state), i)] then
-state = bytewords.makeLong(0, i)
+if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
+state = reaper.BR_Win32_MAKELONG(0, i)
 break
 end
 else
@@ -2541,7 +2541,7 @@ takePitchShifterModeProperty.states = setmetatable({[-1] = "unavailable"},
 __index = function(self, key)
 key = tonumber(key)
 if key then
-return reaper.EnumPitchShiftSubModes(bytewords.getHiWord(key), bytewords.getLoWord(key))
+return reaper.EnumPitchShiftSubModes(reaper.BR_Win32_HIWORD(key), reaper.BR_Win32_LOWORD(key))
 end
 return nil
 end
@@ -2598,17 +2598,17 @@ end
 state = self.getValue(items[1])
 if ajustingValue ~= 0 then
 if action == actions.set.increase then
-local futureState = bytewords.makeLong(bytewords.getLoWord(state)+1, bytewords.getHiWord(state))
+local futureState = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)+1, reaper.BR_Win32_HIWORD(state))
 if self.states[futureState] then
 state = futureState
 end
 elseif action == actions.set.decrease then
-if bytewords.getLoWord(state)-1 >= 0 then
-state = bytewords.makeLong(bytewords.getLoWord(state)-1, bytewords.getHiWord(state))
+if reaper.BR_Win32_LOWORD(state)-1 >= 0 then
+state = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)-1, reaper.BR_Win32_HIWORD(state))
 end
 end
 elseif ajustingValue == 0 then
-state = bytewords.makeLong(0, bytewords.getHiWord(state))
+state = reaper.BR_Win32_MAKELONG(0, reaper.BR_Win32_HIWORD(state))
 end
 message(string.format("Set selected items active takes pitch shifter modes to %s.", self.states[state]))
 for k = 1, #items do
@@ -2621,15 +2621,15 @@ if state == -1 then
 return string.format("The property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1])
 end
 if action == actions.set.increase then
-local futureState = bytewords.makeLong(bytewords.getLoWord(state)+1, bytewords.getHiWord(state))
+local futureState = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)+1, reaper.BR_Win32_HIWORD(state))
 if self.states[futureState] then
 state = futureState
 else
 message("No more next property values. ")
 end
 elseif action == actions.set.decrease then
-if bytewords.getLoWord(state)-1 >= 0 then
-state = bytewords.makeLong(bytewords.getLoWord(state)-1, bytewords.getHiWord(state))
+if reaper.BR_Win32_LOWORD(state)-1 >= 0 then
+state = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)-1, reaper.BR_Win32_HIWORD(state))
 else
 message("No more previous property values. ")
 end

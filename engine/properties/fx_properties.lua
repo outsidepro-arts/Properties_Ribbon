@@ -41,7 +41,7 @@ local stepsList = {
 
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {
-{name="MeldaProduction",delay=6},
+{name="M%u%w+[.].+",delay=6},
 {name="Pulsar",delay=2},
 }
 
@@ -155,9 +155,18 @@ end
 })
 
 
+local function getPluginFilename(fxId)
+-- The SWS authors set the own prefix on the  top of function name, so we cannot use capi metatable
+if context == 0 then
+return reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
+elseif context == 1 then
+return reaper.NF_TakeFX_GetFXModuleName(capi._contextObj[1], fxId)
+end
+end
+
 local function makeUniqueKey(fxID, fxParm)
 local firstPart, lastPart = nil
-local retval, fxName = capi.GetFXName(fxID, "")
+local retval, fxName = getPluginFilename(fxID)
 if retval then
 firstPart = utils.removeSpaces(fxName)
 end
@@ -204,7 +213,7 @@ extstate._layout[string.format("%s.parmFilter", sid)] = filter
 end
 
 local function shouldBeExcluded(fxId, parmId)
-local retval, fxName = capi.GetFXName(fxId, "")
+local retval, fxName = getPluginFilename(fxId)
 if retval == false then
 return false
 end
@@ -224,7 +233,7 @@ return false
 end
 
 local function checkKnownAssyncPlugin(fxId)
-local _, fxName = capi.GetFXName(fxId, "")
+local _, fxName = getPluginFilename(fxId)
 for _, plugin in ipairs(knownAssyncPlugins) do
 if utils.simpleSearch(fxName, plugin.name) then
 return true, plugin.delay
@@ -337,11 +346,6 @@ if endPos then
 endPos = endPos-2
 end
 fxName = fxName:sub(startPos, endPos)
-else
-if extstate._layout.renameNotify then
-reaper.ShowMessageBox("Seems you have renamed the FX which Properties Ribbon tries to load. Note that FX properties defines many process enhancements using real FX name because REAPER does not provide other method to do that. If you're renaming FX which FX properties interract with, the exclude specified parameters and assynchronous plugins definition cannot be work To keep these options working, please leave the original fX name at any string part.", "FX renamed", 0)
-extstate._layout.renameNotify = true
-end
 end
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")..tostring(fxInaccuracy)
 local fxPrefix = contextPrompt.." "
@@ -643,9 +647,9 @@ end
 		{
 label="Add exclude mask based on this parameter",
 proc=function(obj)
-local _, fxName = capi.GetFXName(obj.fxIndex, "")
+local _, fxName = getPluginFilename(obj.fxIndex)
 local _, parmName = capi.GetParamName(obj.fxIndex, obj.parmIndex, "")
-local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..string.format("%s,%s", fxName, parmName))
+local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-in filename mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..string.format("%s,%s", fxName, parmName))
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
