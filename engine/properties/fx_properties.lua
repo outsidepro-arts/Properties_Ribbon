@@ -372,7 +372,7 @@ fxLayout[sid]:registerProperty({
 actionsList = {
 {
 label = string.format("Filter parameters%s", ({[false]="",[true]=string.format(" (currently is set to %s", getFilter(sid))})[(getFilter(sid) ~= nil)]),
-proc = function(obj)
+proc = function()
 local curFilter = getFilter(sid) or ""
 local retval, answer = reaper.GetUserInputs("Filter parameters by", 1, "Type either full parameter name or a part of (Lua patterns supported):", curFilter)
 if retval then
@@ -384,8 +384,18 @@ end
 end
 return false
 end
+},
+{
+label = string.format("Set FX %s", ({[true]="online",[false]="offline"})[capi.GetOffline(i+fxInaccuracy)]),
+proc = function(obj)
+local state = capi.GetOffline(obj.fxIndex)
+capi.SetOffline(obj.fxIndex, utils.nor(state))
+-- The state returns with some delay
+return false, string.format("Fx is %s", ({[true]="offline",[false]="online"})[utils.nor(state)])
+end
 }
 },
+fxIndex = i+fxInaccuracy,
 get = function(self, shouldSaveSetting)
 local message = initOutputMessage()
 message:initType("Adjust this property to choose needed setting applied for all parameters in this category. Perform this property when you're chosed any of to perform this.", "Adjustable, performable")
@@ -424,7 +434,8 @@ end
 message(self:get(true))
 return message
 end
-}
+},
+aaa
 )
 local fxParmsCount  = capi.GetNumParams(i+fxInaccuracy)
 if extstate._layout.lastObjectId then
