@@ -519,7 +519,7 @@ end
 label=string.format("Search for parameter value%s", ({[false]="",[true]=" (use with caution here)"})[checkKnownAssyncPlugin(i)]),
 proc=function(obj)
 if checkKnownAssyncPlugin(obj.fxIndex) then
-if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to keep start the search process?", "Caution", 4) ~= 6 then return false end
+if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to continue start the search process?", "Caution", 4) ~= 6 then return true end
 end
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 if retval then
