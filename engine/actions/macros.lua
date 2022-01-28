@@ -19,7 +19,7 @@ msg
 local usual = {
 get = function(self)
 local message = initOutputMessage()
-message:initType("Perform this property to execute this action.", "Performable")
+message:initType("Perform this property to execute the specified action.", "Performable")
 if msg then
 message(msg)
 else
@@ -96,7 +96,7 @@ msg
 local usual = {
 get = function(self)
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to open the %s dialog.", msg), "Performable")
+message:initType("Perform this property to open the specified window.", "Performable")
 if config.getboolean("allowLayoutsrestorePrev", true) == true then
 message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed.", 1)
 message:addType(", onetime", 2)
@@ -125,7 +125,7 @@ return usual
 end
 
 function composeExtendedSwitcherProperty(states, cmd, msg, types, getFunction, setFunction, shouldBeOnetime)
-local shouldBeOnetime = shouldBeOnetime or true
+shouldBeOnetime = shouldBeOnetime or true
 local usual = {
 ["msg"] = msg,
 getValue = function()
