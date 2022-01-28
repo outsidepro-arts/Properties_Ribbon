@@ -185,6 +185,18 @@ getUsualProperty(
 )
 )
 
+-- Virtual MIDI keyboard
+parentLayout.windows:registerProperty(
+getUsualProperty(
+usualWindowStates,
+40377,
+"%s the virtual MIDI keyboard",
+{"Toggle this property to open or close the virtual MIDI keyboard window.", "Toggleable"},
+nil,
+setWindow
+)
+)
+
 -- Crossfade editor
 parentLayout.windows:registerProperty(
 getUsualProperty(
