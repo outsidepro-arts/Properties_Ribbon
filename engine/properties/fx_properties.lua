@@ -154,14 +154,18 @@ return mCount
 end
 })
 
-
+local pluginsFilenames = {}
 local function getPluginFilename(fxId)
 -- The SWS authors set the own prefix on the  top of function name, so we cannot use capi metatable
+-- These functions works slow, so we will cache plugin names
+if not pluginsFilenames[fxId] then
 if context == 0 then
-return reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
+pluginsFilenames[fxId] = reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
 elseif context == 1 then
-return reaper.NF_TakeFX_GetFXModuleName(capi._contextObj[1], fxId)
+pluginsFilenames[fxId] = reaper.NF_TakeFX_GetFXModuleName(capi._contextObj[1], fxId)
 end
+end
+return pluginsFilenames[fxId]
 end
 
 local function makeUniqueKey(fxID, fxParm)
