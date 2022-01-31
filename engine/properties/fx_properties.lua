@@ -440,8 +440,7 @@ end
 message(self:get(true))
 return message
 end
-},
-aaa
+}
 )
 local fxParmsCount  = capi.GetNumParams(i+fxInaccuracy)
 if extstate._layout.lastObjectId then
