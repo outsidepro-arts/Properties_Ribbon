@@ -43,6 +43,7 @@ local stepsList = {
 local knownAssyncPlugins = {
 {name="M%u%w+[.].+",delay=6},
 {name="Pulsar",delay=2},
+{name="Replika", delay=5}
 }
 
 
@@ -174,7 +175,7 @@ local firstPart, lastPart = nil
 local retval, fxName = getPluginFilename(fxID)
 if retval then
 firstPart = utils.removeSpaces(fxName)
-end
+end			
 local retval, parmName = capi.GetParamName(fxID, fxParm, "")
 if retval then
 secondPart = utils.removeSpaces(parmName)
