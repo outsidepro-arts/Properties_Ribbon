@@ -27,7 +27,12 @@ local function searchPluginsInTracks(searchString, trackFrom)
 trackFrom = trackFrom or 0
 local countTracks = reaper.CountTracks(0)
 for i = trackFrom, countTracks-1 do
-local track = reaper.GetTrack(0,i)
+local track = nil
+if i < 0 then
+track = reaper.GetMasterTrack(0)
+else
+track = reaper.GetTrack(0,i)
+end
 local countFX = reaper.TrackFX_GetCount(track)
 if countFX > 0 then
 for k = 0, countFX-1 do
