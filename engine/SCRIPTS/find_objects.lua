@@ -1,6 +1,6 @@
 --[[
 Find specified objects script for Properties Ribbon
-Copyright (C), Outsidepro Arts 2021
+Copyright (C), Outsidepro Arts 2021-2022
 License: MIT license
 This script written for Properties Ribbon complex] and can be only runnen from this.
 ]]--
@@ -136,6 +136,9 @@ if retval then
 local fromPosition = 0
 if context == 0 then
 fromPosition = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
+if fromPosition < 0 then -- Master track suddenly selected
+fromPosition = 0
+end
 elseif context == 1 then
 fromPosition = reaper.GetMediaItemInfo_Value(reaper.GetSelectedMediaItem(0, 0), "IP_ITEMNUMBER")
 end
