@@ -98,7 +98,11 @@ return reaper.Envelope_FormatValue(envelope, state)
 end
 })
 local envelopeFormatCaption = "Type a new raw value for selected points:"
-envelopeProcess = function(udata) return udata end
+envelopeProcess = function(udata)
+if type(udata) == "number" then
+return udata
+end
+end
 if envelope then
 if reaper.GetEnvelopeScalingMode(envelope) == 0 then
 if not name:find" / " then
@@ -450,7 +454,7 @@ if oldRepresentation then
 envelopeRepresentation = setmetatable({}, oldRepresentation)
 end
 if retval then
-answer = envelopeProcess(answer, curvalue)
+answer = envelopeProcess		(answer, curvalue)
 if answer then
 if type(points) == "table" then
 for _, point in ipairs(points) do
