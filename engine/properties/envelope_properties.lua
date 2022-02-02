@@ -99,7 +99,7 @@ end
 })
 local envelopeFormatCaption = "Type a new raw value for selected points:"
 envelopeProcess = function(udata)
-if type(udata) == "number" then
+if tonumber(udata) then
 return udata
 end
 end
