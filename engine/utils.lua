@@ -123,7 +123,10 @@ return state
 end
 
 function debug(str)
-reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
+local retval, cmd = reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
+if retval then
+if cmd:lower() == "terminate" then error("Terminated by debug command") end
+end
 end
 
 function utils.simpleSearch(fullString, searchString)
