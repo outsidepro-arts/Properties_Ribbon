@@ -153,8 +153,14 @@ end
 end
 
 -- We are ready to fix non-readable name parts
-name, fxName = name:match("(.+)%s[/]%s(.+)")
-fxName = string.format(" of %s plug-in", fxName)
+local fxName = ""
+do
+local prename, preFXName = name:match("(.+)%s[/]%s(.+)")
+name = prename or name
+if preFXName then
+fxName = string.format(" of %s plug-in", preFXName)
+end	
+end
 
 local envelopePointsLayout = initLayout(string.format("%s envelope points properties%s", name, fxName))
 
