@@ -153,9 +153,10 @@ end
 end
 
 -- We are ready to fix non-readable name parts
-name = name:gsub("(.+)%s[/]%s(.+)", "%1 of %2 plugin")
+name, fxName = name:match("(.+)%s[/]%s(.+)")
+fxName = string.format(" of %s plug-in", fxName)
 
-local envelopePointsLayout = initLayout(string.format("%s envelope points properties", name))
+local envelopePointsLayout = initLayout(string.format("%s envelope points properties%s", name, fxName))
 
 function envelopePointsLayout.canProvide()
 return (envelope ~= nil)
