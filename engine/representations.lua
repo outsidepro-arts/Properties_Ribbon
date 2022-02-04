@@ -50,9 +50,9 @@ representation.pan = setmetatable({},
 if key == 0 then
 return "center"
 elseif key > 0 then
-return string.format("%u%% right", utils.round(key/(1/100), 1))
+return string.format("%u%% right", utils.round(key/(1/100), 0))
 elseif key < 0 then
-return string.format("%u%% left", utils.round(-key/(1/100), 1))
+return string.format("%u%% left", utils.round(-key/(1/100), 0))
 end
 end
 })
