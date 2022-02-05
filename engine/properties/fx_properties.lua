@@ -453,6 +453,8 @@ fxParmsCount = 0
 end
  for k = 0, fxParmsCount-1 do
 local retval, fxParmName = capi.GetParamName(i+fxInaccuracy, k, "")
+-- Let allow to render three last parameters for comfort always
+if k < (fxParmsCount-3) then
 if getFilter(sid) == nil then
 goto skipFilter
 end
@@ -467,6 +469,7 @@ end
 if shouldBeExcluded(i+fxInaccuracy, k) then
 goto continue
 end
+end	
 fxLayout[sid]:registerProperty({
 settingModes = {
 {
