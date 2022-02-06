@@ -1,6 +1,7 @@
 {
 	"recommendations": [
 		"sumneko.lua",
-		"gavinray.reascript"
+		"gavinray.reascript",
+		"yzhang.markdown-all-in-one"
 	]
 }
