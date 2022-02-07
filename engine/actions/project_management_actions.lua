@@ -17,10 +17,6 @@ After this preambula, let me begin.
 
 local projectLayout = initLayout("Project management actions")
 
-function projectLayout.canProvide()
-return true
-end
-
 projectLayout:registerProperty(composeSimpleProperty(40021))
 projectLayout:registerProperty(composeSimpleProperty(40015))
 projectLayout:registerProperty(composeSimpleProperty(40098))

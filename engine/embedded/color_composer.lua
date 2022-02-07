@@ -149,13 +149,6 @@ end
 -- global pseudoclass initialization
 local parentLayout = initLayout("Color composer")
 
--- the function which gives green light to call any method from this class
--- The color composer is available always, so we will just return true.
-function parentLayout.canProvide()
-return true
-end
-
-
 -- sublayouts
 -- Track properties
 parentLayout:registerSublayout("track", "Tracks")

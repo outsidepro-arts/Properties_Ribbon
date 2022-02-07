@@ -30,9 +30,6 @@ end
 local parentLayout = initLayout("Markers and regions management")
 
 -- This layout is available always because here creating markers/regions property is.
-function parentLayout.canProvide()
-return true
-end
 
 parentLayout:registerSublayout("markersLayout", "Markers")
 

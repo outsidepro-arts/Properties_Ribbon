@@ -28,8 +28,6 @@ end
 return false
 end
 
--- The properties functions template
-
 insertionLayout:registerProperty(composeSimpleProperty(40214))
 insertionLayout:registerProperty(composeSimpleProperty(40142))
 insertionLayout:registerProperty(composeSimpleProperty(41748))

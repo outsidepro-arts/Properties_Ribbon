@@ -17,10 +17,6 @@ After this preambula, let me begin.
 
 local parentLayout = initLayout("preferences actions")
 
-function parentLayout.canProvide()
-return true
-end
-
 parentLayout:registerSublayout("reaperPrefs", "REAPER")
 parentLayout:registerSublayout("osaraLayout", "OSARA extension")
 parentLayout:registerSublayout("swsLayout", "SWS extension")

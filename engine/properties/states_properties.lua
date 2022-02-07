@@ -16,8 +16,6 @@ After this preambula, let me begin.
 -- global pseudoclass initialization
 local parentLayout = initLayout("State management")
 
-function parentLayout.canProvide() return true end
-
 parentLayout:registerSublayout("options", "Options")
 parentLayout:registerSublayout("areas", "Areas and panels")
 parentLayout:registerSublayout("windows", "Windows")

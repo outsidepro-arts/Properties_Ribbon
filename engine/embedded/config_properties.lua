@@ -16,12 +16,6 @@ After this preambula, let me begin.
 -- global pseudoclass initialization
 local configLayout = initLayout("Properties Ribbon configuration")
 
--- the function which gives green light to call any method from this class
-function configLayout.canProvide()
--- The configs ever available, so let define this always.
-return true
-end
-
 -- sub-layouts
 -- Main sub-layout
 configLayout:registerSublayout("main", "General")

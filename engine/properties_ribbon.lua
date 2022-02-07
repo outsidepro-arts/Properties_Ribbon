@@ -267,7 +267,8 @@ end
 }),
 registerProperty = function(self, property)
  return table.insert(self.properties, property)
-end
+end,
+canProvide = function() return true end
 }
 return t
 end
