@@ -24,11 +24,10 @@ function insertionLayout.canProvide()
 return true
 end
 
--- The properties functions template
 
 insertionLayout:registerProperty(composeSimpleProperty(40701))
 insertionLayout:registerProperty(composeSimpleProperty(40001))
-insertionLayout:registerProperty(composeSimpleProperty({40001,40696}))
+insertionLayout:registerProperty(composeSimpleProperty({40001,40696}, "Insert new track with specified name"))
 insertionLayout:registerProperty(composeSimpleProperty(40702))
 insertionLayout:registerProperty(composeSimpleProperty(46000))
 insertionLayout:registerProperty(composeSimpleProperty(41067))
