@@ -268,7 +268,14 @@ local result = capi.SetParam(fxId, parmId, value)
 -- Some plugins works assynchronously, so we have to decelerate our code
 local retval, fxDelay = checkKnownAssyncPlugin(fxId)
 if retval then
-utils.delay(fxDelay)
+-- break the deceleration process when a value has changed prematurely
+local ms = fxDelay*0.001
+local curTime = os.clock()
+while (os.clock()-curTime) <= ms do
+if fxValue ~= capi.GetParam(fxId, parmId)then
+break
+end
+ end
 end
 return result
 end
