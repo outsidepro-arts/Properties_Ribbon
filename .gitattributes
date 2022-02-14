@@ -1,4 +1,4 @@
 # Exclude files from exporting.
 .gitattributes export-ignore
 .vscode/ export-ignore
-.code-workspace export-ignore
+*.code-workspace export-ignore
