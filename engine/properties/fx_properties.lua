@@ -500,6 +500,20 @@ return true, message
 end
 },
 {
+label="Set midle parameter value",
+proc = function(obj)
+local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
+local maybeState = maxState/2
+maybeState = minState+maybeState
+setParmValue(obj.fxIndex, obj.parmIndex, maybeState)
+endParmEdit(obj.fxIndex, obj.parmIndex)
+local message = initOutputMessage()
+message("Set midle parameter value.")
+message(obj:get())
+return true, message
+end
+},
+{
 label="Set maximal parameter value",
 proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
