@@ -492,9 +492,8 @@ proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 setParmValue(obj.fxIndex, obj.parmIndex, minState)
 endParmEdit(obj.fxIndex, obj.parmIndex)
-local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
-message("Set minimal parameter value.")
+message(string.format("%s is set.", getStringParmValue(obj.fxIndex, obj.parmIndex)))
 message(obj:get())
 return true, message
 end
@@ -508,7 +507,7 @@ maybeState = minState+maybeState
 setParmValue(obj.fxIndex, obj.parmIndex, maybeState)
 endParmEdit(obj.fxIndex, obj.parmIndex)
 local message = initOutputMessage()
-message("Set midle parameter value.")
+message(string.format("%s is set.", getStringParmValue(obj.fxIndex, obj.parmIndex)))
 message(obj:get())
 return true, message
 end
@@ -519,9 +518,8 @@ proc=function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 setParmValue(obj.fxIndex, obj.parmIndex, maxState)
 endParmEdit(obj.fxIndex, obj.parmIndex)
-local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 local message = initOutputMessage()
-message("Set maximal parameter value.")
+message(string.format("%s is set.", getStringParmValue(obj.fxIndex, obj.parmIndex)))
 message(obj:get())
 return true, message
 end
