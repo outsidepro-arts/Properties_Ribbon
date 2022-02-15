@@ -119,9 +119,9 @@ local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.Enum
 if retval and not isrgn then
 parentLayout.markersLayout:registerProperty({
 states = setmetatable({
-[1] = "Edit ",
-[2] = "Colorize ",
-[3] = "Delete "
+[1] = "Edit",
+[2] = "Colorize",
+[3] = "Delete"
 }, {
 __index = function(self, action)
 return
@@ -142,15 +142,11 @@ else
 extstate.mrkregLayout_mrkstate = nil
 end
 if self.clr > 0 then
-message(colors:getName(reaper.ColorFromNative(self.clr)).. " ")
+message{objectId=colors:getName(reaper.ColorFromNative(self.clr))}
 end
-local msg = string.format("Marker %u", self.mIndex)
-if self.clr > 0 then
-msg = msg:gsub("^%w", string.lower)
-end
-message(msg)
+message{label=string.format("Marker %u", self.mIndex)}
 if self.str ~= "" then
-message(string.format(", %s", self.str))
+message{label=string.format(", %s", self.str)}
 end
 return message
 end,
@@ -303,10 +299,10 @@ local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.Enum
 if retval and isrgn then
 parentLayout.regionsLayout:registerProperty({
 states = setmetatable({
-[1] = "Jump to end of ",
-[2] = "Edit ",
-[3] = "Colorize ",
-[4] = "Delete "
+[1] = "Jump to end of",
+[2] = "Edit",
+[3] = "Colorize",
+[4] = "Delete"
 }, {
 __index = function(self, action)
 return
@@ -328,15 +324,11 @@ else
 extstate.mrkregLayout_rgnstate = nil
 end
 if self.clr > 0 then
-message(string.format("%s ", colors:getName(reaper.ColorFromNative(self.clr))))
+message{objectId=colors:getName(reaper.ColorFromNative(self.clr))}
 end
-local msg = string.format("Region %u", self.rIndex)
-if self.clr > 0 then
-msg = msg:gsub("^%w", string.lower)
-end
-message(msg)
+message{label=string.format("Region %u", self.rIndex)}
 if self.str ~= "" then
-message(string.format(", %s", self.str))
+message{value=self.str}
 end
 return message
 end,

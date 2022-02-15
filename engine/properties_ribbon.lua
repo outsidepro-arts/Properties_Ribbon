@@ -55,6 +55,16 @@ end
 -- Custom message metamethod
 function initOutputMessage()
 local mt = setmetatable({
+-- Optional fields
+-- The object identification string
+objectId = nil,
+-- The property label
+label = nil,
+-- The property value
+value = nil,
+-- The focus position for some cases
+focusIndex = nil,
+
 -- type prompts initialization method
 -- The type prompts adds the string message set by default to the end of value message.
 -- Parameters:
@@ -105,26 +115,55 @@ end,
 -- Clearing the local message
 -- No parameters. Returns none.
 clearMessage = function(self)
-if self.msg then
 self.msg = nil
-end
 end,
 -- Clearing the type levels
 -- No parameters. Returns none.
 clearType = function(self)
-if self.tLevels then
-self.tLevels, self.tl = nil
-end
+self.tLevels, self.tl = nil, nil
+end,
+-- Clearing the object ID extra field
+-- No parameters. Returns none.
+clearObjectId = function(self)
+self.objectId = nil
+end,
+-- Clearing the label extra field
+-- No parameters. Returns none.
+clearLabel = function(self)
+self.label = nil
+end,
+-- Clearing the value extra field
+-- No parameters. Returns none.
+clearValue = function(self)
+self.value = nil
 end,
 -- Output  composed message to OSARA by itself
--- No parameters takes. Returns no parameters.
-output = function(self)
+-- Parameters:
+-- outputOrder (number, optional):  the output order which supports the following values:
+-- 0 (also nil) = all fields are output
+-- 1 = The label and value fields output
+-- 2 = The value field will output only
+-- Please note: the msg field will output anyway. It will concatenated at the top of the output message.
+-- Returns no parameters.
+output = function(self, outputOrder)
+outputOrder = outputOrder or 0
 local message = ""
 if self.msg then
-message = self.msg
-else
-return
+message = tostring(self.msg)
 end
+if outputOrder == 0 and self.objectId then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.objectId):gsub("^%u", string.lower),[false]=self.objectId})[(#message > 0 and string.match(message, "[.]%s*$") == nil)])
+end
+if outputOrder <= 1 and self.label then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.label):lower(),[false]=self.label})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
+end
+if self.value then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
+end
+if self.focusIndex then
+message = string.format("%s, %s", message, self.focusIndex)
+end
+if #message == 0 then return end
 if self.tLevels and self.tl > 0 then
 message = message..". "..self.tLevels[self.tl]
 end
@@ -132,52 +171,89 @@ reaper.osara_outputMessage(message)
 end,
 -- Extract the message composed string
 -- Parameters:
+-- outputOrder (number, optional):  the output order which supports the following values:
+-- 0 (also nil) = all fields are output
+-- 1 = The label and value fields output
+-- 2 = The value field will output only
+-- Please note: the msg field will output anyway. It will concatenated at the top of the output message.
 -- shouldExtractType (boolean, optional):  Should the type prommpt be extracted with composed message. By default is true
 -- Returns composed string without type prompt. If there are no string, returns nil.
-extract = function(self, shouldExtractType)
+extract = function(self, outputOrder, shouldExtractType)
 if shouldExtractType== nil then
 shouldExtractType = true
 end
-if shouldExtractType == true then
+outputOrder = outputOrder or 0
 local message = ""
 if self.msg then
-message = self.msg
-else
-return ""
+message = tostring(self.msg)
 end
-if self.tLevels and self.tl > 0 then
+if outputOrder == 0 and self.objectId then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.objectId):gsub("^%u", string.lower),[false]=tostring(self.objectId)})[(#message > 0 and string.match(message, "[.]%s*$") == nil)])
+end
+if outputOrder <= 1 and self.label then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.label):lower(),[false]=tostring(self.label)})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
+end
+if self.value then
+message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
+end
+if self.focusIndex then
+message = string.format("%s, %s", message, self.focusIndex)
+end
+if #message == 0 then return end
+if shouldExtractType == true and self.tLevels and self.tl > 0 then
 message = message..". "..self.tLevels[self.tl]
 end
 return message
-else
-return self.msg or nil
-end
 end
 }, {
 -- Redefine the metamethod type
 __type = "output_message",
 -- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
-__call = function(self, str, shouldCopyTypeLevel)
+__call = function(self, obj, shouldCopyTypeLevel)
 shouldCopyTypeLevel = shouldCopyTypeLevel or false
-if type(str) == "table" and str.msg then
-if str.msg then
+if type(obj) == "table" then
+if obj.msg then
 if self.msg then
-self.msg = self.msg.." "..str.msg
+self.msg = self.msg..obj.msg
 else
-self.msg = str.msg
+self.msg = obj.msg
 end
 end
-if str.tLevels then
+if obj.objectId then
+if self.objectId then
+self.objectId = self.objectId..obj.objectId
+else
+self.objectId = obj.objectId
+end
+end
+if obj.label then
+if self.label then
+self.label = self.label..obj.label
+else
+self.label = obj.label
+end
+end
+if obj.value then
+if self.value then
+self.value = self.value..obj.value
+else	
+self.value = obj.value
+end
+end
+if obj.focusIndex then
+self.focusIndex = obj.focusIndex
+end
+if obj.tLevels then
 if self.tLevels or shouldCopyTypeLevel then
-self.tLevels = str.tLevels
-self.tl = str.tl
+self.tLevels = obj.tLevels
+self.tl = obj.tl
 end
 end
 else
 if self.msg then
-self.msg = self.msg..str
+self.msg = self.msg..obj
 else
-self.msg = str
+self.msg = obj
 end
 end
 end,
@@ -280,7 +356,7 @@ end
 function composeSubLayout()
 local message = initOutputMessage()
 if layout.type == "sublayout" then
-message(string.format("%s of %s", layout.subname, layout.name:gsub("^%w", string.lower)))
+message(string.format("%s of %s", layout.subname, ({[true]=layout.name:lower(),[false]=layout.name})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
 else
 message(layout.name)
 end
@@ -333,7 +409,7 @@ g_undoState = ""
 elseif label == "" then
 -- do nothing
 else
-g_undoState = string.format("Properties Ribbon: %s", label:extract(false))
+g_undoState = string.format("Properties Ribbon: %s", label:extract(0, false))
 end
 end
 
@@ -545,7 +621,7 @@ end
 if layout.pIndex+1 <= #layout.properties then
 layout.pIndex = layout.pIndex+1
 else
-message("last property. ")
+message("Last property. ")
 end
 else
 (string.format("There are no elements %s be provided for.", layout.name)):output()
@@ -556,10 +632,10 @@ end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result((", %u of %u"):format(layout.pIndex, #layout.properties))
+result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
 end
 message(result, true)
-setUndoLabel(message:extract(false))
+setUndoLabel(message:extract(0, false))
 message:output()
 script_finish()
 end
@@ -588,7 +664,7 @@ end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
 else
-message("first property. ")
+message("First property .")
 end
 else
 (string.format("There are no elements %s be provided for.", layout.name)):output()
@@ -599,10 +675,10 @@ end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result((", %u of %u"):format(layout.pIndex, #layout.properties))
+result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
 end
 message(result, true)
-setUndoLabel(message:extract(false))
+setUndoLabel(message:extract(0, false))
 message:output()
 script_finish()
 end
@@ -673,11 +749,11 @@ end
 local result = layout.properties[layout.pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result((", %u of %u"):format(layout.pIndex, #layout.properties))
+result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
 end
 message(result, true)
 if percentageNavigationApplied then
-message = message:extract(true):gsub("(.+)([.])$", "%1")
+message = message:extract(0, true):gsub("(.+)([.])$", "%1")
 message = message..string.format(". Percentage navigation chosed property %u", propertyNum)
 end
 message:output()
@@ -696,8 +772,8 @@ if not msg then
 script_finish()
 return
 end
-setUndoLabel(msg:extract(false))
-msg:output()
+setUndoLabel(msg:extract(0, false))
+msg:output(config.getinteger("adjustOutputOrder", 0))
 else
 (string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 end

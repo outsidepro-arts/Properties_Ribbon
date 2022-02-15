@@ -55,29 +55,29 @@ local state = func(points[k])
 local prevState if points[k-1] then prevState = func(points[k-1]) end
 local nextState if points[k+1] then nextState = func(points[k+1]) end
 if state ~= prevState and state == nextState then
-message(string.format("points from %s ", getPointID(points[k], true)))
+message({value=string.format("points from %s ", getPointID(points[k], true))})
 elseif state == prevState and state ~= nextState then
-message(string.format("to %s ", getPointID(points[k], true)))
+message({value=string.format("to %s ", getPointID(points[k], true))})
 if inaccuracy and type(state) == "number" then
-message(string.format("%s", states[state+inaccuracy]))
+message({value=string.format("%s", states[state+inaccuracy])})
 else
-message(string.format("%s", states[state]))
+message({value=string.format("%s", states[state])})
 end
 if k < #points then
-message(", ")
+message({value=", "})
 end
 elseif state == prevState and state == nextState then
 else
-message(string.format("%s ", getPointID(points[k])))
+message({value=string.format("%s ", getPointID(points[k]))})
 if inaccuracy and type(state) == "number" then
-message(string.format("%s", states[state+inaccuracy]))
+message({value=string.format("%s", states[state+inaccuracy])})
 else
-message(string.format("%s", states[state]))
+message({value=string.format("%s", states[state])})
 end
 if k < #points then
-message(", ")
+message({value=", "})
 elseif k == #points-1 then
-message(" and ")
+message({value=" and "})
 end
 end
 end
@@ -183,7 +183,6 @@ function addEnvelopePointProperty:set(action)
 	else
 		return "This property is performable only."
 	end
-	return
 end
 
 if points ~= nil then
@@ -213,11 +212,11 @@ message:addType(" If the group of points has been selected, the relative of prev
 end
 message:addType(" Perform this property to set the raw point value for example coppied from FX parameters.", 1)
 end
+message({label="Value"})
 if type(points) == "table" then
-message("Envelope points values:")
 message(composeMultiplePointsMessage(self.getValue, envelopeRepresentation))
 else
-message(string.format("%s value %s", getPointID(points), envelopeRepresentation[self.getValue(points)]))
+message({objectId=getPointID(points), value=envelopeRepresentation[self.getValue(points)]})
 end
 return message
 end
@@ -438,7 +437,7 @@ if state < 0 then state = -state end
 self.setValue(points, utils.nor(utils.round(state, 0)))
 end
 else
-local retval, answer, curvalue, oldRepresentation = nil
+local retval, answer, curvalue, oldRepresentation
 -- The playrate converting methods aren't written, so we have to do a little substitution the representation metatable to an user was seeing the raw data instead of real representation.
 if envelopeType == 3 then
  oldRepresentation = getmetatable(envelopeRepresentation)
@@ -514,11 +513,11 @@ if multiSelectionSupport == true then
 message:addType((' If the group of points has been selected, the value will enumerate up if selected points have the same value. If one of points has different value, all points will set to "%s" first, then will enumerate up this.'):format(self.states[0]), 1)
 end
 message:addType(" Perform this property to set the default point shape set in REAPER preferences.", 1)
+message({label="shape"})
 if type(points) == "table" then
-message("Envelope points shapes:")
 message(composeMultiplePointsMessage(self.getValue, self.states))
 else
-message(string.format("%s shape %s", getPointID(points), self.states[self.getValue(points)]))
+message({objectId=getPointID(points), value=self.states[self.getValue(points)]})
 end
 return message
 end
@@ -653,11 +652,11 @@ message:addType(string.format(" Perform this property to reset the points to %s.
 if multiSelectionSupport == true then
 message:addType(string.format(" Please note: if one of selected points has not %s tension, it will be skipped while adjusting or performing!", shapeProperty.states[5]), 1)
 end
+message({label="Bezier tension"})
 if type(points) == "table" then
-message("Envelope points bezier tensions:")
 message(composeMultiplePointsMessage(self.getValue, self.states))
 else
-message(string.format("%s bezier tension %s", getPointID(points), self.states[self.getValue(points)]))
+message({objectId=getPointID(points), value=self.states[self.getValue(points)]})
 if shapeProperty.getValue(points) ~= 5 then
 message:changeType(string.format("This property is unavailable right now because the point you're viewing is not %s.", shapeProperty.states[5]), 1)
 message:changeType("Unavailable", 2)

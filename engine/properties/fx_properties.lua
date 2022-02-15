@@ -171,7 +171,7 @@ return pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str
 end
 
 local function makeUniqueKey(fxID, fxParm)
-local firstPart, lastPart = nil
+local firstPart, lastPart
 local retval, fxName = getPluginFilename(fxID)
 if retval then
 firstPart = utils.removeSpaces(fxName)
@@ -727,17 +727,16 @@ message:initType("Adjust this property to set necessary value for this parameter
 local parmIdentification = config.getinteger("reportParmId", 2)
 if parmIdentification > 0 then
 if parmIdentification == 2 then
-message("Parameter ")
+message({objectId="Parameter "})
 end
 local reportMethod = config.getinteger("reportParmMethod", 1)
 if reportMethod == 1 then
-	message(self.parmNum)
+	message({objectId=self.parmNum})
 elseif reportMethod == 2 then
-	message(self.parmIndex+1)
+	message({objectId=self.parmIndex+1})
 end
-message(" ")
 end
-message(string.format("%s: %s", ({capi.GetParamName(self.fxIndex, self.parmIndex)})[2], getStringParmValue(self.fxIndex, self.parmIndex)))
+message({label=({capi.GetParamName(self.fxIndex, self.parmIndex)})[2], value=getStringParmValue(self.fxIndex, self.parmIndex)})
 end
 return message
 end,

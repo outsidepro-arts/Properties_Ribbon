@@ -47,7 +47,7 @@ function typeLevelProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
 message:initType("Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.", "Adjustable")
-message(string.format("Types prompts level %s", self.states[typeLevel]))
+message{label="Types prompts level", value=self.states[typeLevel]}
 return message
 end
 
@@ -86,7 +86,7 @@ function reportPosProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
 local state = config.getinteger("reportPos", 3)
-message(string.format("Reporting navigation position %s", self.states[state]))
+message{label="Reporting navigation position", value=self.states[state]}
 return message
 end
 
@@ -125,7 +125,7 @@ function resetSublayoutProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.", "Adjustable")
 local state = config.getinteger("rememberSublayout", 3)
-message(string.format("Remember position in layouts when loading %s", self.states[state]))
+message{label="Remember position in layouts when loading", value=self.states[state]}
 return message
 end
 
@@ -161,7 +161,7 @@ function dbStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("dbStep", 0.1)
-message(string.format("Decibel step adjustment %s", representation.db[-utils.decibelstonum(state)]))
+message{label="Decibel step adjustment", value=representation.db[-utils.decibelstonum(state)]}
 return message
 end
 
@@ -220,7 +220,7 @@ function maxDbProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.", "adjustable, performable")
 local state = config.getinteger("maxDBValue", 12.0)
-message(string.format("Maximum decibels value %s", representation.db[-utils.decibelstonum(state)]))
+message{label="Maximum decibels value", value=representation.db[-utils.decibelstonum(state)]}
 return message
 end
 
@@ -271,7 +271,7 @@ function percentagestepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("percentStep", 1)
-message(string.format("Percent step adjustment  %s%%", state))
+message{label="Percent step adjustment", value=string.format("%s%%", state)}
 return message
 end
 
@@ -326,7 +326,7 @@ function timeStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = config.getinteger("timeStep", 0.001)
-message(string.format("Time step adjustment %s", representation.timesec[state]))
+message{label="Time step adjustment", value=representation.timesec[state]}
 return message
 end
 
@@ -386,7 +386,7 @@ function playrateStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.", "adjustable")
 local state = config.getinteger("rateStep", 1)
-message(string.format("Play rate step adjustment %s", self.states[state]))
+message{label="Play rate step adjustment", value=self.states[state]}
 return message
 end
 
@@ -424,7 +424,7 @@ function pitchStepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
 local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
-message(string.format("Pitch step adjustment %s", representation.pitch[state]))
+message{label="Pitch step adjustment", value=representation.pitch[state]}
 return message
 end
 
@@ -480,7 +480,7 @@ function multiSelectionSupportProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.", "Toggleable")
 local state = config.getboolean("multiSelectionSupport", true)
-message(string.format("Multi-selection support %s", ({[true] = "enabled", [false] = "disabled"})[state]))
+message{label="Multi-selection support", value=({[true] = "enabled", [false] = "disabled"})[state]}
 return message
 end
 
@@ -501,9 +501,9 @@ configLayout.main:registerProperty(reportNameProperty)
 
 function reportNameProperty:get()
 local message = initOutputMessage()
-message:initType("Toggle this property to switch the reporting element ID information in properties values which this option are supported. If this configuration enabled, a property will report the name of. If this configuration disabled, a property will reportits number only.", "Toggleable")
+message:initType("Toggle this property to switch the reporting element ID information in properties values which this option are supported.", "Toggleable")
 local state = config.getboolean("reportName", false)
-message(string.format("Report element's %s", ({[false]="number only",[true]="name instead of number"})[state]))
+message{label="Report element's", value=({[false]="number only",[true]="name instead of number"})[state]}
 return message
 end
 
@@ -525,7 +525,7 @@ configLayout.main:registerProperty(autoProposeLayoutProperty)
 function autoProposeLayoutProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.", "Toggleable")
-message(string.format("%s contextual layout when navigating", ({[true]="Automaticaly propose",[false]="Switch manualy"})[config.getboolean("automaticLayoutLoading", false)]))
+message{label="Contextual layout when navigating", value=({[true]="proposed automaticaly",[false]="must be switched manualy"})[config.getboolean("automaticLayoutLoading", false)]}
 return message
 end
 
@@ -547,7 +547,7 @@ configLayout.main:registerProperty(allowRestorePreviousProperty)
 function allowRestorePreviousProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.", "Toggleable")
-message(("%s for some properties to restore previous layout"):format(({[true]="Allow",[false]="Disallow"})[config.getboolean("allowLayoutsrestorePrev", true)]))
+message{label="Allow for some properties to restore previous layout", value=({[true]="enabled",[false]="disabled"})[config.getboolean("allowLayoutsrestorePrev", true)]}
 return message
 end
 
@@ -569,7 +569,7 @@ function clearFileExtsProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to decide the Properties Ribbon scripts should try to detect the file extensions in names and remove them.", "Toggleable")
 local state = config.getboolean("clearFileExts", true)
-message(string.format("Properties Ribbon should %s to clear a file extensions in some names", ({[true]="try",[false]="not try"})[state]))
+message{label="Clear the extensions of filenames when it found somewhere", value=({[true]="enabled",[false]="disabled"})[state]}
 return message
 end
 
@@ -592,7 +592,7 @@ function percentageNavigation:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the percentage navigation type off or on. When percentage navigation is on, the actions which sets the property by digits will orient by percentage ratio instead of choosing   a property by digists strictly when properties amount more than ten.", "Toggleable")
 local state = config.getboolean("percentagePropertyNavigation", false)
-message(string.format("Percentage navigation %s", ({[false]="disabled",[true]="enabled"})[state]))
+message{label="Percentage navigation", value=({[false]="disabled",[true]="enabled"})[state]}
 return message
 end
 
@@ -622,7 +622,7 @@ function fxParmstepProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.", "Adjustable")
 local state = config.getinteger("fxParmStep", 4)
-message(string.format("FX parameters step adjustment %s", self.states[state]))
+message{label="FX parameters step adjustment", value=self.states[state]}
 return message
 end
 
@@ -657,7 +657,7 @@ function fxUseNearestParmValueProperty:get()
 	local message= initOutputMessage()
 	message:initType("Toggle this property to switch the configuration which that FX properties will be search nearest parameter value automatically.", "Toggleable")
 	local state = config.getboolean("fx_useFindNearestParmValue", true)
-	message(string.format("Automatic searching nearest parameter value when adjusting is %s", ({[true]="enabled",[false]="disabled"})[state]))
+	message{label="Automatic searching nearest parameter value when adjusting", value=({[true]="enabled",[false]="disabled"})[state]}
 	return message
 end
 
@@ -684,7 +684,7 @@ function reportParmIndexProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose the report method of the parameter identification prefix when navigating.", "Adjustable")
 local state = config.getinteger("reportParmId", 2)
-message(string.format("Parameter identification when navigating %s", self.states[state]))
+message{label="Parameter identification when navigating", value=self.states[state]}
 return message
 end
 
@@ -713,7 +713,7 @@ end
 local reportRealParmValueProperty = {}
 configLayout.fxPropertiesConfig:registerProperty(reportRealParmValueProperty)
 reportRealParmValueProperty.states = {
-"incremental",
+"incremental as it rendered",
 "real"
 }
 
@@ -721,7 +721,7 @@ function reportRealParmValueProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set the reporting parameter number behavior.", "Adjustable")
 	local state = config.getinteger("reportParmMethod", 1)
-	message(string.format("Report %s FX parameter number when navigating", self.states[state]))
+	message{label="Report FX parameter number when navigating as", value=self.states[state]}
 	return message
 end
 
@@ -909,6 +909,42 @@ return "This property is performable only."
 end
 end
 
+local outputOrderProperty = {}
+configLayout.main:registerProperty(outputOrderProperty)
+outputOrderProperty.states = {
+[0]="object identification, name and value",
+"label and value",
+"value only"
+}
 
+function outputOrderProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to choose needed output order when you're adjusting a property.", "Adjustable")
+local state = config.getinteger("adjustOutputOrder", 0)
+message{label="Output when adjusting a property", value=self.states[state]}
+return message
+end
+
+function outputOrderProperty:set(action)
+local message = initOutputMessage()
+local state = config.getinteger("adjustOutputOrder", 0)
+if action == actions.set.increase then
+if (state+1) <= #self.states then
+config.setinteger("adjustOutputOrder", state+1)
+else
+message("No more next property values.")
+end
+elseif action == actions.set.decrease then
+if (state-1) >= 0 then
+config.setinteger("adjustOutputOrder", state-1)
+else
+message("No more previous property values.")
+end
+else
+return "This property is adjustable only."
+end
+message(self:get())
+return message
+end
 
 return configLayout

@@ -42,7 +42,7 @@ function volumeProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired volume value for master track. Perform this property to input custom value.", "adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
-message(string.format("Master volume %s", representation.db[state]))
+message({objectId="Master", label="Volume", value=representation.db[state]})
 return message
 end
 
@@ -90,7 +90,7 @@ function panProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired pan value for master track. Perform this property to input custom pan value.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-message(string.format("Master pan %s", representation.pan[state]))
+message({objectId="Master", label="Pan", value=representation.pan[state]})
 return message
 end
 
@@ -136,7 +136,7 @@ function widthProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired width value for master track. Perform this property to input custom width value.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-message(string.format("Master width %s%%", utils.numtopercent(state)))
+message({objectId="Master", label="Width", value=string.format("%u%%", utils.numtopercent(state))})
 return message
 end
 
@@ -189,7 +189,7 @@ state = 1
 else
 state = 0
 end
-message(string.format("master %s", states[state]))
+message({objectId="Master", value=states[state]})
 return message
 end
 
@@ -220,7 +220,7 @@ message:initType("Toggle this property to solo or unsolo master track.", "Toggle
 local states = {[0] = "not soloed", [16] = "soloed"}
 local master = reaper.GetMasterTrack(0)
 local state = ({reaper.GetTrackState(master)})[2]&16
-message(string.format("Master %s", states[state]))
+message({objectId="Master", value=states[state]})
 return message
 end
 
@@ -251,11 +251,12 @@ parentLayout.playbackLayout:registerProperty(masterFXProperty)
 function masterFXProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the FX activity of master track.", "Toggleable")
+message{objectId="Master", label="FX"}
 local fxCount = reaper.TrackFX_GetCount(master)
 if fxCount > 0 then
-message(string.format("Master FX %s (%u FX in master chain)", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)], fxCount))
+message({value=string.format("%s (%u FX in master chain)", ({[0] = "active", [1] = "bypassed"})[reaper.GetToggleCommandState(16)], fxCount)})
 else
-message("Master  FX empty")
+message{value="empty"}
 message:addType(" This property  is unavailable now because the master track FX chain is empty.", 1)
 message:changeType("Unavailable", 2)
 end
@@ -285,7 +286,7 @@ parentLayout.playbackLayout:registerProperty(monoProperty)
 function monoProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the master track to mono or stereo.", "Toggleable")
-message(string.format("Master %s", ({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]))
+message{objectId="Master", value=({[0] = "stereo", [1] = "mono"})[reaper.GetToggleCommandState(40917)]}
 return message
 end
 
@@ -309,7 +310,7 @@ function playrateProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.", "adjustable, performable")
 local state = reaper.Master_GetPlayRate(0)
-message(string.format("Master play rate %s", representation.playrate[state]))
+message{objectId="Master", label="Play rate", value=representation.playrate[state]}
 return message
 end
 
@@ -338,7 +339,7 @@ parentLayout.playbackLayout:registerProperty(pitchPreserveProperty)
 function pitchPreserveProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to switch the preserving pitch of items in the project when playrate changes.", "Toggleable")
-message(string.format("Master pitch when playrate changes is %s", ({[0] = "not preserved", [1] = "preserved"})[reaper.GetToggleCommandState(40671)]))
+message{objectId="Master", label="Pitch when playrate changes", value=({[0] = "not preserved", [1] = "preserved"})[reaper.GetToggleCommandState(40671)]}
 return message
 end
 
@@ -364,7 +365,7 @@ function tempoProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
 local state = reaper.Master_GetTempo()
-message(string.format("Master tempo %s BPM", utils.round(state, 3)))
+message{objectId="Master", label="Tempo", value=string.format("%s BPM", utils.round(state, 3))}
 return message
 end
 
@@ -404,7 +405,7 @@ end
 function tcpVisibilityProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu.", "toggleable")
-message(string.format("Master control panel %s", self.states[self.getValue()]))
+message{objectId="Master", label="Control panel", value=self.states[self.getValue()]}
 return message
 end
 
@@ -447,7 +448,7 @@ end
 function mcpVisibilityProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to set the master track visibility in mixer panel.", "toggleable")
-message(string.format("Master %s on mixer panel", self.states[self.getValue()]))
+message{objectId="Master", label="Visibility on mixer panel", value=self.states[self.getValue()]}
 return message
 end
 
@@ -493,10 +494,11 @@ function masterTrackMixerPosProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose the desired master track position on the mixer panel.", "Adjustable")
 local state = self.getValue()
+message{objectId="Master track", label="Positioned"}
 if state == 0 then
-message("Master track is  positioned nowhere")
+message{value="nowhere"}
 else
-message(string.format("Master track in the %s on the mixer panel", self.states[state]))
+message{value=string.format("in the %s on the mixer panel", self.states[state])}
 end
 return message
 end

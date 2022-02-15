@@ -192,10 +192,11 @@ end
 function presetsProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.", "Adjustable, performable")
+message{objectId="Color", label="Preset"}
 if #self.states > 0 then
-message(string.format("Color preset %s", self.states[self.getValue()].name))
+message{value=self.states[self.getValue()].name}
 else
-message("Color preset empty")
+message{value="empty"}
 end
 return message
 end
@@ -270,10 +271,8 @@ state = self.getValue()
 if #self.states > 0 then
 setColor(self.states[state].value)
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-message(string.format("Color preset %s", self.states[self.getValue()].name))
-else
-message("Color preset empty")
 end
+message(self:get())
 return message
 end
 
@@ -378,7 +377,7 @@ end
 self.setValue(state)
 setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
 -- Here is old method because we do not want to report the filter superfluously
-message(string.format("Color %s", colors.colorList[self.getValue()].name))
+message{label="Color", value=colors.colorList[self.getValue()].name}
 return message
 end
 
@@ -447,7 +446,7 @@ end
 end
 end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-message(string.format("Color red intensity %u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))))
+message{objectId="Color", label="Red intensity", value=string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))}
 return message
 end
 
@@ -506,7 +505,7 @@ end
 else
 message("No more previous property values. ")
 end
-elseif action == nil then
+elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Green value input", 1, 'Type the green value intensity (0...255):', state)
 if retval == true then
 if tonumber(answer) then
@@ -517,7 +516,7 @@ end
 end
 end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-message(string.format("Color green intensity %u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))))
+message{objectId="Color", label="Green intensity", value=string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))}
 return message
 end
 
@@ -576,7 +575,7 @@ end
 else
 message("No more previous property values. ")
 end
-elseif action == nil then
+elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Blue value input", 1, 'Type the blue value intensity (0...255):', state)
 if retval == true then
 if tonumber(answer) then
@@ -587,7 +586,7 @@ end
 end
 end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-message(string.format("Color blue intensity %u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))))
+message{objectId="Color", label="Blue intensity", value=string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))}
 return message
 end
 
