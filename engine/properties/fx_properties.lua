@@ -499,7 +499,7 @@ return true, message
 end
 },
 {
-label="Set midle parameter value",
+label="Set root-mean parameter value",
 proc = function(obj)
 local state, minState, maxState = capi.GetParam(obj.fxIndex, obj.parmIndex)
 local maybeState = maxState/2
