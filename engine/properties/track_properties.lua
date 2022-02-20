@@ -562,7 +562,7 @@ end
 if type(tracks) == "table" then
 local retval, answer
 if action == actions.set.perform then
-retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
+retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
 if not retval then
 return "Canceled"
 end
@@ -595,7 +595,7 @@ state = -1
 message("Minimum width. ")
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end

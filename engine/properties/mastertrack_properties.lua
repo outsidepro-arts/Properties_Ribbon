@@ -136,7 +136,7 @@ function widthProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired width value for master track. Perform this property to input custom width value.", "Adjustable, performable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-message({objectId="Master", label="Width", value=string.format("%u%%", utils.numtopercent(state))})
+message({objectId="Master", label="Width", value=string.format("%s%%", utils.numtopercent(state))})
 return message
 end
 
@@ -159,7 +159,7 @@ state = -1
 message("Minimum width. ")
 end
 elseif action == actions.set.perform then
-local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption, string.format("%u%%", utils.numtopercent(state)))
+local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end
