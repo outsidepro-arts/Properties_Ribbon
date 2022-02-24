@@ -13,9 +13,6 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
-local maxDBValue = config.getinteger("maxDBValue", 12.0)
-
-
 -- get the master track
 local master = reaper.GetMasterTrack(0)
 
