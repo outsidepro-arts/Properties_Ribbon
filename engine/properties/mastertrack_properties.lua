@@ -379,7 +379,6 @@ reaper.Main_OnCommand(1134, 0)
 end
 -- OSARA provides the state value for tempo
 setUndoLabel(self:get())
-return
 end
 
 -- Master visibility methods
@@ -415,7 +414,7 @@ local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 if state == false then
 if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", 1) == 1 then
-self:setValue(state)
+self.setValue(state)
 end
 end
 message(self:get())
