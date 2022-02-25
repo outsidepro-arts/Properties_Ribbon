@@ -89,7 +89,7 @@ elseif udata:match("^[>]") then
 relative = 2
 end
 local converted = nil
-if udata:match("^[<>]?%d+[.]?%d*[lr]?") then
+if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
 local converted = udata:match("^[-<>]?(%d+)")
 if converted == nil then
 reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", 0)
