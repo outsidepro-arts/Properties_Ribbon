@@ -1718,17 +1718,37 @@ if action ~= actions.set.increase and action ~= actions.set.decrease then
 return "This property is adjustable only."
 end
 if type(items) == "table" then
-message("Takes: ")
 for k = 1, #items do
 local state = self.getValue(items[k])
 local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
 if action == actions.set.increase then
-if idx+1 < reaper.CountTakes(items[k]) then
-state = reaper.GetTake(items[k], idx+1)
+local takesCount = reaper.CountTakes(items[k])
+for i = idx+1, takesCount do
+local curTake = reaper.GetTake(items[k], i)
+if curTake then
+state = curTake
+break
+end
+if i+1 >= takesCount then
+if curTake then
+state = curTake
+end
+break
+end
 end
 elseif action == actions.set.decrease then
-if idx-1 >= 0 then
-state = reaper.GetTake(items[k], idx-1)
+for i = idx-1, -1, -1 do
+local curTake = reaper.GetTake(items[k], i)
+if curTake then
+state = curTake
+break
+end
+if i-1 <= -1 then
+if curTake then
+state = curTake
+end
+break
+end
 end
 end
 self.setValue(items[k], state)
