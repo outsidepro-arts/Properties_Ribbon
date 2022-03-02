@@ -664,7 +664,7 @@ end
 if layout.pIndex-1 > 0 then
 layout.pIndex = layout.pIndex-1
 else
-message("First property .")
+message("First property. ")
 end
 else
 (string.format("There are no elements %s be provided for.", layout.name)):output()
