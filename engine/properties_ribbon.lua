@@ -558,7 +558,7 @@ end
 
 function script_switchSublayout(action)
 if extstate.gotoMode then
-("Goto mode diactivated. "):output()
+("Goto mode deactivated. "):output()
 extstate.gotoMode = nil
 end
 if layout.canProvide() ~= true then
@@ -600,7 +600,7 @@ end
 function script_nextProperty()
 local message = initOutputMessage()
 if extstate.gotoMode then
-message("Goto mode diactivated. ")
+message("Goto mode deactivated. ")
 extstate.gotoMode = nil
 end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
@@ -644,7 +644,7 @@ function script_previousProperty()
 local message = initOutputMessage()
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 if extstate.gotoMode then
-message("Goto mode diactivated. ")
+message("Goto mode deactivated. ")
 extstate.gotoMode = nil
 end
 if speakLayout == true then
@@ -810,7 +810,7 @@ if mode == nil then
 ("Goto mode activated."):output()
 extstate.gotoMode = 0
 else
-("Goto mode diactivated."):output()
+("Goto mode deactivated."):output()
 extstate.gotoMode = nil
 end
 end
