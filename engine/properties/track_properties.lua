@@ -1166,7 +1166,8 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECINPUT", state)
 end
 else
-local state = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), action)
+-- The standart method boundaries check when you decrease the record input doesn't works here. Crap!
+local state, oldState = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), action), reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT")
 if action == actions.set.increase then
 if state < 8192 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
@@ -1174,7 +1175,7 @@ else
 message("No more next property values. ")
 end
 elseif action == actions.set.decrease then
-if state >= -1 then
+if state ~= oldState then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
 else
 message("No more previous property values. ")
