@@ -178,9 +178,9 @@ firstPart = utils.removeSpaces(fxName)
 end			
 local retval, parmName = capi.GetParamName(fxID, fxParm, "")
 if retval then
-secondPart = utils.removeSpaces(parmName)
+lastPart = utils.removeSpaces(parmName)
 end
-return string.format("%s.%s", firstPart, secondPart)
+return string.format("%s.%s", firstPart, lastPart)
 end
 
 local function getStep(uniqueKey, notRelyConfig)
