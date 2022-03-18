@@ -161,7 +161,7 @@ if self.value then
 message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
 end
 if self.focusIndex then
-message = string.format("%s, %s", message, self.focusIndex)
+message = string.format("%s. %s", message, self.focusIndex)
 end
 if #message == 0 then return end
 if self.tLevels and self.tl > 0 then
