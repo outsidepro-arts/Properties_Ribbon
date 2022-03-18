@@ -243,9 +243,9 @@ folderStateProperty.states = {
 [3]="end of %u folders"
 }
 folderStateProperty.compactStates = {
-[0] = "opened",
-[1] = "small",
-[2] = "closed"
+[0] = "opened ",
+[1] = "small ",
+[2] = "closed "
 }
 
 function folderStateProperty:get()
