@@ -71,6 +71,12 @@ local cfg = config.getboolean("reportName", false)
 if cfg == true then
 local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)
 if retval then
+local truncate = config.getinteger("truncateIdBy", 0)
+if truncate > 0 then
+if #name > truncate then
+name = name:sub(1, truncate).."..."
+end	
+end	
 -- Stupid REAPER adds the file extensions to the take's name!
 if config.getboolean("clearFileExts", true) == true then
 name = name:gsub("(.+)[.](%w+)$", "%1")

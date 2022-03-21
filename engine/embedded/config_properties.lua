@@ -518,6 +518,85 @@ return "This property is toggleable only."
 end
 end
 
+-- Truncate the identification namesby specified symbols length
+local truncateIdByProperty = {}
+configLayout.main:registerProperty(truncateIdByProperty)
+truncateIdByProperty.states = {5,10,25,50}
+
+function truncateIdByProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to specify the length for name should be truncated when the report names identification configuration is enabled. Perform this property to specify the custom value for.", "Adjustable, performable")
+local depend = config.getboolean("reportName", false)
+if depend == false then
+message:addType(" This property is unavailable right now because the report name configuration isn't set.", 1)
+message:changeType("Unavailable", 2)
+end
+local state = config.getinteger("truncateIdBy", 0)
+message{label="Truncate the names identification"}
+if depend then
+if state > 0 then
+message{value=string.format("By %u symbols", state)}
+else
+message{value="Off"}
+end
+else
+message{value="Unavailable"}
+end
+return message
+end
+
+function truncateIdByProperty:set(action)
+local depend = config.getboolean("reportName", false)
+if depend then
+local message= initOutputMessage()
+local state = config.getinteger("truncateIdBy", 0)
+if action == actions.set.increase then
+if state < 5 then
+config.setinteger("truncateIdBy", 5)
+elseif state >= 5 and state < 10 then
+config.setinteger("truncateIdBy", 10)
+elseif state >= 10 and state < 25 then
+config.setinteger("truncateIdBy", 25)
+elseif state >= 25 and state < 50 then
+config.setinteger("truncateIdBy", 50)
+elseif state >= 50 then
+message("No more next property values.")
+end	
+elseif action == actions.set.decrease then
+if state > 50 then
+config.setinteger("truncateIdBy", 50)
+elseif state <= 50 and state > 25 then	
+config.setinteger("truncateIdBy", 25)
+elseif state <= 25 and state > 10 then
+config.setinteger("truncateIdBy", 10)
+elseif state <= 10 and state > 5 then
+config.setinteger("truncateIdBy", 5)
+elseif state <= 5 and state > 0 then
+config.setinteger("truncateIdBy", 0)
+elseif state == 0 then
+message("No more previous property values.")
+end
+elseif action == actions.set.perform then
+local getValue = self:get()
+local retval, answer = reaper.GetUserInputs("Truncate value", 1, 'Type the needed length value the name identification should be truncated. Type \"Off\" to disable the truncation:', getValue:extract(2, false):gsub("By ", ""))
+if not retval then return end
+answer = prepareUserData.basic(answer)
+if answer:match("^%d+") then
+config.setinteger("truncateIdBy", tonumber(answer:match("^%d+")))
+else
+if answer:find("off") then
+config.setinteger("truncateIdBy", 0)
+else
+reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error", 0)
+end	
+end
+end	
+message(self:get())
+return message
+end	
+return "This property is unavailable right now because the report names option is disabled."
+end
+
 -- Automaticaly propose contextual layouts
 local autoProposeLayoutProperty = {}
 configLayout.main:registerProperty(autoProposeLayoutProperty)

@@ -73,10 +73,15 @@ else
 message(string.format(states[3], state-1))
 end
 end
-local cfg = config.getboolean("reportName", false)
-if cfg == true then
+if config.getboolean("reportName", false) == true then
 local retval, name = reaper.GetTrackName(track)
 if retval then
+local truncate = config.getinteger("truncateIdBy", 0)
+if truncate > 0 then
+if #name > truncate then
+name = name:sub(1, truncate).."..."
+end	
+end	
 if  name:find("Track") and name:match("%d+") then
 if state == 0 then
 name = name:match("%d+")
