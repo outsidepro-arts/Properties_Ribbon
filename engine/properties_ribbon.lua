@@ -140,34 +140,13 @@ end,
 -- Output  composed message to OSARA by itself
 -- Parameters:
 -- outputOrder (number, optional):  the output order which supports the following values:
--- 0 (also nil) = all fields are output
--- 1 = The label and value fields output
--- 2 = The value field will output only
 -- Please note: the msg field will output anyway. It will concatenated at the top of the output message.
 -- Returns no parameters.
 output = function(self, outputOrder)
-outputOrder = outputOrder or 0
-local message = ""
-if self.msg then
-message = tostring(self.msg)
-end
-if outputOrder == 0 and self.objectId then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.objectId):gsub("^%u", string.lower),[false]=self.objectId})[(#message > 0 and string.match(message, "[.]%s*$") == nil)])
-end
-if outputOrder <= 1 and self.label then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.label):lower(),[false]=self.label})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
-end
-if self.value then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
-end
-if self.focusIndex then
-message = string.format("%s. %s", message, self.focusIndex)
-end
-if #message == 0 then return end
-if self.tLevels and self.tl > 0 then
-message = message..". "..self.tLevels[self.tl]
-end
+local message = self:extract(outputOrder, true)
+if message then
 reaper.osara_outputMessage(message)
+end
 end,
 -- Extract the message composed string
 -- Parameters:
@@ -177,7 +156,7 @@ end,
 -- 2 = The value field will output only
 -- Please note: the msg field will output anyway. It will concatenated at the top of the output message.
 -- shouldExtractType (boolean, optional):  Should the type prommpt be extracted with composed message. By default is true
--- Returns composed string without type prompt. If there are no string, returns nil.
+-- Returns composed string. If there are no string, returns nil.
 extract = function(self, outputOrder, shouldExtractType)
 if shouldExtractType== nil then
 shouldExtractType = true
@@ -197,7 +176,7 @@ if self.value then
 message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
 end
 if self.focusIndex then
-message = string.format("%s, %s", message, self.focusIndex)
+message = string.format("%s. %s", message, self.focusIndex)
 end
 if #message == 0 then return end
 if shouldExtractType == true and self.tLevels and self.tl > 0 then
