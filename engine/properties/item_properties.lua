@@ -73,9 +73,7 @@ local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(
 if retval then
 local truncate = config.getinteger("truncateIdBy", 0)
 if truncate > 0 then
-if #name > truncate then
-name = name:sub(1, truncate).."..."
-end	
+name = utils.truncateSmart(name, truncate)
 end	
 -- Stupid REAPER adds the file extensions to the take's name!
 if config.getboolean("clearFileExts", true) == true then

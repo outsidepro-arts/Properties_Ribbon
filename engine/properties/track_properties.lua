@@ -78,9 +78,7 @@ local retval, name = reaper.GetTrackName(track)
 if retval then
 local truncate = config.getinteger("truncateIdBy", 0)
 if truncate > 0 then
-if #name > truncate then
-name = name:sub(1, truncate).."..."
-end	
+name = utils.truncateSmart(name, truncate)
 end	
 if  name:find("Track") and name:match("%d+") then
 if state == 0 then
