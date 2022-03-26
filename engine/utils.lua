@@ -144,13 +144,14 @@ local truncatedString = stringShouldbeTruncated
 local sPattern = "%s-._"
 if #stringShouldbeTruncated > truncateLength then
 local lastChunkLeft = stringShouldbeTruncated:sub(1, truncateLength):match(string.format("[%s](.*)$", sPattern))
-local lastChunkRight = stringShouldbeTruncated:sub(truncateLength+1):match(string.format("^(.?)[%s]", sPattern))
+local lastChunkRight = stringShouldbeTruncated:sub(truncateLength+1):match(string.format("^(.*)[%s]", sPattern)) or stringShouldbeTruncated:sub(truncateLength+1)
 truncatedString = stringShouldbeTruncated:sub(1, truncateLength):match(string.format("^(.*)[%s]", sPattern))
-if lastChunkLeft and lastChunkRight then
+if lastChunkLeft then
 if #lastChunkLeft > #lastChunkRight then
 truncatedString = truncatedString..stringShouldbeTruncated:sub(truncateLength-#lastChunkLeft, truncateLength)..lastChunkRight
 end
-else
+end
+if not truncatedString then
 truncatedString = stringShouldbeTruncated:sub(1, truncateLength)
 end
 truncatedString = truncatedString.."..."
