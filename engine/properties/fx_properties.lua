@@ -294,10 +294,27 @@ end
 return guid
 end
 
+local function getFormattedFXName(fxId)
+local retval, fxName = capi.GetFXName(fxId, "")
+if retval then
+if fxName:find(":") and fxName:find(": ") then
+local startPos = fxName:find(":")+2
+local endPos = fxName:find("[(].+$")
+if endPos then
+endPos = endPos-2
+end
+fxName = fxName:sub(startPos, endPos)
+end
+return fxName
+end
+end
+
 -- One FX parms rendering implementation
 -- We have to know the currently rendering FX list has the same sublayouts or not
 if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() then
 extstate._layout.lastObjectId = nil
+-- Let's take a chance and reset the drag
+extstate._layout.fxDrag = nil
 end
 
 -- Find the appropriated context prompt for newly created layout
@@ -349,17 +366,9 @@ local fxInaccuracy = 0
 if i >= fxCount then
 fxInaccuracy = 0x1000000
 end
-local retval, fxName = capi.GetFXName(i+fxInaccuracy, "")
-if retval then
 -- Ah this beautifull prefixes and postfixes
-if fxName:find(":") and fxName:find(": ") then
-local startPos = fxName:find(":")+2
-local endPos = fxName:find("[(].+$")
-if endPos then
-endPos = endPos-2
-end
-fxName = fxName:sub(startPos, endPos)
-end
+local fxName = getFormattedFXName(i+fxInaccuracy)
+if fxName then
 local sid = capi.GetFXGUID(i+fxInaccuracy):gsub("%W", "")..tostring(fxInaccuracy)
 local fxPrefix = contextPrompt.." "
 if context == 0 then
@@ -405,6 +414,43 @@ local state = capi.GetOffline(obj.fxIndex)
 capi.SetOffline(obj.fxIndex, utils.nor(state))
 -- The state returns with some delay
 return false, string.format("Fx is %s", ({[true]="offline",[false]="online"})[utils.nor(state)])
+end
+},
+{
+label=({[false]="Drag this FX for reorder",[true]="Drop previously dragged FX here"})[(extstate._layout.fxDrag ~= nil)]..({[true]="",[false]=" (unavailable)"})[(capi.GetCount() > 1 or capi.GetRecCount() > 1)],
+proc = function(obj)
+if capi.GetCount() > 1 or capi.GetRecCount() > 1 then
+local message = initOutputMessage()
+if extstate._layout.fxDrag then
+if extstate._layout.fxDrag ~= obj.fxIndex then
+-- CopyToTrack and CopyToTake cannot called on our capi metatable directly
+local reorder = nil
+if context == 0 then
+reorder = capi.CopyToTrack
+elseif context == 1 then
+reorder = capi.CopyToTake
+end
+if reorder then
+local srcName = getFormattedFXName(extstate._layout.fxDrag)
+local destName = getFormattedFXName(obj.fxIndex)
+reorder(extstate._layout.fxDrag, capi._contextObj[context], obj.fxIndex, true)
+message(string.format("%s has been dropped to %s", srcName, destName))
+extstate._layout.fxDrag = nil
+else
+message("Error: couldn't define the context focus.")
+end
+else
+extstate._layout.fxDrag = nil
+message("Drag canceled.")
+end
+else
+extstate._layout.fxDrag = obj.fxIndex
+message(string.format("%s has been dragged.", getFormattedFXName(obj.fxIndex)))
+end
+return false, message
+else
+return false, "Here is only one FX."
+end
 end
 }
 },
