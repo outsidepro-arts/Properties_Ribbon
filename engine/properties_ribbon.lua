@@ -760,6 +760,7 @@ script_finish()
 end
 
 function script_reportLayout()
+if layout.canProvide() then
 local message = initOutputMessage()
 if layout.type == "sublayout" then
 message(string.format("%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
@@ -781,6 +782,9 @@ message(", here is no properties")
 end
 message(".")
 message:output()
+else
+("This layout  cannot provide any interraction here."):output()
+end
 end
 
 function script_activateGotoMode()
