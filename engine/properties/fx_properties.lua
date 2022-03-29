@@ -311,7 +311,7 @@ end
 
 -- One FX parms rendering implementation
 -- We have to know the currently rendering FX list has the same sublayouts or not
-if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() then
+if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() and not whichFXCanbeLoaded then
 extstate._layout.lastObjectId = nil
 -- Let's take a chance and reset the drag
 extstate._layout.fxDrag = nil
