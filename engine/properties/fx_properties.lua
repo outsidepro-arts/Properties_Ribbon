@@ -452,6 +452,17 @@ else
 return false, "Here is only one FX."
 end
 end
+},
+{
+label="Delete FX",
+proc = function(obj)
+local fxName = getFormattedFXName(obj.fxIndex)
+if capi.Delete(obj.fxIndex) then
+return false, string.format("%s has been deleted.", fxName)
+else
+return false, string.format("%s cannot be deleted.", fxName)
+end
+end	
 }
 },
 fxIndex = i+fxInaccuracy,
