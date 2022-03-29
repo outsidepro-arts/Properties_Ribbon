@@ -417,7 +417,7 @@ return false, string.format("Fx is %s", ({[true]="offline",[false]="online"})[ut
 end
 },
 {
-label=({[false]="Drag this FX for reorder",[true]="Drop previously dragged FX here"})[(extstate._layout.fxDrag ~= nil)]..({[true]="",[false]=" (unavailable)"})[(capi.GetCount() > 1 or capi.GetRecCount() > 1)],
+label=({[false]="Drag FX",[true]="Drop previously dragged FX here"})[(extstate._layout.fxDrag ~= nil)]..({[true]="",[false]=" (unavailable)"})[(capi.GetCount() > 1 or capi.GetRecCount() > 1)],
 proc = function(obj)
 if capi.GetCount() > 1 or capi.GetRecCount() > 1 then
 local message = initOutputMessage()

@@ -141,7 +141,6 @@ end
 
 function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 local truncatedString = stringShouldbeTruncated
-local sPattern = "%s-._"
 if #stringShouldbeTruncated > truncateLength then
 local lastChunkLeft = ""
 for i = truncateLength, 1, -1 do
