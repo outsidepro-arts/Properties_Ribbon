@@ -143,17 +143,33 @@ function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 local truncatedString = stringShouldbeTruncated
 local sPattern = "%s-._"
 if #stringShouldbeTruncated > truncateLength then
-local lastChunkLeft = stringShouldbeTruncated:sub(1, truncateLength):match(string.format("[%s](.*)$", sPattern))
-local lastChunkRight = stringShouldbeTruncated:sub(truncateLength+1):match(string.format("^(.*)[%s]", sPattern)) or stringShouldbeTruncated:sub(truncateLength+1)
-truncatedString = stringShouldbeTruncated:sub(1, truncateLength):match(string.format("^(.*)[%s]", sPattern))
-if lastChunkLeft then
-if #lastChunkLeft > #lastChunkRight then
-truncatedString = truncatedString..stringShouldbeTruncated:sub(truncateLength-#lastChunkLeft, truncateLength)..lastChunkRight
+local lastChunkLeft = ""
+for i = truncateLength, 1, -1 do
+local char = stringShouldbeTruncated:sub(i, i)
+if char ~= " " and char ~= "-" and char ~= "_" then
+lastChunkLeft = char..lastChunkLeft
+else
+break
 end
+end
+local lastChunkRight = ""
+for i = truncateLength+1, #stringShouldbeTruncated do
+local char = stringShouldbeTruncated:sub(i, i)
+if char ~= " " and char ~= "-" and char ~= "_" then
+lastChunkRight = lastChunkRight..char
+else
+break
+end
+end
+truncatedString = stringShouldbeTruncated:sub(1, truncateLength-#lastChunkLeft)
+if #lastChunkLeft > #lastChunkRight then
+truncatedString = truncatedString..stringShouldbeTruncated:sub(truncateLength-#lastChunkLeft+1, truncateLength)..lastChunkRight
 end
 if not truncatedString then
 truncatedString = stringShouldbeTruncated:sub(1, truncateLength)
 end
+truncatedString = truncatedString:gsub("%s$", "")
+truncatedString = truncatedString:gsub("[-_]$", "")
 truncatedString = truncatedString.."..."
 end
 return truncatedString
