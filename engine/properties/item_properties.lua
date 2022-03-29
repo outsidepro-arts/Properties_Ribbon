@@ -307,7 +307,7 @@ message(string.format("The name %s has been set for %u items.", answer, #items))
 end
 else
 local name = self.getValue(items)
-local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemID(items)), 1, 'Type new item name:', name)
+local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemNumber(items)), 1, 'Type new item name:', name)
 if aState == true then
 self.setValue(items, answer)
 end
