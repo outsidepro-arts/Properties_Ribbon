@@ -458,6 +458,10 @@ label="Delete FX",
 proc = function(obj)
 local fxName = getFormattedFXName(obj.fxIndex)
 if capi.Delete(obj.fxIndex) then
+-- Is this FX not dragged?
+if extstate._layout.fxDrag then if extstate._layout.fxDrag == obj.fxIndex then
+extstate._layout.fxDrag = nil
+end end	
 return false, string.format("%s has been deleted.", fxName)
 else
 return false, string.format("%s cannot be deleted.", fxName)
