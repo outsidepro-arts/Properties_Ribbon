@@ -797,6 +797,10 @@ message:initType("Adjust this property to choose needed setting mode for this pa
 message(self.settingModes[mode].label)
 elseif mode == 0 then
 message:initType("Adjust this property to set necessary value for this parameter. Toggle this property to switch the setting mode for this property.", "Adjustable, toggleable")
+-- Define the host native parameters
+if self.parmIndex > fxParmsCount-4 then	
+message{objectId="Host "}
+end	
 local parmIdentification = config.getinteger("reportParmId", 2)
 if parmIdentification > 0 then
 if parmIdentification == 2 then
