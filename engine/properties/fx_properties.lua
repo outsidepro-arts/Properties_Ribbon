@@ -164,7 +164,7 @@ pluginsFilenames[fxId] = {}
 if context == 0 then
 pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
 elseif context == 1 then
-pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(capi._contextObj[1], fxId)
+pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(reaper.GetMediaItemTake_Item(capi._contextObj[1]), fxId)
 end
 end
 return pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str
@@ -417,9 +417,9 @@ return false, string.format("Fx is %s", ({[true]="offline",[false]="online"})[ut
 end
 },
 {
-label=({[false]="Drag FX",[true]="Drop previously dragged FX here"})[(extstate._layout.fxDrag ~= nil)]..({[true]="",[false]=" (unavailable)"})[(capi.GetCount() > 1 or capi.GetRecCount() > 1)],
+label=({[false]="Drag FX",[true]="Drop previously dragged FX here"})[(extstate._layout.fxDrag ~= nil)]..({[true]="",[false]=" (unavailable)"})[(fxCount > 1 or fxRecCount > 1)],
 proc = function(obj)
-if capi.GetCount() > 1 or capi.GetRecCount() > 1 then
+if fxCount > 1 or fxRecCount > 1 then
 local message = initOutputMessage()
 if extstate._layout.fxDrag then
 if extstate._layout.fxDrag ~= obj.fxIndex then
