@@ -168,7 +168,7 @@ message("Jump to")
 else
 message("No more previous marker actions.")
 end
-elseif action == nil then
+elseif action == actions.set.perform then
 if lastAction == 1 then
 -- There is no any different method to show the standart dialog window for user
 local prevPosition = reaper.GetCursorPosition()
@@ -189,7 +189,7 @@ elseif lastAction == 3 then
 reaper.DeleteProjectMarker(0, self.mIndex, false)
 return string.format("Marker %u has been deleted.", self.mIndex)
 else
-reaper.SetEditCurPos(self.position, true, true)
+reaper.GoToMarker(0, self.mIndex, true)
 message("Jumping to")
 end
 end
@@ -299,10 +299,11 @@ local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.Enum
 if retval and isrgn then
 parentLayout.regionsLayout:registerProperty({
 states = setmetatable({
-[1] = "Jump to end of",
-[2] = "Edit",
-[3] = "Colorize",
-[4] = "Delete"
+[1] = "Immediately jump to start of",
+[2]="Immediately jump to end of",
+[3] = "Edit",
+[4] = "Colorize",
+[5] = "Delete"
 }, {
 __index = function(self, action)
 return
@@ -320,7 +321,7 @@ if shouldSaveAnAction  and  extstate.mrkregLayout_rgnstate then
 message(self.states[extstate.mrkregLayout_rgnstate])
 --message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
 else
---message:addType(" Perform this property to move the edit cursor to the start position of this region.", 1)
+--message:addType(" Perform this property to go to this region after previously region finishes playing (also as known as smooth seek).", 1)
 extstate.mrkregLayout_rgnstate = nil
 end
 if self.clr > 0 then
@@ -346,14 +347,16 @@ if (lastAction-1) > 0 then
 extstate.mrkregLayout_rgnstate = lastAction-1
 elseif (lastAction-1) == 0 then
 extstate.mrkregLayout_rgnstate = nil
-message("Jump to start of")
+message("Smooth seek to")
 else
 message("No more previous region actions.")
 end
 elseif action == nil then
 if lastAction == 1 then
-reaper.SetEditCurPos(self.endPosition, true, true)
+reaper.SetEditCurPos(self.position, true, true)
 elseif lastAction == 2 then
+reaper.SetEditCurPos(self.endPosition, true, true)
+elseif lastAction == 3 then
 -- There is no any different method to show the standart dialog window for user
 local prevPosition = reaper.GetCursorPosition()
 reaper.SetEditCurPos(self.position, false, false)
@@ -361,7 +364,7 @@ reaper.Main_OnCommand(40616, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
 setUndoLabel(self:get(true))
 return
-elseif lastAction == 3 then
+elseif lastAction == 4 then
 local precolor = getMarkersComposedColor()
 if precolor then
 reaper.SetProjectMarker4(0, self.rIndex, true, self.position, self.endPosition, self.str, precolor|0x1000000, 0)
@@ -369,12 +372,12 @@ return string.format("Region %u colorized to %s color.", self.rIndex, colors:get
 else
 return "Compose any color for markers or regions first."
 end
-elseif lastAction == 4 then
+elseif lastAction == 5 then
 reaper.DeleteProjectMarker(0, self.rIndex, true)
 return string.format("Region %u deleted.", self.rIndex)
 else
-reaper.SetEditCurPos(self.position, true, true)
-message("Jumping to")
+reaper.GoToRegion(0, self.rIndex, true)
+message("Smooth seek to")
 end
 end
 message(self:get(true))
