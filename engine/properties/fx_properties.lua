@@ -806,11 +806,14 @@ if parmIdentification > 0 then
 if parmIdentification == 2 then
 message({objectId="Parameter "})
 end
+-- Exclude the parm enumeration when this parm is native
+if self.parmIndex < fxParmsCount-3 then	
 local reportMethod = config.getinteger("reportParmMethod", 1)
 if reportMethod == 1 then
 	message({objectId=self.parmNum})
 elseif reportMethod == 2 then
 	message({objectId=self.parmIndex+1})
+end
 end
 end
 message({label=({capi.GetParamName(self.fxIndex, self.parmIndex)})[2], value=getStringParmValue(self.fxIndex, self.parmIndex)})
