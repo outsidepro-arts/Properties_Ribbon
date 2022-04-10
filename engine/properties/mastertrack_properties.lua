@@ -521,4 +521,26 @@ message(self:get())
 return message
 end
 
+local osaraParamsProperty = {}
+parentLayout.visualLayout:registerProperty(osaraParamsProperty)
+
+function osaraParamsProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to view the OSARA parameters window for master track.", "Performable")
+message{objectId="Master ", label="OSARA parameters"}
+return message
+end
+
+function osaraParamsProperty:set(action)
+if action == actions.set.perform then
+if reaper.GetLastTouchedTrack() ~= master then
+reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 1)
+end
+reaper.SetCursorContext(0, nil)
+reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+return
+end
+return "This property is performable only."
+end
+
 return parentLayout

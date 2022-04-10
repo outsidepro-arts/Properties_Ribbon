@@ -2669,6 +2669,36 @@ message(self:get())
 return message
 end
 
+local osaraParamsProperty = {}
+parentLayout.visualLayout:registerProperty(osaraParamsProperty)
+
+function osaraParamsProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to view the OSARA parameters window for selected item.", "Performable")
+-- This property will obey the one selected item cuz the OSARA action works with that only.
+if multiSelectionSupport == true then
+message:addType(" If the group of items selected, OSARA parameters will show for first selected item.", 1)
+end
+message{label="OSARA parameters"}
+local item = nil	
+if type(items) == "table" then
+item = items[1]
+else	
+item = items
+end
+message{objectId=getItemID(item)}
+return message
+end
+
+function osaraParamsProperty:set(action)
+if action == actions.set.perform then
+reaper.SetCursorContext(1, nil)
+reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+return
+end	
+return "This property is performable only."
+end
+
 
 -- Stretch markers realisation
 local function formStretchMarkerProperties(item)

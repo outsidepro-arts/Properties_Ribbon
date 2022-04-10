@@ -1936,6 +1936,38 @@ message(self:get())
 return message
 end
 
+
+local osaraParamsProperty = {}
+parentLayout.visualLayout:registerProperty(osaraParamsProperty)
+
+function osaraParamsProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to view the OSARA parameters window for last touched track.", "Performable")
+-- This property will obey the last touched track cuz the OSARA action works with that only.
+if type(tracks) == "table" then
+message{objectId="Last touched "}
+end	
+message{label="OSARA parameters"}
+if reaper.GetLastTouchedTrack() then
+message{objectId=getTrackID(reaper.GetLastTouchedTrack())}
+else	
+message{label=" (unavailable)"}
+end	
+return message
+end
+
+function osaraParamsProperty:set(action)
+if action == actions.set.perform then
+if reaper.GetLastTouchedTrack() then	
+reaper.SetCursorContext(0, nil)
+reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+return
+end	
+return "This property is unavailable right now because no track touched."
+end	
+return "This property is performable only."
+end
+
 parentLayout.defaultSublayout = "playbackLayout"
 
 return parentLayout
