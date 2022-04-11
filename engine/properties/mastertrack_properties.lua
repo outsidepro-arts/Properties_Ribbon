@@ -533,11 +533,23 @@ end
 
 function osaraParamsProperty:set(action)
 if action == actions.set.perform then
+-- Ensure the master track has touched
+local lastSelection = {}
 if reaper.GetLastTouchedTrack() ~= master then
+local selectedTracksCount = reaper.CountSelectedTracks(0)
+for i = 0, selectedTracksCount-1 do
+table.insert(lastSelection, reaper.GetSelectedTrack(0, i))
+end
 reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 1)
 end
 reaper.SetCursorContext(0, nil)
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+if #lastSelection > 0 then
+for _, track in ipairs(lastSelection) do
+reaper.SetTrackSelected(track, true)
+end
+reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 0)
+end
 return
 end
 return "This property is performable only."
