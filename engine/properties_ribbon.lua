@@ -332,10 +332,16 @@ end
 -- }
 
 
-function composeSubLayout()
+function composeSubLayout(shouldReportParentLayout)
 local message = initOutputMessage()
+if shouldReportParentLayout == nil then
+shouldReportParentLayout = true
+end
 if layout.type == "sublayout" then
-message(string.format("%s of %s", layout.subname, ({[true]=layout.name:lower(),[false]=layout.name})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
+message(layout.subname)
+if shouldReportParentLayout == true then
+message(string.format(" of %s", ({[true]=layout.name:lower(),[false]=layout.name})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
+end
 else
 message(layout.name)
 end
@@ -569,7 +575,7 @@ restorePreviousLayout()
 script_finish()
 return
 end
-script_reportOrGotoProperty()
+script_reportOrGotoProperty(nil, nil, false)
 else
 (("The %s layout has no category. "):format(layout.name)):output()
 end
@@ -662,7 +668,7 @@ message:output()
 script_finish()
 end
 
-function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated)
+function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout)
 local message = initOutputMessage()
 local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 local gotoMode = extstate.gotoMode
@@ -686,7 +692,7 @@ end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 local percentageNavigationApplied = false
 if speakLayout == true then
-message(composeSubLayout())
+message(composeSubLayout(shouldReportParentLayout))
 if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum then
 layout.pIndex = 1
 end
