@@ -470,7 +470,7 @@ else
 self.setValue(points, answer)
 end
 else
-reaper.ShowMessageBox("Couldn't convert any specified value.", "Properties Ribbon error", 0)
+reaper.ShowMessageBox("Couldn't convert any specified value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return
 end
 else

@@ -19,7 +19,7 @@ return true
 end
 end
 end
-reaper.ShowMessageBox(string.format("Couldn't find any track with %s in its name.", searchString), "No search results", 0)
+reaper.ShowMessageBox(string.format("Couldn't find any track with %s in its name.", searchString), "No search results", showMessageBoxConsts.sets.ok)
 end
 
 
@@ -47,7 +47,7 @@ end
 end
 end
 end
-reaper.ShowMessageBox(string.format("Couldn't find any track with plug-in which holds %s in its name.", searchString), "No search results", 0)
+reaper.ShowMessageBox(string.format("Couldn't find any track with plug-in which holds %s in its name.", searchString), "No search results", showMessageBoxConsts.sets.ok)
 return false
 end
 
@@ -69,7 +69,7 @@ return true
 end
 end
 end
-reaper.ShowMessageBox(string.format("Couldn't find any item which holds %s in its name.", searchString), "No search results", 0)
+reaper.ShowMessageBox(string.format("Couldn't find any item which holds %s in its name.", searchString), "No search results", showMessageBoxConsts.sets.ok)
 return false
 end
 
@@ -97,7 +97,7 @@ end
 end
 end
 end
-reaper.ShowMessageBox(string.format("Couldn't find any item with plug-in which holds %s in its name.", searchString), "No search results", 0)
+reaper.ShowMessageBox(string.format("Couldn't find any item with plug-in which holds %s in its name.", searchString), "No search results", showMessageBoxConsts.sets.ok)
 return false
 end
 

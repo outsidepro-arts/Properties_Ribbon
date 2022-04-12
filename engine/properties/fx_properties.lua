@@ -595,7 +595,7 @@ if tonumber(answer) then
 setParmValue(obj.fxIndex, obj.parmIndex, tonumber(answer))
 endParmEdit(obj.fxIndex, obj.parmIndex)
 else
-reaper.ShowMessageBox("Seems it is not a raw data.", "Raw data error", 0)
+reaper.ShowMessageBox("Seems it is not a raw data.", "Raw data error", showMessageBoxConsts.sets.ok)
 return true
 end
 end
@@ -607,14 +607,14 @@ end
 label=string.format("Search for parameter value%s", ({[false]="",[true]=" (use with caution here)"})[checkKnownAssyncPlugin(i)]),
 proc=function(obj)
 if checkKnownAssyncPlugin(obj.fxIndex) then
-if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to continue start the search process?", "Caution", 4) ~= 6 then return true end
+if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to continue start the search process?", "Caution", showMessageBoxConsts.sets.yesno) ~= showMessageBoxConsts.button.yes then return true end
 end
 local retval, curValue = capi.GetFormattedParamValue(obj.fxIndex, obj.parmIndex, "")
 if retval then
 local retval, answer = reaper.GetUserInputs("Search for parameter value", 1, "Type either a part of value string or full string:", curValue)
 if retval then
 if not extstate._layout._forever.searchProcessNotify then
-reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", 0)
+reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.", "Note before searching process starts", showMessageBoxConsts.sets.ok)
 extstate._layout._forever.searchProcessNotify = true
 end
 local searchMode = 0
@@ -636,7 +636,7 @@ end
 local ajustingValue = stepsList[getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))].value
 if retvalStep and defStep > 0.0 then
 	if isToggle then
-		reaper.ShowMessageBox("This parameter is toggle. It means it has only two states, therefore here is no point to search something.", "Searching in toggle parameter", 0)
+		reaper.ShowMessageBox("This parameter is toggle. It means it has only two states, therefore here is no point to search something.", "Searching in toggle parameter", showMessageBoxConsts.sets.ok)
 		return true
 	end
 ajustingValue = defStep
@@ -663,7 +663,7 @@ elseif searchMode == 2 then
 stringForm = stringForm.." relative from previously set value to the right"
 end
 stringForm = stringForm.." with %s adjusting step. If you're sure that this value exists in this parameter, you may set less adjusting step value for this parameter and run the search process again."
-reaper.ShowMessageBox(string.format(stringForm, answer, stepsList[getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))].label), "No results", 0)
+reaper.ShowMessageBox(string.format(stringForm, answer, stepsList[getStep(makeUniqueKey(obj.fxIndex, obj.parmIndex))].label), "No results", showMessageBoxConsts.sets.ok)
 setParmValue(obj.fxIndex, obj.parmIndex, state)
 endParmEdit(obj.fxIndex, obj.parmIndex)
 return true
@@ -716,7 +716,7 @@ if retval then
 if answer ~= "" then
 setFilter(sid, answer)
 else
-reaper.ShowMessageBox("You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere.", "Set filter error", 0)
+reaper.ShowMessageBox("You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere.", "Set filter error", showMessageBoxConsts.sets.ok)
 end
 end
 return true
@@ -761,11 +761,11 @@ local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
-reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return true
 end
 if newParamMask == nil then
-reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return true
 end
 fxMaskList[#fxMaskList+1] = {

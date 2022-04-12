@@ -587,7 +587,7 @@ else
 if answer:find("off") then
 config.setinteger("truncateIdBy", 0)
 else
-reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error", 0)
+reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end	
 end
 end	
@@ -880,11 +880,11 @@ local retval, answer = reaper.GetUserInputs("Edit exclude mask", 3, "FX plug-in 
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
-reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return true
 end
 if newParamMask == nil then
-reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return true
 end
 fxMaskList[i] = {
@@ -897,7 +897,7 @@ end
 {
 label="Delete",
 proc = function()
-if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s', fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", 4) == 6 then
+if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s', fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 fxMaskList[i] = nil
 end
 end
@@ -971,11 +971,11 @@ local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
-reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return
 end
 if newParamMask == nil then
-reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", 0)
+reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 return
 end
 fxMaskList[#fxMaskList+1] = {

@@ -37,6 +37,29 @@ sublayout_next = 0x000001,
 sublayout_prev = 0x000010
 }
 
+-- the buttons and buttons sets for reaper.ShowMessageBox method
+showMessageBoxConsts = {
+-- Buttons sets
+sets = {
+ok=0x000000,
+okcancel=0x000001,
+abortretryignore=0x000002,
+yesnocancel=0x000003,
+yesno=0x000004,
+retrycancel=0x000005
+},
+-- Buttons constants for checking
+button={
+ok=0x000001,
+cancel=0x000002,
+abort=0x000003,
+retry=0x000004,
+ignore=0x000005,
+yes=0x000006,
+no=0x000007
+}
+}
+
 
 -- Little injections
 -- Make string type as outputable to OSARA directly
@@ -469,13 +492,13 @@ layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, nil
 function script_init(newLayout, shouldSpeakLayout)
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
-if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?', "Properties Ribbon error", 4) == 6 then
+if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?', "Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 openPath("https://osara.reaperaccessibility.com/snapshots/")
 end
 return nil
 end
 if not reaper.APIExists("CF_GetSWSVersion") == true then
-if reaper.ShowMessageBox('Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?', "Properties Ribbon error", 4) == 6 then
+if reaper.ShowMessageBox('Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?', "Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 openPath("https://sws-extension.org/")
 end
 return nil
@@ -528,7 +551,7 @@ dofile(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"))
 end
 layout = dofile(package.path:gsub("?", currentLayout))
 if layout == nil then
-reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", 0)
+reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", showMessageBoxConsts.sets.ok)
 return nil
 end
 if isHasSublayouts(layout) then

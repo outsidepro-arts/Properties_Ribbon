@@ -92,7 +92,7 @@ local converted = nil
 if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
 local converted = udata:match("^[-<>]?(%d+)")
 if converted == nil then
-reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", 0)
+reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", showMessageBoxConsts.sets.ok)
 return nil
 end
 if relative == 1 then

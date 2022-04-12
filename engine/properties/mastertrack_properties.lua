@@ -72,7 +72,7 @@ end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return
 end
 message(self:get())
@@ -119,7 +119,7 @@ end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return
 end
 message(self:get())
@@ -165,7 +165,7 @@ end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", 0)
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return
 end
 message(self:get())
@@ -410,7 +410,7 @@ if action == actions.set.toggle then
 local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 if state == false then
-if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", 1) == 1 then
+if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "Caution", showMessageBoxConsts.sets.okcancel) == showMessageBoxConsts.button.ok then
 self.setValue(state)
 end
 end

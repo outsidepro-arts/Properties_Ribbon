@@ -76,7 +76,7 @@ setUndoLabel(self:get(true))
 return
 elseif state == 2 then
 if numMarkers > 0 then
-if reaper.ShowMessageBox("Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?", "Please note", 4) == 6 then
+if reaper.ShowMessageBox("Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?", "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 reaper.Main_OnCommand(40898, 0)
 return "All markers were renumbered."
 else
@@ -258,7 +258,7 @@ elseif state == 4 then
 reaper.Main_OnCommand(41664, 0)
 elseif state == 5 then
 if numRegions > 0 then
-if reaper.ShowMessageBox("Since the main action for renumbering is used, all markers will be renumbered aswell. Would you like to continue?", "Please note", 4) == 6 then
+if reaper.ShowMessageBox("Since the main action for renumbering is used, all markers will be renumbered aswell. Would you like to continue?", "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 reaper.Main_OnCommand(40898, 0)
 return "All markers and regions were renumbered."
 else
