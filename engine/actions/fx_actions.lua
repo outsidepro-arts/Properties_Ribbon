@@ -327,12 +327,9 @@ set = function(self, action)
 if action == actions.set.perform then
 local chainCount, inputCount = self.getValue()
 if chainCount > 0 or (inputCount and inputCount > 0) then
-script_finish()
 extstate["fx_properties.loadFX"] = nil
-if script_init({section="properties",layout="fx_properties"}, true) then
-script_reportOrGotoProperty()
+executeLayout{section="properties",layout="fx_properties"}
 return
-end
 else
 return "This action is unavailable right now because no one FX is set there."
 end
@@ -409,11 +406,8 @@ function fxPropertiesForMasterTrack:set(action)
 if action == actions.set.perform then
 local chainCount = self.getValue()
 if chainCount > 0 then
-script_finish()
 extstate["fx_properties.loadFX"] = "master"
-if script_init({section="properties",layout="fx_properties"}, true) then
-script_reportOrGotoProperty()
-end
+executeLayout{section="properties",layout="fx_properties"}
 return
 else
 return "This action is unavailable right now because no one FX is set there."
@@ -565,11 +559,8 @@ function fxPropertiesForMonitoring:set(action)
 if action == actions.set.perform then
 local _, monitoringCount = self.getValue()
 if monitoringCount > 0 then
-script_finish()
 extstate["fx_properties.loadFX"] = "monitoring"
-if script_init({section="properties",layout="fx_properties"}, true) then
-script_reportOrGotoProperty()
-end
+executeLayout{section="properties",layout="fx_properties"}
 return
 else
 return "This action is unavailable right now because no one FX is set there."
