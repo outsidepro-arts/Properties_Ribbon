@@ -435,6 +435,21 @@ end
 end
 end
 
+-- Immediately load specified layout
+-- May be used when you're need to load new layout from your layout directly
+-- Parameters:
+-- -- newLayout (table): new layout structure which Properties Ribbon should switch to.
+-- Returns none
+function executeLayout(newLayout)
+script_finish()
+local loadResult = (script_init(newLayout, true) ~= nil)
+if loadResult then
+script_reportOrGotoProperty()
+end
+return loadResult
+end
+
+
 function isHasSublayouts(lt)
 if not lt.properties then
 for _, field in pairs(lt) do
@@ -487,7 +502,6 @@ end
 layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, nil, false, "Unknown Change via Properties Ribbon script"
 
 -- The main initialization function
--- newLayout (string, optional): new layout name which Properties Ribbon should switch to. If it is omited, the last layout will be loaded.
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
 function script_init(newLayout, shouldSpeakLayout)
 -- Checking the speech output method existing
