@@ -2727,7 +2727,17 @@ extstate.itemProperties_smrkaction = nil
 else
 message(self.states[extstate.itemProperties_smrkaction])
 end
-message{label=string.format("%stretch marker %u of %s %s", ({[false]="S",[true]="Pulled s"})[(self.marker.pos ~= self.marker.srcpos)], self.marker.idx+1, getItemID(self.marker.item), getTakeID(self.marker.item))}
+local markerPulled = false	
+-- The srcpos which returns a stretch marker relies the original file's length
+do
+local src = reaper.GetMediaItemTake_Source(reaper.GetActiveTake(self.marker.item))
+-- There is two return arguments but we using only one right now. I not understood which case will changes the length to another format, so it is checking based on that fact that we get time always.
+local srcLength = reaper.GetMediaSourceLength(src)
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(self.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(self.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(self.marker.item, "D_LENGTH")
+-- TODO: Clarify the symbols amount by which the values should be rounded. Also clarify whether the playrate should be used
+markerPulled = (utils.round(self.marker.pos, 6) ~= utils.round((self.marker.srcpos-((srcLength-itemLength)*takePlayrate)), 6))
+end	
+message{label=string.format("%stretch marker %u of %s %s", ({[false]="S",[true]="Pulled s"})[markerPulled], self.marker.idx+1, getItemID(self.marker.item), getTakeID(self.marker.item))}
 return message
 end,
 set = function(self, action)
