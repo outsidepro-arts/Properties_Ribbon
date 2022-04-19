@@ -17,6 +17,7 @@ After this preambula, let me begin.
 
 local parentLayout = initLayout("preferences actions")
 
+parentLayout:registerSublayout("propertiesRibbonPrefs", "Properties ribbon")
 parentLayout:registerSublayout("reaperPrefs", "REAPER")
 parentLayout:registerSublayout("osaraLayout", "OSARA extension")
 parentLayout:registerSublayout("swsLayout", "SWS extension")
@@ -25,6 +26,63 @@ parentLayout:registerSublayout("reaPackLayout", "ReaPack extension")
 end
 
 
+-- Properties ribbon configuration
+local prConfigProperty = {}
+parentLayout.propertiesRibbonPrefs:registerProperty(prConfigProperty)
+
+function prConfigProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to load the Properties Ribbon configuration layout.", "Performable")
+message("Configure Properties Ribbon")
+return message
+end
+
+function prConfigProperty:set(action)
+if action == actions.set.perform then
+executeLayout{section="embedded", layout="config_properties"}
+return
+end
+return "This property is performable only."
+end
+
+-- The repository page of Properties Ribbon on Github
+local prHomepageProperty = {}
+parentLayout.propertiesRibbonPrefs:registerProperty(prHomepageProperty)
+
+function prHomepageProperty:get()
+local message = initOutputMessage()
+-- I'll separate Github by space" for synthesizer report the brand's name correctly
+message:initType("Perform this property to go to the Properties Ribbon home page on Git hub.", "Performable")
+message("Properties ribbon home page on Git hub")
+return message
+end
+
+function prHomepageProperty:set(action)
+if action == actions.set.perform then
+openPath("https://github.com/outsidepro-arts/properties_ribbon")
+return
+end
+return "This property is performable only."
+end
+
+-- Download the latest Main branch archive
+local prDownloadArchiveProperty = {}
+parentLayout.propertiesRibbonPrefs:registerProperty(prDownloadArchiveProperty)
+
+function prDownloadArchiveProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to download the latest Main branch archive contained the Properties Ribbon from Git hub.", "Performable")
+message("Download the latest Properties Ribbon scripts complex")
+return message
+end
+
+function prDownloadArchiveProperty:set(action)
+if action == actions.set.perform then
+openPath("https://github.com/outsidepro-arts/Properties_Ribbon/archive/main.zip")
+return
+end
+return "This property is performable only."
+end
 
 -- REAPER preferences
 parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40016, "Global preferences"))
