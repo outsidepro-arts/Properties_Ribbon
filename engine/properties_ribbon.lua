@@ -826,7 +826,7 @@ end
 message(".")
 message:output()
 else
-("This layout  cannot provide any interraction here."):output()
+(string.format("The %s layout  cannot provide any interraction here.", layout.name)):output()
 end
 end
 
