@@ -139,37 +139,57 @@ return (fullString:lower():find(searchString:lower()))
 end
 end
 
+-- The multibyte strings cannot be processed by the Lua String library correctly.
+function utils.exposeUTF8Chars(utfString)
+local result = {}
+for _, character in utf8.codes(utfString) do
+table.insert(result, utf8.char(character))
+end
+return result
+end
+
 function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 local truncatedString = stringShouldbeTruncated
-if #stringShouldbeTruncated > truncateLength then
-local lastChunkLeft = ""
+-- We will not work with string as usual cuz REAPER may provide us the multibyte UTF8 strings.
+-- But Lua provides us the raw UTF8 processing, so we will attempt to solve this trouble like that.
+if utf8.len(stringShouldbeTruncated) > truncateLength then
+truncatedString = nil
+local strTable = utils.exposeUTF8Chars(stringShouldbeTruncated)
+local lastChunkLeft = 0
 for i = truncateLength, 1, -1 do
-local char = stringShouldbeTruncated:sub(i, i)
-if char ~= " " and char ~= "-" and char ~= "_" then
-lastChunkLeft = char..lastChunkLeft
-else
+local char = utf8.codepoint(strTable[i])
+-- The char code is more comfort for checking
+if char == 32 or char == 45 or char == 95 then
+lastChunkLeft = i
 break
 end
 end
-local lastChunkRight = ""
-for i = truncateLength+1, #stringShouldbeTruncated do
-local char = stringShouldbeTruncated:sub(i, i)
-if char ~= " " and char ~= "-" and char ~= "_" then
-lastChunkRight = lastChunkRight..char
-else
+local lastChunkRight = 0
+for i = truncateLength+1, #strTable do
+local char = utf8.codepoint(strTable[i])
+if char == 32 or char == 45 or char == 95 then
+lastChunkRight = i
 break
 end
 end
-truncatedString = stringShouldbeTruncated:sub(1, truncateLength-#lastChunkLeft)
-if #lastChunkLeft > #lastChunkRight then
-truncatedString = truncatedString..stringShouldbeTruncated:sub(truncateLength-#lastChunkLeft+1, truncateLength)..lastChunkRight
+if lastChunkLeft > 0 and lastChunkRight > 0 then
+truncatedString = table.concat(strTable, "", 1, lastChunkLeft-1)
+if (lastChunkRight-truncateLength) > (truncateLength-lastChunkLeft) then
+truncatedString = truncatedString..table.concat(strTable, "", lastChunkLeft, lastChunkRight-1)
+end
+truncatedString = truncatedString.."..."
+elseif lastChunkLeft == 0 and lastChunkRight > 0 then
+truncatedString = table.concat(strTable, "", 1, lastChunkRight-1).."..."
+elseif lastChunkLeft > 0 and lastChunkRight == 0 then
+truncatedString = table.concat(strTable, "", 1, lastChunkLeft-1).."..."
+elseif lastChunkLeft == 0 and lastChunkRight == 0 then
+if (#strTable-truncateLength) < truncateLength then
+truncatedString = table.concat(strTable, "").."..."
+end
 end
 if not truncatedString then
-truncatedString = stringShouldbeTruncated:sub(1, truncateLength)
+truncatedString = table.concat(strTable, "", 1, truncateLength).."..."
 end
-truncatedString = truncatedString:gsub("%s$", "")
-truncatedString = truncatedString:gsub("[-_]$", "")
-truncatedString = truncatedString.."..."
 end
 return truncatedString
 end
