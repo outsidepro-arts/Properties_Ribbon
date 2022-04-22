@@ -740,6 +740,77 @@ return message
 end
 end
 
+
+if points ~= nil then
+local gotoPositionProperty = {}
+envelopePointsLayout:registerProperty(gotoPositionProperty)
+
+function gotoPositionProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to timeline position where this point has positioned.", "Performable")
+if multiSelectionSupport then
+message:addType(" If the group of points has been selected, the cursor will set to first selected point position.", 1)
+end
+if type(points) == "table" then
+message(string.format("Go to %s position", getPointID(points[1])))
+else
+message(string.format("Go to %s position", getPointID(points)))
+end
+return message
+end
+
+function gotoPositionProperty:set(action)
+if action == actions.set.perform then
+local message = initOutputMessage()
+local point = nil
+if type(points) == "table" then
+point = points[1]
+else
+point = points
+end
+local retval, time = reaper.GetEnvelopePoint(envelope, point)
+if retval then
+reaper.SetEditCurPos(time, true, true)
+message(string.format("Moved the edit cursor to %s", reaper.format_timestr_pos(time, "", -1)))
+end
+return message
+end
+return "This property is performable only."
+end
+end
+
+if points ~= nil then
+local deletePointsProperty = {}
+envelopePointsLayout:registerProperty(deletePointsProperty)
+
+function deletePointsProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to delete the envelope point.", "Performable")
+if multiSelectionSupport then
+message:addType(" If the group of points has been selected, all these points will be deleted.", 1)
+end	
+if type(points) == "table" then
+message(string.format("Delete %u selected %s points", #points, name))
+end
+message(string.format("Delete %s", getPointID(points)))
+return message
+end
+
+function deletePointsProperty:set(action)
+if action == actions.set.perform then
+setUndoLabel(self:get())
+reaper.Main_OnCommand(40333, 0) -- Envelope: Delete all selected points
+if reaper.CountEnvelopePoints(envelope) > 0 then
+if reaper.GetEnvelopePoint(envelope, reaper.CountEnvelopePoints(envelope)-1) then
+reaper.SetEnvelopePoint(envelope, reaper.CountEnvelopePoints(envelope)-1, nil, nil, nil, nil, true)
+end
+end
+return
+end
+return "This property is performable only."
+end
+end
+
 	envelopePointsLayout:registerProperty(addEnvelopePointProperty)
 
 return envelopePointsLayout
