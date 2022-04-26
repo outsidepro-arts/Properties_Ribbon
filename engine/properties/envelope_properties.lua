@@ -791,8 +791,9 @@ message:addType(" If the group of points has been selected, all these points wil
 end	
 if type(points) == "table" then
 message(string.format("Delete %u selected %s points", #points, name))
-end
+else	
 message(string.format("Delete %s", getPointID(points)))
+end
 return message
 end
 
