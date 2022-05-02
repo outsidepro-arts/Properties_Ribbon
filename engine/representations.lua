@@ -114,4 +114,88 @@ return msg
 end
 })
 
+representation.pos = {
+[0] = setmetatable({}, {
+__index = function(self, pos)
+local data = reaper.format_timestr_pos(pos, "", 0)
+local form = ""
+local minute, second, fraction = string.match(data, "(%d*):(%d*)[.](%d*)")
+if tonumber(minute) > 0 then
+form = form..string.format("%u minute%s", tonumber(minute), ({[true]="s",[false]=""})[(tonumber(minute) ~= 1)])
+end
+if tonumber(second) > 0 then
+form = form..string.format(" %u second%s", tonumber(second), ({[true]="s",[false]=""})[(tonumber(second) ~= 1)])
+end
+if tonumber(fraction) > 0 then
+form = form..string.format(" %u milli-second%s", tonumber(fraction), ({[true]="s",[false]=""})[(tonumber(fraction) ~= 1)])
+end
+form = form:gsub("^%s", "")
+return form
+end
+}),
+[1]=setmetatable({}, {
+__index = function(self, pos)
+local data = reaper.format_timestr_pos(pos, "", 1)
+local form = ""
+local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
+if tonumber(measure) > 0 then
+form = form..string.format("measure %u", tonumber(measure))
+end
+if tonumber(beat) > 0 then
+form = form..string.format(" beat %u", tonumber(beat))
+end
+if tonumber(fraction) > 0 then
+form = form..string.format(" %u percent", tonumber(fraction))
+end
+form = form:gsub("^%s", "")
+return form
+end
+}),
+[2]=setmetatable({}, {
+__index = function(self, pos)
+local data = reaper.format_timestr_pos(pos, "", 2)
+local form = ""
+local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
+if tonumber(measure) > 0 then
+form = form..string.format("measure %u", tonumber(measure))
+end
+if tonumber(beat) > 0 then
+form = form..string.format(" beat %u", tonumber(beat))
+end
+if tonumber(fraction) > 0 then
+form = form..string.format(" %u percent", tonumber(fraction))
+end
+form = form:gsub("^%s", "")
+return form
+end
+}),
+[3] = setmetatable({}, {
+__index = function(self, pos)
+local data = reaper.format_timestr_pos(pos, "", 3)
+return representation.timesec[data]
+end
+}),
+[4]=setmetatable({}, {
+__index = function(self, pos)
+local data = reaper.format_timestr_pos(pos, "", 4)
+return string.format("%s samples", data)
+end
+})
+}
+
+representation.defpos = setmetatable({}, {
+__index = function(self, pos)
+-- OSARA uses the same method for current time formatting definition
+local tfDefinition = 2 -- we will always use the measures formatting by default
+if reaper.GetToggleCommandState(40365) == 1 then
+tfDefinition = 0
+elseif reaper.GetToggleCommandState(40368) == 1 then
+tfDefinition = 3
+elseif reaper.GetToggleCommandState(40369) == 1 then
+tfDefinition = 4
+end
+return representation.pos[tfDefinition][pos]
+end
+})
+
 return representation
