@@ -776,7 +776,7 @@ end
 message(result, true)
 if percentageNavigationApplied then
 message = message:extract(0, true):gsub("(.+)([.])$", "%1")
-message = message..string.format(". Percentage navigation chosed property %u", propertyNum)
+message = message..string.format(". Percentage navigation has chosen property %u", propertyNum)
 end
 message:output()
 script_finish()
