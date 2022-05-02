@@ -2764,7 +2764,7 @@ local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(sel
 --if curpos >= itemPosition and curpos <= (itemPosition+itemLength) then
 reaper.SetTakeStretchMarker(reaper.GetActiveTake(self.marker.item), self.marker.idx, ((curpos-itemPosition)*takePlayrate))
 message(self:get())
-message{value="pulled onto new position."}
+message{value=string.format("pulled onto %s.", representation.defpos[curpos])}
 --else
 --return "You're trying to pull the stretch marker which belongs to defined item through out the edges of this item."
 --end
@@ -2782,6 +2782,7 @@ message{label=" has been", value="deleted"}
 return message
 else
 reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 end
 end
 message(self:get(true))
@@ -2892,6 +2893,7 @@ end
 return message
 else
 reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 end
 end
 message(self:get(true))

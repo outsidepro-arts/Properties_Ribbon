@@ -771,7 +771,7 @@ end
 local retval, time = reaper.GetEnvelopePoint(envelope, point)
 if retval then
 reaper.SetEditCurPos(time, true, true)
-message(string.format("Moved the edit cursor to %s", reaper.format_timestr_pos(time, "", -1)))
+message(string.format("Moved the edit cursor to %s", representation.defpos[time]))
 end
 return message
 end

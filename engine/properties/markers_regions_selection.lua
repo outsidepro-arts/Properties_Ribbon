@@ -191,6 +191,7 @@ return string.format("Marker %u has been deleted.", self.mIndex)
 else
 reaper.GoToMarker(0, self.mIndex, true)
 message("Jumping to")
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 end
 end
 message(self:get(true))
@@ -354,8 +355,10 @@ end
 elseif action == nil then
 if lastAction == 1 then
 reaper.SetEditCurPos(self.position, true, true)
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 elseif lastAction == 2 then
 reaper.SetEditCurPos(self.endPosition, true, true)
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 elseif lastAction == 3 then
 -- There is no any different method to show the standart dialog window for user
 local prevPosition = reaper.GetCursorPosition()
@@ -378,6 +381,7 @@ return string.format("Region %u deleted.", self.rIndex)
 else
 reaper.GoToRegion(0, self.rIndex, true)
 message("Smooth seek to")
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 end
 end
 message(self:get(true))
