@@ -89,17 +89,23 @@ elseif udata:match("^[>]") then
 relative = 2
 end
 local converted = nil
+if relative then
+converted = string.match(udata, "^[<>](%d*)")
+if converted then
+if relative == 1 then
+return utils.percenttonum(utils.numtopercent(curvalue)-converted)
+elseif relative == 2 then
+return utils.percenttonum(utils.numtopercent(curvalue)+converted)
+end
+end
+return nil
+else
 if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
-local converted = udata:match("^[-<>]?(%d+)")
+converted = udata:match("^[-<>]?(%d+)")
 if converted == nil then
 reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", showMessageBoxConsts.sets.ok)
 return nil
 end
-if relative == 1 then
-converted = utils.percenttonum(utils.numtopercent(curvalue)-converted)
-elseif relative == 2 then
-converted = utils.percenttonum(utils.numtopercent(curvalue)+converted)
-else
 converted = utils.percenttonum(converted)
 end
 if converted > 1 then
