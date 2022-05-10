@@ -351,6 +351,37 @@ canProvide = function() return true end
 return t
 end
 
+function initExtendedProperties(str)
+local t = {
+name = str,
+properties = setmetatable({
+{
+get = function(self)
+local message = initOutputMessage()
+message:initType("Perform this property to return back to the properties view.", "Performable")
+message("Return back")
+return message
+end,
+set = function(self, action)
+if action == actions.set.perform then
+currentExtProperty = nil
+return true
+end
+return false, "This property is performable only."
+end
+}
+}, {
+__index = function(self, key)
+layout.pIndex = #self
+return rawget(self, #self)
+end
+}),
+registerProperty = function(self, property)
+ return table.insert(self.properties, property)
+end,
+}
+return t
+	end
 
 -- }
 
@@ -506,7 +537,7 @@ end
 
 -- Main body
 
-layout, currentLayout, currentSublayout, SpeakLayout, g_undoState = {}, nil, nil, false, "Unknown Change via Properties Ribbon script"
+layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty = {}, nil, nil, false, "Unknown Change via Properties Ribbon script", nil
 
 -- The main initialization function
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
@@ -580,6 +611,7 @@ currentSublayout = sublayout
 end
 setUndoLabel(("Switch properties layout to %s"):format(layout.name))
 layout.pIndex = extstate[layout.section] or 1
+currentExtProperty = extstate.extProperty
 return (layout)
 end
 
@@ -632,21 +664,32 @@ extstate.gotoMode = nil
 end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 if speakLayout == true then
+if currentExtProperty then
+message(layout.properties[layout.pIndex].extendedProperties.name..". ")
+else
 message(composeSubLayout())
+end
 if rememberCFG ~= 2 and rememberCFG ~= 3 then
 layout.pIndex = 0
 end
 speakLayout = false
 end
+local layoutLevel
+if currentExtProperty then
+layoutLevel = layout.properties[layout.pIndex].extendedProperties 
+else
+layoutLevel = layout
+end
+local pIndex = ({[true]=currentExtProperty,[false]=layout.pIndex})[currentExtProperty ~= nil]
 if layout.canProvide() == true then
-if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+if #layoutLevel.properties < 1 then
+(string.format("The ribbon of %s is empty.", ({[true]=layoutLevel.name,[false]=layoutLevel.subname})[currentExtProperty ~= nil])):output()
 restorePreviousLayout()
 script_finish()
 return
 end
-if layout.pIndex+1 <= #layout.properties then
-layout.pIndex = layout.pIndex+1
+if pIndex+1 <= #layoutLevel.properties then
+pIndex = pIndex+1
 else
 message("Last property. ")
 end
@@ -656,14 +699,19 @@ restorePreviousLayout()
 script_finish()
 return
 end
-local result = layout.properties[layout.pIndex]:get()
+local result = layoutLevel.properties[pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
+result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 setUndoLabel(message:extract(0, false))
 message:output()
+if currentExtProperty then
+currentExtProperty = pIndex
+else
+layout.pIndex = pIndex
+end
 script_finish()
 end
 
@@ -674,22 +722,33 @@ if extstate.gotoMode then
 message("Goto mode deactivated. ")
 extstate.gotoMode = nil
 end
+local pIndex = ({[true]=currentExtProperty,[false]=layout.pIndex})[currentExtProperty ~= nil]
 if speakLayout == true then
+if currentExtProperty then
+message(layout.properties[layout.pIndex].extendedProperties.name..". ")
+else
 message(composeSubLayout())
+end
 if rememberCFG ~= 2 and rememberCFG ~= 3 then
-layout.pIndex = 2
+pIndex = 2
 end
 speakLayout = false
 end
+local layoutLevel
+if currentExtProperty then
+layoutLevel = layout.properties[layout.pIndex].extendedProperties 
+else
+layoutLevel = layout
+end
 if layout.canProvide() == true then
-if #layout.properties < 1 then
+if #layoutLevel.properties < 1 then
 (string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 restorePreviousLayout()
 script_finish()
 return
 end
-if layout.pIndex-1 > 0 then
-layout.pIndex = layout.pIndex-1
+if pIndex-1 > 0 then
+pIndex = pIndex-1
 else
 message("First property. ")
 end
@@ -699,18 +758,23 @@ restorePreviousLayout()
 script_finish()
 return
 end
-local result = layout.properties[layout.pIndex]:get()
+local result = layoutLevel.properties[pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
+result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 setUndoLabel(message:extract(0, false))
 message:output()
+if currentExtProperty then
+currentExtProperty = pIndex
+else
+layout.pIndex = pIndex
+end
 script_finish()
 end
 
-function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout)
+function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout, shouldNotResetExtProperty)
 local message = initOutputMessage()
 local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 local gotoMode = extstate.gotoMode
@@ -734,35 +798,59 @@ end
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 local percentageNavigationApplied = false
 if speakLayout == true then
+if currentExtProperty then
+if not shouldNotResetExtProperty then
+currentExtProperty = nil
 message(composeSubLayout(shouldReportParentLayout))
+else
+message(layout.properties[layout.pIndex].extendedProperties.name..". ")
+end
+else
+message(composeSubLayout(shouldReportParentLayout))
+end
 if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum then
 layout.pIndex = 1
 end
 speakLayout = false
 end
+local layoutLevel
+if currentExtProperty then
+layoutLevel = layout.properties[layout.pIndex].extendedProperties 
+else
+layoutLevel = layout
+end
 if layout.canProvide() == true then
-if #layout.properties < 1 then
-(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+if #layoutLevel.properties < 1 then
+local definedName = layoutLevel.subname or layoutLevel.name
+(string.format("The ribbon of %s is empty.", definedName)):output()
 restorePreviousLayout()
 script_finish()
 return
 end
 if propertyNum then
-if cfg_percentageNavigation == true and #layout.properties > 10 then
+if cfg_percentageNavigation == true and #layoutLevel.properties > 10 then
 if propertyNum > 1 then
-propertyNum = math.floor((#layout.properties*propertyNum)*0.1)
---message(string.format("Percentage navigation to %u, ", propertyNum))
+propertyNum = math.floor((#layoutLevel.properties*propertyNum)*0.1)
 percentageNavigationApplied = true
 end
 end
-if propertyNum <= #layout.properties then
+if propertyNum <= #layoutLevel.properties then
+if currentExtProperty then
+currentExtProperty = propertyNum
+else
 layout.pIndex = propertyNum
-else
-if layout.type == "sublayout" then
-(string.format("No property with number %s in %s category of %s layout.", propertyNum, layout.subname, layout.name)):output()
-else
-(string.format("No property with number %s in %s layout.", propertyNum, layout.name)):output()
 end
+else
+local message = initOutputMessage()
+message(string.format("No property with number %s in ", propertyNum))
+if currentExtProperty then
+message(string.format("%s extended properties on ", layout.properties[layout.pIndex][currentExtProperty].name))
+end
+if layout.type == "sublayout" then
+message(string.format(" %s category of ", layout.subname))
+end
+message(string.format("%s layout.", layout.name)):output()
+message:output()
 script_finish()
 return
 end
@@ -773,10 +861,16 @@ restorePreviousLayout()
 script_finish()
 return
 end
-local result = layout.properties[layout.pIndex]:get()
+local pIndex
+if currentExtProperty then
+pIndex = currentExtProperty
+else
+pIndex = layout.pIndex
+end
+local result = layoutLevel.properties[pIndex]:get()
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
-result({focusIndex=("%u of %u"):format(layout.pIndex, #layout.properties)})
+result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 if percentageNavigationApplied then
@@ -794,7 +888,30 @@ script_reportOrGotoProperty()
 return
 end
 if layout.canProvide() == true then
-local msg = layout.properties[layout.pIndex]:set(value)
+local retval, msg
+if currentExtProperty == nil then
+if layout.properties[layout.pIndex].extendedProperties and value == actions.set.perform then
+currentExtProperty = 1
+speakLayout = true
+script_reportOrGotoProperty(nil, nil, nil, true)
+return
+end
+msg = layout.properties[layout.pIndex]:set(value)
+elseif currentExtProperty then
+local retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty].set(layout.properties[layout.pIndex], value)
+msg = initOutputMessage()
+if premsg then
+msg(premsg..". ")
+end
+if retval then
+currentExtProperty = nil
+msg(string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name))
+msg(layout.properties[layout.pIndex]:get())
+msg:output()
+script_finish()
+return
+end
+end
 if not msg then
 script_finish()
 return
@@ -829,6 +946,9 @@ else
 message(", here is no properties")
 end
 message(".")
+if currentExtProperty then
+message(string.format(" You are now in the %s.", layout.properties[layout.pIndex].extendedProperties.name))
+end
 message:output()
 else
 (string.format("The %s layout  cannot provide any interraction here.", layout.name)):output()
@@ -852,6 +972,7 @@ extstate[layout.section] = layout.pIndex
 extstate.currentLayout = currentLayout
 extstate[currentLayout.."_sublayout"] = currentSublayout
 extstate.speakLayout = speakLayout
+extstate.extProperty = currentExtProperty
 if reaper.GetCursorContext() ~= -1 then 
 extstate.lastKnownContext = reaper.GetCursorContext()
 end
