@@ -13,6 +13,11 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
+-- Some needfull configs
+local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
+
+-- This layout needs the properties macros
+useMacros("properties")
 
 -- This layout should define current context
 local sublayout = nil
@@ -593,132 +598,116 @@ end
 -- Apply the cosen color methods
 local applyColorProperty = {}
 registerProperty(applyColorProperty)
-applyColorProperty.states = {
-["track"] = "selected or last touched tracks",
-["item"] = "selected items",
-["take"] = "active take of selected items",
+applyColorProperty.states = setmetatable({
 ["marker"] = "marker near cursor",
 ["region"]="region near cursor"
-}
+}, {
+__index = function(self, key)
+if key == "track" then
+local tracks = track_properties_macros.getTracks(multiSelectionSupport)
+if type(tracks) == "table" then
+return string.format("%u selected tracks", #tracks)
+elseif type(tracks) == "userdata" then
+return track_properties_macros.getTrackID(tracks, true)
+end
+elseif key == "item" then
+local items = item_properties_macros.getItems(multiSelectionSupport)
+if type(items) == "table" then
+return string.format("%u selected items", #items)
+elseif type(items) == "userdata" then
+return item_properties_macros.getItemID(items, true)
+end
+elseif key == "take" then
+local items = item_properties_macros.getItems(multiSelectionSupport)
+if type(items) == "table" then
+return string.format("%u active takes in selected items", #items)
+elseif type(items) == "userdata" then
+return item_properties_macros.getTakeID(items, true)
+end
+end
+end
+})
 
 function applyColorProperty.setValue(value)
-local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 if sublayout == "track" then
-local tracks = nil
-if multiSelectionSupport == true then
-local countSelectedTracks = reaper.CountSelectedTracks(0)
-if countSelectedTracks > 1 then
-tracks = {}
-for i = 0, countSelectedTracks-1 do
-table.insert(tracks, reaper.GetSelectedTrack(0, i))
-end
-else
-tracks = reaper.GetSelectedTrack(0, 0)
-end
-else
-local lastTouched = reaper.GetLastTouchedTrack()
-if lastTouched ~= reaper.GetMasterTrack(0) then
-tracks = lastTouched
-end
-end
+local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 if type(tracks) == "table" then
 for _, track in ipairs(tracks) do
 reaper.SetTrackColor(track, value)
 end
-return #tracks
+return true
 elseif type(tracks) == "userdata" then
 reaper.SetTrackColor(tracks, value)
-return 1
-else
-return
+return true
 end
 elseif sublayout == "item" then
-local items = nil
-if multiSelectionSupport == true then
-local countSelectedItems = reaper.CountSelectedMediaItems(0)
-if countSelectedItems > 1 then
-items = {}
-for i = 0, countSelectedItems-1 do
-table.insert(items, reaper.GetSelectedMediaItem(0, i))
-end
-else
-items = reaper.GetSelectedMediaItem(0, 0)
-end
-else
-items = reaper.GetSelectedMediaItem(0, 0)
-end
+local items = item_properties_macros.getItems(multiSelectionSupport)
 if type(items) == "table" then
 for _, item in ipairs(items) do
 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", value|0x100000)
 end
-return #items
+return true
 elseif type(items) == "userdata" then
 reaper.SetMediaItemInfo_Value(items, "I_CUSTOMCOLOR", value|0x100000)
-return 1
+return true
 end
 elseif sublayout == "take" then
-local takes = nil
-if multiSelectionSupport == true then
-local countSelectedItems = reaper.CountSelectedMediaItems(0)
-if countSelectedItems > 1 then
-takes = {}
-for i = 0, countSelectedItems-1 do
-table.insert(takes, reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)))
+local items = item_properties_macros.getItems(multiSelectionSupport)
+if type(items) == "table" then
+for _, item in ipairs(items) do
+reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR", value|0x100000)
 end
-else
-takes = reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
-end
-else
-takes = reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
-end
-if type(takes) == "table" then
-for _, take in ipairs(takes) do
-reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", value|0x100000)
-end
-return #takes
-elseif type(takes) == "userdata" then
-reaper.SetMediaItemTakeInfo_Value(takes, "I_CUSTOMCOLOR", value|0x100000)
-return 1
-else
-return
+return true
+elseif type(items) == "userdata" then
+reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "I_CUSTOMCOLOR", value|0x100000)
+return true
 end
 elseif sublayout == "marker" then
 local markeridx, _ = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 if markeridx then
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, markeridx)
 reaper.SetProjectMarker4(0, markrgnindexnumber, false, pos, 0, name, value|0x1000000, 0)
-return 1
+return true
 end
-return 
 elseif sublayout == "region" then
 local _, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 if regionidx then
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, regionidx)
 reaper.SetProjectMarker4(0, markrgnindexnumber, true, pos, rgnend, name, value|0x1000000, 0)
-return 1
+return true
 end
-return
 end
-return
+return false
 end
 
 function applyColorProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to apply composed color to %s.", self.states[sublayout]), "Performable")
-message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), self.states[sublayout]))
+message:initType(string.format("Perform this property to apply composed color to %s.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]), "Performable")
+local gotState = self.states[sublayout]
+if gotState then
+message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), gotState))
+else
+message:addType(" This property is unavailable right now because no one object is selected.", 1)
+message:changeType("Unavailable", 2)
+message(string.format("Apply the %s color", colors:getName(reaper.ColorFromNative(getColor()))))
+end
 return message
 end
 
 function applyColorProperty:set(action)
 if action == actions.set.perform then
+local gotState = self.states[sublayout]
+if gotState then
 local message = initOutputMessage()
 local result = self.setValue(getColor())
 if result then
-message(string.format("%u %s colorized to %s color.", result, self.states[sublayout], colors:getName(reaper.ColorFromNative(getColor()))))
+message(string.format("%s colorized to %s color.", self.states[sublayout], colors:getName(reaper.ColorFromNative(getColor()))))
 else
 message(string.format("Could not colorize any %s.", self.states[sublayout]))
 end
 return message
+end
+return "This properti is unavailable right now cuz no one object is selected."
 end
 return "This property performable only."
 end
@@ -732,28 +721,47 @@ end
 -- Grabbing a color from an elements methods
 local grabColorProperty = {}
 registerProperty(grabColorProperty)
-grabColorProperty.states = {
-["track"] = "last touched track",
-["item"] = "first selected item",
-["take"] = "active take of selected item",
+grabColorProperty.states = setmetatable({
 ["marker"] = "marker near cursor",
 ["region"]="region near cursor"
-}
+}, {
+__index = function(self, key)
+if key == "track" then
+local track = track_properties_macros.getTracks(false)
+if track then
+return track_properties_macros.getTrackID(track)
+end
+elseif key == "item" then
+local item = item_properties_macros.getItems(false)
+if item then
+return item_properties_macros.getItemID(item, true)
+end
+elseif key == "take" then
+local item = item_properties_macros.getItems(false)
+if item then
+return item_properties_macros.getTakeID(item, true)
+end
+end
+end
+})
 
 function grabColorProperty.getValue()
 if sublayout == "track" then
-if reaper.GetLastTouchedTrack() then
-return reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_CUSTOMCOLOR")
+local track = track_properties_macros.getTracks(false)
+if track then
+return reaper.GetMediaTrackInfo_Value(track, "I_CUSTOMCOLOR")
 end
 return nil
 elseif sublayout == "item" then
-if reaper.GetSelectedMediaItem(0, 0) then
-return reaper.GetMediaItemInfo_Value(reaper.GetSelectedMediaItem(0, 0), "I_CUSTOMCOLOR")
+local item = item_properties_macros.getItems(false)
+if item then
+return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR")
 end
 return nil
 elseif sublayout == "take" then
-if reaper.GetSelectedMediaItem(0, 0) then
-return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0)), "I_CUSTOMCOLOR")
+local item = item_properties_macros.getItems(false)
+if item then
+return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
 end
 return nil
 elseif sublayout == "marker" then
@@ -779,24 +787,26 @@ end
 
 function grabColorProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", self.states[sublayout]), "Performable")
-if not self.getValue() then
+message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]), "Performable")
+if self.getValue() then
+message(string.format("Grab a color from %s", self.states[sublayout]))
+else
 message:addType(" This property unavailable right now because no one element has been selected.", 1)
 message:changeType("unavailable", 2)
+message("Grab a color")
 end
-message(string.format("Grab a color from %s", self.states[sublayout]))
 return message
 end
 
 function grabColorProperty:set(action)
 local message = initOutputMessage()
-if action == nil then
+if action == actions.set.perform then
 local state = self.getValue()
 if not state then
 return "This property is unavailable right now because no one element of this category has been neither touched nor selected."
 end
 self.setValue(state)
-message(string.format("The %s color has been grabbed from %s.", colors:getName(reaper.ColorFromNative(getColor())), self.states[sublayout]))
+message(string.format("The color has been grabbed from %s.", self.states[sublayout]))
 return message
 else
 return "This property is performable only."

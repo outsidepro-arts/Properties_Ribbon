@@ -17,95 +17,17 @@ After this preambula, let me begin.
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
 -- For comfort coding, we are making the tracks array as global
-local tracks = nil
-do
-if multiSelectionSupport == true then
-local countSelectedTracks = reaper.CountSelectedTracks(0)
-if countSelectedTracks > 1 then
-tracks = {}
-for i = 0, countSelectedTracks-1 do
-table.insert(tracks, reaper.GetSelectedTrack(0, i))
-end
-else
-tracks = reaper.GetSelectedTrack(0, 0)
-end
-else
-local lastTouched = reaper.GetLastTouchedTrack()
-if lastTouched ~= reaper.GetMasterTrack(0) then
-tracks = lastTouched
-end
-end
-end
+local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 
-
--- We have to define the track reporting by configuration
-local function getTrackID(track, shouldSilentColor)
-shouldSilentColor = shouldSilentColor or false
-local message = initOutputMessage()
-local states = {
-[0]="track ",
-[1]="folder ",
-[2]="end of folder ",
-[3]="end of %u folders"
-}
-local compactStates = {
-[0] = "opened ",
-[1] = "small ",
-[2] = "closed "
-}
-if reaper.GetParentTrack(track) then
-message("child ")
-end
-local state = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")
-if state == 0 or state == 1 then
-if state == 1 then
-message:clearMessage()
-local compactState = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
-message(compactStates[compactState])
-end
-message(string.format("%s", states[state]))
-elseif state < 0 then
-message:clearMessage()
-state = -(state-1)
-if state < 3 then
-message(string.format(" %s", states[state]))
-else
-message(string.format(states[3], state-1))
-end
-end
-if config.getboolean("reportName", false) == true then
-local retval, name = reaper.GetTrackName(track)
-if retval then
-if name:find("Track") == nil or name:match("%d*") == nil then
-local truncate = config.getinteger("truncateIdBy", 0)
-if truncate > 0 then
-name = utils.truncateSmart(name, truncate)
-end	
-end
-if  name:find("Track") and name:match("%d*") then
-if state == 0 then
-name = name:match("%d+")
-else
-name = "Track "..name:match("%d+")
-end
-end
-message(name)
-end
-else
-message(string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")))
-end
-if shouldSilentColor == false then
-local color = reaper.GetTrackColor(track)
-if color ~= 0 then
-message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
-end
-message.msg = message.msg:gsub("^%w", string.upper)
-end
-return message:extract()
-end
+-- These redirections made especially to not rewrite many code
+-- We have to define the track reporting by configuration. This function has contained in properties macros.
+local getTrackID = track_properties_macros.getTrackID
 
 -- The macros for compose when group of items selected
-local function composeMultipleTrackMessage(func, states, inaccuracy)
+-- func (function)): the function for getting specific value
+-- states (table): the list of states which represents the value for reporting
+-- inaccuracy (number): the inaccuracy for specific cases which values will be considered in the states representation
+function composeMultipleTrackMessage(func, states, inaccuracy)
 local message = initOutputMessage()
 for k = 1, #tracks do
 local state = func(tracks[k])
@@ -140,6 +62,7 @@ end
 end
 return message
 end
+
 
 -- global pseudoclass initialization
 local parentLayout = initLayout("Track properties")

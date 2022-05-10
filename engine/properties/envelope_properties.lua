@@ -9,44 +9,10 @@ local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
 -- Prepare the envelopes and its points
 local envelope = reaper.GetSelectedEnvelope(0)
-local points = nil
-if envelope then
-local countEnvelopePoints = reaper.CountEnvelopePoints(envelope)
-if multiSelectionSupport == true then
-points = {}
-for i = 0, countEnvelopePoints-1 do
-local retval, _, _, _, _, selected = reaper.GetEnvelopePoint(envelope, i)
-if retval and selected then
-table.insert(points, i)
-end
-end
-if #points == 1 then
-points = points[1]
-elseif #points == 0 then
-points = nil
-end
-else
--- As James Teh says, REAPER returns the previous point by time even if any point is set here. I didn't saw that, but will trust of professional developer!
-local maybePoint = reaper.GetEnvelopePointByTime(envelope, reaper.GetCursorPosition()+0.0001)
-if maybePoint >= 0 then
-points = maybePoint
-end
-end
-end
+local points = envelope_properties_macros.getPoints(envelope, multiSelectionSupport)
 
 -- A few internal functions
-
-local function getPointID(point, shouldNotReturnPrefix)
-if point == 0 then
-return "Initial point"
-else
-if shouldNotReturnPrefix == true then
-return tostring(point)
-else
-return string.format("Point %u", point)
-end
-end
-end
+local getPointID = envelope_properties_macros.getPointID
 
 local function composeMultiplePointsMessage(func, states, inaccuracy)
 local message = initOutputMessage()

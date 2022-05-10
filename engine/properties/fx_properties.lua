@@ -684,24 +684,18 @@ createEnvelope = reaper.GetFXEnvelope
 elseif context == 1 then
 createEnvelope = reaper.TakeFX_GetEnvelope
 end
-if createEnvelope(capi._contextObj[context], obj.fxIndex, obj.parmIndex, true) then
 local fxParmName = ({capi.GetParamName(obj.fxIndex, obj.parmIndex, "")})[2]
-local cobj = capi._contextObj[context]
-local name = nil
+local newEnvelope = createEnvelope(capi._contextObj[context], obj.fxIndex, obj.parmIndex, true)
+if newEnvelope then
+local name
 if context == 0 then
-local retval, buf = reaper.GetTrackName(cobj)
-if retval then
-name = buf
-end
+name = track_properties_macros.getTrackID(reaper.GetEnvelopeInfo_Value(newEnvelope, "P_TRACK"), true)
 elseif context == 1 then
-local retval, buf = reaper.GetSetMediaItemTakeInfo_String(cobj, "P_NAME", "", false)
-if retval then
-name = buf
-end
+name = item_properties_macros.getTakeID(reaper.GetEnvelopeInfo_Value(newEnvelope, "P_ITEM"), true)
 end
 setUndoLabel(obj:get(true))
 -- We have to leave the setting mode, and get method resets this when called without any parameters.
-return true, string.format("The envelope for %s created on %s %s. ", fxParmName, contextPrompt:lower(), name)..obj:get()
+return true, string.format("The envelope for %s created on %s. ", fxParmName, name:lower())..obj:get()
 else
 return true, "This parameter cannot be added to envelopes. "..obj:get()
 end

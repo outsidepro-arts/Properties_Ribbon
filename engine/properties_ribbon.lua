@@ -495,6 +495,13 @@ os.execute(string.format("%s %s", startCmd, path))
 end
 end
 
+function useMacros(propertiesDir)
+if reaper.file_exists(package.path:gsub("?", propertiesDir.."//macros")) then
+dofile(package.path:gsub("?", propertiesDir.."//macros"))
+return true
+end
+return false
+end
 
 
 -- Main body
@@ -560,9 +567,7 @@ return nil
 end
 -- Some layouts has executes the linear code... Woops...
 currentSublayout = extstate[currentLayout.."_sublayout"]
-if reaper.file_exists(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"), "r") then
-dofile(package.path:gsub("?", currentLayout:match('^(.+)//').."//macros"))
-end
+useMacros(currentLayout:match('^(.+)//'))
 layout = dofile(package.path:gsub("?", currentLayout))
 if layout == nil then
 reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout), "Properties ribbon error", showMessageBoxConsts.sets.ok)

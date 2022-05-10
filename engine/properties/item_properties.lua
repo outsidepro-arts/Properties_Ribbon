@@ -18,82 +18,16 @@ After this preambula, let me begin.
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
 -- For comfort coding, we are making the items array as global
-
-local items = nil
-do
-if multiSelectionSupport == true then
-local countSelectedItems = reaper.CountSelectedMediaItems(0)
-if countSelectedItems > 1 then
-items = {}
-for i = 0, countSelectedItems-1 do
-table.insert(items, reaper.GetSelectedMediaItem(0, i))
-end
-else
-items = reaper.GetSelectedMediaItem(0, 0)
-end
-else
-items = reaper.GetSelectedMediaItem(0, 0)
-end
-end
+local items = item_properties_macros.getItems(multiSelectionSupport)
 
 -- I've just tired to write this long call so
-local function getItemNumber(item)
-return reaper.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER")+1
-end
+local getItemNumber = item_properties_macros.getItemNumber
 
 -- And another one:
-local function getTakeNumber(item)
-return  reaper.GetMediaItemInfo_Value(item, "I_CURTAKE")+1
-end
+local getTakeNumber = item_properties_macros.getTakeNumber
 
 -- We should obey the configuration to report the take's name
-local function getItemID(item, shouldSilentColor)
-shouldSilentColor = shouldSilentColor or false
-local message = initOutputMessage()
-if shouldSilentColor == false then
-local color = reaper.GetDisplayedMediaItemColor(item)
-if color ~= 0 then
-message(colors:getName(reaper.ColorFromNative(color)).." ")
-end
-end
-local idmsg = "Item %u"
-if #message > 0 then
-idmsg = idmsg:lower()
-end
-message(idmsg:format(getItemNumber(item)))
-return message:extract()
-end
-
-local function getTakeID(item, shouldSilentColor)
-shouldSilentColor = shouldSilentColor or false
-local message = initOutputMessage()
-local cfg = config.getboolean("reportName", false)
-if cfg == true then
-local retval, name = reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)
-if retval then
-local truncate = config.getinteger("truncateIdBy", 0)
-if truncate > 0 then
-name = utils.truncateSmart(name, truncate)
-end	
--- Stupid REAPER adds the file extensions to the take's name!
-if config.getboolean("clearFileExts", true) == true then
-name = name:gsub("(.+)[.](%w+)$", "%1")
-end
-message(("take %s"):format(name))
-else
-message(("take %u"):format(getTakeNumber(item)))
-end
-else
-message(("take %u"):format(getTakeNumber(item)))
-end
-if shouldSilentColor == false then
-local color = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
-if color ~= 0 then
-message.msg = colors:getName(reaper.ColorFromNative(color)).." "..message.msg:gsub("^%w", string.lower)
-end
-end
-return message:extract()
-end
+local getItemID, getTakeID = item_properties_macros.getItemID, item_properties_macros.getTakeID
 
 -- The macros for compose when group of items selected
 local function composeMultipleItemMessage(func, states, inaccuracy)

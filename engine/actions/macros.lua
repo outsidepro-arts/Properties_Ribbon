@@ -146,9 +146,8 @@ message(string.format(msg, states[self.getValue()]))
 else
 local premsg = string.match(reaper.CF_GetCommandText(0, cmd), "^.+:%s(.+)") or reaper.CF_GetCommandText(0, cmd)
 premsg = premsg:gsub("[.]+$", "")
-message(premsg)
-message(": ")
-message(states[self.getValue()])
+message{label=premsg}
+message{value=states[self.getValue()]}
 end
 return message
 end,
