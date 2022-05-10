@@ -6,7 +6,7 @@ License: MIT License
 
 
 reaper.Undo_BeginBlock()
-package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine\\' .. "?.lua"
+package.path = ({reaper.get_action_context()})[2]:match('^.+[\\//]')..'engine//?.lua'
 require "properties_ribbon"
 
 if script_init({section="actions",layout="insertion_track_actions"}, true) then
