@@ -26,12 +26,9 @@ prepareUserData = require "preparation"
 -- Actions for set methods or some another cases
 actions = {
 set = {
-perform = nil,
-toggle = nil,
-increase = 0x000001,
-next = 0x000001,
-decrease = 0x000010,
-prev = 0x000010
+perform = {label="Perform or toggle",value="perform"},
+increase = {label="increase",value="increase"},
+decrease = {label="decrease",value="decrease"}
 },
 sublayout_next = 0x000001,
 sublayout_prev = 0x000010
@@ -359,15 +356,12 @@ properties = setmetatable({
 get = function(self, parent)
 local message = initOutputMessage()
 message:initType("Perform this property to return back to the properties view.", "Performable")
-message("Return back")
+message(string.format("Return to %s properties", layout.subname))
 return message
 end,
-set = function(self, parent, action)
-if action == actions.set.perform then
+set_perform = function(self, parent)
 currentExtProperty = nil
 return true
-end
-return false, "This property is performable only."
 end
 }
 }, {
@@ -700,6 +694,12 @@ script_finish()
 return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
+if result.tLevels then
+if layoutLevel.properties[pIndex].extendedProperties then
+result:addType(" Perform this property to activate the extended properties for.", 1)
+result:addType(", has extended properties", 2)
+end
+end
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -759,6 +759,12 @@ script_finish()
 return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
+if result.tLevels then
+if layoutLevel.properties[pIndex].extendedProperties then
+result:addType(" Perform this property to activate the extended properties for.", 1)
+result:addType(", has extended properties", 2)
+end
+end
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -868,6 +874,12 @@ else
 pIndex = layout.pIndex
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
+if result.tLevels then
+if layoutLevel.properties[pIndex].extendedProperties then
+result:addType(" Perform this property to activate the extended properties for.", 1)
+result:addType(", has extended properties", 2)
+end
+end
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -881,24 +893,37 @@ message:output()
 script_finish()
 end
 
-function script_ajustProperty(value)
+function script_ajustProperty(action)
 local gotoMode = extstate.gotoMode
-if gotoMode and value == nil then
+if gotoMode and action == nil then
 script_reportOrGotoProperty()
 return
 end
 if layout.canProvide() == true then
 local retval, msg
 if currentExtProperty == nil then
-if layout.properties[layout.pIndex].extendedProperties and value == actions.set.perform then
+if layout.properties[layout.pIndex].extendedProperties and action == actions.set.perform then
 currentExtProperty = 1
 speakLayout = true
 script_reportOrGotoProperty(nil, nil, nil, true)
 return
 end
-msg = layout.properties[layout.pIndex]:set(value)
+if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
+msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex])
+else
+string.format("This property does not support the %s action.", action.label):output()
+script_finish()
+return
+end
 elseif currentExtProperty then
-local retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty]:set(layout.properties[layout.pIndex], value)
+local retval, premsg
+if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)] then
+retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex])
+else
+string.format("This property does not support the %s action.", action.label):output()
+script_finish()
+return
+end
 msg = initOutputMessage()
 if premsg then
 msg(premsg..". ")
