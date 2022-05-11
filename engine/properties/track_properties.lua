@@ -293,11 +293,10 @@ parentLayout.playbackLayout:registerProperty(volumeProperty)
 parentLayout.recordingLayout:registerProperty(volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for selected track.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to input custom volume value.", 1)
 message({label="volume"})
 if type(tracks) == "table" then
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_VOL") end, representation.db))
@@ -312,13 +311,6 @@ local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(tracks) == "table" then
-local retval, answer
-if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected tracks", #tracks), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
-if not retval then
-return "Canceled"
-end
-end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
 if action == actions.set.increase then
@@ -333,8 +325,6 @@ state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
 else
 state = 0
 end
-else
-state = prepareUserData.db.process(answer, state)
 end
 if state then
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_VOL", state)
@@ -356,24 +346,81 @@ else
 state = 0
 message("Minimum volume. ")
 end
-else
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
-if not retval then
-return "Canceled"
 end
-state = prepareUserData.db.process(answer, state)
-end
-if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
-else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
-end
 end
  message(self:get())
 return message
 end
 
+volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+
+volumeProperty.extendedProperties:registerProperty({
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to type the volume value manualy.", "Performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of track has been selected, the input value will be applied for each track of.", 1)
+end
+message("Type custom volume value")
+return message
+end,
+set = function(self, parent, action)
+if action == actions.set.perform then
+if type(tracks) == "table" then
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected tracks", #tracks), 1, prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
+if not retval then
+return "Canceled"
+end
+for _, track in ipairs(tracks) do
+local state = reaper.GetMediaTrackInfo_Value(track, "D_VOL")
+state = prepareUserData.db.process(answer, state)
+if state then
+reaper.SetMediaTrackInfo_Value(track, "D_VOL", state)
+end
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
+if not retval then
+return false
+end
+state = prepareUserData.db.process(answer, state)
+if state then
+reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
+return true
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
+return false
+end
+end
+end
+return false, "This property is performable only."
+end
+})
+
+volumeProperty.extendedProperties:registerProperty({
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType(string.format("Perform this property to reset the volume value to %s.", representation.db[1]), "Performable")
+message(string.format("Reset to %s", representation.db[1]))
+return message
+end,
+set = function(self, parent, action)
+if action == actions.set.perform then
+local state = 1
+if type(tracks) == "table" then
+for _, track in ipairs(tracks) do
+reaper.SetMediaTrackInfo_Value(track, "D_VOL", state)
+end
+else
+reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
+end
+return true, "Reset."
+end
+return false, "This property is performable only."
+end
+})
 
 local panProperty = {}
 parentLayout.playbackLayout:registerProperty(panProperty)
@@ -381,11 +428,10 @@ parentLayout.recordingLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pan value for selected track.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to input custom pan value.", 1)
 message({label="Pan"})
 if type(tracks) == "table" then
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_PAN") end, representation.pan))
@@ -406,13 +452,6 @@ elseif action == actions.set.decrease then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 if type(tracks) == "table" then
-local retval, answer
-if action == nil then
-retval, answer = reaper.GetUserInputs(string.format("Pan for %u selected tracks", #tracks), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
-if not retval then
-return "Canceled"
-end
-end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
 if action == actions.set.increase or action == actions.set.decrease then
@@ -440,23 +479,79 @@ elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
-else
-local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
-if not retval then
-return "Canceled"
 end
-state = prepareUserData.pan.process(answer, state)
-end
-if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
-else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
-end
 end
 message(self:get())
 return message
 end
+
+panProperty.extendedProperties = initExtendedProperties("Pan extended interraction")
+
+panProperty.extendedProperties:registerProperty({
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to type the custom pan value.", "Performable")
+if multiSelectionSupport == true then
+message:addType(" If the group of track has been selected, the input value will be applied for each track of.", 1)
+end
+message("Type custom pan value")
+return message
+end,
+set = function(self, parent, action)
+if action == actions.set.perform then
+if type(tracks) == "table" then
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %u selected tracks", #tracks), 1, prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
+if not retval then
+return false
+end
+for _, track in ipairs(tracks) do
+local state = reaper.GetMediaTrackInfo_Value(track, "D_PAN")
+state = prepareUserData.pan.process(answer, state)
+if state then
+reaper.SetMediaTrackInfo_Value(track, "D_PAN", state)
+end	
+end
+else
+local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
+local retval, answer = reaper.GetUserInputs(string.format("Pan for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+if not retval then
+return false
+end
+state = prepareUserData.pan.process(answer, state)
+if state then
+reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
+return true
+else
+reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
+return false
+end
+end
+end
+return false, "This property is performable only."
+end
+})
+panProperty.extendedProperties:registerProperty({
+get = function(self, parent)
+local message  = initOutputMessage()
+message:initType(string.format("Perform this property to reset the pan value to %s.", representation.pan[0]), "Performable")
+message(string.format("Reset pan to %s", representation.pan[0]))
+return message
+end,
+set = function(self, parent, action)
+if action == actions.set.perform then
+if type(tracks) == "table" then
+for _, track in ipairs(tracks) do
+reaper.SetMediaTrackInfo_Value(track, "D_PAN", 0)
+end
+else
+reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", 0)
+end
+return true, "Reset"
+end
+return false, "This property is performable only."
+end
+})
 
 local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
