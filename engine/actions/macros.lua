@@ -48,8 +48,7 @@ message:addType(", onetime", 2)
 end
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self, action)
 local message = initOutputMessage()
 restorePreviousLayout()
 local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
@@ -79,9 +78,6 @@ message(string.format("%u items removed", oldItemsCount-newItemsCount))
 end
 setUndoLabel(self:get())
 return message
-else
-return "This property is performable only."
-end
 end
 }
 return usual
@@ -110,15 +106,11 @@ message(premsg)
 end
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self, action)
 reaper.Main_OnCommand(cmd, 1)
 restorePreviousLayout()
 setUndoLabel(self:get())
 return
-else
-return "This property is performable only."
-end
 end
 }
 return usual
@@ -151,8 +143,7 @@ message{value=states[self.getValue()]}
 end
 return message
 end,
-set = setFunction or function(self, action)
-if action == actions.set.perform then
+set_perform = setFunction or function(self)
 local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 self.setValue(state)
@@ -161,9 +152,6 @@ if shouldBeOnetime then
 restorePreviousLayout()
 end
 return message
-else
-return "This property is toggleable only."
-end
 end
 }
 return usual
@@ -196,8 +184,7 @@ message(premsg)
 end
 return message
 end,
-set = setFunction or function(self, action)
-if action == actions.set.perform then
+set_perform = setFunction or function(self, action)
 if type(cmd) == "table" then
 for _, command in ipairs(cmd) do
 reaper.Main_OnCommand(command, 0)
@@ -209,9 +196,6 @@ if shouldBeOnetime then
 restorePreviousLayout()
 end
 return
-else
-return "This property is performable only."
-end
 end
 }
 return usual
