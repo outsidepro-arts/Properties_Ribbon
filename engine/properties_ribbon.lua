@@ -356,13 +356,13 @@ local t = {
 name = str,
 properties = setmetatable({
 {
-get = function(self)
+get = function(self, parent)
 local message = initOutputMessage()
 message:initType("Perform this property to return back to the properties view.", "Performable")
 message("Return back")
 return message
 end,
-set = function(self, action)
+set = function(self, parent, action)
 if action == actions.set.perform then
 currentExtProperty = nil
 return true
@@ -699,7 +699,7 @@ restorePreviousLayout()
 script_finish()
 return
 end
-local result = layoutLevel.properties[pIndex]:get()
+local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -758,7 +758,7 @@ restorePreviousLayout()
 script_finish()
 return
 end
-local result = layoutLevel.properties[pIndex]:get()
+local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -867,7 +867,7 @@ pIndex = currentExtProperty
 else
 pIndex = layout.pIndex
 end
-local result = layoutLevel.properties[pIndex]:get()
+local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 local cfg = config.getinteger("reportPos", 3)
 if cfg == 2 or cfg == 3 then
 result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
@@ -898,7 +898,7 @@ return
 end
 msg = layout.properties[layout.pIndex]:set(value)
 elseif currentExtProperty then
-local retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty].set(layout.properties[layout.pIndex], value)
+local retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty]:set(layout.properties[layout.pIndex], value)
 msg = initOutputMessage()
 if premsg then
 msg(premsg..". ")
