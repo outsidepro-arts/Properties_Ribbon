@@ -133,8 +133,7 @@ message(string.format("Search a specified %s", self.objStrings[context]))
 return message
 end
 
-function searchinAction:set(action)
-if action == actions.set.perform then
+function searchinAction:set_perform()
 local prevQuery = extstate.searchScript_lastQuery or ""
 local retval, answer = reaper.GetUserInputs(string.format("Search specified %s", self.objStrings[context]), 1, string.format("Type a part or full %s name which you wish to find. For case sensetive search Type your query with appropriated case:", self.objStrings[context]), prevQuery)
 if retval then
@@ -152,9 +151,6 @@ reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_REPORTSEL"), 0)
 extstate.searchScript_lastQuery= answer
 end
 end
-return
-end
-return "This action is performable only."
 end
 
 local searchbyPluginsAction = {}
@@ -175,8 +171,7 @@ message(string.format("Search a specified plug-in in %s", self.objStrings[contex
 return message
 end
 
-function searchbyPluginsAction:set(action)
-if action == actions.set.perform then
+function searchbyPluginsAction:set_perform()
 local prevQuery = extstate.searchScript_lastQuery or ""
 local retval, answer = reaper.GetUserInputs(string.format("Search specified plug-in %s", self.objStrings[context]), 1, "Type a part or full plug-in name which you wish to find. Type your query with appropriated case:", prevQuery)
 if retval then
@@ -191,9 +186,6 @@ reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_REPORTSEL"), 0)
 extstate.searchScript_lastQuery= answer
 end
 end
-return
-end
-return "This action is performable only."
 end
 
 return searchLayout

@@ -143,12 +143,8 @@ function addEnvelopePointProperty:get()
 	return message
 end
 
-function addEnvelopePointProperty:set(action)
-		if action == actions.set.perform then
-			reaper.Main_OnCommand(40915, 0)
-	else
-		return "This property is performable only."
-	end
+function addEnvelopePointProperty:set_perform()
+reaper.Main_OnCommand(40915, 0)
 end
 
 if points ~= nil then
@@ -187,9 +183,9 @@ end
 return message
 end
 
-function valueProperty:set(action)
+function valueProperty:set_adjust(direction)
 local message = initOutputMessage()
-if action == actions.set.decrease then
+if direction == actions.set.decrease.direction then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
@@ -287,7 +283,7 @@ end
 else
 reaper.Main_OnCommand(42382, 0)
 end
-elseif action == actions.set.increase then
+elseif direction == actions.set.increase.direction then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
@@ -372,7 +368,12 @@ end
 else
 reaper.Main_OnCommand(42381, 0)
 end
-else
+end
+message(self:get())
+return message
+end
+
+function valueProperty:set_perform()
 if envelopeType == 5 then
 if type(points) == "table" then
 local switchedOnPoints, switchedOffPoints = 0, 0
@@ -444,9 +445,6 @@ return
 end
 end
 end
-message(self:get())
-return message
-end
 
 local shapeProperty = {}
 envelopePointsLayout:registerProperty(shapeProperty)
@@ -488,75 +486,47 @@ end
 return message
 end
 
-function shapeProperty:set(action)
+function shapeProperty:set_adjust(direction)
 local message = initOutputMessage()
-if action == actions.set.increase then
 if type(points) == "table" then
-local adjustingValue = nil
+local allIsSame = true
 for idx, point in ipairs(points) do
 if idx > 1 then
 if self.getValue(points[idx-1]) ~= self.getValue(point) then
-adjustingValue = -1
+allIsSame = false
 break
 end
 end
 end
 local state = nil
-if not adjustingValue then
+if allIsSame then
 state = self.getValue(points[1])
+if self.states[state+direction] then
+state = state+direction
+end
 else
 state = -1
 end
-if (state+1) <= #self.states then
-message(string.format("Set selected points shapes to %s. ", self.states[state+1]))
+message(string.format("Set selected points shapes to %s. ", self.states[state]))
 for _, point in ipairs(points) do
-self.setValue(point, state+1)
-end
-else
-message"No more next property values. "
+self.setValue(point, state)
 end
 else
 local state = self.getValue(points)
-if (state+1) <= #self.states then
-self.setValue(points, state+1)
-else
+if (state+direction) > #self.states then
 message("No more next property values. ")
-end
-end
-elseif action == actions.set.decrease then
-if type(points) == "table" then
-local adjustingValue = nil
-for idx, point in ipairs(points) do
-if idx > 1 then
-if self.getValue(points[idx-1]) ~= self.getValue(point) then
-adjustingValue = -1
-break
-end
-end
-end
-local state = nil
-if not adjustingValue then
-state = self.getValue(points[1])
-else
-state = -1
-end
-if (state-1) >= 0 then
-message(string.format("Set selected points shapes to %s. ", self.states[state-1]))
-for _, point in ipairs(points) do
-self.setValue(point, state-1)
-end
-else
-message"No more previous property values. "
-end
-else
-local state = self.getValue(points)
-if (state-1) >= 0 then
-self.setValue(points, state-1)
-else
+elseif (state+direction) < 0 then
 message("No more previous property values. ")
-end
-end
 else
+self.setValue(points, state+direction)
+end
+end
+message(self:get())
+return message
+end
+
+function shapeProperty:set_perform()
+local message = initOutputMessage()
 local retval, defShape = reaper.get_config_var_string("deffadeshape")
 if retval then
 defShape = tonumber(defShape)
@@ -571,7 +541,6 @@ self.setValue(points, defShape)
 end
 else
 return "The default shape is not set in REAPER preferences."
-end
 end
 message(self:get())
 return message
@@ -631,60 +600,50 @@ end
 return message
 end
 
-function tensionProperty:set(action)
+function tensionProperty:set_adjust(direction)
 local message = initOutputMessage()
 local adjustStep = config.getinteger("percentStep", 1)
-if action == actions.set.decrease then
+ajustStep = utils.percenttonum(adjustStep)
+if direction == actions.set.decrease.direction then
+ajustStep = -utils.percenttonum(adjustStep)
+end
 if type(points) == "table" then
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then
 local state = self.getValue(point)
-if (state-utils.percenttonum(adjustStep)) >= -1.0 then
+if (state+ajustStep) > utils.percenttonum(100) then
+state = utils.percenttonum(100)
+elseif (state+ajustStep) < utils.percenttonum(-100) then
+state = utils.percenttonum(-100)
+else
+state = state+direction
+end
 self.setValue(point, utils.percenttonum(utils.numtopercent(state)-adjustStep))
-else
-self.setValue(point, -1.0)
-end
 end
 end
 else
 if shapeProperty.getValue(points) == 5 then
 local state = self.getValue(points)
-if (state-utils.percenttonum(adjustStep)) >= -1.0 then
-self.setValue(points, utils.percenttonum(utils.numtopercent(state)-adjustStep))
-else
-message"Maximal curvature to the previous point. "
-self.setValue(points, -1.0)
-end
-else
-return string.format("This property is unavailable because the shape of this point is not %s.", shapeProperty.states[5])
-end
-end
-elseif action == actions.set.increase then
-if type(points) == "table" then
-for _, point in ipairs(points) do
-if shapeProperty.getValue(point) == 5 then
-local state = self.getValue(point)
-if (state+utils.percenttonum(adjustStep)) <= 1.0 then
-self.setValue(point, utils.percenttonum(utils.numtopercent(state)+adjustStep))
-else
-self.setValue(point, 1.0)
-end
-end
-end
-else
-if shapeProperty.getValue(points) == 5 then
-local state = self.getValue(points)
-if (state+utils.percenttonum(adjustStep)) <= 1.0 then
-self.setValue(points, utils.percenttonum(utils.numtopercent(state)+adjustStep))
-else
+if (state+ajustStep) > utils.percenttonum(100) then
 message"Maximal curvature to the next point. "
-self.setValue(points, 1.0)
+state = utils.percenttonum(100)
+elseif (state+ajustStep) < utils.percenttonum(-100) then
+message"Maximal curvature to the previous point. "
+state = utils.percenttonum(-100)
+else
+state = state+ajustStep
 end
+self.setValue(points, state)
 else
 return string.format("This property is unavailable because the shape of this point is not %s.", shapeProperty.states[5])
 end
 end
-else
+message(self:get())
+return message
+end
+
+function tensionProperty:set_perform()
+local message = initOutputMessage()
 if type(points) == "table" then
 message(string.format("Reset selected points to %s. ", self.states[0]))
 for _, point in ipairs(points) do
@@ -700,10 +659,10 @@ else
 return string.format("This property is unavailable because the shape of this point is not %s.", shapeProperty.states[5])
 end
 end
-end
 message(self:get())
 return message
 end
+
 end
 
 
@@ -725,8 +684,7 @@ end
 return message
 end
 
-function gotoPositionProperty:set(action)
-if action == actions.set.perform then
+function gotoPositionProperty:set_perform()
 local message = initOutputMessage()
 local point = nil
 if type(points) == "table" then
@@ -741,8 +699,7 @@ message(string.format("Moved the edit cursor to %s", representation.defpos[time]
 end
 return message
 end
-return "This property is performable only."
-end
+
 end
 
 if points ~= nil then
@@ -763,8 +720,7 @@ end
 return message
 end
 
-function deletePointsProperty:set(action)
-if action == actions.set.perform then
+function deletePointsProperty:set_perform()
 setUndoLabel(self:get())
 reaper.Main_OnCommand(40333, 0) -- Envelope: Delete all selected points
 if reaper.CountEnvelopePoints(envelope) > 0 then
@@ -772,9 +728,6 @@ if reaper.GetEnvelopePoint(envelope, reaper.CountEnvelopePoints(envelope)-1) the
 reaper.SetEnvelopePoint(envelope, reaper.CountEnvelopePoints(envelope)-1, nil, nil, nil, nil, true)
 end
 end
-return
-end
-return "This property is performable only."
 end
 end
 

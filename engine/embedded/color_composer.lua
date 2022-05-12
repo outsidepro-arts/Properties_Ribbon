@@ -206,22 +206,33 @@ end
 return message
 end
 
-function presetsProperty:set(action)
+function presetsProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == actions.set.increase then
-if #self.states > 0 and (state+1) <= #self.states then
-state = state+1
-else
+if #self.states > 0 then
+if (state+direction) > #self.states then
 message("No more next property values. ")
-end
-elseif action == actions.set.decrease then
-if #self.states > 0 and (state-1) > 0 then
-state = state-1
-else
+elseif (state+direction) <= 0 then
 message("No more previous property values. ")
+else
+state = state+direction
 end
-elseif action == nil then
+else
+return "There is no presets."
+end
+self.setValue(state)
+state = self.getValue()
+if #self.states > 0 then
+setColor(self.states[state].value)
+setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+end
+message(self:get())
+return message
+end
+
+function presetsProperty:set_perform()
+local message = initOutputMessage()
+local state = self.getValue()
 local maybeName = ""
 if self.states[state] then
 maybeName = self.states[state].name
@@ -270,7 +281,6 @@ message("Unable to create new preset.")
 end
 end
 end
-end
 self.setValue(state)
 state = self.getValue()
 if #self.states > 0 then
@@ -280,7 +290,6 @@ end
 message(self:get())
 return message
 end
-
 
 -- Color shade methods
 local shadeProperty = {}
@@ -306,11 +315,11 @@ end
 return message
 end
 
-function shadeProperty:set(action)
+function shadeProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = self.getValue()
 local filter = getFilter()
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if filter then
 local somethingFound = false
 for i = (state+1), #colors.colorList do
@@ -332,7 +341,7 @@ else
 message("No more next property values. ")
 end
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if filter then
 local somethingFound = false
 for i = (state-1), 1, -1 do
@@ -354,8 +363,18 @@ else
 message("No more previous property values. ")
 end
 end
-elseif action == nil then
-if filter == nil then filter = "" end
+end
+self.setValue(state)
+setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
+-- Here is old method because we do not want to report the filter superfluously
+message{label="Color", value=colors.colorList[self.getValue()].name}
+return message
+end
+
+function shadeProperty:set_perform()
+local message = initOutputMessage()
+local state = self.getValue()
+local filter = getFilter() or ""
 local retval, answer = reaper.GetUserInputs("Set filter", 1, 'Type a part of color name that Properties Ribbon should search.\nClear the edit field to clear the filter and explore all colors.', filter)
 if retval == true then
 setFilter(answer:lower())
@@ -377,7 +396,6 @@ message("Filter cleared. ")
 end
 else
 return "Canceled."
-end
 end
 self.setValue(state)
 setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
@@ -409,10 +427,10 @@ return message
 end
 
 
-function rgbRProperty:set(action)
+function rgbRProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state+1 <= 255 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state+1), 255 do
@@ -425,7 +443,7 @@ end
 else
 message("No more next property values. ")
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state-1 >= 0 then
 local oldName = colors:getName(reaper.ColorFromNative(getColor()))
 for i = (state-1), 0, -1 do
@@ -440,7 +458,15 @@ end
 else
 message("No more previous property values. ")
 end
-elseif action == nil then
+end
+setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+message{objectId="Color", label="Red intensity", value=string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))}
+return message
+end
+
+function rgbRProperty:set_perform()
+local message = initOutputMessage()
+local state = self.getValue()
 local retval, answer = reaper.GetUserInputs("Red value input", 1, 'Type the red value intensity (0...255):', state)
 if retval == true then
 if tonumber(answer) then
@@ -449,12 +475,10 @@ else
 message("The provided red color value is not a number value. ")
 end
 end
-end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
 message{objectId="Color", label="Red intensity", value=string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))}
 return message
 end
-
 
 -- The g methods
 local rgbGProperty = {}
@@ -478,46 +502,16 @@ message(string.format("Color green intensity %u", self.getValue()))
 return message
 end
 
-
-function rgbGProperty:set(action)
+rgbGProperty.set_adjust = rgbRProperty.set_adjust
+function rgbGProperty:set_perform()
 local message = initOutputMessage()
 local state = self.getValue()
-if action == actions.set.increase then
-if state+1 <= 255 then
-local oldName = colors:getName(reaper.ColorFromNative(getColor()))
-for i = (state+1), 255 do
-self.setValue(i)
-local newName = colors:getName(reaper.ColorFromNative(getColor()))
-if oldName ~= newName then
-break
-end
-end
-else
-message("No more next property values. ")
-end
-elseif action == actions.set.decrease then
-if state-1 >= 0 then
-local oldName = colors:getName(reaper.ColorFromNative(getColor()))
-for i = (state-1), 0, -1 do
-if i >= 0 then
-self.setValue(i)
-local newName = colors:getName(reaper.ColorFromNative(getColor()))
-if oldName ~= newName then
-break
-end
-end
-end
-else
-message("No more previous property values. ")
-end
-elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Green value input", 1, 'Type the green value intensity (0...255):', state)
 if retval == true then
 if tonumber(answer) then
 self.setValue(tonumber(answer))
 else
 message("The provided green value is not a number value. ")
-end
 end
 end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
@@ -548,46 +542,17 @@ message(string.format("Color blue intensity %u", self.getValue()))
 return message
 end
 
+rgbBProperty.set_adjust = rgbRProperty.set_adjust
 
-function rgbBProperty:set(action)
+function rgbBProperty:set_perform()
 local message = initOutputMessage()
 local state = self.getValue()
-if action == actions.set.increase then
-if state+1 <= 255 then
-local oldName = colors:getName(reaper.ColorFromNative(getColor()))
-for i = (state+1), 255 do
-self.setValue(i)
-local newName = colors:getName(reaper.ColorFromNative(getColor()))
-if oldName ~= newName then
-break
-end
-end
-else
-message("No more next property values. ")
-end
-elseif action == actions.set.decrease then
-if state-1 >= 0 then
-local oldName = colors:getName(reaper.ColorFromNative(getColor()))
-for i = (state-1), 0, -1 do
-if i >= 0 then
-self.setValue(i)
-local newName = colors:getName(reaper.ColorFromNative(getColor()))
-if oldName ~= newName then
-break
-end
-end
-end
-else
-message("No more previous property values. ")
-end
-elseif action == actions.set.perform then
 local retval, answer = reaper.GetUserInputs("Blue value input", 1, 'Type the blue value intensity (0...255):', state)
 if retval == true then
 if tonumber(answer) then
 self.setValue(tonumber(answer))
 else
 message("The provided blue value is not a number value. ")
-end
 end
 end
 setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
@@ -694,8 +659,7 @@ end
 return message
 end
 
-function applyColorProperty:set(action)
-if action == actions.set.perform then
+function applyColorProperty:set_perform()
 local gotState = self.states[sublayout]
 if gotState then
 local message = initOutputMessage()
@@ -709,13 +673,6 @@ return message
 end
 return "This properti is unavailable right now cuz no one object is selected."
 end
-return "This property performable only."
-end
-
-
-
-
-
 
 
 -- Grabbing a color from an elements methods
@@ -798,19 +755,15 @@ end
 return message
 end
 
-function grabColorProperty:set(action)
+function grabColorProperty:set_perform()
 local message = initOutputMessage()
-if action == actions.set.perform then
 local state = self.getValue()
 if not state then
 return "This property is unavailable right now because no one element of this category has been neither touched nor selected."
 end
 self.setValue(state)
-message(string.format("The color has been grabbed from %s.", self.states[sublayout]))
+message(string.format("The %s color has been grabbed from %s.", colors:getName(reaper.ColorFromNative(state)), self.states[sublayout]))
 return message
-else
-return "This property is performable only."
-end
 end
 
 parentLayout.defaultSublayout = sublayout

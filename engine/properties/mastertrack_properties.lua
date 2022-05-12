@@ -43,40 +43,39 @@ message({objectId="Master", label="Volume", value=representation.db[state]})
 return message
 end
 
-function volumeProperty:set(action)
+function volumeProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
+if direction == actions.set.decrease.direction then
+ajustStep = -ajustStep
+end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
-if action == actions.set.increase then
-if state < utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
-else
+if state > utils.decibelstonum(maxDBValue) then
 state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
-end
-elseif action == actions.set.decrease then
-if utils.numtodecibels(state) ~= "-inf" then
-state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
-else
-state = 0
+elseif state < utils.decibelstonum(-150.0) then
+state = utils.decibelstonum("-inf")
 message("Minimum volume. ")
 end
-elseif action == actions.set.perform then
+reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
+message(self:get())
+return message
+end
+
+function volumeProperty:set_perform()
+local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 local retval, answer = reaper.GetUserInputs("Volume for master track", 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
 return "Canceled"
 end
 state = prepareUserData.db.process(answer, state)
-end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
 end
-message(self:get())
-return message
 end
 
 -- pan methods
@@ -91,16 +90,15 @@ message({objectId="Master", label="Pan", value=representation.pan[state]})
 return message
 end
 
-function panProperty:set(action)
+function panProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -109,21 +107,23 @@ elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
-elseif action == actions.set.perform then
+reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
+message(self:get())
+return message
+end
+
+function panProperty:set_perform()
+local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 local retval, answer = reaper.GetUserInputs("Pan for master track", 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
 state = prepareUserData.pan.process(answer, state)
-end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
 end
-message(self:get())
-return message
 end
 
 -- Width methods
@@ -137,16 +137,15 @@ message({objectId="Master", label="Width", value=string.format("%s%%", utils.num
 return message
 end
 
-function widthProperty:set(action)
+function widthProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 ajustingValue = -utils.percenttonum(ajustingValue)
 end
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -155,23 +154,24 @@ elseif state < -1 then
 state = -1
 message("Minimum width. ")
 end
-elseif action == actions.set.perform then
+reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
+message(self:get())
+return message
+end
+
+function widthProperty:set_perform()
+local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(state)))
 if not retval then
 return "Canceled"
 end
 state = prepareUserData.percent.process(answer, state)
-end
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
 end
-message(self:get())
-return message
 end
-
 
 -- Mute methods
 local muteProperty = {}
@@ -190,10 +190,9 @@ message({objectId="Master", value=states[state]})
 return message
 end
 
-function muteProperty:set(action)
+function muteProperty:set_perform()
 local message = initOutputMessage()
 local states = {[0]="not muted", [1]="muted"}
-if action == actions.set.toggle then
 local _, state = reaper.GetTrackUIMute(master)
 if state == true then
 state = 0
@@ -203,9 +202,6 @@ end
 reaper.SetMediaTrackInfo_Value(master, "B_MUTE", state)
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Solo methods
@@ -221,8 +217,7 @@ message({objectId="Master", value=states[state]})
 return message
 end
 
-function soloProperty:set(action)
-if action == actions.set.toggle then
+function soloProperty:set_perform()
 local message = initOutputMessage()
 local retval, soloInConfig = reaper.get_config_var_string("soloip")
 if retval then
@@ -237,9 +232,6 @@ end
 reaper.SetMediaTrackInfo_Value(master, "I_SOLO", state)
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- FX bypass methods
@@ -260,8 +252,7 @@ end
 return message
 end
 
-function masterFXProperty:set(action)
-if action == actions.set.toggle then
+function masterFXProperty:set_perform()
 local message = initOutputMessage()
 if reaper.TrackFX_GetCount(master) > 0 then
 local state = utils.nor(reaper.GetToggleCommandState(16))
@@ -271,9 +262,6 @@ else
 return "This property  is unavailable nowbecause no one FX in master track FX chain found."
 end
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Mono/stereo methods
@@ -287,16 +275,11 @@ message{objectId="Master", value=({[0] = "stereo", [1] = "mono"})[reaper.GetTogg
 return message
 end
 
-function monoProperty:set(action)
-if action == actions.set.toggle then
+function monoProperty:set_perform()
 local state = utils.nor(reaper.GetToggleCommandState(40917))
 reaper.Main_OnCommand(40917, state)
 -- OSARA reports this state by itself
 setUndoLabel(self:get())
-return
-else
-return "This property is toggleable only."
-end
 end
 
 -- Play rate methods
@@ -311,20 +294,23 @@ message{objectId="Master", label="Play rate", value=representation.playrate[stat
 return message
 end
 
-function playrateProperty:set(action)
+function playrateProperty:set_adjust(direction)
 local message = initOutputMessage()
 -- Cockos are surprisingly strange... There are is over two methods to get master playrate but no one method to set this. But we aren't offend!
 local cmds= {
-{[actions.set.decrease]=40525,[actions.set.increase]=40524},
-{[actions.set.decrease]=40523, [actions.set.increase]=40522}
+{[actions.set.decrease.direction]=40525,[actions.set.increase.direction]=40524},
+{[actions.set.decrease.direction]=40523, [actions.set.increase.direction]=40522}
 }
-if action == actions.set.increase or action == actions.set.decrease then
-reaper.Main_OnCommand(cmds[config.getinteger("rateStep", 1)][action], 0)
-elseif action == actions.set.perform then
+reaper.Main_OnCommand(cmds[config.getinteger("rateStep", 1)][direction], 0)
+-- If you can found another method to set this, please let me know!
+message(self:get())
+return message
+end
+
+function playrateProperty:set_perform()
+local message = initOutputMessage()
 message("Reset, ")
 reaper.Main_OnCommand(40521, 0)
-end
--- If you can found another method to set this, please let me know!
 message(self:get())
 return message
 end
@@ -340,16 +326,12 @@ message{objectId="Master", label="Pitch when playrate changes", value=({[0] = "n
 return message
 end
 
-function pitchPreserveProperty:set(action)
-if action == actions.set.toggle then
+function pitchPreserveProperty:set_perform()
 local message = initOutputMessage()
 local state = utils.nor(reaper.GetToggleCommandState(40671))
 reaper.Main_OnCommand(40671, state)
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 
@@ -366,14 +348,18 @@ message{objectId="Master", label="Tempo", value=string.format("%s BPM", utils.ro
 return message
 end
 
-function tempoProperty:set(action)
-if action == actions.set.increase then
+function tempoProperty:set_adjust(direction)
+if direction == actions.set.increase.direction then
 reaper.Main_OnCommand(41129, 0)
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 reaper.Main_OnCommand(41130, 0)
-elseif action == actions.set.perform then
-reaper.Main_OnCommand(1134, 0)
 end
+-- OSARA provides the state value for tempo
+setUndoLabel(self:get())
+end
+
+function tempoProperty:set_perform()
+reaper.Main_OnCommand(1134, 0)
 -- OSARA provides the state value for tempo
 setUndoLabel(self:get())
 end
@@ -405,8 +391,7 @@ message{objectId="Master", label="Control panel", value=self.states[self.getValu
 return message
 end
 
-function tcpVisibilityProperty:set(action)
-if action == actions.set.toggle then
+function tcpVisibilityProperty:set_perform()
 local message = initOutputMessage()
 local state = utils.nor(self.getValue())
 if state == false then
@@ -416,9 +401,6 @@ end
 end
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- MCP visibility
@@ -448,16 +430,12 @@ message{objectId="Master", label="Visibility on mixer panel", value=self.states[
 return message
 end
 
-function mcpVisibilityProperty:set(action)
-if action == actions.set.toggle then
+function mcpVisibilityProperty:set_perform()
 local message = initOutputMessage()
 local state = self.getValue()
 self.setValue(utils.nor(state))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Master track position in mixer panel
@@ -499,24 +477,18 @@ end
 return message
 end
 
-function masterTrackMixerPosProperty:set(action)
+function masterTrackMixerPosProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = self.getValue()
-if action == actions.set.increase then
-if self.states[state+1] then
-self.setValue(state+1)
-else
+state = state+direction
+if state > #self.states then
+state = #self.states
 message("No more next property values. ")
-end
-elseif action == actions.set.decrease then
-if self.states[state-1] then
-self.setValue(state-1)
-else
+elseif state < 1 then
+state = 1
 message("No more previous property values. ")
 end
-else
-return "This property is adjustable only."
-end
+self.setValue(state)
 message(self:get())
 return message
 end
@@ -531,8 +503,7 @@ message{objectId="Master ", label="OSARA parameters"}
 return message
 end
 
-function osaraParamsProperty:set(action)
-if action == actions.set.perform then
+function osaraParamsProperty:set_perform()
 -- Ensure the master track has touched
 local lastSelection = {}
 if reaper.GetLastTouchedTrack() ~= master then
@@ -551,8 +522,6 @@ end
 reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 0)
 end
 return
-end
-return "This property is performable only."
 end
 
 return parentLayout

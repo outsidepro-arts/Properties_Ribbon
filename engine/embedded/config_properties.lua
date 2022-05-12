@@ -24,11 +24,11 @@ configLayout:registerSublayout("stepAdjustment", "Step adjustment")
 --[[
 Before the properties list fill get started, let describe this subclass methods:
 Method get: gets no one parameter, returns a message string which will be reported in the navigating scripts.
-Method set: gets parameter action. Expects false, true or nil.
-action == actions.set.increase: the property must changed upward
-action == actions.set.decrease: the property must changed downward
-action == nil: The property must be toggled or performed default action
-Returns a message string which will be reported in the navigating scripts.
+Method set_adjust: the method which will call when user tries to adjust the property. gets parameter action.
+direction == actions.set.increase.direction (or 1): the property must changed upward
+direction == actions.set.decrease.direction (or -1): the property must changed downward
+method set_perform: calls when user tries to perform or toggle the property.
+These two methods have to return a output_message object, string or nil. When they return output_message or string, this object will be spoken. When they return nil, nothing will be spoken.
 
 After you finish the methods table you have to return parent class.
 No any recomendation more.
@@ -51,23 +51,15 @@ message{label="Types prompts level", value=self.states[typeLevel]}
 return message
 end
 
-function typeLevelProperty:set(action)
+function typeLevelProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("typeLevel", 1)
-if action == actions.set.next then
-if self.states[state+1] then
-config.setinteger("typeLevel", state+1)
-else
+if state+direction > #self.states then
 message("No more next property values.")
-end
-elseif action == actions.set.prev then
-if self.states[state-1] then
-config.setinteger("typeLevel", state-1)
-else
+elseif state+direction < 0 then
 message("No more previous property values.")
-end
 else
-return "This property is adjustable only."
+config.setinteger("typeLevel", state+direction)
 end
 message(self:get())
 return message
@@ -90,23 +82,15 @@ message{label="Reporting navigation position", value=self.states[state]}
 return message
 end
 
-function reportPosProperty:set(action)
+function reportPosProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("reportPos", 3)
-if action == actions.set.next then
-if (state+1) <= #self.states then
-config.setinteger("reportPos", state+1)
-else
+if (state+direction) > #self.states then
 message("No more next property values. ")
-end
-elseif action == actions.set.prev then
-if (state-1) >= 0 then
-config.setinteger("reportPos", state-1)
-else
+elseif (state+direction) < 0 then
 message("No more previous property values. ")
-end
 else
-return "This property is adjustable only."
+config.setinteger("reportPos", state+direction)
 end
 message(self:get())
 return message
@@ -129,28 +113,19 @@ message{label="Remember position in layouts when loading", value=self.states[sta
 return message
 end
 
-function resetSublayoutProperty:set(action)
+function resetSublayoutProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("rememberSublayout", 3)
-if action == actions.set.next then
-if (state+1) <= #self.states then
-config.setinteger("rememberSublayout", (state+1))
-else
+if (state+direction) > #self.states then
 message("No more next property values. ")
-end
-elseif action == actions.set.prev then
-if (state-1) >= 0 then
-config.setinteger("rememberSublayout", (state-1))
-else
+elseif (state+direction) < 0 then
 message("No more previous property values. ")
-end
 else
-return "This property is adjustable only."
+config.setinteger("rememberSublayout", (state+direction))
 end
 message(self:get())
 return message
 end
-
 
 
 -- DB step specify methods
@@ -165,11 +140,11 @@ message{label="Decibel step adjustment", value=representation.db[-utils.decibels
 return message
 end
 
-function dbStepProperty:set(action)
+function dbStepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("dbStep", 0.1)
 local ajustingValue
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 0.01 and state < 0.1 then
 ajustingValue = 0.1
 elseif state >= 0.1 and state < 0.5 then
@@ -179,7 +154,7 @@ ajustingValue = 1.0
 else
 return "Maximal step value"
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 1.0 then
 ajustingValue = 1.0
 elseif state <= 1.0 and state > 0.5 then
@@ -191,13 +166,29 @@ ajustingValue = 0.01
 else
 return "Minimal step value"
 end
-elseif action == actions.set.perform then
+end
+if ajustingValue >= 10 then
+message("More than 10 db can do bugs and unexpected results. ")
+config.setinteger("dbStep", 10.0)
+elseif ajustingValue < 0.01 then
+message("Set the step to zero DB is pointless. ")
+config.setinteger("dbStep", 0.01)
+else
+config.setinteger("dbStep", ajustingValue)
+end
+message(self:get())
+return message
+end
+
+function dbStepProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getinteger("dbStep", 0.1)
+local ajustingValue
 local result, answer = reaper.GetUserInputs("Decibel step input", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
 ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.numtodecibels(state)))
 else
 return "Canceled."
-end
 end
 if ajustingValue >= 10 then
 message("More than 10 db can do bugs and unexpected results. ")
@@ -224,11 +215,11 @@ message{label="Maximum decibels value", value=representation.db[-utils.decibelst
 return message
 end
 
-function maxDbProperty:set(action)
+function maxDbProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("maxDBValue", 12.0)
 local ajustingValue
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 6.0 and state < 12.0 then
 ajustingValue = 12.0
 elseif state >= 12.0 and state < 18.0 then
@@ -238,7 +229,7 @@ ajustingValue = 24.0
 else
 return "Maximal value"
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 24.0 then
 ajustingValue = 24.0
 elseif state <= 24.0 and state > 18.0 then
@@ -250,13 +241,21 @@ ajustingValue = 6.0
 else
 return "Minimal value"
 end
-elseif action == actions.set.perform then
+end
+config.setinteger("maxDBValue", ajustingValue)
+message(self:get())
+return message
+end
+
+function maxDbProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getinteger("maxDBValue", 12.0)
+local ajustingValue
 local result, answer = reaper.GetUserInputs("Maximum decibels value", 1, prepareUserData.db.formatCaption, representation.db[-utils.decibelstonum(state)])
 if result == true then
 ajustingValue = utils.numtodecibels(prepareUserData.db.process(answer, utils.decibelstonum(state)))
 else
 return "Canceled."
-end
 end
 config.setinteger("maxDBValue", ajustingValue)
 message(self:get())
@@ -275,11 +274,11 @@ message{label="Percent step adjustment", value=string.format("%s%%", state)}
 return message
 end
 
-function percentagestepProperty:set(action)
+function percentagestepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("percentStep", 1)
 local ajustingValue
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 1 and state < 5 then
 ajustingValue = 5
 elseif state >= 5 and state < 10 then
@@ -287,7 +286,7 @@ ajustingValue = 10
 else
 return "Maximal step value"
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 10 then
 ajustingValue = 10
 elseif state <= 10 and state > 5 then
@@ -297,13 +296,29 @@ ajustingValue = 1
 else
 return "Minimal step value"
 end
-elseif action == actions.set.perform then
+end
+if ajustingValue >= 100 then
+message("Percent means number 100 but not more than. ")
+config.setinteger("percentStep", 100)
+elseif ajustingValue < 1 then
+message("Set the step to zero percent is pointless. ")
+config.setinteger("percentStep", 1)
+else
+config.setinteger("percentStep", ajustingValue)
+end
+message(self:get())
+return message
+end
+
+function percentagestepProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getinteger("percentStep", 1)
+local ajustingValue
 local result, answer = reaper.GetUserInputs("Percent step input", 1, prepareUserData.percent.formatCaption, string.format("%u%%", state))
 if result == true then
 ajustingValue = utils.numtopercent(prepareUserData.percent.process(answer, utils.percenttonum(state)))
 else
 return "Canceled."
-end
 end
 if ajustingValue >= 100 then
 message("Percent means number 100 but not more than. ")
@@ -330,11 +345,11 @@ message{label="Time step adjustment", value=representation.timesec[state]}
 return message
 end
 
-function timeStepProperty:set(action)
+function timeStepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("timeStep", 0.001)
 local ajustingValue
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 0.001 and state < 0.010 then
 ajustingValue = 0.010
 elseif state >= 0.010 and state < 0.100 then
@@ -344,7 +359,7 @@ ajustingValue = 1.000
 else
 return "Maximal step value"
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 1.000 then
 ajustingValue = 1.000
 elseif state <= 1.000 and state > 0.100 then
@@ -356,13 +371,26 @@ ajustingValue = 0.001
 else
 return "Minimal step value"
 end
-elseif action == actions.set.perform then
+end
+if ajustingValue <= 0 then
+message("Set the step to zero MS is pointless. ")
+config.setinteger("timeStep", 0.001)
+else
+config.setinteger("timeStep", ajustingValue)
+end
+message(self:get())
+return message
+end
+
+function timeStepProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getinteger("timeStep", 0.001)
+local ajustingValue
 local result, answer = reaper.GetUserInputs("Time step input", 1, 'Type the needed step which every property with time value will change per one adjustment in decimal format but no more three digits after decimal separator (0.1, 1.25, 3.201 and etc):', state)
 if result == true then
 ajustingValue = tonumber(answer)
 else
 return "Canceled."
-end
 end
 if ajustingValue <= 0 then
 message("Set the step to zero MS is pointless. ")
@@ -390,26 +418,15 @@ message{label="Play rate step adjustment", value=self.states[state]}
 return message
 end
 
-function playrateStepProperty:set(action)
+function playrateStepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("ratestep", 1)
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-state = state+1
-else
+if (state+direction) > #self.states then
 return "No more next property values"
-end
-elseif action == actions.set.decrease then
-if state > #self.states then
-state = #self.states
-end
-if (state-1) >= 1 then
-state = state-1
-else
+elseif (state+direction) < 1 then
 return "No moreprevious property values"
-end
 else
-return "This property adjustable only."
+state = state+direction
 end
 config.setinteger("rateStep", state)
 message(self:get())
@@ -428,11 +445,11 @@ message{label="Pitch step adjustment", value=representation.pitch[state]}
 return message
 end
 
-function pitchStepProperty:set(action)
+function pitchStepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
 local ajustingValue
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 0.01 and state < 0.50 then
 ajustingValue = 0.50
 elseif state >= 0.50 and state < 1.00 then
@@ -442,7 +459,7 @@ ajustingValue = 12.00
 else
 return "Maximal proposed step value"
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 12.00 then
 ajustingValue = 12.00
 elseif state <= 12.00 and state > 1.00 then
@@ -453,13 +470,6 @@ elseif state <= 0.50 and state > 0.01 then
 ajustingValue = 0.01
 else
 return "Minimal proposed step value"
-end
-elseif action == actions.set.perform then
-local result, answer = reaper.GetUserInputs("Pitch step input", 1, prepareUserData.pitch.formatCaption, representation.pitch[state])
-if result == true then
-ajustingValue = prepareUserData.pitch.process(answer, state)
-else
-return "Canceled."
 end
 end
 if ajustingValue < 0.01 then
@@ -472,6 +482,25 @@ message(self:get())
 return message
 end
 
+function pitchStepProperty:set_perform()
+local message = initOutputMessage()
+local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
+local ajustingValue
+local result, answer = reaper.GetUserInputs("Pitch step input", 1, prepareUserData.pitch.formatCaption, representation.pitch[state])
+if result == true then
+ajustingValue = prepareUserData.pitch.process(answer, state)
+else
+return "Canceled."
+end
+if ajustingValue < 0.01 then
+message("Set the step to zero MS is pointless. ")
+config.setinteger("pitchStep", 0.01)
+else
+config.setinteger("pitchStep", ajustingValue)
+end
+message(self:get())
+return message
+end
 
 -- Multiselection support methods
 local multiSelectionSupportProperty = {}
@@ -484,15 +513,11 @@ message{label="Multi-selection support", value=({[true] = "enabled", [false] = "
 return message
 end
 
-function multiSelectionSupportProperty:set(action)
-if action == actions.set.toggle then
+function multiSelectionSupportProperty:set_perform()
 local state = utils.nor(config.getboolean("multiSelectionSupport", true))
 config.setboolean("multiSelectionSupport", state)
 local message = initOutputMessage() message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Report name methods
@@ -507,15 +532,11 @@ message{label="Report element's", value=({[false]="number only",[true]="name ins
 return message
 end
 
-function reportNameProperty:set(action)
-if action == actions.set.toggle then
+function reportNameProperty:set_perform()
 local message = initOutputMessage()
 config.setboolean("reportName", utils.nor(config.getboolean("reportName", false)))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Truncate the identification namesby specified symbols length
@@ -545,12 +566,12 @@ end
 return message
 end
 
-function truncateIdByProperty:set(action)
+function truncateIdByProperty:set_adjust(direction)
 local depend = config.getboolean("reportName", false)
 if depend then
 local message= initOutputMessage()
 local state = config.getinteger("truncateIdBy", 0)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state < 5 then
 config.setinteger("truncateIdBy", 5)
 elseif state >= 5 and state < 10 then
@@ -562,7 +583,7 @@ config.setinteger("truncateIdBy", 50)
 elseif state >= 50 then
 message("No more next property values.")
 end	
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state > 50 then
 config.setinteger("truncateIdBy", 50)
 elseif state <= 50 and state > 25 then	
@@ -576,7 +597,18 @@ config.setinteger("truncateIdBy", 0)
 elseif state == 0 then
 message("No more previous property values.")
 end
-elseif action == actions.set.perform then
+end
+message(self:get())
+return message
+end	
+return "This property is unavailable right now because the report names option is disabled."
+end
+
+function truncateIdByProperty:set_perform()
+local depend = config.getboolean("reportName", false)
+if depend then
+local message= initOutputMessage()
+local state = config.getinteger("truncateIdBy", 0)
 local getValue = self:get()
 local retval, answer = reaper.GetUserInputs("Truncate value", 1, 'Type the needed length value the name identification should be truncated. Type \"Off\" to disable the truncation:', getValue:extract(2, false):gsub("By ", ""))
 if not retval then return end
@@ -590,10 +622,9 @@ else
 reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end	
 end
-end	
 message(self:get())
 return message
-end	
+end
 return "This property is unavailable right now because the report names option is disabled."
 end
 
@@ -608,15 +639,11 @@ message{label="Contextual layout when navigating", value=({[true]="proposed auto
 return message
 end
 
-function autoProposeLayoutProperty:set(action)
-if action == actions.set.toggle then
+function autoProposeLayoutProperty:set_perform()
 local message = initOutputMessage()
 config.setboolean("automaticLayoutLoading", utils.nor(config.getboolean("automaticLayoutLoading", false)))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 -- Can some properties restore previous layout or not
@@ -630,15 +657,11 @@ message{label="Allow for some properties to restore previous layout", value=({[t
 return message
 end
 
-function allowRestorePreviousProperty:set(action)
-if action == actions.set.toggle then
+function allowRestorePreviousProperty:set_perform()
 local message = initOutputMessage()
 config.setboolean("allowLayoutsrestorePrev", utils.nor(config.getboolean("allowLayoutsrestorePrev", true)))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 local clearFileExtsProperty = {}
@@ -652,16 +675,12 @@ message{label="Clear the extensions of filenames when it found somewhere", value
 return message
 end
 
-function clearFileExtsProperty:set(action)
-if action == actions.set.toggle then
+function clearFileExtsProperty:set_perform()
 local message = initOutputMessage()
 local state = config.getboolean("clearFileExts", true)
 config.setboolean("clearFileExts", utils.nor(state))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 local percentageNavigation = {}
@@ -675,15 +694,11 @@ message{label="Percentage navigation", value=({[false]="disabled",[true]="enable
 return message
 end
 
-function percentageNavigation:set(action)
-if action == actions.set.toggle then
+function percentageNavigation:set_perform()
 local message = initOutputMessage()
 config.setboolean("percentagePropertyNavigation", utils.nor(config.getboolean("percentagePropertyNavigation", false)))
 message(self:get())
 return message
-else
-return "This property is toggleable only."
-end
 end
 
 local fxParmstepProperty = {}
@@ -705,23 +720,15 @@ message{label="FX parameters step adjustment", value=self.states[state]}
 return message
 end
 
-function fxParmstepProperty:set(action)
+function fxParmstepProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("fxParmStep", 4)
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-config.setinteger("fxParmStep", state+1)
-else
+if (state+direction) > #self.states then
 message("No more next property values.")
-end
-elseif action == actions.set.decrease then
-if (state-1) >= 1 then
-config.setinteger("fxParmStep", state-1)
-else
+elseif (state+direction) < 1 then
 message("No more previous property values.")
-end
 else
-return "This property adjustable only."
+config.setinteger("fxParmStep", state+direction)
 end
 message(self:get())
 return message
@@ -740,12 +747,8 @@ function fxUseNearestParmValueProperty:get()
 	return message
 end
 
-function fxUseNearestParmValueProperty:set(action)
-	if action == actions.set.toggle then
+function fxUseNearestParmValueProperty:set_perform()
 		config.setboolean("fx_useFindNearestParmValue", utils.nor(config.getboolean("fx_useFindNearestParmValue", true)))
-	else
-		return "This property is toggleable only."
-	end
 	local message = initOutputMessage()
 	message(self:get())
 	return message
@@ -767,23 +770,15 @@ message{label="Parameter identification when navigating", value=self.states[stat
 return message
 end
 
-function reportParmIndexProperty:set(action)
+function reportParmIndexProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("reportParmId", 2)
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-config.setinteger("reportParmId", state+1)
-else
+if (state+direction) > #self.states then
 message("No more next property values.")
-end
-elseif action == actions.set.decrease then
-if (state-1) >= 0 then
-config.setinteger("reportParmId", state-1)
-else
+elseif (state+direction) < 0 then
 message("No more previous property values.")
-end
 else
-return "This property is adjustable only."
+config.setinteger("reportParmId", state+direction)
 end
 message(self:get())
 return message
@@ -804,24 +799,16 @@ function reportRealParmValueProperty:get()
 	return message
 end
 
-function reportRealParmValueProperty:set(action)
+function reportRealParmValueProperty:set_adjust(direction)
 local message = initOutputMessage()
 	local state = config.getinteger("reportParmMethod", 1)
-	if action == actions.set.increase then
-if (state+1) <= #self.states then
-config.setinteger("reportParmMethod", state+1)
-else
+if (state+direction) > #self.states then
 message("No more next parameter values.")
-end
-elseif action == actions.set.decrease then
-if (state-1) >= 1 then
-config.setinteger("reportParmMethod", state-1)
-else
+elseif (state+direction) < 1 then
 message("No more previous property values.")
+else
+config.setinteger("reportParmMethod", state+direction)
 end
-	else
-		return "This property is adjustable only."
-	end
 	message(self:get())
 	return message
 end
@@ -965,8 +952,7 @@ message("Add new exclude mask")
 return message
 end
 
-function addExcludeMaskProperty:set(action)
-if action == actions.set.perform then
+function addExcludeMaskProperty:set_perform()
 local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-in filename mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,")
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
@@ -982,9 +968,6 @@ fxMaskList[#fxMaskList+1] = {
 fxMask = newFxMask,
 paramMask=newParamMask
 }
-end
-else
-return "This property is performable only."
 end
 end
 
@@ -1004,23 +987,15 @@ message{label="Output when adjusting a property", value=self.states[state]}
 return message
 end
 
-function outputOrderProperty:set(action)
+function outputOrderProperty:set_adjust(direction)
 local message = initOutputMessage()
 local state = config.getinteger("adjustOutputOrder", 0)
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-config.setinteger("adjustOutputOrder", state+1)
-else
+if (state+direction) > #self.states then
 message("No more next property values.")
-end
-elseif action == actions.set.decrease then
-if (state-1) >= 0 then
-config.setinteger("adjustOutputOrder", state-1)
-else
+elseif (state+direction) < 0 then
 message("No more previous property values.")
-end
 else
-return "This property is adjustable only."
+config.setinteger("adjustOutputOrder", state+direction)
 end
 message(self:get())
 return message

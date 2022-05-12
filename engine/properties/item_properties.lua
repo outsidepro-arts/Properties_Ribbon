@@ -227,9 +227,7 @@ end
 return message
 end
 
-function currentTakeNameProperty:set(action)
-action = action or actions.set.perform
-if action == actions.set.perform then
+function currentTakeNameProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local state, answer = reaper.GetUserInputs("Change name active takes of selected items", 1, 'Type new take name:', "")
@@ -247,8 +245,6 @@ self.setValue(items, answer)
 end
 end
 return message
-end
-return "This property is performable only."
 end
 
 -- Lock item methods
@@ -280,9 +276,7 @@ end
 return message
 end
 
-function lockProperty:set(action)
-action = action or actions.set.toggle
-if action == actions.set.toggle then
+function lockProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local lockedItems, notLockedItems = 0, 0
@@ -314,8 +308,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 -- volume methods
 local itemVolumeProperty = {}
@@ -346,58 +338,55 @@ end
 return message
 end
 
-function itemVolumeProperty:set(action)
-action = action or actions.set.perform
+function itemVolumeProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
+if direction == actions.set.decrease.direction then
+ajustStep = -ajustStep
+end	
+if type(tracks) == "table" then
+for _, item in ipairs(items) do
+local state = self.getValue(item)
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
+if utils.numtodecibels(state) < -150.0 then
+state = utils.decibelstonum(-150.0)
+elseif utils.numtodecibels(state) > utils.numtodecibels(maxDBValue) then
+state = utils.numtodecibels(maxDBValue)
+end
+self.setValue(item, state)
+end
+else
+local state = self.getValue(items)
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
+if utils.numtodecibels(state) < -150.0 then
+state = utils.decibelstonum(-150.0)
+message("Minimum volume. ")
+elseif utils.numtodecibels(state) > maxDBValue then
+state = utils.decibelstonum(maxDBValue)
+message("maximum volume. ")
+end	
+self.setValue(items, state)
+end
+ message(self:get())
+return message
+end
+
+function itemVolumeProperty:set_perform()
 if type(items) == "table" then
-local retval, answer = nil, nil
-if action == actions.set.perform then
-retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
 if not retval then
 return "Canceled"
 end
-end
 for k = 1, #items do
 local state = self.getValue(items[k])
-if action == actions.set.increase then
-if state < utils.decibelstonum(maxDBValue) then
-self.setValue(items[k], utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
-else
-self.setValue(items[k], utils.decibelstonum(maxDBValue))
-end
-elseif action == actions.set.decrease then
-if utils.numtodecibels(state) ~= "-inf" then
-self.setValue(items[k], utils.decibelstonum(utils.numtodecibels(state)-ajustStep))
-else
-self.setValue(items[k], 0)
-end
-else
 state = prepareUserData.db.process(answer, state)
 if state then
 self.setValue(items[k], state)
 end
 end
-end
-message(self:get())
 else
 local state = self.getValue(items)
-if action == actions.set.increase then
-if state < utils.decibelstonum(maxDBValue) then
-self.setValue(items, utils.decibelstonum(utils.numtodecibels(state)+ajustStep))
-else
-self.setValue(items, utils.decibelstonum(maxDBValue))
-message("maximum volume.")
-end
-elseif action == actions.set.decrease then
-if utils.numtodecibels(state) ~= "-inf" then
-self.setValue(items, utils.decibelstonum(utils.numtodecibels(state)-ajustStep))
-else
-self.setValue(items, 0)
-message("Minimum volume.")
-end
-else
 local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
@@ -410,9 +399,6 @@ reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Proper
 return ""
 end
 end
-message(self:get())
-end
-return message
 end
 
 -- mute methods
@@ -436,8 +422,7 @@ end
 return message
 end
 
-function muteItemProperty:set(action)
-if action == actions.set.toggle then
+function muteItemProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local mutedItems, notMutedItems = 0, 0
@@ -471,8 +456,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 -- Loop source methods
 local loopSourceProperty = {}
@@ -495,8 +478,7 @@ end
 return message
 end
 
-function loopSourceProperty:set(action)
-if action == actions.set.toggle then
+function loopSourceProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local loopedItems, notLoopedItems = 0, 0
@@ -529,8 +511,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 -- All takes play methods
 local itemAllTakesPlayProperty = {}
@@ -553,8 +533,7 @@ end
 return message
 end
 
-function itemAllTakesPlayProperty:set(action)
-if action == actions.set.toggle then
+function itemAllTakesPlayProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local tkPlayItems, tkNotPlayItems = 0, 0
@@ -587,8 +566,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 
 
@@ -606,6 +583,14 @@ return string.format("Unknown item timebase mode %u, please report about via Git
 end
 })
 
+function timebaseProperty.getValue(item)
+return reaper.GetMediaItemInfo_Value(item, "C_BEATATTACHMODE")
+end
+
+function timebaseProperty.setValue(item, state)
+reaper.SetMediaItemInfo_Value(item, "C_BEATATTACHMODE", state)
+end
+
 function timebaseProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to choose the desired time base mode for selected item.", "Adjustable, performable")
@@ -616,70 +601,45 @@ message{label="Timebase"}
 if type(items) == "table" then
 message(composeMultipleItemMessage(function(item) return reaper.GetMediaItemInfo_Value(item, "C_BEATATTACHMODE") end, self.states, 1))
 else
-local state = reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")
+local state = self.getValue(items)
 message{objectId=getItemID(items), value=self.states[state+1]}
 end
 return message
 end
 
-function timebaseProperty:set(action)
+function timebaseProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.increase then
-ajustingValue = 1
-elseif action == actions.set.decrease then
-ajustingValue = -1
-elseif action == actions.set.perform then
-ajustingValue = -1
-else
-return "Unsupported action."
-end
 if type(items) == "table" then
-if action then
 local st = {0, 0, 0, 0}
-for k = 1, #items do
-local state = reaper.GetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE")
+for _, item in ipairs(items) do
+local state = self.getValue(item)
 st[state+2] = st[state+2]+1
 end
 local state
-if math.max(st[1], st[2], st[3], st[4]) == #items then
-state = reaper.GetMediaItemInfo_Value(items[1], "C_BEATATTACHMODE")
-if self.states[(state+ajustingValue)+1] and state ~= 0 then
-state = state+ajustingValue
-elseif state== 0 then
-state = state+ajustingValue
-state = state+ajustingValue
-end
-else
-state = 0
-end
-message(string.format("Set selected items timebase to %s.", self.states[state+1]))
-for k = 1, #items do
-reaper.SetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE", state)
-end
-else
-message(string.format("Set selected items timebase to %s.", self.states[0]))
-for k = 1, #items do
-reaper.SetMediaItemInfo_Value(items[k], "C_BEATATTACHMODE", -1)
-end
-end
-else
-local state = reaper.GetMediaItemInfo_Value(items, "C_BEATATTACHMODE")
-if action == actions.set.increase or action == actions.set.decrease then
-if state+ajustingValue == 0 then
-state = state+ajustingValue
--- LUA doesn't defines the non-ordered arrays, so the method like in Tracks willn't works
-elseif state+ajustingValue > 2 then
-message("No more next property values. ")
-elseif state+ajustingValue < -1 then
-message("No more previous property values. ")
-else
-state = state+ajustingValue
+if math.max(st[1], st[2], st[3], st[4]) == #tracks then
+state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
+-- We have to patch our states metatable to avoid always existing values
+self.states = setmetatable(self.states, {})
+if self.states[state+direction]  then
+state = state+direction
 end
 else
 state = -1
 end
-reaper.SetMediaItemInfo_Value(items, "C_BEATATTACHMODE", state)
+message(string.format("Set selected tracks timebase to %s.", self.states[state+1]))
+for _, item in ipairs(items) do
+self.setValue(item, state)
+end
+else
+local state = self.getValue(items)
+if state+direction < -1 then
+message("No more previous property values. ")
+elseif state+direction > #self.states-1 then
+message("No more next property values. ")
+else
+state = state+direction
+end
+self.setValue(items, state)
 end
 message(self:get())
 return message
@@ -706,8 +666,7 @@ end
 return message
 end
 
-function autoStretchProperty:set(action)
-if action == actions.set.toggle then
+function autoStretchProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local stretchedItems, notStretchedItems = 0, 0
@@ -740,8 +699,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 -- Snap offset methods
 local itemSnapOffsetProperty  = {}
@@ -773,27 +730,17 @@ end
 return message
 end
 
-function itemSnapOffsetProperty:set(action)
+function itemSnapOffsetProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == actions.set.decrease then
+if direction == actions.set.decrease.direction then
 ajustingValue = -ajustingValue
-elseif action == actions.set.increase then
--- This is just a trap for unsupported action fix
-elseif action == actions.set.perform then
-message("Remove the snap offset.")
-else
-return "Unsupported action"
-end
+end	
 if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
-if action == actions.set.increase or action == actions.set.decrease then
 if (state+ajustingValue) >= 0 then
 state = state+ajustingValue
-else
-state = 0.000
-end
 else
 state = 0.000
 end
@@ -801,15 +748,11 @@ self.setValue(items[k], state)
 end
 else
 local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
 if (state+ajustingValue) >= 0.000 then
 state = state+ajustingValue
 else
 state = 0.000
 message("Minimum snap offset time. ")
-end
-else
-state = 0.000
 end
 self.setValue(items, state)
 end
@@ -817,6 +760,19 @@ message(self:get())
 return message
 end
 
+function itemSnapOffsetProperty:set_perform()
+local message = initOutputMessage()
+if type(tracks) == "table" then
+message("Remove snap offset for selected items. ")
+for _, item in ipairs(items) do
+self.setValue(item, 0.000)
+end
+else	
+self.setValue(items, 0.000)
+end	
+message(self:get())
+return message
+end
 
 -- Item group methods
 -- For now, this property has been registered in visual layout section. Really, it influences on all items in the same group: all controls will be grouped and when an user changes any control slider, all other items changes the value too.
@@ -855,16 +811,9 @@ end
 return message
 end
 
-function groupingProperty:set(action)
+function groupingProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-else
-return "This property adjustable only."
-end
+local ajustingValue = direction
 if type(items) == "table" then
 local state = self.getValue(items[1])
 if state+ajustingValue > 0 then
@@ -885,14 +834,19 @@ end
 end
 else
 local state = self.getValue(items)
+message(self:get())
 if state+ajustingValue > 0 then
 self.setValue(items, state+ajustingValue)
-message{label="Set to group", objectId=getItemID(items), value=tostring(self.getValue(items))}
+message:clearLabel()
+message:clearValue()
+message{label="Set to group", value=string.format("%u", self.getValue(items))}
 elseif state+ajustingValue == 0 then
 self.setValue(items, 0)
-message(("%s not in a group"):format(getItemID(items)))
+message:clearLabel()
+message:clearValue()
+message{value="Not in a group"}
 elseif state+ajustingValue < 0 then
-message("No more group in this direction")
+message("No more group in this direction. ")
 end
 end
 return message
@@ -941,16 +895,9 @@ end
 return message
 end
 
-function fadeinShapeProperty:set(action)
+function fadeinShapeProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-else
-return "This property adjustable only."
-end
+local ajustingValue = direction
 if type(items) == "table" then
 local st = {0, 0, 0, 0, 0, 0, 0}
 for k = 1, #items do
@@ -966,20 +913,17 @@ end
 else
 state = 1
 end
-message(string.format("Set selected items fadein shapes to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
 else
 local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
 if state+ajustingValue > 6 then
 message("No more next property values. ")
 elseif state+ajustingValue < 0 then
 message("No more previous property values. ")
 else
 state = state+ajustingValue
-end
 end
 self.setValue(items, state)
 end
@@ -1015,14 +959,39 @@ end
 return message
 end
 
-function  fadeinLenProperty:set(action)
+function  fadeinLenProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == actions.set.decrease then
+if direction == actions.set.decrease.direction then
 ajustingValue = -ajustingValue
-elseif action == actions.set.increase then
--- do nothing
-elseif action == actions.set.perform then
+end
+if type(items) == "table" then
+for k = 1, #items do
+local state = self.getValue(items[k])
+if (state+ajustingValue) >= 0 then
+state = state+ajustingValue
+else
+state = 0.000
+end
+self.setValue(items[k], state)
+end
+else
+local state = self.getValue(items)
+if (state+ajustingValue) >= 0.000 then
+state = state+ajustingValue
+else
+state = 0.000
+message("Minimum length. ")
+end
+self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+function fadeinLenProperty:set_perform()
+local message = initOutputMessage()
+local ajustingValue
 local result, str = reaper.get_config_var_string("deffadelen")
 if result == true then
 ajustingValue = utils.round(tonumber(str), 3)
@@ -1030,36 +999,12 @@ message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
 end
-else
-return "Unsupported action"
-end
 if type(items) == "table" then
 for k = 1, #items do
-local state = self.getValue(items[k])
-if action == actions.set.increase or action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-else
-state = 0.000
+self.setValue(items[k], ajustingValue)
 end
 else
-state = ajustingValue
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
-if (state+ajustingValue) >= 0.000 then
-state = state+ajustingValue
-else
-state = 0.000
-message("Minimum length. ")
-end
-else
-state = ajustingValue
-end
-self.setValue(items, state)
+self.setValue(items, ajustingValue)
 end
 message(self:get())
 return message
@@ -1105,37 +1050,27 @@ end
 return message
 end
 
-function  fadeinDirProperty:set(action)
+function  fadeinDirProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 ajustingValue = -utils.percenttonum(ajustingValue)
-elseif action == actions.set.perform then
-message("reset, ")
-ajustingValue = nil
-else
-return "Unsupported action"
 end
 if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
-if ajustingValue then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
 state = -1
 end
-else
-state = 0
-end
 self.setValue(items[k], state)
 end
 else
 local state = self.getValue(items)
-if ajustingValue then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -1144,10 +1079,21 @@ elseif state < -1 then
 state = -1
 message("Left curve boundary. ")
 end
-else
-state = 0.00
-end
 self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+function fadeinDirProperty:set_perform()
+local message = initOutputMessage()
+message(string.format("Reset to %s. ", self.states[0]))
+if type(items) == "table" then
+for _, item in ipairs(items) do
+self.setValue(item, 0)
+end
+else
+self.setValue(items, 0)
 end
 message(self:get())
 return message
@@ -1182,51 +1128,7 @@ end
 return message
 end
 
-function fadeoutShapeProperty:set(action)
-local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-else
-return "This property adjustable only."
-end
-if type(items) == "table" then
-local st = {0, 0, 0, 0, 0, 0, 0}
-for k = 1, #items do
-local state = self.getValue(items[k])
-st[state+1] = st[state+1]+1
-end
-local state
-if math.max(st[1], st[2], st[3], st[4], st[5], st[6], st[7]) == #items then
-state = self.getValue(items[1])
-if self.states[(state+ajustingValue)] then
-state = state+ajustingValue
-end
-else
-state = 1
-end
-message(string.format("Set selected items fadeout shapes to %s.", self.states[state]))
-for k = 1, #items do
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
-if state+ajustingValue > 6 then
-message("No more next property values. ")
-elseif state+ajustingValue < 0 then
-message("No more previous property values. ")
-else
-state = state+ajustingValue
-end
-end
-self.setValue(items, state)
-end
-message(self:get())
-return message
-end
+fadeoutShapeProperty.set_adjust = fadeinShapeProperty.set_adjust
 
 -- fadeout manual length methods
 local fadeoutLenProperty = {}
@@ -1256,55 +1158,8 @@ end
 return message
 end
 
-function  fadeoutLenProperty:set(action)
-local message = initOutputMessage()
-local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == actions.set.decrease then
-ajustingValue = -ajustingValue
-elseif action == actions.set.increase then
--- do nothing
-elseif action == actions.set.perform then
-local result, str = reaper.get_config_var_string("deffadelen")
-if result == true then
-ajustingValue = utils.round(tonumber(str), 3)
-message("Restore default value, ")
-else
-return "No default fade length value has read in preferences."
-end
-else
-return "Unsupported action"
-end
-if type(items) == "table" then
-for k = 1, #items do
-local state = self.getValue(items[k])
-if action == actions.set.increase or action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-else
-state = 0.000
-end
-else
-state = ajustingValue
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
-if (state+ajustingValue) >= 0.000 then
-state = state+ajustingValue
-else
-state = 0.000
-message("Minimum length. ")
-end
-else
-state = ajustingValue
-end
-self.setValue(items, state)
- end
-message(self:get())
-return message
-end
+fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
+fadeoutLenProperty.set_perform = fadeinLenProperty.set_perform
 
 -- fadeout curve methods
 local fadeoutDirProperty = {}
@@ -1336,53 +1191,8 @@ end
 return message
 end
 
-function  fadeoutDirProperty:set(action)
-local message = initOutputMessage()
-local ajustingValue = config.getinteger("percentStep", 1)
-if action == actions.set.increase then
-ajustingValue = utils.percenttonum(ajustingValue)
-elseif action == actions.set.decrease then
-ajustingValue = -utils.percenttonum(ajustingValue)
-elseif action == actions.set.perform then
-message("reset, ")
-ajustingValue = nil
-else
-return "Unsupported action"
-end
-if type(items) == "table" then
-for k = 1, #items do
-local state = self.getValue(items[k])
-if ajustingValue then
-state = utils.round((state+ajustingValue), 3)
-if state >= 1 then
-state = 1
-elseif state <= -1 then
-state = -1
-end
-else
-state = 0
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if ajustingValue then
-state = utils.round((state+ajustingValue), 3)
-if state > 1 then
-state = 1
-message("Right curve boundary. ")
-elseif state < -1 then
-state = -1
-message("Left curve boundary. ")
-end
-else
-state = 0.00
-end
-self.setValue(items, state)
-end
-message(self:get())
-return message
-end
+fadeoutDirProperty.set_adjust = fadeinDirProperty.set_adjust
+fadeoutDirProperty.set_perform = fadeinDirProperty.set_perform
 
 -- Fadein automatic length
 local fadeinAutoLenProperty = {}
@@ -1425,14 +1235,11 @@ end
 return message
 end
 
-function  fadeinAutoLenProperty:set(action)
+fadeinAutoLenProperty.set_adjust = fadeinLenProperty.set_adjust
+
+function  fadeinAutoLenProperty:set_perform()
 local message = initOutputMessage()
-local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == actions.set.decrease then
-ajustingValue = -ajustingValue
-elseif action == actions.set.increase then
--- do nothing
-elseif action == actions.set.perform then
+local ajustingValue
 local result, str = reaper.get_config_var_string("defsplitxfadelen")
 if result == true then
 ajustingValue = utils.round(tonumber(str), 3)
@@ -1440,53 +1247,12 @@ message("Restore default value, ")
 else
 return "No default fade length value has read in preferences."
 end
-else
-return "Unsupported action"
-end
 if type(items) == "table" then
 for k = 1, #items do
-local state = self.getValue(items[k])
-if action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-elseif (state+ajustingValue) < 0 then
-state = -1
-elseif state< -1 then
-state = -1
-message("Minimum length. ")
-end
-elseif action == actions.set.increase then
-if (state+ajustingValue) < 0 then
-state = 0.000
-else
-state = state+ajustingValue
+self.setValue(items[k], ajustingValue)
 end
 else
-state = ajustingValue
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-elseif (state+ajustingValue) < 0 then
-state = -1
-elseif state< -1 then
-state = -1
-message("Minimum length. ")
-end
-elseif action == actions.set.increase then
-if (state+ajustingValue) < 0 then
-state = 0.000
-else
-state = state+ajustingValue
-end
-else
-state = ajustingValue
-end
-self.setValue(items, state)
+self.setValue(items, ajustingValue)
 end
 message(self:get())
 return message
@@ -1533,72 +1299,9 @@ end
 return message
 end
 
-function  fadeoutAutoLenProperty:set(action)
-local message = initOutputMessage()
-local ajustingValue = config.getinteger("timeStep", 0.001)
-if action == actions.set.decrease then
-ajustingValue = -ajustingValue
-elseif action == actions.set.increase then
--- do nothing
-elseif action == actions.set.perform then
-local result, str = reaper.get_config_var_string("defsplitxfadelen")
-if result == true then
-ajustingValue = utils.round(tonumber(str), 3)
-message("Restore default value, ")
-else
-return "No default fade length value has read in preferences."
-end
-else
-return "Unsupported action"
-end
-if type(items) == "table" then
-message("Items automatic fadeout lengths: ")
-for k = 1, #items do
-local state = self.getValue(items[k])
-if action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-elseif (state+ajustingValue) < 0 then
-state = -1
-elseif state< -1 then
-state = -1
-end
-elseif action == actions.set.increase then
-if (state+ajustingValue) < 0 then
-state = 0.000
-else
-state = state+ajustingValue
-end
-else
-state = ajustingValue
-end
-self.setValue(items[k], state)
-end
-else
-local state = self.getValue(items)
-if action == actions.set.decrease then
-if (state+ajustingValue) >= 0 then
-state = state+ajustingValue
-elseif (state+ajustingValue) < 0 then
-state = -1
-elseif state< -1 then
-state = -1
-message("Minimum length. ")
-end
-elseif action == actions.set.increase then
-if (state+ajustingValue) < 0 then
-state = 0.000
-else
-state = state+ajustingValue
-end
-else
-state = ajustingValue
-end
-self.setValue(items, state)
-end
-message(self:get())
-return message
-end
+fadeoutAutoLenProperty.set_adjust = fadeinAutoLenProperty.set_adjust
+fadeoutAutoLenProperty.set_perform = fadeinAutoLenProperty.set_perform
+
 
 -- active take methods
 local activeTakeProperty = {}
@@ -1650,16 +1353,13 @@ end
 return message
 end
 
-function activeTakeProperty:set(action)
+function activeTakeProperty:set_adjust(direction)
 local message = initOutputMessage()
-if action ~= actions.set.increase and action ~= actions.set.decrease then
-return "This property is adjustable only."
-end
 if type(items) == "table" then
 for k = 1, #items do
 local state = self.getValue(items[k])
 local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 local takesCount = reaper.CountTakes(items[k])
 for i = idx+1, takesCount do
 local curTake = reaper.GetTake(items[k], i)
@@ -1674,7 +1374,7 @@ end
 break
 end
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 for i = idx-1, -1, -1 do
 local curTake = reaper.GetTake(items[k], i)
 if curTake then
@@ -1694,7 +1394,7 @@ end
 else
 local state = self.getValue(items)
 local idx = reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER")
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 local takesCount = reaper.CountTakes(items)
 for i = idx+1, takesCount do
 local curTake = reaper.GetTake(items, i)
@@ -1710,7 +1410,7 @@ end
 break
 end
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 for i = idx-1, -1, -1 do
 local curTake = reaper.GetTake(items, i)
 if curTake then
@@ -1769,15 +1469,12 @@ end
 return message
 end
 
-function takeVolumeProperty:set(action)
+takeVolumeProperty.set_adjust = itemVolumeProperty.set_adjust
+function takeVolumeProperty:set_perform()
 local message = initOutputMessage()
-local ajustStep = config.getinteger("dbStep", 0.1)
-local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if type(items) == "table" then
-local retval, answer = nil, nil
+local retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume per every active take of selected item.\nnormalize common gain (or ncg or nc) - will normalize active takes of selected items to common gain.', representation.db[self.getValue(items[1])])
 local normCmdExecuted = false
-if action == actions.set.perform then
-retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume per every active take of selected item.\nnormalize common gain (or ncg or nc) - will normalize active takes of selected items to common gain.', representation.db[self.getValue(items[1])])
 if not retval then
 return "Canceled"
 end
@@ -1790,26 +1487,8 @@ message("Normalize items takes volume")
 reaper.Main_OnCommand(40108, 0)
 normCmdExecuted = true
 end
-end
-for k = 1, #items do
-if action == actions.set.increase then
-local state = self.getValue(items[k])
-if state < utils.decibelstonum(maxDBValue) then
-state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
-else
-state = utils.decibelstonum(maxDBValue)
-end
-self.setValue(items[k], state)
-elseif action == actions.set.decrease then
-local state = self.getValue(items[k])
-if utils.numtodecibels(state) ~= -150 then
-state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
-else
-state = 0
-end
-self.setValue(items[k], state)
-elseif action == actions.set.perform then
 if not normCmdExecuted then
+for k = 1, #items do
 local state = self.getValue(items[k])
 state = prepareUserData.db.process(answer, state)
 if state then
@@ -1817,26 +1496,8 @@ self.setValue(items[k], state)
 end
 end
 end
-end
 else
 local state = self.getValue(items)
-if action == actions.set.increase then
-if state < utils.decibelstonum(maxDBValue) then
-state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
-else
-state = utils.decibelstonum(maxDBValue)
-message("maximum volume. ")
-end
-self.setValue(items, state)
-elseif action == actions.set.decrease then
-if utils.numtodecibels(state) ~= -150.00 then
-state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
-else
-state = 0
-message("Minimum volume. ")
-end
-self.setValue(items, state)
-else
 local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
 if not retval then
 return "Canceled"
@@ -1851,7 +1512,6 @@ self.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return ""
-end
 end
 end
 end
@@ -1890,41 +1550,27 @@ end
 return message
 end
 
-function takePanProperty:set(action)
+function takePanProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 ajustingValue = utils.percenttonum(ajustingValue) or 0.01
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 ajustingValue = -utils.percenttonum(ajustingValue) or -0.01
 end
 if type(items) == "table" then
-local retval, answer = nil, nil
-if action == actions.set.perform then
-retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1, prepareUserData.pan.formatCaption, representation.pan[self.getValue(items[1])])
-if not retval then
-return "Canceled"
-end
-end
 for k = 1, #items do
 local state = self.getValue(items[k])
-if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state >= 1 then
 state = 1
 elseif state <= -1 then
 state = -1
 end
-else
-state = prepareUserData.pan.process(answer, state)
-end
-if state then
 self.setValue(items[k], state)
-end
 end
 else
 local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
 state = utils.round((state+ajustingValue), 3)
 if state > 1 then
 state = 1
@@ -1933,13 +1579,32 @@ elseif state < -1 then
 state = -1
 message("Left boundary. ")
 end
+self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+function takePanProperty:set_perform()
+if type(items) == "table" then
+local retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1, prepareUserData.pan.formatCaption, representation.pan[self.getValue(items[1])])
+if not retval then
+return "Canceled"
+end
+for k = 1, #items do
+local state = self.getValue(items[k])
+state = prepareUserData.pan.process(answer, state)
+if state then
+self.setValue(items[k], state)
+end
+end
 else
+local state = self.getValue(items)
 local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
 return "Canceled"
 end
 state = prepareUserData.pan.process(answer, state)
-end
 if state then
 self.setValue(items, state)
 else
@@ -1947,8 +1612,6 @@ reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Proper
 return ""
 end
 end
-message(self:get())
-return message
 end
 
 -- Take phase methods
@@ -1996,8 +1659,7 @@ end
 return message
 end
 
-function takePhaseProperty:set(action)
-if action == actions.set.toggle then
+function takePhaseProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local phasedItems, notphasedItems = 0, 0
@@ -2028,8 +1690,6 @@ self.setValue(items, utils.nor(self.getValue(items)))
 end
 message(self:get())
 return message
-end
-return "This property is toggleable only."
 end
 
 -- Take channel mode methods
@@ -2083,18 +1743,10 @@ end
 return message
 end
 
-function takeChannelModeProperty:set(action)
+function takeChannelModeProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-elseif action ~= actions.set.perform then
-return "Unsupported action"
-end
+local ajustingValue = direction
 if type(items) == "table" then
-if action == actions.set.next and action == actions.set.prev then
 local lastState = self.getValue(items[1])
 for k = 1, #items do
 local state = self.getValue(items[k])
@@ -2110,28 +1762,14 @@ state = self.getValue(items[1])
 if (state+ajustingValue) >= 0 and self.states[(state+ajustingValue)] then
 state = state+ajustingValue
 end
-elseif action == actions.set.perform then
-if state >= 0 and state < 5 then
-state = 5
-elseif state >= 5 and state < 67 then
-state = 67
-elseif state >= 67 then
+else
 state = 0
-end
-end
-message(string.format("Set selected items active takes channel mode to %s.", self.states[state]))
+end	
 for k = 1, #items do
 self.setValue(items[k], state)
 end
 else
-message(string.format("Set selected Takes channel mode to %s.", self.states[0]))
-for k = 1, #items do
-self.setValue(items[k], 0)
-end
-end
-else
 local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
 if (state+ajustingValue) > #self.states then
 message("No more next property values. ")
 elseif state+ajustingValue < 0 then
@@ -2139,7 +1777,16 @@ message("No more previous property values. ")
 else
 state = state+ajustingValue
 end
-elseif action == actions.set.perform then
+self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+function takeChannelModeProperty:set_perform()
+local message = initOutputMessage()
+if type(items) == "table" then
+state = self.getValue(items[1])
 if state >= 0 and state < 5 then
 state = 5
 elseif state >= 5 and state < 67 then
@@ -2147,6 +1794,17 @@ state = 67
 elseif state >= 67 then
 state = 0
 end
+for k = 1, #items do
+self.setValue(items[k], state)
+end
+else
+local state = self.getValue(items)
+if state >= 0 and state < 5 then
+state = 5
+elseif state >= 5 and state < 67 then
+state = 67
+elseif state >= 67 then
+state = 0
 end
 self.setValue(items, state)
 end
@@ -2186,18 +1844,21 @@ end
 
 -- I still didn't came up with any algorhythm for encounting the needed step rate, so we will use the REAPER actions.
 -- Seems it's the lightest method for all time of :)
-function takePlayrateProperty:set(action)
+function takePlayrateProperty:set_adjust(direction)
 local message = initOutputMessage()
 local cmds= {
-{[actions.set.decrease]=40520,[actions.set.increase]=40519},
-{[actions.set.decrease]=40518, [actions.set.increase]=40517}
+{[actions.set.decrease.direction]=40520,[actions.set.increase.direction]=40519},
+{[actions.set.decrease.direction]=40518, [actions.set.increase.direction]=40517}
 }
-if action == actions.set.increase or action == actions.set.decrease then
-reaper.Main_OnCommand(cmds[config.getinteger("rateStep", 1)][action], 0)
-else
+reaper.Main_OnCommand(cmds[config.getinteger("rateStep", 1)][direction], 0)
+message(self:get())
+return message
+end
+
+function takePlayrateProperty:set_perform()
+local message = initOutputMessage()
 message("Reset,")
 reaper.Main_OnCommand(40652, 0)
-end
 message(self:get())
 return message
 end
@@ -2232,8 +1893,7 @@ end
 return message
 end
 
-function preserveTakePitchProperty:set(action)
-if action == actions.set.toggle then
+function preserveTakePitchProperty:set_perform()
 local message = initOutputMessage()
 if type(items) == "table" then
 local preservedItems, notpreservedItems = 0, 0
@@ -2265,8 +1925,6 @@ end
 message(self:get())
 return message
 end
-return "This property is toggleable only."
-end
 
 -- Take pitch methods
 local takePitchProperty = {}
@@ -2297,42 +1955,44 @@ end
 return message
 end
 
-function takePitchProperty:set(action)
+function takePitchProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("pitchStep", 1)
-if action == actions.set.decrease then
+if direction == actions.set.decrease.direction then
 ajustingValue = -ajustingValue
 end
 if type(items) == "table" then
-local retval, answer = nil, nil
-if action == actions.set.perform then
-retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1, prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
+for k = 1, #items do
+self.setValue(items[k], self.getValue(items[k])+ajustingValue)
+end
+else
+self.setValue(items, self.getValue(items)+ajustingValue)
+end
+message(self:get())
+return message
+end
+
+function takePitchProperty:set_perform()
+local message = initOutputMessage()
+if type(items) == "table" then
+local retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1, prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
 return "Canceled"
 end
-end
 for k = 1, #items do
 local state = self.getValue(items[k])
-if action == actions.set.increase or action == actions.set.decrease then
-state = state+ajustingValue
-else
 state = prepareUserData.pitch.process(answer, state)
-end
 if state then
 self.setValue(items[k], state)
 end
 end
 else
 local state = self.getValue(items)
-if action == actions.set.increase or action == actions.set.decrease then
-state = state+ajustingValue
-else
 local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
 return "Canceled"
 end
 state = prepareUserData.pitch.process(answer, state)
-end
 if state then
 self.setValue(items, state)
 else
@@ -2394,19 +2054,11 @@ end
 return message
 end
 
-function   takePitchShifterProperty:set(action)
+function   takePitchShifterProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-elseif action ~= actions.set.perform then
-return "Unsupported action"
-end
+local ajustingValue = direction
 if type(items) == "table" then
 local state
-if action ~= nil then
 local lastState = self.getValue(items[1])
 for k = 1, #items do
 local state = self.getValue(items[k])
@@ -2446,16 +2098,13 @@ end
 elseif ajustingValue == 0 then
 state = -1
 end
-elseif action  == nil then
-state = -1
-end
 message(string.format("Set selected items active takes pitch shifter to %s.", self.states[state]))
 for k = 1, #items do
 self.setValue(items[k], state)
 end
 else
 local state = self.getValue(items)
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if state >= 0 then
 for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, #self.states+1 do
 if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
@@ -2469,7 +2118,7 @@ end
 else
 state = reaper.BR_Win32_MAKELONG(0, 0)
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if state >= 0 then
 for i = reaper.BR_Win32_HIWORD(state)+ajustingValue, -2, -1 do
 if i >= 0 then
@@ -2486,11 +2135,22 @@ end
 else
 message("No more previous property values. ")
 end
-else
-state = -1
-message("Reset, ")
 end
 self.setValue(items, state)
+end
+message(self:get())
+return message
+end
+
+function takePitchShifterProperty:set_perform()
+local message = initOutputMessage()
+message(string.format("Reset to %s. ", self.states[-1]))
+if type(items) == "table" then
+for k = 1, #items do
+self.setValue(items[k], -1)
+end
+else
+self.setValue(items, -1)
 end
 message(self:get())
 return message
@@ -2533,19 +2193,11 @@ end
 return message
 end
 
-function   takePitchShifterModeProperty:set(action)
+function   takePitchShifterModeProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue
-if action == actions.set.next then
-ajustingValue = 1
-elseif action == actions.set.prev then
-ajustingValue = -1
-else
-return "This property adjustable only."
-end
+local ajustingValue = direction
 if type(items) == "table" then
 local state
-if action ~= nil then
 local lastState = self.getValue(items[1])
 for k = 1, #items do
 local state = self.getValue(items[k])
@@ -2560,12 +2212,12 @@ lastState = state
 end
 state = self.getValue(items[1])
 if ajustingValue ~= 0 then
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 local futureState = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)+1, reaper.BR_Win32_HIWORD(state))
 if self.states[futureState] then
 state = futureState
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if reaper.BR_Win32_LOWORD(state)-1 >= 0 then
 state = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)-1, reaper.BR_Win32_HIWORD(state))
 end
@@ -2577,20 +2229,19 @@ message(string.format("Set selected items active takes pitch shifter modes to %s
 for k = 1, #items do
 self.setValue(items[k], state)
 end
-end
 else
 local state = self.getValue(items)
 if state == -1 then
 return string.format("The property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up.", takePitchShifterProperty.states[-1])
 end
-if action == actions.set.increase then
+if direction == actions.set.increase.direction then
 local futureState = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)+1, reaper.BR_Win32_HIWORD(state))
 if self.states[futureState] then
 state = futureState
 else
 message("No more next property values. ")
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if reaper.BR_Win32_LOWORD(state)-1 >= 0 then
 state = reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state)-1, reaper.BR_Win32_HIWORD(state))
 else
@@ -2624,14 +2275,11 @@ message{objectId=getItemID(item)}
 return message
 end
 
-function osaraParamsProperty:set(action)
-if action == actions.set.perform then
+function osaraParamsProperty:set_perform()
 reaper.SetCursorContext(1, nil)
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
 return
 end	
-return "This property is performable only."
-end
 
 
 -- Stretch markers realisation
