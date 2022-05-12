@@ -230,12 +230,13 @@ end
 return message
 end
 
-function folderStateProperty:set_increase()
+function folderStateProperty:set_adjust(direction)
 if type(tracks) == "table"then
 return "No group action for this property."
 end	
 local message = initOutputMessage()
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
+if direction == actions.set.increase.direction then
 if state == 0 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH", 1)
 elseif state == 1 then
@@ -251,20 +252,7 @@ if reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH") == state then
 message("No more next folder depth. ")
 end
 end
-message(self:get())
-state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-if state == 1 then
-message({value=". Toggle this property now to control the folder compacted view"})
-end
-return message
-end
-
-function folderStateProperty:set_decrease()
-if type(tracks) == "table"then
-return "No group action for this property."
-end	
-local message = initOutputMessage()
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
+elseif direction == actions.set.decrease.direction then
 if state == 0 then
 message("No more previous inner state. ")
 elseif state == 1 then
@@ -274,6 +262,7 @@ reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH", 1)
 elseif state < 0 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH", state+1)
 end
+end	
 message(self:get())
 state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
 if state == 1 then
@@ -301,16 +290,13 @@ else
 return "This track is not a folder."
 end
 message(self:get())
-state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
-if state == 1 then
-message({value=". Toggle this property now to control the folder compacted view"})
-end
 return message
 end
 
 local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty(volumeProperty)
 parentLayout.recordingLayout:registerProperty(volumeProperty)
+
 function volumeProperty:get()
 local message = initOutputMessage()
 message:initType("Adjust this property to set the desired volume value for selected track.", "Adjustable")
@@ -326,61 +312,39 @@ end
 return message
 end
 
-function volumeProperty:set_decrease()
+function volumeProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
+if direction == actions.set.decrease.direction then
+ajustStep = -ajustStep
+end	
 if type(tracks) == "table" then
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
-if state > 0 then
-state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
-else
-state = 0
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
+if utils.numtodecibels(state) < -150.0 then
+state = utils.decibelstonum(-150.0)
+elseif utils.numtodecibels(state) > utils.numtodecibels(maxDBValue) then
+state = utils.numtodecibels(maxDBValue)
 end
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_VOL", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-if utils.numtodecibels(state) ~= "-inf" then
-state = utils.decibelstonum(utils.numtodecibels(state)-ajustStep)
-else
-state = 0
+state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
+if utils.numtodecibels(state) < -150.0 then
+state = utils.decibelstonum(-150.0)
 message("Minimum volume. ")
-end
-reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
-end
- message(self:get())
-return message
-end
-
-function volumeProperty:set_increase()
-local message = initOutputMessage()
-local ajustStep = config.getinteger("dbStep", 0.1)
-local maxDBValue = config.getinteger("maxDBValue", 12.0)
-if type(tracks) == "table" then
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_VOL")
-if state < utils.decibelstonum(maxDBValue) then
-state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
-else
-state = utils.decibelstonum(maxDBValue)
-end
-reaper.SetMediaTrackInfo_Value(tracks[k], "D_VOL", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-if state < utils.decibelstonum(maxDBValue) then
-state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
-else
+elseif utils.numtodecibels(state) > maxDBValue then
 state = utils.decibelstonum(maxDBValue)
 message("maximum volume. ")
-end
+end	
 reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
 end
  message(self:get())
 return message
-end	
+end
 
 volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
 
@@ -466,16 +430,21 @@ end
 return message
 end
 
-function panProperty:set_decrease()
+function panProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
 ajustingValue = -utils.percenttonum(ajustingValue)
+if direction == actions.set.decrease.direction then
+ajustingValue = -ajustingValue
+end
 if type(tracks) == "table" then
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
 state = utils.round((state+ajustingValue), 3)
 if state <= -1 then
 state = -1
+elseif state > 1 then
+state = 1
 end
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_PAN", state)
 end
@@ -485,30 +454,7 @@ state = utils.round((state+ajustingValue), 3)
 if state < -1 then
 state = -1
 message("Left boundary. ")
-end
-reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
-end
-message(self:get())
-return message
-end
-
-function panProperty:set_increase()
-local message = initOutputMessage()
-local ajustingValue = config.getinteger("percentStep", 1)
-ajustingValue = utils.percenttonum(ajustingValue)
-if type(tracks) == "table" then
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
-state = utils.round((state+ajustingValue), 3)
-if state >= 1 then
-state = 1
-end	
-reaper.SetMediaTrackInfo_Value(tracks[k], "D_PAN", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-state = utils.round((state+ajustingValue), 3)
-if state > 1 then
+elseif state > 1 then
 state = 1
 message("Right boundary. ")
 end
@@ -600,16 +546,22 @@ end
 return message
 end
 
-function widthProperty:set_decrease()
+function widthProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
+if direction == actions.set.decrease.direction then
 ajustingValue = -utils.percenttonum(ajustingValue)
+elseif direction == actions.set.increase.direction then
+ajustingValue = utils.percenttonum(ajustingValue)
+end
 if type(tracks) == "table" then
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
 state = utils.round((state+ajustingValue), 3)
-if state <= -1 then
+if state < -1 then
 state = -1
+elseif state > 1 then
+state = 1
 end
 reaper.SetMediaTrackInfo_Value(tracks[k], "D_WIDTH", state)
 end
@@ -619,30 +571,7 @@ state = utils.round((state+ajustingValue), 3)
 if state < -1 then
 state = -1
 message("Minimum width. ")
-end
-reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
-end
- message(self:get())
-return message
-end
-
-function widthProperty:set_increase()
-local message = initOutputMessage()
-local ajustingValue = config.getinteger("percentStep", 1)
-ajustingValue = utils.percenttonum(ajustingValue)
-if type(tracks) == "table" then
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
-state = utils.round((state+ajustingValue), 3)
-if state >= 1 then
-state = 1
-end
-reaper.SetMediaTrackInfo_Value(tracks[k], "D_WIDTH", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-state = utils.round((state+ajustingValue), 3)
-if state > 1 then
+elseif state > 1 then
 state = 1
 message("Maximum width. ")
 end
@@ -651,6 +580,7 @@ end
  message(self:get())
 return message
 end
+
 
 function widthProperty:set_perform()
 local message = initOutputMessage()
@@ -813,7 +743,7 @@ message(self:get())
 return message
 end
 
-function soloProperty:set_decrease()
+function soloProperty:set_adjust(direction)
 local message = initOutputMessage()
 if type(tracks) == "table" then
 local allIsSame = true
@@ -830,8 +760,8 @@ end
 local state = nil
 if allIsSame == true then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
-if (state-1) >= 0 then
-state = state-1
+if (state+direction) >= 0 and (state+direction) <= #self.states then
+state = state+direction
 end
 else
 state = 0
@@ -842,52 +772,14 @@ reaper.SetMediaTrackInfo_Value(track, "I_SOLO", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
-if (state-1) >= 0 then
-reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state-1)
-else
-message"No more previous property values. "
-end
-end
-message(self:get())
-return message
-end
-
-function soloProperty:set_increase()
-local message = initOutputMessage()
-if type(tracks) == "table" then
-local allIsSame = true
-for idx, track in ipairs(tracks) do
-local state = reaper.GetMediaTrackInfo_Value(track, "I_SOLO")
-if idx > 1 then
-local prevstate = reaper.GetMediaTrackInfo_Value(tracks[idx-1], "I_SOLO")
-if state ~= prevstate then
-allIsSame = false
-break
-end
-end
-end
-local state = nil
-if allIsSame == true then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
-if (state+1) <= 6 then
-state = state+1
-elseif (state+1) >= 2 and (state+1) <= 5 then
-state = 5
-end
-else
-state = 0
-end
-message(string.format("Set all selected tracks solo to %s.", self.states[state]))
-for _, track in ipairs(tracks) do
-reaper.SetMediaTrackInfo_Value(track, "I_SOLO", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
-if (state+1) <= #self.states then
-reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state+1)
-else
+if state+direction > #self.states then
 message"No more next property values. "
+elseif state+direction < 0 then
+message"No more previous property values. "
+else
+state = state+direction
 end
+reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state)
 end
 message(self:get())
 return message
@@ -972,9 +864,8 @@ end
 return message
 end
 
-function recmonitoringProperty:set_decrease()
+function recmonitoringProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue = -1
 if type(tracks) == "table" then
 local st = {0,0,0}
 for k = 1, #tracks do
@@ -984,8 +875,8 @@ end
 local state
 if math.max(st[1], st[2], st[3]) == #tracks then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMON")
-if self.states[state-1] then
-state = state-1
+if self.states[state+direction] then
+state = state+direction
 end
 else
 state = 1
@@ -996,10 +887,12 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMON", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMON")
-if (state-1) < 0 then
+if (state+direction) < 0 then
 message("No more previous property values. ")
+elseif (state+direction) > #self.states then
+message("No more next property values. ")
 else
-state = state-1
+state = state+direction
 end
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECMON", state)
 end
@@ -1007,39 +900,6 @@ message(self:get())
 return message
 end
 
-function recmonitoringProperty:set_increase()
-local message = initOutputMessage()
-if type(tracks) == "table" then
-local st = {0,0,0}
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMON")
-st[state+1] = st[state+1]+1
-end
-local state
-if math.max(st[1], st[2], st[3]) == #tracks then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMON")
-if self.states[state+1] then
-state = state+1
-end
-else
-state = 1
-end
-message(string.format("Set selected tracks monitoring to %s.", self.states[state]))
-for k = 1, #tracks do
-reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMON", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMON")
-if (state+1) > #self.states then
-message("No more next property values. ")
-else
-state = state+1
-end
-reaper.SetMediaTrackInfo_Value(tracks, "I_RECMON", state)
-end
-message(self:get())
-return message
-end
 
 -- Record inputs
 local recInputsProperty = {}
@@ -1232,9 +1092,9 @@ end
 return message
 end
 
-function recInputsProperty:set_decrease()
+function recInputsProperty:set_adjust(direction)
 local message = initOutputMessage()
-local ajustingValue = -1
+local ajustingValue = direction
 if type(tracks) == "table" then
 local lastState = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
 for k = 1, #tracks do
@@ -1248,7 +1108,7 @@ end
 local state
 if ajustingValue ~= 0 then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
-ajustingValue = self.calc(state, -1)
+ajustingValue = self.calc(state, direction)
 if ajustingValue < 8192 and ajustingValue > -2 then
 state = ajustingValue
 end
@@ -1261,50 +1121,19 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECINPUT", state)
 end
 else
 -- The standart method boundaries check when you decrease the record input doesn't works here. Crap!
-local state, oldState = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), -1), reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT")
+local state, oldState = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), direction), reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT")
+if direction == actions.set.decrease.direction then
 if state ~= oldState then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
 else
 message("No more previous property values. ")
 end
-end
-message(self:get())
-return message
-end
-
-function recInputsProperty:set_increase()
-local message = initOutputMessage()
-local ajustingValue = 1
-if type(tracks) == "table" then
-local lastState = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECINPUT")
-if lastState ~= state then
-ajustingValue = 0
-break
-end
-lastState = state
-end
-local state
-if ajustingValue ~= 0 then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
-ajustingValue = self.calc(state, 1)
-if ajustingValue < 8192 and ajustingValue > -2 then
-state = ajustingValue
-end
-else
-state = 0
-end
-message(string.format("Set selected tracks record input to %s.", self.compose(state)))
-for k = 1, #tracks do
-reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECINPUT", state)
-end
-else
-local state = self.calc(reaper.GetMediaTrackInfo_Value(tracks, "I_RECINPUT"), 1)
+elseif direction == actions.set.increase.direction then
 if state < 8192 then
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECINPUT", state)
 else
 message("No more next property values. ")
+end
 end
 end
 message(self:get())
@@ -1384,7 +1213,7 @@ end
 return message
 end
 
-function recmodeProperty:set_decrease()
+function recmodeProperty:set_adjust(direction)
 local message = initOutputMessage()
 if type(tracks) == "table" then
 local st = {0,0,0,0,0,0,0,0,0}
@@ -1397,8 +1226,10 @@ end
 local state
 if math.max(st[1], st[2], st[3], st[4], st[5], st[6], st[7], st[8], st[9]) == #tracks then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMODE")
-if self.states[state-1] then
-state = state-1
+-- We have to patch our states metatable to avoid always existing values
+self.states = setmetatable(self.states, {})
+if self.states[state+direction] then
+state = state+direction
 end
 else
 state = 0
@@ -1409,10 +1240,12 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMODE", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMODE")
-if (state-1) < 0 then
+if (state+direction) < 0 then
 message("No more previous property values. ")
+elseif (state+direction) > #self.states then
+message("No more next property values. ")
 else
-state = state-1
+state = state+direction
 end
 reaper.SetMediaTrackInfo_Value(tracks, "I_RECMODE", state)
 end
@@ -1420,41 +1253,6 @@ message(self:get())
 return message
 end
 
-function recmodeProperty:set_increase()
-local message = initOutputMessage()
-if type(tracks) == "table" then
-local st = {0,0,0,0,0,0,0,0,0}
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMODE")
-if st[state+1] then
-st[state+1] = st[state+1]+1
-end
-end
-local state
-if math.max(st[1], st[2], st[3], st[4], st[5], st[6], st[7], st[8], st[9]) == #tracks then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMODE")
-if self.states[state+1] then
-state = state+1
-end
-else
-state = 0
-end
-message(string.format("Set selected tracks record mode to %s.", self.states[state]))
-for k = 1, #tracks do
-reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMODE", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMODE")
-if (state+1) > #self.states then
-message("No more next property values. ")
-else
-state = state+1
-end
-reaper.SetMediaTrackInfo_Value(tracks, "I_RECMODE", state)
-end
-message(self:get())
-return message
-end
 
 -- Automation mode methods
 local automationModeProperty = {}
@@ -1485,7 +1283,7 @@ end
 return message
 end
 
-function automationModeProperty:set_decrease()
+function automationModeProperty:set_adjust(direction)
 local message = initOutputMessage()
 if type(tracks) == "table" then
 local st = {0,0,0,0,0}
@@ -1498,8 +1296,10 @@ end
 local state
 if math.max(st[1], st[2], st[3], st[4], st[5]) == #tracks then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_AUTOMODE")
-if state-1 >= 0 then
-state = state+ajustingValue
+-- We have to patch our states metatable to avoid always existing values
+self.states = setmetatable(self.states, {})
+if self.states[state+direction]  then
+state = state+direction
 end
 else
 state = 1
@@ -1510,46 +1310,12 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
-if (state-1) < 0 then
+if (state+direction) < 0 then
 message("No more previous property values. ")
-else
-state = state-1
-end
-reaper.SetMediaTrackInfo_Value(tracks, "I_AUTOMODE", state)
-end
-message(self:get())
-return message
-end
-
-function automationModeProperty:set_increase()
-local message = initOutputMessage()
-if type(tracks) == "table" then
-local st = {0,0,0,0,0}
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE")
-if st[state+1] then
-st[state+1] = st[state+1]+1
-end
-end
-local state
-if math.max(st[1], st[2], st[3], st[4], st[5]) == #tracks then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_AUTOMODE")
-if state+1 <= #self.states then
-state = state+1
-end
-else
-state = 1
-end
-message(string.format("Set selected tracks automation mode to %s.", self.states[state]))
-for k = 1, #tracks do
-reaper.SetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
-if state+1 > #self.states then
+elseif (state+direction) > #self.states then
 message("No more next property values. ")
 else
-state = state+1
+state = state+direction
 end
 reaper.SetMediaTrackInfo_Value(tracks, "I_AUTOMODE", state)
 end
@@ -1773,7 +1539,7 @@ end
 return message
 end
 
-function timebaseProperty:set_decrease()
+function timebaseProperty:set_adjust(direction)
 local message = initOutputMessage()
 if type(tracks) == "table" then
 local st = {0, 0, 0, 0}
@@ -1784,8 +1550,10 @@ end
 local state
 if math.max(st[1], st[2], st[3], st[4]) == #tracks then
 state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
-if (state-1) >= -1 then
-state = state-1
+-- We have to patch our states metatable to avoid always existing values
+self.states = setmetatable(self.states, {})
+if self.states[state+direction]  then
+state = state+direction
 end
 else
 state = -1
@@ -1796,44 +1564,12 @@ reaper.SetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE", state)
 end
 else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
-if state-1 < -1 then
+if state+direction < -1 then
 message("No more previous property values. ")
-else
-state = state-1
-end
-reaper.SetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE", state)
-end
-message(self:get())
-return message
-end
-
-function timebaseProperty:set_increase()
-local message = initOutputMessage()
-if type(tracks) == "table" then
-local st = {0, 0, 0, 0}
-for k = 1, #tracks do
-local state = reaper.GetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE")
-st[state+2] = st[state+2]+1
-end
-local state
-if math.max(st[1], st[2], st[3], st[4]) == #tracks then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
-if (state+1) < #self.states then
-state = state+1
-end
-else
-state = -1
-end
-message(string.format("Set selected tracks timebase to %s.", self.states[state+1]))
-for k = 1, #tracks do
-reaper.SetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE", state)
-end
-else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
-if state+1 > #self.states-1 then
+elseif state+direction > #self.states-1 then
 message("No more next property values. ")
 else
-state = state+1
+state = state+direction
 end
 reaper.SetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE", state)
 end
@@ -1849,9 +1585,7 @@ for k = 1, #tracks do
 reaper.SetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE", -1)
 end
 else
-local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
-state = -1
-reaper.SetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE", state)
+reaper.SetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE", -1)
 end
 message(self:get())
 return message

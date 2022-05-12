@@ -37,12 +37,8 @@ message("Configure Properties Ribbon")
 return message
 end
 
-function prConfigProperty:set(action)
-if action == actions.set.perform then
+function prConfigProperty:set_perform()
 executeLayout{section="embedded", layout="config_properties"}
-return
-end
-return "This property is performable only."
 end
 
 -- The repository page of Properties Ribbon on Github
@@ -57,12 +53,8 @@ message("Properties ribbon home page on Git hub")
 return message
 end
 
-function prHomepageProperty:set(action)
-if action == actions.set.perform then
+function prHomepageProperty:set_perform()
 openPath("https://github.com/outsidepro-arts/properties_ribbon")
-return
-end
-return "This property is performable only."
 end
 
 -- Download the latest Main branch archive
@@ -76,12 +68,8 @@ message("Download the latest Properties Ribbon scripts complex")
 return message
 end
 
-function prDownloadArchiveProperty:set(action)
-if action == actions.set.perform then
+function prDownloadArchiveProperty:set_perform()
 openPath("https://github.com/outsidepro-arts/Properties_Ribbon/archive/main.zip")
-return
-end
-return "This property is performable only."
 end
 
 -- REAPER preferences

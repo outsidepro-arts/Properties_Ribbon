@@ -27,8 +27,8 @@ prepareUserData = require "preparation"
 actions = {
 set = {
 perform = {label="Perform or toggle",value="perform"},
-increase = {label="increase",value="increase"},
-decrease = {label="decrease",value="decrease"}
+increase = {label="increase",value="adjust",direction=1},
+decrease = {label="decrease",value="adjust",direction=-1}
 },
 sublayout_next = 0x000001,
 sublayout_prev = 0x000010
@@ -909,7 +909,7 @@ script_reportOrGotoProperty(nil, nil, nil, true)
 return
 end
 if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
-msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex])
+msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex], action.direction)
 else
 string.format("This property does not support the %s action.", action.label):output()
 script_finish()
@@ -918,7 +918,7 @@ end
 elseif currentExtProperty then
 local retval, premsg
 if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)] then
-retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex])
+retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex], action.direction)
 else
 string.format("This property does not support the %s action.", action.label):output()
 script_finish()

@@ -93,6 +93,11 @@ contextualFXChain.actions = {
 "View input FX chain for %s with %s"
 }
 
+contextualFXChain.commands = {
+[0]=40291,
+[1]=40638
+}
+
 function contextualFXChain.getValue()
 if context == 0 then
 return reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()), reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
@@ -118,28 +123,9 @@ message(self.actions[state]:format(contexts[context], getStringPluginsCount(({se
 return message
 end
 
-function contextualFXChain:set(action)
+function contextualFXChain:set_adjust(direction)
 local message = initOutputMessage()
-local commands = {
-[0]=40291,
-[1]=40638
-}
-if action == actions.set.perform then
-local curAction = nil
-if context == 0 then
-curAction = getCurrentChainAction()
-else
-curAction = 1
-end
-if curAction == 1 then
-reaper.Main_OnCommand(commands[context], 0)
-else
-reaper.Main_OnCommand(40844, 0)
-end
-restorePreviousLayout()
-setUndoLabel(self:get())
-return
-elseif action == actions.set.increase then
+if direction == actions.set.increase.direction then
 if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction+1) <= #self.actions then
@@ -150,7 +136,7 @@ end
 else
 return ("The %s has not any extended actions."):format(contexts[context])
 end
-elseif action == actions.set.decrease then
+elseif direction == actions.set.decrease.direction then
 if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction-1) >= 1 then
@@ -164,6 +150,22 @@ end
 end
 message(self:get())
 return message
+end
+
+function contextualFXChain:set_perform()
+local curAction = nil
+if context == 0 then
+curAction = getCurrentChainAction()
+else
+curAction = 1
+end
+if curAction == 1 then
+reaper.Main_OnCommand(self.commands[context], 0)
+else
+reaper.Main_OnCommand(40844, 0)
+end
+restorePreviousLayout()
+setUndoLabel(self:get())
 end
 
 -- FX chain for master track
@@ -187,15 +189,10 @@ message(string.format("View FX chain of master track with %s", getStringPluginsC
 return message
 end
 
-function masterTrackFXChain:set(action)
-if action == actions.set.perform then
+function masterTrackFXChain:set_perform()
 reaper.Main_OnCommand(40846, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
-else
-return "This property is performable only."
-end
 end
 
 
@@ -235,8 +232,7 @@ end
 message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(self.getValue), contexts[context]))
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self)
 if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
 return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
 end
@@ -252,10 +248,6 @@ end
 reaper.Main_OnCommand(self.commands[context], state)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
-else
-return "This property is performable only."
-end
 end
 }
 end
@@ -282,19 +274,14 @@ local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 message(string.format("%s %s for master track", self.states[state], getStringPluginsCount(self.getValue)))
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self)
 if self.getValue() > 0 then
 local state = reaper.GetMediaTrackInfo_Value(reaper.GetMasterTrack(), "I_FXEN")
 reaper.Main_OnCommand(16, utils.nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
 else
 return "This property is unavailable because there is no plugins."
-end
-else
-return "This property is toggleable only."
 end
 end
 }
@@ -323,18 +310,13 @@ message(string.format(" and input FX chain with %s", getStringPluginsCount(input
 end
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self)
 local chainCount, inputCount = self.getValue()
 if chainCount > 0 or (inputCount and inputCount > 0) then
 extstate["fx_properties.loadFX"] = nil
 executeLayout{section="properties",layout="fx_properties"}
-return
 else
 return "This action is unavailable right now because no one FX is set there."
-end
-else
-return "This property is performable only."
 end
 end
 }
@@ -363,19 +345,14 @@ message(string.format(" and input FX chain with %s", getStringPluginsCount(input
 end
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self)
 local chainCount, inputCount = self.getValue()
 if chainCount > 0 or (inputCount and inputCount > 0) then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMS"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
 else
 return "This action is unavailable right now because no one FX is set there."
-end
-else
-return "This property is performable only."
 end
 end
 }
@@ -402,18 +379,13 @@ message(("FX properties of master track with %s"):format(getStringPluginsCount(s
 return message
 end
 
-function fxPropertiesForMasterTrack:set(action)
-if action == actions.set.perform then
+function fxPropertiesForMasterTrack:set_perform()
 local chainCount = self.getValue()
 if chainCount > 0 then
 extstate["fx_properties.loadFX"] = "master"
 executeLayout{section="properties",layout="fx_properties"}
-return
 else
 return "This action is unavailable right now because no one FX is set there."
-end
-else
-return "This property is performable only."
 end
 end
 
@@ -449,19 +421,14 @@ end
 return message
 end
 
-function osaraMasterFXParametersProperty:set(action)
-if action == actions.set.perform then
+function osaraMasterFXParametersProperty:set_perform()
 local chainCount, monitoringCount = self.getValue()
 if chainCount > 0 or monitoringCount > 0 then
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_FXPARAMSMASTER"), 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
 else
 return "This action is unavailable right now because no one FX is set there."
-end
-else
-return "This property is performable only."
 end
 end
 
@@ -486,15 +453,10 @@ message(("View FX chain for monitoring FX with %s"):format(getStringPluginsCount
 return message
 end
 
-function monitorFXChainAction:set(action)
-if action == actions.set.perform then
+function monitorFXChainAction:set_perform()
 reaper.Main_OnCommand(41882, 0)
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
-else
-return "This property is performable only."
-end
 end
 
 
@@ -520,19 +482,14 @@ local state = reaper.GetToggleCommandState(41884)
 message(("%s %s in monitoring section"):format(self.states[state], getStringPluginsCount(self.getValue)))
 return message
 end,
-set = function(self, action)
-if action == actions.set.perform then
+set_perform = function(self)
 if self.getValue() > 0 then
 local state = reaper.GetToggleCommandState(41884)
 reaper.Main_OnCommand(41884, utils.nor(state))
 restorePreviousLayout()
 setUndoLabel(self:get())
-return
 else
 return "This property is unavailable because no plugins is set there."
-end
-else
-return "This property is performable only."
 end
 end
 }
@@ -555,18 +512,13 @@ message(("FX properties of monitoring section with %s"):format(getStringPluginsC
 return message
 end
 
-function fxPropertiesForMonitoring:set(action)
-if action == actions.set.perform then
+function fxPropertiesForMonitoring:set_perform()
 local _, monitoringCount = self.getValue()
 if monitoringCount > 0 then
 extstate["fx_properties.loadFX"] = "monitoring"
 executeLayout{section="properties",layout="fx_properties"}
-return
 else
 return "This action is unavailable right now because no one FX is set there."
-end
-else
-return "This property is performable only."
 end
 end
 
