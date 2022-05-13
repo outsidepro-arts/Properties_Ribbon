@@ -549,11 +549,13 @@ openPath("https://sws-extension.org/")
 end
 return nil
 end
+currentExtProperty = extstate.extProperty
 local rememberCFG = config.getinteger("rememberSublayout", 3)
 if newLayout then
 if extstate.gotoMode then
 extstate.gotoMode = nil
 end
+if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
 if type(newLayout) == "table" then                  
 newLayout = newLayout.section.."//"..newLayout.layout or nil
 end
@@ -605,7 +607,6 @@ currentSublayout = sublayout
 end
 setUndoLabel(("Switch properties layout to %s"):format(layout.name))
 layout.pIndex = extstate[layout.section] or 1
-currentExtProperty = extstate.extProperty
 return (layout)
 end
 
