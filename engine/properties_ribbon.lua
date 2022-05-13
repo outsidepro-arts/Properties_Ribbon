@@ -850,12 +850,12 @@ else
 local message = initOutputMessage()
 message(string.format("No property with number %s in ", propertyNum))
 if currentExtProperty then
-message(string.format("%s extended properties on ", layout.properties[layout.pIndex][currentExtProperty].name))
+message(string.format("%s extended properties on ", layout.properties[layout.pIndex].extendedProperties.name))
 end
 if layout.type == "sublayout" then
 message(string.format(" %s category of ", layout.subname))
 end
-message(string.format("%s layout.", layout.name)):output()
+message(string.format("%s layout.", layout.name))
 message:output()
 script_finish()
 return
