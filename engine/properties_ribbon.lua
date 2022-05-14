@@ -815,7 +815,7 @@ end
 else
 message(composeSubLayout(shouldReportParentLayout))
 end
-if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum then
+if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum and not currentExtProperty then
 layout.pIndex = 1
 end
 speakLayout = false
