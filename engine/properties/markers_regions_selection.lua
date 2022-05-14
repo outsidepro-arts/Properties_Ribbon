@@ -33,64 +33,87 @@ local parentLayout = initLayout("Markers and regions management")
 
 parentLayout:registerSublayout("markersLayout", "Markers")
 
-local markerActionsProperty = {}
-parentLayout.markersLayout:registerProperty(markerActionsProperty)
-markerActionsProperty.states = {
-[0] = "Insert marker at current position",
-[1] = "Insert and edit marker at current position",
-[2] = "Renumber all markers in timeline order",
-[3] = "Remove all markers from time selection",
-[4] = "Clear all markers"
-}
+local markersActionsProperty = {}
+parentLayout.markersLayout:registerProperty(markersActionsProperty)
 
-function markerActionsProperty:get(shouldSaveAnAction)
+function markersActionsProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
-if extstate.mrkregLayout_mrkstate and not shouldSaveAnAction then
-extstate.mrkregLayout_mrkstate = nil
-end
-message(self.states[extstate.mrkregLayout_mrkstate or 0])
+message:initType("", "")
+message("Markers operations")
 return message
 end
 
-function markerActionsProperty:set(action)
+markersActionsProperty.extendedProperties = initExtendedProperties(markersActionsProperty:get():extract(nil, false))
+
+markersActionsProperty.extendedProperties:registerProperty{
+get = function(self, parent)
 local message = initOutputMessage()
-local state = extstate.mrkregLayout_mrkstate or 0
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-extstate.mrkregLayout_mrkstate = state+1
-else
-message("No more next property values. ")
+message:initType("Perform this property to add new marker at play or edit cursor position.", "Performable")
+message("Insert marker at current position")
+return message
+end,
+set_perform = function(self, parent)
+reaper.Main_OnCommand(40157, 0)
+-- OSARA reports the marker creation events
+setUndoLabel(self:get())
+return false
 end
-elseif action == actions.set.decrease then
-if (state-1) >= 0 then
-extstate.mrkregLayout_mrkstate = state-1
-else
-message("No more previous property values. ")
-end
-elseif action == nil then
-if state == 1 then
+}
+
+markersActionsProperty.extendedProperties:registerProperty{
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("")
+message("Insert and edit marker at current position")
+return message
+end,
+set_perform = function(self, parent)
 reaper.Main_OnCommand(40171, 0)
 -- OSARA reports the marker creation events
-setUndoLabel(self:get(true))
-return
-elseif state == 2 then
+setUndoLabel(self:get())
+return false
+end
+}
+markersActionsProperty.extendedProperties:registerProperty{
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to renumber all marker in project timeline. Please note: the standart REAPER action used here, so all regions will be renumbered aswell.", "Performable")
+message("Renumber all markers in timeline order")
+return message
+end,
+set_perform = function(self, parent)
 if numMarkers > 0 then
 if reaper.ShowMessageBox("Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?", "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 reaper.Main_OnCommand(40898, 0)
-return "All markers were renumbered."
+return true, "All markers were renumbered."
 else
-return "Canceled."
+return false, "Canceled."
 end
-else
-return "There are no markers which to be renumbered."
 end
-elseif state == 3 then
+return false, "There are no markers which to be renumbered."
+end
+}
+markersActionsProperty.extendedProperties:registerProperty{
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to remove all markers in time selection.", "performable")
+message("Remove all markers from time selection")
+return message
+end,
+set_perform = function(self, parent)
 reaper.Main_OnCommand(40420, 0)
--- OSARA reports the marker creation events
-setUndoLabel(self:get(true))
-return
-elseif state == 4 then
+setUndoLabel(self:get())
+return true, nil, true
+end
+}
+markersActionsProperty.extendedProperties:registerProperty{
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to remove all markers in the project.", "Performable")
+message("Clear all markers")
+return message
+end,
+set_perform = function (self, parent)
 local countDeletedMarkers = 0
 for i = 0, numMarkers do
 if reaper.DeleteProjectMarker(0, i, false) then
@@ -98,49 +121,74 @@ countDeletedMarkers = countDeletedMarkers+1
 end
 end
 if countDeletedMarkers > 0 then
-return string.format("%u markers has been deleted.", countDeletedMarkers)
+return true, string.format("%u markers has been deleted.", countDeletedMarkers)
 else
-return"There are no markers to delete."
-end
-else
-reaper.Main_OnCommand(40157, 0)
--- OSARA reports the marker creation events
-setUndoLabel(self:get(true))
-return
+return false, "There are no markers to delete."
 end
 end
-message(self:get(true))
+}
+
+markerActions = initExtendedProperties("Marker actions")
+
+markerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to the marker's position.", "Performable")
+message("Go to marker position")
 return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.GoToMarker(0, parent.mIndex, true)
+message("Jumping to")
+message{value=representation.defpos[reaper.GetCursorPosition()]}
+return true, message
 end
+}
+markerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to edit this marker.", "Performable")
+message("Edit marker")
+return message	
+end,
+set_perform = function (self, parent)
+-- There is no any different method to show the standart dialog window for user
+local prevPosition = reaper.GetCursorPosition()
+reaper.SetEditCurPos(self.position, false, false)
+reaper.Main_OnCommand(40614, 0)
+reaper.SetEditCurPos(prevPosition, false, false)
+setUndoLabel(self:get())
+return true
+end
+}
+markerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete this marker.", "Performable")
+message("Delete marker")
+return message
+end,
+set_perform = function (self, parent)
+reaper.DeleteProjectMarker(0, parent.mIndex, false)
+return true, string.format("Marker %u has been deleted.", parent.mIndex)
+end
+}
+
 
 if numMarkers > 0 then
 for i = 0, (numMarkers+numRegions)-1 do
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, i)
 if retval and not isrgn then
 parentLayout.markersLayout:registerProperty({
-states = setmetatable({
-[1] = "Edit",
-[2] = "Colorize",
-[3] = "Delete"
-}, {
-__index = function(self, action)
-return
-end
-}),
 position = pos,
 str = name,
 clr = color,
 mIndex = markrgnindexnumber,
-get = function(self, shouldSaveAnAction)
+extendedProperties = markerActions,
+get = function(self)
 local message = initOutputMessage()
-message:initType("Adjust this marker property to choose one of actions for. Perform this marker property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
-if shouldSaveAnAction and extstate.mrkregLayout_mrkstate then
-message(self.states[extstate.mrkregLayout_mrkstate])
---message:addType(string.format(" Perform this property to %sthis marker.", self.states[lastAction]), 1)
-else
---message:addType(" Perform this property to move the edit cursor to the marker position.", 1)
-extstate.mrkregLayout_mrkstate = nil
-end
+message:initType("", "")
 if self.clr > 0 then
 message{objectId=colors:getName(reaper.ColorFromNative(self.clr))}
 end
@@ -148,53 +196,6 @@ message{label=string.format("Marker %u", self.mIndex)}
 if self.str ~= "" then
 message{label=string.format(", %s", self.str)}
 end
-return message
-end,
-set = function(self, action)
-local message = initOutputMessage()
-local lastAction = extstate.mrkregLayout_mrkstate or 0
-if action == actions.set.increase then
-if (lastAction+1) <= #self.states then
-extstate.mrkregLayout_mrkstate = lastAction+1
-else
-message("No more next marker actions.")
-end
-elseif action == actions.set.decrease then
-if (lastAction-1) > 0 then
-extstate.mrkregLayout_mrkstate = lastAction-1
-elseif (lastAction-1) == 0 then
-extstate.mrkregLayout_mrkstate = nil
-message("Jump to")
-else
-message("No more previous marker actions.")
-end
-elseif action == actions.set.perform then
-if lastAction == 1 then
--- There is no any different method to show the standart dialog window for user
-local prevPosition = reaper.GetCursorPosition()
-reaper.SetEditCurPos(self.position, false, false)
-reaper.Main_OnCommand(40614, 0)
-reaper.SetEditCurPos(prevPosition, false, false)
-setUndoLabel(self:get(true))
-return
-elseif lastAction == 2 then
-local precolor = getMarkersComposedColor()
-if precolor then
-reaper.SetProjectMarker4(0, self.mIndex, false, self.position, 0, self.str, precolor|0x1000000, 0)
-return string.format("Marker %u colorized to %s color.", self.mIndex, colors:getName(reaper.ColorFromNative(precolor)))
-else
-return "Compose any color for markers or regions first."
-end
-elseif lastAction == 3 then
-reaper.DeleteProjectMarker(0, self.mIndex, false)
-return string.format("Marker %u has been deleted.", self.mIndex)
-else
-reaper.GoToMarker(0, self.mIndex, true)
-message("Jumping to")
-message{value=representation.defpos[reaper.GetCursorPosition()]}
-end
-end
-message(self:get(true))
 return message
 end
 })
@@ -205,119 +206,210 @@ end
 
 -- Regions loading
 parentLayout:registerSublayout("regionsLayout", "Regions")
-local regionActionsProperty = {}
-parentLayout.regionsLayout:registerProperty(regionActionsProperty)
-regionActionsProperty.states = {
-[0] = "Insert region from time selection",
-[1] = "Insert region from time selection and edit",
-[2] = "Insert region from selected items",
-[3] = "Insert region from selected items and edit",
-[4] = "Insert separate regions for each selected item",
-[5] = "Renumber all markers and regions in timeline order",
-[6] = "Clear all regions"
-}
+local regionsActionsProperty = {}
+parentLayout.regionsLayout:registerProperty(regionsActionsProperty)
 
-function regionActionsProperty:get(shouldSaveAnAction)
+function regionsActionsProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose aproppriate action. Perform this property to apply chosen action. Please note, a chosen action stores only when you're adjusting this, when you're navigating through, the action will be reset.", "Adjustable, performable")
-if extstate.mrkregLayout_rgnstate and not shouldSaveAnAction then
-extstate.mrkregLayout_rgnstate = nil
-end
-message(self.states[extstate.mrkregLayout_rgnstate or 0])
+message:initType("", "")
+message("Regions operations")
 return message
 end
 
-function regionActionsProperty:set(action)
+regionsActionsProperty.extendedProperties = initExtendedProperties(regionsActionsProperty:get():extract(nil, false))
+
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
 local message = initOutputMessage()
-local state = extstate.mrkregLayout_rgnstate or 0
-if action == actions.set.increase then
-if (state+1) <= #self.states then
-extstate.mrkregLayout_rgnstate = state+1
-else
-message("No more next property values. ")
+message:initType("Perform this property to insert new region from time selection.", "Performable")
+message("Insert region from time selection")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(40174, 0)
+setUndoLabel(self:get())
+return false
 end
-elseif action == actions.set.decrease then
-if (state-1) >= 0 then
-extstate.mrkregLayout_rgnstate = state-1
-else
-message("No more previous property values. ")
-end
-elseif action == nil then
-if state == 1 then
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to insert new region from time selection and edit it.", "Performable")
+message("Insert region from time selection and edit")
+return message
+end,
+set_perform = function (self, parent)
 reaper.Main_OnCommand(40306, 0)
--- OSARA reports the marker creation events
-setUndoLabel(self:get(true))
-return
-elseif state == 2 then
+return true
+end
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to insert new region from selected items.", "Performable")
+message("Insert region from selected items")
+return message
+end,
+set_perform = function (self, parent)
 reaper.Main_OnCommand(40348, 0)
-elseif state == 3 then
-reaper.Main_OnCommand(40393, 0)
--- OSARA reports the marker creation events
-setUndoLabel(self:get(true))
-return
-elseif state == 4 then
+setUndoLabel(self:get())
+return true, nil, true
+end
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to create new region from selected items then edit it.", "Performable")
+message("Insert region from selected items and edit")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(40348, 0)
+return true, nil, true
+end
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to create separate region for each selected item.", "Performable")
+message("Insert separate regions for each selected item")
+return message
+end,
+set_perform = function (self, parent)
 reaper.Main_OnCommand(41664, 0)
-elseif state == 5 then
+return true, nil, true
+end
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to renumber all regions in project timeline. Please note: the standart REAPER action used here, so all markers will be renumbered aswell.", "Performable")
+message("Renumber all markers and regions in timeline order")
+return message
+end,
+set_perform = function (self, parent)
 if numRegions > 0 then
 if reaper.ShowMessageBox("Since the main action for renumbering is used, all markers will be renumbered aswell. Would you like to continue?", "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 reaper.Main_OnCommand(40898, 0)
-return "All markers and regions were renumbered."
+return true, "All markers and regions were renumbered."
 else
-return "Canceled."
+return false, "Canceled."
 end
 else
-return "There are no regions which to be renumbered."
+return false, "There are no regions which to be renumbered."
 end
-elseif state == 6 then
+end
+}
+regionsActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to clear all regions in this project.", "Performable")
+message("Clear all regions")
+return message
+end,
+set_perform = function (self, parent)
 local countDeletedRegions = 0
 for i = 0, (numMarkers+numRegions) do
 if reaper.DeleteProjectMarker(0, i, true) then
 countDeletedRegions = countDeletedRegions+1
 end
 end
-if countDeletedRegions == 0 then
-return"There are no regions to delete."
-end
+if countDeletedRegions > 0 then
+return true, string.format("%u regions deleted. ", countDeletedRegions)
 else
-reaper.Main_OnCommand(40174, 0)
--- OSARA reports the marker creation events
-return
+return false, "There are no regions to delete."
 end
 end
-local _, _, newNumRegions = reaper.CountProjectMarkers(0)
-if numRegions < newNumRegions then
-return string.format("%u region%s inserted.", (newNumRegions-numRegions), ({[true] = "s", [false] = ""})[((newNumRegions-numRegions) ~= 1)])
-elseif numRegions > newNumRegions then
-return string.format("%u region%s deleted.", (numRegions-newNumRegions), ({[true] = "s", [false] = ""})[((newNumRegions-numRegions) ~= 1)])
+}
+local regionActions = initExtendedProperties("Region actions")
+
+regionActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to smooth seek to the region position after currently region finishes playing..", "Performable")
+message("Smooth seek to the region")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.GoToRegion(0, parent.rIndex, true)
+message("Smooth seek to")
+message{value=representation.defpos[reaper.GetCursorPosition()]}
+return false, message
 end
-message(self:get(true))
+}
+regionActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to the timestamp when this region starts.", "Performable")
+message("Immediately jump to start of this region")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(parent.position, true, true)
+message{label="Jumping to"}
+message{value=representation.defpos[reaper.GetCursorPosition()]}
+return false, message
+end
+}
+regionActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to the timestamp when this region ends.", "Performable")
+message("Immediately jump to end of this region")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(parent.endPosition, true, true)
+message{label="Jumping to"}
+message{value=representation.defpos[reaper.GetCursorPosition()]}
 return message
 end
+}
+regionActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to edit this region.", "Performable")
+message("Edit region")
+return message
+end,
+set_perform = function (self, parent)
+-- There is no any different method to show the standart dialog window for user
+local prevPosition = reaper.GetCursorPosition()
+reaper.SetEditCurPos(self.position, false, false)
+reaper.Main_OnCommand(40616, 0)
+reaper.SetEditCurPos(prevPosition, false, false)
+return true
+end
+}
+regionActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete this marker.", "Performable")
+message("Delete region")
+return message
+end,
+set_perform = function (self, parent)
+reaper.DeleteProjectMarker(0, parent.rIndex, true)
+return true, string.format("Region %u deleted.", parent.rIndex)
+end
+}
 
 if numRegions > 0 then
 for i = 0, (numMarkers+numRegions)-1 do
 local  retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, i)
 if retval and isrgn then
 parentLayout.regionsLayout:registerProperty({
-states = setmetatable({
-[1] = "Immediately jump to start of",
-[2]="Immediately jump to end of",
-[3] = "Edit",
-[4] = "Colorize",
-[5] = "Delete"
-}, {
-__index = function(self, action)
-return
-end
-}),
 position = pos,
 endPosition = rgnend,
 str = name,
 clr = color,
 rIndex = markrgnindexnumber,
-get = function(self, shouldSaveAnAction)
+get = function(self)
 local message = initOutputMessage()
-message:initType("Adjust this region property to choose one of actions for. Perform this region property to either set the edit or play cursor on its position if no action has been chosen, or apply chosen action.", "Adjustable, performable")
+message:initType("", "")
 if shouldSaveAnAction  and  extstate.mrkregLayout_rgnstate then
 message(self.states[extstate.mrkregLayout_rgnstate])
 --message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
@@ -334,59 +426,7 @@ message{value=self.str}
 end
 return message
 end,
-set = function(self, action)
-local message = initOutputMessage()
-local lastAction = extstate.mrkregLayout_rgnstate or 0
-if action == actions.set.increase then
-if (lastAction+1) <= #self.states then
-extstate.mrkregLayout_rgnstate = lastAction+1
-else
-message("No more next region actions.")
-end
-elseif action == actions.set.decrease then
-if (lastAction-1) > 0 then
-extstate.mrkregLayout_rgnstate = lastAction-1
-elseif (lastAction-1) == 0 then
-extstate.mrkregLayout_rgnstate = nil
-message("Smooth seek to")
-else
-message("No more previous region actions.")
-end
-elseif action == nil then
-if lastAction == 1 then
-reaper.SetEditCurPos(self.position, true, true)
-message{value=representation.defpos[reaper.GetCursorPosition()]}
-elseif lastAction == 2 then
-reaper.SetEditCurPos(self.endPosition, true, true)
-message{value=representation.defpos[reaper.GetCursorPosition()]}
-elseif lastAction == 3 then
--- There is no any different method to show the standart dialog window for user
-local prevPosition = reaper.GetCursorPosition()
-reaper.SetEditCurPos(self.position, false, false)
-reaper.Main_OnCommand(40616, 0)
-reaper.SetEditCurPos(prevPosition, false, false)
-setUndoLabel(self:get(true))
-return
-elseif lastAction == 4 then
-local precolor = getMarkersComposedColor()
-if precolor then
-reaper.SetProjectMarker4(0, self.rIndex, true, self.position, self.endPosition, self.str, precolor|0x1000000, 0)
-return string.format("Region %u colorized to %s color.", self.rIndex, colors:getName(reaper.ColorFromNative(precolor)))
-else
-return "Compose any color for markers or regions first."
-end
-elseif lastAction == 5 then
-reaper.DeleteProjectMarker(0, self.rIndex, true)
-return string.format("Region %u deleted.", self.rIndex)
-else
-reaper.GoToRegion(0, self.rIndex, true)
-message("Smooth seek to")
-message{value=representation.defpos[reaper.GetCursorPosition()]}
-end
-end
-message(self:get(true))
-return message
-end
+extendedProperties = regionActions
 })
 end
 end

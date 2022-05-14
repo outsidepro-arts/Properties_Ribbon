@@ -26,6 +26,12 @@ local getItemNumber = item_properties_macros.getItemNumber
 -- And another one:
 local getTakeNumber = item_properties_macros.getTakeNumber
 
+-- Default messages set for threeposition setters
+local tpMessages = {
+[true]="Set selected tracks to %s. ",
+[false]="Set to %s. "
+}
+
 -- We should obey the configuration to report the take's name
 local getItemID, getTakeID = item_properties_macros.getItemID, item_properties_macros.getTakeID
 
@@ -372,34 +378,57 @@ end
 return message
 end
 
-function itemVolumeProperty:set_perform()
+itemVolumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+
+itemVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+items,
+{
+representation = representation.db,
+min = utils.decibelstonum("-inf"),
+rootmean = utils.decibelstonum(0.0),
+max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
+},
+tpMessages,
+itemVolumeProperty.setValue
+))
+
+itemVolumeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom volume value manualy.", "Performable")
+message("Type custom volume")
+return message
+end,
+set_perform = function(self, parent)
 if type(items) == "table" then
 local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
 if not retval then
 return "Canceled"
 end
 for k = 1, #items do
-local state = self.getValue(items[k])
+local state = parent.getValue(items[k])
 state = prepareUserData.db.process(answer, state)
 if state then
-self.setValue(items[k], state)
+parent.setValue(items[k], state)
 end
 end
 else
-local state = self.getValue(items)
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items)])
+local state = parent.getValue(items)
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s", getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[parent.getValue(items)])
 if not retval then
-return "Canceled"
+return false
 end
 state = prepareUserData.db.process(answer, state)
 if state then
-self.setValue(items, state)
+parent.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return ""
+return false
 end
 end
+return true
 end
+}
 
 -- mute methods
 local muteItemProperty = {}
@@ -1470,30 +1499,37 @@ return message
 end
 
 takeVolumeProperty.set_adjust = itemVolumeProperty.set_adjust
-function takeVolumeProperty:set_perform()
+takeVolumeProperty.extendedProperties = initExtendedProperties(itemVolumeProperty.extendedProperties.name)
+takeVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+items,
+{
+representation = representation.db,
+min = utils.decibelstonum("-inf"),
+rootmean = utils.decibelstonum(0.0),
+max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
+},
+tpMessages,
+takeVolumeProperty.setValue
+))
+
+takeVolumeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
 local message = initOutputMessage()
+message:initType("Perform this property to specify a custom vvolume value manualy.", "performable")
+message("Type custom volume")
+return message
+end,
+set_perform = function(self, parent)
 if type(items) == "table" then
-local retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume per every active take of selected item.\nnormalize common gain (or ncg or nc) - will normalize active takes of selected items to common gain.', representation.db[self.getValue(items[1])])
-local normCmdExecuted = false
+local retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1, prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
-if prepareUserData.basic(answer):find("^[n]%w*[c]%w*[g]?%w*") then
-message("Normalizing item takes to common gain, ")
-reaper.Main_OnCommand(40254, 0)
-normCmdExecuted = true
-elseif prepareUserData.basic(answer):find("^[n]") then
-message("Normalize items takes volume")
-reaper.Main_OnCommand(40108, 0)
-normCmdExecuted = true
-end
-if not normCmdExecuted then
 for k = 1, #items do
 local state = self.getValue(items[k])
 state = prepareUserData.db.process(answer, state)
 if state then
 self.setValue(items[k], state)
-end
 end
 end
 else
@@ -1511,13 +1547,29 @@ if state then
 self.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return ""
+return false
 end
 end
 end
-message(self:get())
+return true
+end
+}
+takeVolumeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to use normalize items option.", "Performable")
+if type(items) =="table" then
+message(string.format("Normalize takes of %u selected items", #items))
+else
+message("Normalize item take")
+end
 return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(42460, 0)
+return true
 end
+}
 
 
 -- Take pan methods
@@ -1585,38 +1637,60 @@ message(self:get())
 return message
 end
 
-function takePanProperty:set_perform()
+takePanProperty.extendedProperties = initExtendedProperties("Pan exttended interraction")
+takePanProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+items,
+{
+representation = representation.pan,
+min = -1,
+rootmean = 0,
+max = 1
+},
+tpMessages,
+takePanProperty.setValue
+))
+
+takePanProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom pan value manualy.", "Performable")
+message("Type custom pan")
+return message
+end,
+set_perform = function(self, parent)
 if type(items) == "table" then
-local retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1, prepareUserData.pan.formatCaption, representation.pan[self.getValue(items[1])])
+local retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1, prepareUserData.pan.formatCaption, representation.pan[parent.getValue(items[1])])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 for k = 1, #items do
-local state = self.getValue(items[k])
+local state = parent.getValue(items[k])
 state = prepareUserData.pan.process(answer, state)
 if state then
-self.setValue(items[k], state)
+parent.setValue(items[k], state)
 end
 end
 else
-local state = self.getValue(items)
+local state = parent.getValue(items)
 local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.pan.process(answer, state)
 if state then
-self.setValue(items, state)
+parent.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return ""
+return false
 end
 end
+return true
 end
+}
 
 -- Take phase methods
 local takePhaseProperty = {}
- parentLayout.takeLayout:registerProperty( takePhaseProperty)
+parentLayout.takeLayout:registerProperty( takePhaseProperty)
 takePhaseProperty.states = {[0]="normal", [1]="inverted"}
 
 -- Cockos made the phase inversion via negative volume value.
@@ -1865,7 +1939,7 @@ end
 
 -- Preserve pitch when playrate changes methods
 local preserveTakePitchProperty = {}
- parentLayout.takeLayout:registerProperty( preserveTakePitchProperty)
+parentLayout.takeLayout:registerProperty( preserveTakePitchProperty)
 preserveTakePitchProperty.states = {[0]="not preserved", [1]="preserved"}
 
 function preserveTakePitchProperty.getValue(item)
@@ -1972,37 +2046,45 @@ message(self:get())
 return message
 end
 
-function takePitchProperty:set_perform()
+takePitchProperty.extendedProperties = initExtendedProperties("Pitch extended interraction")
+takePitchProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom pitch value manualy.", "Performable")
+message("Type custom pitch")
+return message
+end,
+set_perform = function(self, parent)
 local message = initOutputMessage()
 if type(items) == "table" then
 local retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1, prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 for k = 1, #items do
-local state = self.getValue(items[k])
+local state = parent.getValue(items[k])
 state = prepareUserData.pitch.process(answer, state)
 if state then
-self.setValue(items[k], state)
+parent.setValue(items[k], state)
 end
 end
 else
-local state = self.getValue(items)
+local state = parent.getValue(items)
 local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.pitch.process(answer, state)
 if state then
-self.setValue(items, state)
+parent.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return ""
+return false
 end
 end
-message(self:get())
-return message
+return true, message
 end
+}
 
 -- Pitch shifter methods
 local takePitchShifterProperty = {}
