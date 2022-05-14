@@ -215,3 +215,44 @@ return string.format("Point %u", point)
 end
 end
 end
+
+function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc)
+local t = {
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.", "Adjustable, performable")
+message("three-position setter")
+message(string.format(" (%s - %s, ", actions.set.decrease.label, minRootMax.representation[minRootMax.min]))
+message(string.format("%s - %s, ", actions.set.perform.label, minRootMax.representation[minRootMax.rootmean]))
+message(string.format("%s - %s)", actions.set.increase.label, minRootMax.representation[minRootMax.max]))
+return message
+end,
+set_adjust = function(self, parent, direction)
+local message = initOutputMessage()
+vls = {[actions.set.decrease.direction]=minRootMax.min,[actions.set.increase.direction]=minRootMax.max}
+message(string.format(setMessages[type(obj) == "table"], minRootMax.representation[vls[direction]]))
+if type(obj) =="table" then
+for _, o in ipairs(obj) do
+setValueFunc(o, vls[direction])
+end
+else
+setValueFunc(obj, vls[direction])
+end
+return true, message
+end,
+set_perform = function(self, parent)
+local message = initOutputMessage()
+local state = minRootMax.rootmean
+message(string.format(setMessages[type(obj) == "table"], minRootMax.representation[state]))
+if type(obj) == "table" then
+for _, o in ipairs(obj) do
+setValueFunc(o, state)
+end
+else
+setValueFunc(obj, state)
+end
+return true, message
+end
+}
+return t
+end
