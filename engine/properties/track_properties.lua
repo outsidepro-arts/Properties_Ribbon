@@ -13,6 +13,8 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
+-- We need the actions macros sometimes
+
 -- Preparing all needed configs which will be used not one time
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
@@ -22,6 +24,12 @@ local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 -- These redirections made especially to not rewrite many code
 -- We have to define the track reporting by configuration. This function has contained in properties macros.
 local getTrackID = track_properties_macros.getTrackID
+
+-- Default messages set for threeposition setters
+local tpMessages = {
+[true]="Set selected tracks to %s. ",
+[false]="Set to %s. "
+}
 
 -- The macros for compose when group of items selected
 -- func (function)): the function for getting specific value
@@ -348,6 +356,20 @@ end
 
 volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
 
+volumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+tracks,
+{
+representation=representation.db,
+min=utils.decibelstonum("-inf"),
+rootmean=utils.decibelstonum(0.00),
+max=utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
+},
+tpMessages,
+function (obj, value)
+reaper.SetMediaTrackInfo_Value(obj, "D_VOL", value)
+end
+))
+
 volumeProperty.extendedProperties:registerProperty({
 get = function(self, parent)
 local message = initOutputMessage()
@@ -389,25 +411,6 @@ end
 end
 })
 
-volumeProperty.extendedProperties:registerProperty({
-get = function(self, parent)
-local message = initOutputMessage()
-message:initType(string.format("Perform this property to reset the volume value to %s.", representation.db[1]), "Performable")
-message(string.format("Reset to %s", representation.db[1]))
-return message
-end,
-set_perform = function(self, parent)
-local state = 1
-if type(tracks) == "table" then
-for _, track in ipairs(tracks) do
-reaper.SetMediaTrackInfo_Value(track, "D_VOL", state)
-end
-else
-reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
-end
-return true, "Reset."
-end
-})
 
 local panProperty = {}
 parentLayout.playbackLayout:registerProperty(panProperty)
@@ -466,6 +469,20 @@ end
 
 panProperty.extendedProperties = initExtendedProperties("Pan extended interraction")
 
+panProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+tracks,
+{
+representation=representation.pan,
+min=utils.percenttonum(-100),
+rootmean=utils.percenttonum(0),
+max=utils.percenttonum(100)
+},
+tpMessages,
+function (obj, value)
+reaper.SetMediaTrackInfo_Value(obj, "D_PAN", value)
+end
+))
+
 panProperty.extendedProperties:registerProperty({
 get = function(self, parent)
 local message = initOutputMessage()
@@ -506,24 +523,7 @@ end
 end
 end
 })
-panProperty.extendedProperties:registerProperty({
-get = function(self, parent)
-local message  = initOutputMessage()
-message:initType(string.format("Perform this property to reset the pan value to %s.", representation.pan[0]), "Performable")
-message(string.format("Reset pan to %s", representation.pan[0]))
-return message
-end,
-set_perform = function(self, parent, action)
-if type(tracks) == "table" then
-for _, track in ipairs(tracks) do
-reaper.SetMediaTrackInfo_Value(track, "D_PAN", 0)
-end
-else
-reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", 0)
-end
-return true, "Reset"
-end
-})
+
 
 local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
@@ -581,8 +581,29 @@ end
 return message
 end
 
+widthProperty.extendedProperties = initExtendedProperties("Width extended interraction")
 
-function widthProperty:set_perform()
+widthProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+tracks,
+{
+representation = setmetatable({}, {__index = function(self, state) return string.format("%s%%", utils.numtopercent(state)) end}),
+min = -1,
+rootmean = 0,
+max = 1
+},
+tpMessages,
+function(obj, value)
+reaper.SetMediaTrackInfo_Value(obj, "D_WIDTH", value)
+end
+))
+widthProperty.extendedProperties:registerProperty({
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom width value.", "Performable")
+message("Type custom width value")
+return message
+end,
+set_perform = function(self, parent)
 local message = initOutputMessage()
 if type(tracks) == "table" then
 local retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
@@ -607,12 +628,12 @@ if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
  else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
-return
+return false
 end
 end
- message(self:get())
-return message
+return true, message
 end
+})
 
 local muteProperty = {}
  parentLayout.playbackLayout:registerProperty(muteProperty)
