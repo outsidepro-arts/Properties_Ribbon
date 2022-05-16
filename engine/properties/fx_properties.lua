@@ -437,7 +437,7 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not.", "Performable")
+message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.", "Performable")
 if extstate._layout.fxDrag then
 message("Drop previously dragged FX here")
 else
