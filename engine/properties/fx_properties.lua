@@ -443,7 +443,9 @@ message("Drop previously dragged FX here")
 else
 message("Drag FX")
 end
-if fxCount < 2 or fxRecCount < 2 then
+if fxCount > 1 or fxRecCount > 1 then
+-- I don't know why the expected condition like "if fxCount < 2 or fxRecCount < 2 then" not works, so do nothing here.
+else
 message(" (unavailable)")
 end
 return message
