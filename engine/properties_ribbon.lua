@@ -917,9 +917,9 @@ script_finish()
 return
 end
 elseif currentExtProperty then
-local retval, premsg
+local retval, premsg, giveOSARATime
 if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)] then
-retval, premsg = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex], action.direction)
+retval, premsg, giveOSARATime = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex], action.direction)
 else
 string.format("This property does not support the %s action.", action.label):output()
 script_finish()
@@ -933,6 +933,9 @@ if retval then
 currentExtProperty = nil
 msg(string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name))
 msg(layout.properties[layout.pIndex]:get())
+if giveOSARATime then
+utils.delay(100)
+end
 msg:output()
 script_finish()
 return
