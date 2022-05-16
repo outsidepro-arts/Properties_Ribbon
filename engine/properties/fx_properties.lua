@@ -669,7 +669,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create an envelope with this paraeter on an object where this plugin set.", "Performable")
+message:initType("Perform this property to create an envelope with this parameter on an object where this plugin set.", "Performable")
 message("Create envelope with this parameter")
 return message
 end,
