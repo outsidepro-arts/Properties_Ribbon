@@ -333,7 +333,6 @@ message:initType("Adjust this property to set the desired volume value for selec
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" Perform this property to input custom volume value.", 1)
 message{label="Volume"}
 if type(items) == "table" then
 message(composeMultipleItemMessage(self.getValue, representation.db))
@@ -1487,7 +1486,6 @@ message:initType("Adjust this property to set the desired volume value for activ
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
-message:addType(" Perform this property to input custom volume value or some proposed commands.", 1)
 message{label="Volume"}
 if type(items) == "table" then
 message(composeMultipleTakeMessage(self.getValue, representation.db))
