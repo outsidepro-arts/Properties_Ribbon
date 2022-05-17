@@ -677,11 +677,16 @@ parentLayout.stretchMarkersLayout:registerProperty(stretchMarkersActionsProperty
 
 function stretchMarkersActionsProperty:get()
 local message = initOutputMessage()
+if canWorkWithItems() then
 message:initType("", "")
+else
+message:initType("This property is unavailable right now because Properties Ribbon cannot work with items.", "Unavailable")
+end
 message("Stretch markers operations")
 return message
 end
 
+if canWorkWithItems() then
 stretchMarkersActionsProperty.extendedProperties = initExtendedProperties(stretchMarkersActionsProperty:get():extract(nil, false))
 stretchMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
@@ -750,6 +755,7 @@ return "No stretch markers deleted."
 end
 end
 }
+end
 
 -- creating the stretch markers properties by the items list
 if type(items) == "table" then
@@ -765,10 +771,15 @@ parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
 
 function takeMarkersActionsProperty:get()
 local message = initOutputMessage()
+if canWorkWithItems() then
 message:initType("", "")
+else
+message:initType("This property is unavailable right now because Properties Ribbon cannot work with items.", "Unavailable")
+end
 message("Take markers operations")
 return message
 end
+if canWorkWithItems() then
 takeMarkersActionsProperty.extendedProperties = initExtendedProperties(takeMarkersActionsProperty:get():extract(nil, false))
 
 takeMarkersActionsProperty.extendedProperties:registerProperty{
@@ -807,7 +818,7 @@ reaper.Main_OnCommand(42387, 0)
 return true
 end
 }
-
+end
 
 -- creating the take markers properties by the items list
 if type(items) == "table" then
