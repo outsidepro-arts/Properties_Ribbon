@@ -15,6 +15,9 @@ After this preambula, let me begin.
 
 -- get the master track
 local master = reaper.GetMasterTrack(0)
+local tpMessages = {
+[false]="Set to %s. "
+}
 
 -- global pseudoclass initialization
 local parentLayout = initLayout("Master track properties")
@@ -64,19 +67,44 @@ message(self:get())
 return message
 end
 
-function volumeProperty:set_perform()
+volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+volumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+master,
+{
+representation = representation.db,
+min = utils.decibelstonum("-inf"),
+rootmean = utils.decibelstonum(0.0),
+max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
+},
+tpMessages,
+function (obj, state)
+reaper.SetMediaTrackInfo_Value(obj, "D_VOL", state)
+end
+))
+
+volumeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom volume value manualy.", "Performable")
+message("Type custom volume")
+return message
+end,
+set_perform = function(self, parent)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 local retval, answer = reaper.GetUserInputs("Volume for master track", 1, prepareUserData.db.formatCaption, representation.db[state])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.db.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
+return false
 end
+return true
 end
+}
 
 -- pan methods
 local panProperty = {}
@@ -112,19 +140,45 @@ message(self:get())
 return message
 end
 
-function panProperty:set_perform()
+panProperty.extendedProperties = initExtendedProperties("Pan extended interraction")
+
+panProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+master,
+{
+representation = representation.pan,
+min = -1,
+rootmean = 0,
+max = 1
+},
+tpMessages,
+function (obj, state)
+reaper.SetMediaTrackInfo_Value(obj, "D_PAN", state)
+end
+))
+
+volumeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom pan value manualy", "Performable")
+message("Type custom pan")
+return message
+end,
+set_perform = function (self, parent)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 local retval, answer = reaper.GetUserInputs("Pan for master track", 1, prepareUserData.pan.formatCaption, representation.pan[state])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.pan.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
+return true
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end
+return false
 end
+}
 
 -- Width methods
 local widthProperty = {}
@@ -159,19 +213,41 @@ message(self:get())
 return message
 end
 
-function widthProperty:set_perform()
+widthProperty.extendedProperties = initExtendedProperties("Width extended interraction")
+widthProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+master,
+{
+representation = setmetatable({}, {__index = function(self, key) return string.format("%s%%", utils.numtopercent(key)) end}),
+min = -1, rootmean = 0, max = 1
+},
+tpMessages,
+function (obj, state)
+reaper.SetMediaTrackInfo_Value(obj, "D_WIDTH", state)
+end
+))
+widthProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to specify a custom width value manualy.", "Performable")
+message("Type custom width")
+return message
+end,
+set_perform = function (self, parent)
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(state)))
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.percent.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
+return true
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end
+return false
 end
+}
 
 -- Mute methods
 local muteProperty = {}
