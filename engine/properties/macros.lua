@@ -174,6 +174,33 @@ end
 return message:extract()
 end
 
+function item_properties_macros.getSelectedItemAtCursor(items)
+if type(items) == "table" then
+for _, item in ipairs(items) do
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemPosition+(itemLength/takePlayrate)) then
+return item
+end
+end
+else
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(items, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(items, "D_LENGTH")
+if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemPosition+(itemLength/takePlayrate)) then
+return items
+end
+end
+end
+
+function item_properties_macros.pos_relativeToGlobal(item, rel)
+local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
+return (itemPosition+rel)/takePlayrate
+end
+
+function item_properties_macros.pos_globalToRelative(item)
+local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
+return (reaper.GetCursorPosition()-itemPosition)*takePlayrate
+end
+
+
 envelope_properties_macros = {}
 
 function envelope_properties_macros.getPoints(envelope, multiSelectionSupport)
