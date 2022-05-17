@@ -20,7 +20,8 @@ After this preambula, let me begin.
 -- Also, it will be used in other cases
 local mrretval, numMarkers, numRegions = reaper.CountProjectMarkers(0)
 
-
+-- We need items to realize the stretch and take markers
+local items = item_properties_macros.getItems(config.getboolean("multiSelectionSupport", true))
 -- Reading the color from color composer specified section
 local function getMarkersComposedColor()
 return extstate.colcom_marker_curValue
@@ -432,5 +433,389 @@ end
 end
 end
 
+-- Moved code from item properties
+-- We need the greenlight function of item properties below, but Properties ribbon does not allow to call a layouts as isolated code yet.
+function canWorkWithItems()
+-- We do not support the empty lanes
+local itemsCount = reaper.CountSelectedMediaItems(0)
+local isEmptyLanes = false
+for i = 0, itemsCount-1 do
+if reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)) == nil then
+if not extstate._layout.emptyLanesNotify then
+reaper.ShowMessageBox("Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout.", "Empty lane", showMessageBoxConsts.sets.ok)
+extstate._layout.emptyLanesNotify = true
+end
+isEmptyLanes = true
+break
+end
+end
+return (itemsCount > 0 and isEmptyLanes == false)
+end
+
+-- Stretch markers realisation
+
+-- Some pre-defined properties and extended properties
+local stretchMarkerActions = {}
+
+function stretchMarkerActions:get()
+local message = initOutputMessage()
+message:initType("", "")
+message("Stretch markers operations")
+return message
+end
+
+stretchMarkerActions = initExtendedProperties("Stretch marker actions")
+
+stretchMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to stretch marker position.", "Performable")
+message("Go to stretch marker position")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(item_properties_macros.pos_relativeToGlobal(parent.marker.item, parent.marker.pos), true, true)
+message{label="Moving to",value=representation.defpos[reaper.GetCursorPosition()]}
+return true, message
+end
+}
+stretchMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to pull this stretch marker to play or edit cursor position.", "Performable")
+message("Pull stretch marker")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+local curpos = reaper.GetCursorPosition()
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(parent.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(parent.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(parent.marker.item, "D_LENGTH")
+reaper.SetTakeStretchMarker(reaper.GetActiveTake(parent.marker.item), parent.marker.idx, ((curpos-itemPosition)*takePlayrate))
+message(parent:get())
+message{value=string.format("pulled onto %s.", representation.defpos[curpos])}
+return true, message, true
+end
+}
+stretchMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to edit this stretch marker.", "Performable")
+message("Edit stretch marker")
+return message
+end,
+set_perform = function (self, parent)
+local curpos = reaper.GetCursorPosition()
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.Main_OnCommand(41988, 0)
+reaper.SetEditCurPos(curpos, false, false)
+setUndoLabel(self:get(true))
+return true
+end
+}
+stretchMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete this stretch marker.", "Performable")
+message("Delete stretch marker")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+message(self:get())
+reaper.DeleteTakeStretchMarkers(reaper.GetActiveTake(parent.marker.item), parent.marker.idx)
+message{label=" has been", value="deleted"}
+return true, message
+end
+}
+
+parentLayout:registerSublayout("stretchMarkersLayout", "Take stretch markers")
+
+local function formStretchMarkerProperties(item)
+if not canWorkWithItems() then
+return
+end
+for i = 0, reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item)) do
+local stretchMarker = {}
+stretchMarker.item = item
+stretchMarker.idx = i
+stretchMarker.retval, stretchMarker.pos, stretchMarker.srcpos = reaper.GetTakeStretchMarker(reaper.GetActiveTake(item), i)
+if stretchMarker.retval ~= -1 then
+parentLayout.stretchMarkersLayout:registerProperty({
+marker = stretchMarker,
+get = function (self)
+local message = initOutputMessage()
+message:initType("", "")
+local markerPulled = false	
+-- The srcpos which returns a stretch marker relies the original file's length
+do
+local src = reaper.GetMediaItemTake_Source(reaper.GetActiveTake(self.marker.item))
+-- There is two return arguments but we using only one right now. I not understood which case will changes the length to another format, so it is checking based on that fact that we get time always.
+local srcLength = reaper.GetMediaSourceLength(src)
+local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(self.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(self.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(self.marker.item, "D_LENGTH")
+-- TODO: Clarify the symbols amount by which the values should be rounded. Also clarify whether the playrate should be used
+markerPulled = (utils.round(self.marker.pos, 6) ~= utils.round((self.marker.srcpos-((srcLength-itemLength)*takePlayrate)), 6))
+end	
+message{label=string.format("%stretch marker %u of %s %s", ({[false]="S",[true]="Pulled s"})[markerPulled], self.marker.idx+1, item_properties_macros.getItemID(self.marker.item), item_properties_macros.getTakeID(self.marker.item))}
+return message
+end,
+extendedProperties = stretchMarkerActions
+})
+end
+end
+end
+
+-- Take markers
+parentLayout:registerSublayout("takeMarkersLayout", "Take markers")
+-- Take markers pre-defined actions
+local takeMarkerActions = initExtendedProperties("Take marker actions")
+takeMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to take marker position.", "Performable")
+message("Go to take marker")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(item_properties_macros.pos_relativeToGlobal(parent.marker.item, parent.marker.pos), true, true)
+message{label="Move to",value=representation.defpos[reaper.GetCursorPosition()]}
+return true, message
+end
+}
+takeMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to edit this take marker.", "Performable")
+message("Edit take marker")
+return message
+end,
+set_perform = function (self, parent)
+local curpos = reaper.GetCursorPosition()
+reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.Main_OnCommand(42385, 0)
+reaper.SetEditCurPos(curpos, false, false)
+setUndoLabel(self:get(true))
+return true
+end
+}
+takeMarkerActions:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete this take marker.", "Performable")
+message("Delete take marker")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+message(self:get())
+if reaper.DeleteTakeMarker(reaper.GetActiveTake(parent.marker.item), parent.marker.idx) then
+message{label=" has been", value="deleted"}
+else
+message{value="cannot be deleted"}
+end
+return true, message
+end
+}
+
+local function formTakeMarkersProperties(item)
+if not canWorkWithItems() then
+return
+end
+-- REAPER doesn't sort the take markers and not provides any method to get the ordered list even with non-sorted indexes. So, we will sort this manualy.
+local takeMarkers = {}
+for i = 0, reaper.GetNumTakeMarkers(reaper.GetActiveTake(item)) do
+local takeMarker = {}
+takeMarker.item = item
+takeMarker.idx = i
+takeMarker.pos, takeMarker.name, takeMarker.color = reaper.GetTakeMarker(reaper.GetActiveTake(item), i)
+if takeMarker.retval ~= -1 then
+table.insert(takeMarkers, takeMarker)
+end
+end
+table.sort(takeMarkers, 
+function(a, b)
+if a.pos < b.pos then
+return true
+end
+return false
+end
+)
+for i, val in ipairs(takeMarkers) do
+val.num = i-1
+end
+-- Clearing off the start take marker cuz it just start point
+table.remove(takeMarkers, 1)
+for _, takeMarker in ipairs(takeMarkers) do
+parentLayout.takeMarkersLayout:registerProperty({
+marker = takeMarker,
+get = function(self)
+local message = initOutputMessage()
+message:initType("", "")
+if self.marker.color > 0 then
+message{objectId=colors:getName(reaper.ColorFromNative(self.marker.color))}
+end
+if self.marker.num == 0 then
+message{label="Start take marker"}
+else
+message{label=string.format("Take marker %u", self.marker.num)}
+end
+if self.marker.name then
+message{label=string.format(", %s", self.marker.name)}
+end
+message{label=string.format(" in %s of %s", item_properties_macros.getTakeID(self.marker.item), item_properties_macros.getItemID(self.marker.item))}
+return message
+end,
+extendedProperties = takeMarkerActions
+})
+end
+end
+
+-- Main stretch markers actions
+local stretchMarkersActionsProperty = {}
+parentLayout.stretchMarkersLayout:registerProperty(stretchMarkersActionsProperty)
+
+function stretchMarkersActionsProperty:get()
+local message = initOutputMessage()
+message:initType("", "")
+message("Stretch markers operations")
+return message
+end
+
+stretchMarkersActionsProperty.extendedProperties = initExtendedProperties(stretchMarkersActionsProperty:get():extract(nil, false))
+stretchMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to insert a stretch marker at the play or edit cursor position.", "Performable")
+message("Add stretch marker at cursor")
+return message
+end,
+set_perform = function (self, parent)
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+reaper.Main_OnCommand(41842, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+if prevMarkersCount < newMarkersCount then
+return false, "Stretch marker added."
+else
+return false, "No stretch markers created."
+end
+end
+}
+stretchMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to add a stretch markers at the edges of the time selection.", "Performable")
+message("Add stretch markers at time selection")
+return message
+end,
+set_perform = function ()
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+reaper.Main_OnCommand(41843, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+if prevMarkersCount < newMarkersCount then
+return false, "Stretch markers added by time selection."
+else
+return false, "No stretch markers created."
+end
+end
+}
+stretchMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to add a stretch marker at the play or edit cursor and edit it right now", "performable")
+message("Add stretch marker at cursor and edit")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(41842, 0)
+reaper.Main_OnCommand(41988, 0)
+return false
+end
+}
+stretchMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete all stretch markers in selected items takes.", "Performable")
+message("Delete all stretch markers")
+return message
+end,
+set_perform = function (self, parent)
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+reaper.Main_OnCommand(41844, 0)
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+if prevMarkersCount > newMarkersCount then
+return "All Stretch markers deleted."
+else
+return "No stretch markers deleted."
+end
+end
+}
+
+-- creating the stretch markers properties by the items list
+if type(items) == "table" then
+for _, item in ipairs(items) do
+formStretchMarkerProperties(item)
+end
+else
+formStretchMarkerProperties(items)
+end
+
+local takeMarkersActionsProperty = {}
+parentLayout.takeMarkersLayout:registerProperty(takeMarkersActionsProperty)
+
+function takeMarkersActionsProperty:get()
+local message = initOutputMessage()
+message:initType("", "")
+message("Take markers operations")
+return message
+end
+takeMarkersActionsProperty.extendedProperties = initExtendedProperties(takeMarkersActionsProperty:get():extract(nil, false))
+
+takeMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parentLayout)
+local message = initOutputMessage()
+message:initType("Perform this property to create a take marker at the play or edit cursor position.", "Performable")
+message("Create take marker at current position")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(42390, 0)
+return false
+end
+}
+takeMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to create a take marker at play or edit cursor position and edit it.", "Performable")
+message("Create take marker at current position and edit it")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(42385, 0)
+return true
+end
+}
+takeMarkersActionsProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete all stretch markers.", "Performable")
+message("Delete all take markers")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(42387, 0)
+return true
+end
+}
+
+
+-- creating the take markers properties by the items list
+if type(items) == "table" then
+for _, item in ipairs(items) do
+formTakeMarkersProperties(item)
+end
+else
+formTakeMarkersProperties(items)
+end
 
 return parentLayout
