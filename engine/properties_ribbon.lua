@@ -361,7 +361,7 @@ return message
 end,
 set_perform = function(self, parent)
 currentExtProperty = nil
-return true
+return true, "", true
 end
 }
 }, {
@@ -371,11 +371,11 @@ return rawget(self, #self)
 end
 }),
 registerProperty = function(self, property)
- return table.insert(self.properties, property)
+return table.insert(self.properties, property)
 end,
 }
 return t
-	end
+end
 
 -- }
 
@@ -917,9 +917,9 @@ script_finish()
 return
 end
 elseif currentExtProperty then
-local retval, premsg, giveOSARATime
+local retval, premsg, getShouldReported
 if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)] then
-retval, premsg, giveOSARATime = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex], action.direction)
+retval, premsg, getShouldReported = layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty], layout.properties[layout.pIndex], action.direction)
 else
 string.format("This property does not support the %s action.", action.label):output()
 script_finish()
@@ -931,12 +931,15 @@ msg(premsg..". ")
 end
 if retval then
 currentExtProperty = nil
+if premsg then
 msg(string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name))
-msg(layout.properties[layout.pIndex]:get())
-if giveOSARATime then
-utils.delay(100)
 end
+if premsg and getShouldReported then
+msg(layout.properties[layout.pIndex]:get())
+end
+if premsg then
 msg:output()
+end
 script_finish()
 return
 end
