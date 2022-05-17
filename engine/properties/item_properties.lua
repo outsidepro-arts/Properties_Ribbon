@@ -1588,7 +1588,6 @@ message:initType("Adjust this property to set the desired current take pan value
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item active take of.", 1)
 end
-message:addType(" Perform this property to input custom take pan value.", 1)
 message{label="Pan"}
 if type(items) == "table" then
 message(composeMultipleTakeMessage(self.getValue, representation.pan))
