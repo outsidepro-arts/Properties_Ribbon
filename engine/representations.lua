@@ -139,10 +139,10 @@ local data = reaper.format_timestr_pos(pos, "", 1)
 local form = ""
 local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
 if tonumber(measure) > 0 then
-form = form..string.format("measure %u", tonumber(measure))
+form = form..string.format("%u measure", tonumber(measure))
 end
 if tonumber(beat) > 0 then
-form = form..string.format(" beat %u", tonumber(beat))
+form = form..string.format(" %u beat", tonumber(beat))
 end
 if tonumber(fraction) > 0 then
 form = form..string.format(" %u percent", tonumber(fraction))
@@ -157,10 +157,10 @@ local data = reaper.format_timestr_pos(pos, "", 2)
 local form = ""
 local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
 if tonumber(measure) > 0 then
-form = form..string.format("measure %u", tonumber(measure))
+form = form..string.format("%u measure", tonumber(measure))
 end
 if tonumber(beat) > 0 then
-form = form..string.format(" beat %u", tonumber(beat))
+form = form..string.format(" %u beat", tonumber(beat))
 end
 if tonumber(fraction) > 0 then
 form = form..string.format(" %u percent", tonumber(fraction))
