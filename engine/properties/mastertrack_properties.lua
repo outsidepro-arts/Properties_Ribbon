@@ -40,7 +40,7 @@ local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty( volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for master track. Perform this property to input custom value.", "adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for master track.", "adjustable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 message({objectId="Master", label="Volume", value=representation.db[state]})
 return message
@@ -112,7 +112,7 @@ parentLayout.playbackLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for master track. Perform this property to input custom pan value.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pan value for master track.", "Adjustable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 message({objectId="Master", label="Pan", value=representation.pan[state]})
 return message
@@ -156,7 +156,7 @@ reaper.SetMediaTrackInfo_Value(obj, "D_PAN", state)
 end
 ))
 
-volumeProperty.extendedProperties:registerProperty{
+panProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
 message:initType("Perform this property to specify a custom pan value manualy", "Performable")
@@ -185,7 +185,7 @@ local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for master track. Perform this property to input custom width value.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired width value for master track.", "Adjustable")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 message({objectId="Master", label="Width", value=string.format("%s%%", utils.numtopercent(state))})
 return message
