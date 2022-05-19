@@ -852,10 +852,143 @@ end
 return message
 end
 
+-- Item edges
+-- It not works with multiselected items yet
+local leftEdgeProperty = {}
+parentLayout.itemLayout:registerProperty(leftEdgeProperty)
+
+function leftEdgeProperty.getValue(item)
+return reaper.GetMediaItemInfo_Value(item, "D_POSITION")
+end
+
+function leftEdgeProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to grow or shrink the left item edge. Perform this property to trim left item edge to edit or play cursor.", "Adjustable")
+if multiSelectionSupport then
+message:addType(" This property doesn't work with group of selected items.", 1)
+end
+message{label="left edge"}
+if type(items) =="table" then
+message{value="unavailable"}
+else
+message{objectId=getItemID(items)}
+message{value=representation.defpos[self.getValue(items)]}
+end	
+return message
+end
+
+if type(items) ~= "table" then
+function leftEdgeProperty:set_adjust(direction)
+local message = initOutputMessage()
+if direction == actions.set.decrease.direction then
+reaper.Main_OnCommand(40225, 0) -- Item edit: Grow left edge of items
+elseif direction == actions.set.increase.direction then
+reaper.Main_OnCommand(40226, 0) -- Item edit: Shrink left edge of items
+end
+message(self:get())
+return message
+end
+
+leftEdgeProperty.extendedProperties = initExtendedProperties("Left edge extended interraction")
+
+leftEdgeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to left item edge position.", "Performable")
+message("Go to left item edge position")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(parent.getValue(items), true, true)
+message{label="Move to",value=representation.defpos[parent.getValue(items)]}
+return true, message
+end
+}
+leftEdgeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to trim left item edge to edit or play cursor.", "Performable")
+message("Trim left item edge to here")
+return message
+end,
+set_perform = function(self, parent)
+reaper.Main_OnCommand(41305, 0) -- Item edit: Trim left edge of item to edit cursor
+return true, "Trim left item edge", true	
+end
+}
+end
+
+-- Right item edge
+local rightEdgeProperty = {}
+parentLayout.itemLayout:registerProperty(rightEdgeProperty)
+
+function rightEdgeProperty.getValue(item)
+return reaper.GetMediaItemInfo_Value(item, "D_POSITION")+reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+end
+
+function rightEdgeProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to shrink or grow the right item edge.", "Adjustable")
+if multiSelectionSupport then
+message:addType(" This property doesn't work with group of selected items.", 1)
+end
+message{label="Right edge"}
+if type(items) =="table" then
+message{value="unavailable"}
+else
+message{objectId=getItemID(items)}
+message{value=representation.defpos[self.getValue(items)]}
+end	
+return message
+end
+
+if type(items) ~= "table" then
+function rightEdgeProperty:set_adjust(direction)
+local message = initOutputMessage()
+if direction == actions.set.decrease.direction then
+reaper.Main_OnCommand(40227, 0) -- Item edit: Shrink right edge of items
+elseif direction == actions.set.increase.direction then
+reaper.Main_OnCommand(40228, 0) -- Item edit: Grow right edge of items
+end
+message(self:get())
+return message
+end
+
+rightEdgeProperty.extendedProperties = initExtendedProperties("Right edge extended interraction")
+
+rightEdgeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to move the play or edit cursor to right item edge position.", "Performable")
+message("Go to right item edge position")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+reaper.SetEditCurPos(parent.getValue(items), true, true)
+message{label="Move to",value=representation.defpos[parent.getValue(items)]}
+return true, message
+end
+}
+rightEdgeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to trim right item edge to edit or play cursor.", "Performable")
+message("Trim right item edge to here")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(41311, 0) -- Item edit: Trim right edge of item to edit cursor
+return true, "Trim right item edge. ", true
+end
+}
+end
+
 -- Fade methods
 -- Fadein shape
 local fadeinShapeProperty = {}
- parentLayout.itemLayout:registerProperty(fadeinShapeProperty)
+parentLayout.itemLayout:registerProperty(fadeinShapeProperty)
 fadeinShapeProperty.states = setmetatable({
 [0] = "Linear",
 [1] = "Inverted quadratic",
