@@ -730,10 +730,10 @@ message{value="default value"}
 end
 return message
 end,
-	set_adjust=function(self, parent, direction)
+set_adjust=function(self, parent, direction)
 local message = initOutputMessage()
-	local curStepIndex = getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) or 0
-	if (curStepIndex+direction) > #stepsList then
+	local curStepIndex = getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) or config.getinteger("fxParmStep", 4)
+if (curStepIndex+direction) > #stepsList then
 message("No more next property values. ")
 elseif (curStepIndex+direction) < 1 then
 message("No more previous property values. ")
