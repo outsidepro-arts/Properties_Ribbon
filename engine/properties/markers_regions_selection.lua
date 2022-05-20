@@ -15,6 +15,8 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
+-- Preloading some configs
+local allowMove = config.getboolean("allowMoveCursorWhenNavigating", true)
 
 -- Before define which sublayout we will load when no sublayout found, just load all marker/regions data.
 -- Also, it will be used in other cases
@@ -131,6 +133,7 @@ end
 
 markerActions = initExtendedProperties("Marker actions")
 
+if allowMove == false then
 markerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -146,6 +149,7 @@ message{value=representation.defpos[reaper.GetCursorPosition()]}
 return true, message
 end
 }
+end
 markerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -196,6 +200,10 @@ end
 message{label=string.format("Marker %u", self.mIndex)}
 if self.str ~= "" then
 message{label=string.format(", %s", self.str)}
+end
+if allowMove then
+reaper.GoToMarker(0, self.mIndex, true)
+message{value=representation.defpos[self.position]}
 end
 return message
 end
@@ -324,6 +332,7 @@ end
 }
 local regionActions = initExtendedProperties("Region actions")
 
+if allowMove == false then
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -339,6 +348,7 @@ message{value=representation.defpos[reaper.GetCursorPosition()]}
 return false, message
 end
 }
+end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -411,19 +421,16 @@ rIndex = markrgnindexnumber,
 get = function(self)
 local message = initOutputMessage()
 message:initType("", "")
-if shouldSaveAnAction  and  extstate.mrkregLayout_rgnstate then
-message(self.states[extstate.mrkregLayout_rgnstate])
---message:addType(string.format(" Perform this property to %sthis region.", self.states[lastAction]), 1)
-else
---message:addType(" Perform this property to go to this region after previously region finishes playing (also as known as smooth seek).", 1)
-extstate.mrkregLayout_rgnstate = nil
-end
 if self.clr > 0 then
 message{objectId=colors:getName(reaper.ColorFromNative(self.clr))}
 end
 message{label=string.format("Region %u", self.rIndex)}
 if self.str ~= "" then
 message{value=self.str}
+end
+if allowMove then
+reaper.GoToRegion(0, self.rIndex, true)
+message{value=representation.defpos[self.position]}
 end
 return message
 end,
@@ -466,6 +473,7 @@ end
 
 stretchMarkerActions = initExtendedProperties("Stretch marker actions")
 
+if allowMove == false then
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -480,6 +488,7 @@ message{label="Moving to",value=representation.defpos[reaper.GetCursorPosition()
 return true, message
 end
 }
+end
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -557,6 +566,10 @@ local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(sel
 markerPulled = (utils.round(self.marker.pos, 6) ~= utils.round((self.marker.srcpos-((srcLength-itemLength)*takePlayrate)), 6))
 end	
 message{label=string.format("%stretch marker %u of %s %s", ({[false]="S",[true]="Pulled s"})[markerPulled], self.marker.idx+1, item_properties_macros.getItemID(self.marker.item), item_properties_macros.getTakeID(self.marker.item))}
+if allowMove then
+reaper.SetEditCurPos(item_properties_macros.pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+message{value=representation.defpos[item_properties_macros.pos_relativeToGlobal(self.marker.item, self.marker.pos)]}
+end
 return message
 end,
 extendedProperties = stretchMarkerActions
@@ -569,6 +582,7 @@ end
 parentLayout:registerSublayout("takeMarkersLayout", "Take markers")
 -- Take markers pre-defined actions
 local takeMarkerActions = initExtendedProperties("Take marker actions")
+if allowMove == false then
 takeMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -583,6 +597,7 @@ message{label="Move to",value=representation.defpos[reaper.GetCursorPosition()]}
 return true, message
 end
 }
+end
 takeMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
@@ -664,6 +679,10 @@ if self.marker.name then
 message{label=string.format(", %s", self.marker.name)}
 end
 message{label=string.format(" in %s of %s", item_properties_macros.getTakeID(self.marker.item), item_properties_macros.getItemID(self.marker.item))}
+if allowMove then
+reaper.SetEditCurPos(self.marker.pos, true, true)
+message{value=representation.defpos[self.marker.pos]}
+end
 return message
 end,
 extendedProperties = takeMarkerActions

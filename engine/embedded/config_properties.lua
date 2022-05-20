@@ -664,6 +664,26 @@ message(self:get())
 return message
 end
 
+-- Allow some properties to move play cursor when you're navigating to
+local allowMoveCursorProperty = {}
+configLayout.main:registerProperty(allowMoveCursorProperty)
+
+function allowMoveCursorProperty:get()
+local message = initOutputMessage()
+message:initType("Toggle this property to define can some properties be move the play or edit cursor when you're just navigating them", "Toggleable")
+message{label="Allow some properties to move play cursor when you're just navigating them", value=({[true]="enabled",[false]="disabled"})[config.getboolean("allowMoveCursorWhenNavigating", true)]}
+return message
+end
+
+function allowMoveCursorProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getboolean("allowMoveCursorWhenNavigating", true)
+config.setboolean("allowMoveCursorWhenNavigating", utils.nor(state))
+message(self:get())
+return message
+end
+
+
 local clearFileExtsProperty = {}
 configLayout.main:registerProperty(clearFileExtsProperty)
 
