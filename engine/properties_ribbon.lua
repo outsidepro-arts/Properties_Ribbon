@@ -925,17 +925,17 @@ string.format("This property does not support the %s action.", action.label):out
 script_finish()
 return
 end
-msg = initOutputMessage()
+msg = nil
 if premsg then
-msg(premsg..". ")
+msg = premsg:extract(config.getinteger("adjustOutputOrder", 0))
 end
 if retval then
 currentExtProperty = nil
 if premsg then
-msg(string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name))
+msg = msg..string.format(". Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name)
 end
 if premsg and getShouldReported then
-msg(layout.properties[layout.pIndex]:get())
+msg = msg..layout.properties[layout.pIndex]:get():extract()
 end
 if premsg then
 msg:output()
