@@ -809,8 +809,10 @@ message("Create take marker at current position")
 return message
 end,
 set_perform = function (self, parent)
+local prevTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
 reaper.Main_OnCommand(42390, 0)
-return false
+local newTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+return false, string.format("%u take markers created", (newTakeMarkersCount-prevTakeMarkersCount))
 end
 }
 takeMarkersActionsProperty.extendedProperties:registerProperty{
