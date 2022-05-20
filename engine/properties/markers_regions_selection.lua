@@ -66,7 +66,7 @@ end
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("")
+message:initType("Perform this property to create new marker and edit it.", "Performable")
 message("Insert and edit marker at current position")
 return message
 end,
