@@ -160,7 +160,7 @@ end,
 set_perform = function (self, parent)
 -- There is no any different method to show the standart dialog window for user
 local prevPosition = reaper.GetCursorPosition()
-reaper.SetEditCurPos(self.position, false, false)
+reaper.SetEditCurPos(parent.position, false, false)
 reaper.Main_OnCommand(40614, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
 setUndoLabel(self:get())
@@ -389,7 +389,7 @@ end,
 set_perform = function (self, parent)
 -- There is no any different method to show the standart dialog window for user
 local prevPosition = reaper.GetCursorPosition()
-reaper.SetEditCurPos(self.position, false, false)
+reaper.SetEditCurPos(parent.position, false, false)
 reaper.Main_OnCommand(40616, 0)
 reaper.SetEditCurPos(prevPosition, false, false)
 return true
@@ -515,7 +515,7 @@ return message
 end,
 set_perform = function (self, parent)
 local curpos = reaper.GetCursorPosition()
-reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.SetEditCurPos(pos_relativeToGlobal(parent.marker.item, self.marker.pos), false, false)
 reaper.Main_OnCommand(41988, 0)
 reaper.SetEditCurPos(curpos, false, false)
 setUndoLabel(self:get(true))
@@ -607,7 +607,7 @@ return message
 end,
 set_perform = function (self, parent)
 local curpos = reaper.GetCursorPosition()
-reaper.SetEditCurPos(pos_relativeToGlobal(self.marker.item, self.marker.pos), false, false)
+reaper.SetEditCurPos(pos_relativeToGlobal(parent.marker.item, self.marker.pos), false, false)
 reaper.Main_OnCommand(42385, 0)
 reaper.SetEditCurPos(curpos, false, false)
 setUndoLabel(self:get(true))
