@@ -878,88 +878,61 @@ end
 
 for i = 1, #fxMaskList do
 local fxExcludeElem = fxMaskList[i]
-configLayout.fxExcludeList:registerProperty({
-states = {
-{
-label="Edit",
-proc = function()
+local excludeElementProperty = {}
+configLayout.fxExcludeList:registerProperty(excludeElementProperty)
+function excludeElementProperty:get()
+local message = initOutputMessage()
+message:initType("", "")
+message(string.format("FX mask %u %s, parameter mask %s", i, fxExcludeElem.fxMask, fxExcludeElem.paramMask))
+return message
+end
+excludeElementProperty.extendedProperties = initExtendedProperties("Context actions")
+excludeElementProperty.states = {
+excludeElementProperty.extendedProperties:registerProperty{
+-- The methods written below get second parameter but Lua allows s to omit this if it's not needed.
+get = function ()
+local message = initOutputMessage()
+message:initType("Perform this property to edit this exclude mask.", "Performable")
+message"Edit"
+return message
+end,
+set_perform = function(self)
 local retval, answer = reaper.GetUserInputs("Edit exclude mask", 3, "FX plug-in filename mask:,Parameter mask:", "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"..fxExcludeElem.fxMask..","..fxExcludeElem.paramMask)
 if retval then
 local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
 if newFxMask == nil then
 reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
-return true
+return false
 end
 if newParamMask == nil then
 reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
-return true
+return false
 end
 fxMaskList[i] = {
 fxMask = newFxMask,
 paramMask=newParamMask
 }
+return true, "", true
 end
+return false
 end
 },
-{
-label="Delete",
-proc = function()
-if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s', fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
-fxMaskList[i] = nil
-end
-end
-}
-},
-get = function(self, shouldSaveAction)
+excludeElementProperty.extendedProperties:registerProperty{
+get = function ()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose desired action for. Perform this property to execute chosen action.", "Adjustable, performable")
-if not shouldSaveAction then
-extstate._sublayout.actionIndex = nil
-end
-local act = extstate._sublayout.actionIndex or 0
-if act == 0 then
-message(string.format("FX mask %u %s, parameter mask %s", i, fxExcludeElem.fxMask, fxExcludeElem.paramMask))
-else
-message(self.states[act].label)
-end
+message:initType("Perform this property to delete this exclude mask.", "Performable")
+message"Delete"
 return message
 end,
-set = function(self, action)
-local message = initOutputMessage()
-local state = extstate._sublayout.actionIndex or 0
-if action == actions.set.increase then
-if state == 0 then
-message("Actions, ")
+set_perform = function(self)
+if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s', fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+fxMaskList[i] = nil
+return true, ""
 end
-if (state+1) <= #self.states then
-extstate._sublayout.actionIndex = state+1
-else
-message("No more next property values.")
+return false
 end
-elseif action == actions.set.decrease then
-if state == 0 then
-message("Actions, ")
-extstate._sublayout.actionIndex = 1
-end
-if (state-1) >= 1 then
-extstate._sublayout.actionIndex = state-1
-else
-message("No more previous property values.")
-end
-elseif action == actions.set.perform then
-if state == 0 then
-message("Actions, ")
-extstate._sublayout.actionIndex = 1
-else
-if self.states[state].proc() then
-return
-end
-end
-end
-message(self:get(true))
-return message
-end
-})
+}
+}
 end
 
 local addExcludeMaskProperty = {}
