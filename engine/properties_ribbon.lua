@@ -932,7 +932,13 @@ end
 if retval then
 currentExtProperty = nil
 if premsg then
-msg = msg..string.format(". Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name)
+if type(msg) == "string" then if #msg > 0 then
+if msg:sub(-1, -1) ~= "." then
+msg = msg.."."
+end
+msg = msg.." "
+end end
+msg = msg..string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name)
 end
 if premsg and getShouldReported then
 msg = msg..layout.properties[layout.pIndex]:get():extract()
