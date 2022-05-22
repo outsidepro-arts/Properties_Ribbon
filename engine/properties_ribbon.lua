@@ -551,7 +551,7 @@ return nil
 end
 currentExtProperty = extstate.extProperty
 local rememberCFG = config.getinteger("rememberSublayout", 3)
-if newLayout then
+if newLayout and newLayout ~= extstate.currentLayout then
 if extstate.gotoMode then
 extstate.gotoMode = nil
 end
@@ -896,7 +896,7 @@ end
 
 function script_ajustProperty(action)
 local gotoMode = extstate.gotoMode
-if gotoMode and action == nil then
+if gotoMode and action == actions.set.perform then
 script_reportOrGotoProperty()
 return
 end
