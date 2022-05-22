@@ -602,6 +602,7 @@ return nil
 end
 if isHasSublayouts(layout) then
 local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
+debug(sublayout)
 layout = layout[sublayout]
 currentSublayout = sublayout
 end
