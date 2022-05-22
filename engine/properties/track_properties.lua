@@ -350,7 +350,7 @@ message("maximum volume. ")
 end	
 reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
 end
- message(self:get())
+message(self:get())
 return message
 end
 
@@ -530,11 +530,10 @@ parentLayout.playbackLayout:registerProperty(widthProperty)
 
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired width value for selected track.", "Adjustable")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
-message:addType(" Perform this property to input custom width value.", 1)
 message({label="Width"})
 if type(tracks) == "table" then
 message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") end, setmetatable({}, {__index = function(self, state) return string.format("%s%%", utils.numtopercent(state)) end})))
