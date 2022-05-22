@@ -81,12 +81,12 @@ if reaper.APIExists(self._contextPrefix[context]..key) then
 return reaper[self._contextPrefix[context]..key](self._contextObj[context], ...)
 else
 if context == 0 and key:find("Envelope") then
- if reaper[key] then
- return reaper[key](self._contextObj[context], ...)
+if reaper[key] then
+return reaper[key](self._contextObj[context], ...)
 end 
 end
- error(string.format("Contextual API wasn't found method %s", self._contextPrefix[context]..key))
- end
+error(string.format("Contextual API wasn't found method %s", self._contextPrefix[context]..key))
+end
 end
 end
 })
@@ -673,7 +673,7 @@ message:initType("Perform this property to create an envelope with this paramete
 message("Create envelope with this parameter")
 return message
 end,
-set_perform=function(parent)
+set_perform=function(self, parent)
 local createEnvelope = nil
 if context == 0 then
 createEnvelope = reaper.GetFXEnvelope
