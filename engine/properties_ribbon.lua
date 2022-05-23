@@ -451,10 +451,12 @@ if config.getboolean("allowLayoutsrestorePrev", true) == true then
 if config.getboolean("automaticLayoutLoading", false) == true then
 currentLayout = proposeLayout(true)
 speakLayout = true
+layoutHasReset = true
 else
 if extstate.previousLayout then
 currentLayout = extstate.previousLayout
 speakLayout = true
+layoutHasReset = true
 end
 end
 end
@@ -531,7 +533,7 @@ end
 
 -- Main body
 
-layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty = {}, nil, nil, false, "Unknown Change via Properties Ribbon script", nil
+layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty, layoutHasReset = {}, nil, nil, false, "Unknown Change via Properties Ribbon script", nil, false
 
 -- The main initialization function
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
@@ -602,7 +604,6 @@ return nil
 end
 if isHasSublayouts(layout) then
 local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
-debug(sublayout)
 layout = layout[sublayout]
 currentSublayout = sublayout
 end
@@ -1009,7 +1010,9 @@ function script_finish()
 if layout then
 extstate[layout.section] = layout.pIndex
 extstate.currentLayout = currentLayout
+if layoutHasReset ~= true then
 extstate[currentLayout.."_sublayout"] = currentSublayout
+end
 extstate.speakLayout = speakLayout
 extstate.extProperty = currentExtProperty
 if reaper.GetCursorContext() ~= -1 then 
