@@ -513,6 +513,17 @@ local message = initOutputMessage()
 -- The extended properties notify will be added by the main script side
 message:initType("", "")
 message("FX operations")
+if getFilter(sid) or extstate._layout.fxDrag then
+message(" (")
+if getFilter(sid) then
+message(string.format("filter set to %s", getFilter(sid)))
+if extstate._layout.fxDrag then message(", ") end
+end
+if extstate._layout.fxDrag then
+message("drag and drop process started")
+end	
+message(")")
+end
 return message
 end
 }
