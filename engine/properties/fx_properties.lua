@@ -439,7 +439,11 @@ get = function(self, parent)
 local message = initOutputMessage()
 message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.", "Performable")
 if extstate._layout.fxDrag then
+if extstate._layout.fxDrag == parent.fxIndex then
+message("Cancel drag")
+else
 message("Drop previously dragged FX here")
+end
 else
 message("Drag FX")
 end
@@ -513,10 +517,11 @@ local message = initOutputMessage()
 -- The extended properties notify will be added by the main script side
 message:initType("", "")
 message("FX operations")
-if getFilter(sid) or extstate._layout.fxDrag then
+local filter = getFilter(sid)
+if filter or extstate._layout.fxDrag then
 message(" (")
-if getFilter(sid) then
-message(string.format("filter set to %s", getFilter(sid)))
+if filter then
+message(string.format("filter set to %s", filter))
 if extstate._layout.fxDrag then message(", ") end
 end
 if extstate._layout.fxDrag then
