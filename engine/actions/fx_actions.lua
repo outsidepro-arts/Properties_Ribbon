@@ -47,12 +47,21 @@ context = extstate.lastKnownContext or context
 end
 
 local function getCurrentChainAction()
-local result = extstate._sublayout["currentAction"] or 1
+local result = extstate._sublayout.currentChainAction or 1
+return result
+end
+
+local function getCurrentBypassAction()
+local result = extstate._sublayout.currentBypassAction or 1
 return result
 end
 
 local function setCurrentChainAction(action)
-extstate._sublayout["currentAction"] = action
+extstate._sublayout.currentChainAction = action
+end
+
+local function setCurrentBypassAction(action)
+extstate._sublayout.currentBypassAction = action
 end
 
 
@@ -202,13 +211,29 @@ fxActionsLayout.contextLayout:registerProperty{
 states = {
 [0]="Activate",
 [1]="Bypass",
-[2]="Bypass or activate"
 },
 commands = {
 [0]=40298,
 [1]=reaper.NamedCommandLookup("_S&M_TGL_TAKEFX_BYP")
 },
 getValue = contextualFXChain.getValue,
+take_checkState = function ()
+-- REAPER doesn't provide any way to neither check the all FX bypass state nor set this, so we have to check the bypass state per each FX in. For set state we are using the SWS action.
+useMacros("properties")
+local state, item = 1, item_properties_macros.getItems(false)
+local fxCount, bypassedFXCount = reaper.TakeFX_GetCount(reaper.GetActiveTake(item)), 0
+for i = 0, fxCount-1 do
+if reaper.TakeFX_GetEnabled(reaper.GetActiveTake(item), i) == false then
+bypassedFXCount = bypassedFXCount+1
+end
+end
+if bypassedFXCount > 0 then
+if bypassedFXCount == fxCount then
+state = 0
+end
+end
+return tonumber(state) -- Lua complains on non-number type return... Why should I know?
+end,
 get = function(self)
 local message = initOutputMessage()
 message:initType(("Toggle this property to bypass or activate the FX chain of %s."):format(contexts[context]), "Toggleable")
@@ -227,15 +252,12 @@ local state = nil
 if context == 0 then
 state = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "I_FXEN")
 elseif context == 1 then
-state = 2
+state = self.take_checkState()
 end
 message(("%s %s for %s"):format(self.states[state], getStringPluginsCount(self.getValue), contexts[context]))
 return message
 end,
 set_perform = function(self)
-if context == 1 and not reaper.APIExists("CF_GetSWSVersion") then
-return string.format("The bypass property for %s is unavailable because no SWS installed.", contexts[context])
-end
 if self.getValue() == 0 then
 return "This property is unavailable because no plugin is set there."
 end
@@ -247,7 +269,13 @@ state = 0
 end
 reaper.Main_OnCommand(self.commands[context], state)
 restorePreviousLayout()
+if context == 1 then
+local message = initOutputMessage()
+message{label="All FX",value=({[0]="active",[1]="Bypassed"})[utils.nor(self.take_checkState())]}
+return message
+else
 setUndoLabel(self:get())
+end
 end
 }
 end
