@@ -48,7 +48,7 @@ message:addType(", onetime", 2)
 end
 return message
 end,
-set_perform = function(self, action)
+set_perform = function(self)
 local message = initOutputMessage()
 restorePreviousLayout()
 local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
@@ -66,18 +66,17 @@ elseif oldTracksCount > newTracksCount then
 message(string.format("%u tracks removed", oldTracksCount-newTracksCount))
 end
 if oldItemsCount < newItemsCount then
-if message:extract() ~= "" then
+if #message > 0 then
 message(" and ")
 end
 message(string.format("%u items added", newItemsCount-oldItemsCount))
 elseif oldItemsCount > newItemsCount then
-if message:extract() ~= "" then
+if #message > 0 then
 message(" and ")
 end
 message(string.format("%u items removed", oldItemsCount-newItemsCount))
 end
-setUndoLabel(self:get())
-return message
+return message	
 end
 }
 return usual
