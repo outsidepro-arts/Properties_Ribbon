@@ -2157,7 +2157,6 @@ message("Type custom pitch")
 return message
 end,
 set_perform = function(self, parent)
-local message = initOutputMessage()
 if type(items) == "table" then
 local retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1, prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
 if not retval then
@@ -2184,7 +2183,7 @@ reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Proper
 return false
 end
 end
-return true, message
+return true, "", true
 end
 }
 
