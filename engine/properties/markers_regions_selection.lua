@@ -16,7 +16,7 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 -- Preloading some configs
-local allowMove = config.getboolean("allowMoveCursorWhenNavigating", true)
+local allowMove = config.getboolean("allowMoveCursorWhenNavigating", true) == true and currentSublayout == extstate[extstate.currentLayout.."_sublayout"]
 
 -- Before define which sublayout we will load when no sublayout found, just load all marker/regions data.
 -- Also, it will be used in other cases
