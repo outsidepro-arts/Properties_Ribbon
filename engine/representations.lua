@@ -180,6 +180,24 @@ __index = function(self, pos)
 local data = reaper.format_timestr_pos(pos, "", 4)
 return string.format("%s samples", data)
 end
+}),
+[5] = setmetatable({}, {
+__index = function (self, pos)
+local data = reaper.format_timestr_pos(pos, "", 5)
+local hours, minutes, seconds, fractions = string.match(data, "(%d*):(%d*):(%d*):(%d*)")
+local form = {}
+if tonumber(hours) > 0 then
+form = table.insert(form, string.format("%u hours", hours))
+end
+if tonumber(minutes) > 0 then
+table.insert(form, string.format("%u minutes", minutes))
+end
+table.insert(form, string.format("%u seconds", seconds))
+if tonumber(fractions) > 0 then
+table.insert(form, string.format("%u milliseconds", fractions))
+end
+return table.concat(form, ", ")
+end
 })
 }
 
@@ -193,6 +211,8 @@ elseif reaper.GetToggleCommandState(40368) == 1 then
 tfDefinition = 3
 elseif reaper.GetToggleCommandState(40369) == 1 then
 tfDefinition = 4
+elseif reaper.GetToggleCommandState(40370) == 1 then
+tfDefinition = 5
 end
 return representation.pos[tfDefinition][pos]
 end
