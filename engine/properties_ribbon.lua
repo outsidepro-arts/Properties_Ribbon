@@ -182,27 +182,34 @@ if shouldExtractType== nil then
 shouldExtractType = true
 end
 outputOrder = outputOrder or 0
-local message = ""
+local message = {}
 if self.msg then
-message = tostring(self.msg)
+table.insert(message, tostring(self.msg))
 end
 if outputOrder == 0 and self.objectId then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.objectId):gsub("^%u", string.lower),[false]=tostring(self.objectId)})[(#message > 0 and string.match(message, "[.]%s*$") == nil)])
+table.insert(message, tostring(string.gsub(({[true]=tostring(self.objectId):gsub("^%u", string.lower),[false]=tostring(self.objectId)})[(#message > 0)], "%s$", " ")))
 end
 if outputOrder <= 1 and self.label then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], ({[true]=tostring(self.label):lower(),[false]=tostring(self.label)})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
+table.insert(message, ({[true]=tostring(self.label):lower(),[false]=tostring(self.label)})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
 end
 if self.value then
-message = string.format("%s%s", ({[false]=message,[true]=message.." "})[(#message > 0 and string.match(message, "%s$") == nil)], self.value)
+table.insert(message, tostring(string.gsub(self.value, "%s$", "")))
 end
 if self.focusIndex then
-message = string.format("%s. %s", message, self.focusIndex)
+message[#message] = string.format("%s.", message[#message])
+table.insert(message, self.focusIndex)
 end
 if #message == 0 then return end
 if shouldExtractType == true and self.tLevels and self.tl > 0 then
-message = message..". "..self.tLevels[self.tl]
+message[#message] = string.format("%s.", message[#message])
+table.insert(message, self.tLevels[self.tl])
 end
-return message
+-- Clearing off the extra spaces
+for _, part in ipairs(message) do
+part = part:gsub("%s%s", " ")
+part = part:gsub("%s$", "")
+end
+return table.concat(message, " ")
 end
 }, {
 -- Redefine the metamethod type

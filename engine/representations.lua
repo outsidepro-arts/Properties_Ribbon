@@ -118,55 +118,50 @@ representation.pos = {
 [0] = setmetatable({}, {
 __index = function(self, pos)
 local data = reaper.format_timestr_pos(pos, "", 0)
-local form = ""
+local form = {}
 local minute, second, fraction = string.match(data, "(%d*):(%d*)[.](%d*)")
 if tonumber(minute) > 0 then
-form = form..string.format("%u minute%s", tonumber(minute), ({[true]="s",[false]=""})[(tonumber(minute) ~= 1)])
+table.insert(form, string.format("%u minute%s", tonumber(minute), ({[true]="s",[false]=""})[(tonumber(minute) ~= 1)]))
 end
-if tonumber(second) > 0 then
-form = form..string.format(" %u second%s", tonumber(second), ({[true]="s",[false]=""})[(tonumber(second) ~= 1)])
-end
+table.insert(form, string.format(" %u second%s", tonumber(second), ({[true]="s",[false]=""})[(tonumber(second) ~= 1)]))
 if tonumber(fraction) > 0 then
-form = form..string.format(" %u milli-second%s", tonumber(fraction), ({[true]="s",[false]=""})[(tonumber(fraction) ~= 1)])
+table.insert(form, string.format(" %u milli-second%s", tonumber(fraction), ({[true]="s",[false]=""})[(tonumber(fraction) ~= 1)]))
 end
-form = form:gsub("^%s", "")
-return form
+return table.concat(form, ", ")
 end
 }),
 [1]=setmetatable({}, {
 __index = function(self, pos)
 local data = reaper.format_timestr_pos(pos, "", 1)
-local form = ""
+local form = {}
 local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
 if tonumber(measure) > 0 then
-form = form..string.format("%u measure", tonumber(measure))
+table.insert(form, string.format("%u measure", tonumber(measure)))
 end
 if tonumber(beat) > 0 then
-form = form..string.format(" %u beat", tonumber(beat))
+table.insert(form, string.format(" %u beat", tonumber(beat)))
 end
 if tonumber(fraction) > 0 then
-form = form..string.format(" %u percent", tonumber(fraction))
+table.insert(form, string.format(" %u percent", tonumber(fraction)))
 end
-form = form:gsub("^%s", "")
-return form
+return table.concat(form, ", ")
 end
 }),
 [2]=setmetatable({}, {
 __index = function(self, pos)
 local data = reaper.format_timestr_pos(pos, "", 2)
-local form = ""
+local form = {}
 local measure, beat, fraction = string.match(data, "(%d+)[.](%d+)[.](%d+)")
 if tonumber(measure) > 0 then
-form = form..string.format("%u measure", tonumber(measure))
+table.insert(form, string.format("%u measure", tonumber(measure)))
 end
 if tonumber(beat) > 0 then
-form = form..string.format(" %u beat", tonumber(beat))
+table.insert(form, string.format(" %u beat", tonumber(beat)))
 end
 if tonumber(fraction) > 0 then
-form = form..string.format(" %u percent", tonumber(fraction))
+table.insert(form, string.format(" %u percent", tonumber(fraction)))
 end
-form = form:gsub("^%s", "")
-return form
+return table.concat(form, ", ")
 end
 }),
 [3] = setmetatable({}, {
