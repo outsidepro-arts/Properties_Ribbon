@@ -1927,6 +1927,28 @@ end
 return "This property is unavailable right now because no track touched."
 end
 
+local routingViewProperty = {}
+parentLayout.visualLayout:registerProperty(routingViewProperty)
+
+function routingViewProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to view the routing and input/output options for last touched track", "Performable")
+local track = reaper.GetLastTouchedTrack()
+if track then
+message{objectId=getTrackID(track)}
+else
+message{value="(unavailable)"}
+end
+message{label="Routing and inputs or outputs"}
+return message
+end
+
+function routingViewProperty:set_perform()
+if reaper.GetLastTouchedTrack() then
+reaper.Main_OnCommand(40293, 0)
+end
+end
+
 parentLayout.defaultSublayout = "playbackLayout"
 
 return parentLayout
