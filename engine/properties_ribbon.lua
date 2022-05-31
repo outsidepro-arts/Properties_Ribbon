@@ -14,7 +14,7 @@ utils = require "utils"
 -- including the colors module
 colors = require "colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "reaper_extstate"
+extstate = require "extstate_wrapper"
 extstate._section = config.section
 
 -- Including the humanbeing representations metamethods
