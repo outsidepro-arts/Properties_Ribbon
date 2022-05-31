@@ -1018,7 +1018,7 @@ if layout then
 extstate[layout.section] = layout.pIndex
 extstate.currentLayout = currentLayout
 if layoutHasReset ~= true then
-extstate[currentLayout.."_sublayout"] = currentSublayout
+extstate[currentLayout.."_sublayout"] = currentSublayout or extstate[currentLayout.."_sublayout"]
 end
 extstate.speakLayout = speakLayout
 extstate.extProperty = currentExtProperty
