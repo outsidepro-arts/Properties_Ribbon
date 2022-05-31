@@ -2437,6 +2437,25 @@ message(self:get())
 return message
 end
 
+local itemPropertiesProperty = {}
+parentLayout.visualLayout:registerProperty(itemPropertiesProperty)
+
+function itemPropertiesProperty:get()
+local message = initOutputMessage()
+message:initType("Perform this property to open the item properties window.", "Performable")
+if type(items) =="table" then
+message{objectId="Selected items"}
+else
+message{objectId=getItemID(items)}
+end
+message{label="Properties"}
+return message
+end
+
+function itemPropertiesProperty:set_perform()
+reaper.Main_OnCommand(40009, 0)
+end
+
 local osaraParamsProperty = {}
 parentLayout.visualLayout:registerProperty(osaraParamsProperty)
 
