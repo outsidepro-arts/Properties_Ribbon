@@ -2173,6 +2173,17 @@ return message
 end
 
 takePitchProperty.extendedProperties = initExtendedProperties("Pitch extended interraction")
+takePitchProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+items,
+{
+representation = representation.pitch,
+min = -config.getinteger("pitchBounces", 24.0),
+rootmean = 0,
+max = config.getinteger("pitchBounces", 24.0)
+},
+tpMessages,
+takePitchProperty.setValue
+))
 takePitchProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
