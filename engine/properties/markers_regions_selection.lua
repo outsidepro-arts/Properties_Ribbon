@@ -515,7 +515,7 @@ return message
 end,
 set_perform = function (self, parent)
 local curpos = reaper.GetCursorPosition()
-reaper.SetEditCurPos(pos_relativeToGlobal(parent.marker.item, self.marker.pos), false, false)
+reaper.SetEditCurPos(item_properties_macros.pos_relativeToGlobal(parent.marker.item, parent.marker.pos), false, false)
 reaper.Main_OnCommand(41988, 0)
 reaper.SetEditCurPos(curpos, false, false)
 setUndoLabel(self:get(true))
