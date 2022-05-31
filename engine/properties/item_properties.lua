@@ -2134,15 +2134,39 @@ end
 function takePitchProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("pitchStep", 1)
+local bounce = config.getinteger("pitchBounces", 24.0)
 if direction == actions.set.decrease.direction then
 ajustingValue = -ajustingValue
 end
 if type(items) == "table" then
 for k = 1, #items do
-self.setValue(items[k], self.getValue(items[k])+ajustingValue)
-end
+local state = self.getValue(items[k])
+if ajustingValue > 0 then
+if state+ajustingValue <= bounce then
+state = state+ajustingValue
 else
-self.setValue(items, self.getValue(items)+ajustingValue)
+state = bounce
+end
+elseif ajustingValue < 0 then
+if state+ajustingValue >= -bounce then
+state = state+ajustingValue
+else
+state = -bounce
+end
+end
+self.setValue(items[k], state)
+end	
+else
+local state = self.getValue(items)
+if state+ajustingValue <= bounce and state+ajustingValue >= -bounce then
+self.setValue(items, state+ajustingValue)
+elseif state+ajustingValue > bounce then
+self.setValue(items, bounce)
+message("No more next property values.")
+elseif state+ajustingValue < -bounce then
+self.setValue(items, -bounce)
+message("No more previous property values.")
+end
 end
 message(self:get())
 return message

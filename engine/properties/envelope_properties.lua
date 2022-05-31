@@ -251,14 +251,25 @@ end
 end
 elseif envelopeType == 4 then
 local adjustStep = config.getinteger("pitchStep", 1.0)
+local bounce = config.getinteger("pitchBounces", 24.0)
 if type(points) == "table" then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
-self.setValue(point, state-adjustStep)
+if state-adjustStep >= -bounce then
+state = state-adjustStep
+else
+state = -bounce
+end
+self.setValue(point, state)
 end
 else
 local state = self.getValue(points)
+if state-adjustStep >= -bounce then
 self.setValue(points, state-adjustStep)
+else
+self.setValue(points, -bounce)
+message("No more previous property values.")
+end
 end
 elseif envelopeType == 6 then
 local adjustStep = config.getinteger("percentStep", 1)
@@ -338,12 +349,25 @@ self.setValue(points, utils.percenttonum(utils.numtopercent(self.getValue(points
 end
 elseif envelopeType == 4 then
 local adjustStep = config.getinteger("pitchStep", 1.0)
+local bounce = config.getinteger("pitchBounces", 24.0)
 if type(points) == "table" then
 for _, point in ipairs(points) do
-self.setValue(point, self.getValue(point)+adjustStep)
+local state = self.getValue(point)
+if state-adjustStep <= bounce then
+state = state+adjustStep
+else
+state = bounce
+end
+self.setValue(point, state)
 end
 else
-self.setValue(points, self.getValue(points)+adjustStep)
+local state = self.getValue(points)
+if state+adjustStep <= bounce then
+self.setValue(points, state+adjustStep)
+else
+self.setValue(points, bounce)
+message("No more next property values.")
+end
 end
 elseif envelopeType == 6 then
 local adjustStep = config.getinteger("percentStep", 1)
@@ -603,17 +627,17 @@ end
 function tensionProperty:set_adjust(direction)
 local message = initOutputMessage()
 local adjustStep = config.getinteger("percentStep", 1)
-ajustStep = utils.percenttonum(adjustStep)
+adjustStep = utils.percenttonum(adjustStep)
 if direction == actions.set.decrease.direction then
-ajustStep = -utils.percenttonum(adjustStep)
+adjustStep = -utils.percenttonum(adjustStep)
 end
 if type(points) == "table" then
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then
 local state = self.getValue(point)
-if (state+ajustStep) > utils.percenttonum(100) then
+if (state+adjustStep) > utils.percenttonum(100) then
 state = utils.percenttonum(100)
-elseif (state+ajustStep) < utils.percenttonum(-100) then
+elseif (state+adjustStep) < utils.percenttonum(-100) then
 state = utils.percenttonum(-100)
 else
 state = state+direction
@@ -624,14 +648,14 @@ end
 else
 if shapeProperty.getValue(points) == 5 then
 local state = self.getValue(points)
-if (state+ajustStep) > utils.percenttonum(100) then
+if (state+adjustStep) > utils.percenttonum(100) then
 message"Maximal curvature to the next point. "
 state = utils.percenttonum(100)
-elseif (state+ajustStep) < utils.percenttonum(-100) then
+elseif (state+adjustStep) < utils.percenttonum(-100) then
 message"Maximal curvature to the previous point. "
 state = utils.percenttonum(-100)
 else
-state = state+ajustStep
+state = state+adjustStep
 end
 self.setValue(points, state)
 else

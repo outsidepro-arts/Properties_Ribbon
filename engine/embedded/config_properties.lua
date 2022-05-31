@@ -502,6 +502,64 @@ message(self:get())
 return message
 end
 
+local pitchBouncesProperty = {}
+configLayout.stepAdjustment:registerProperty(pitchBouncesProperty)
+
+function pitchBouncesProperty:get()
+local message = initOutputMessage()
+message:initType("Adjust this property to set the desired value either more or less than the pitch properties will not adjust. Perform this property to type the custom pitch bounces value manualy.", "Adjustable, performable")
+local state = config.getinteger("pitchBounces", 24.0)
+message{label="Pitch bounces", value=representation.pitch[state]}
+return message
+end
+
+function pitchBouncesProperty:set_adjust(direction)
+local message = initOutputMessage()
+local state = config.getinteger("pitchBounces", 24.0)
+local ajustingValue
+if direction == actions.set.increase.direction then
+if state >= 6.0 and state < 12.0 then
+ajustingValue = 12.0
+elseif state >= 12.0 and state < 18.0 then
+ajustingValue = 18.0
+elseif state >= 18.0 and state < 24.0 then
+ajustingValue = 24.0
+else
+return "Maximal value"
+end
+elseif direction == actions.set.decrease.direction then
+if state > 24.0 then
+ajustingValue = 24.0
+elseif state <= 24.0 and state > 18.0 then
+ajustingValue = 18.0
+elseif state <= 18.0 and state > 12.0 then
+ajustingValue = 12.0
+elseif state <= 12.0 and state > 6.0 then
+ajustingValue = 6.0
+else
+return "Minimal value"
+end
+end
+config.setinteger("pitchBounces", ajustingValue)
+message(self:get())
+return message
+end
+
+function pitchBouncesProperty:set_perform()
+local message = initOutputMessage()
+local state = config.getinteger("pitchBounces", 24.0)
+local ajustingValue
+local result, answer = reaper.GetUserInputs("Pitch bounces value", 1, prepareUserData.pitch.formatCaption, representation.pitch[state])
+if result == true then
+ajustingValue = prepareUserData.pitch.process(answer, state)
+else
+return "Canceled."
+end
+config.setinteger("pitchBounces", ajustingValue)
+message(self:get())
+return message
+end
+
 -- Multiselection support methods
 local multiSelectionSupportProperty = {}
 configLayout.main:registerProperty( multiSelectionSupportProperty)
