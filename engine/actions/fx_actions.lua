@@ -71,10 +71,10 @@ if reaper.GetMasterTrackVisibility()&1 == 1 then
 fxActionsLayout:registerSublayout("masterTrackLayout", "Master track")
 end
 fxActionsLayout:registerSublayout("monitoringLayout", "Monitoring")
-if reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
-    fxActionsLayout:destroySublayout("contextLayout")
-    fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout
-    fxActionsLayout.masterTrackLayout.previousSublayout = nil
+if (reaper.GetLastTouchedTrack() == reaper.GetMasterTrack() or reaper.GetLastTouchedTrack() == nil) and (reaper.GetMasterTrackVisibility()&1) == 1 then
+fxActionsLayout:destroySublayout("contextLayout")
+-- we still need to return back to the contextual layout when you're leaving the master track
+fxActionsLayout.contextLayout = fxActionsLayout.masterTrackLayout or fxActionsLayout.monitoringLayout
 end
 
 

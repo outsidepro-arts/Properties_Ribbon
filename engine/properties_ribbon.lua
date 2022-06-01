@@ -319,28 +319,44 @@ self[slID].registerProperty = self.registerProperty
 -- If a category has been created, the parent registration methods should be unavailable.
 if self.properties then self.properties = nil end
 end,
-destroySublayout = function(self, slID)
+destroySublayout = function(self, slID, shouldPatchGlobals)
+local curIndex = self[slID].slIndex
+local prevSub, nextSub
+for sKey, sField in pairs(self) do
+if type(sField) =="table" then
+if sField.type == "sublayout" then
+if sField.slIndex > 0 and sField.slIndex == curIndex-1 then
+prevSub = sKey
+elseif sField.slIndex <= self.ofCount and sField.slIndex == curIndex+1 then
+nextSub = sKey
+end
+end
+end
+end
+if self[nextSub] then self[nextSub].previousSubLayout = prevSub end
+if self[prevSub] then self[prevSub].nextSubLayout = nextSub end
 self[slID] = nil
 self.ofCount = self.ofCount-1
-for slsn, sls in pairs(self) do
-    if type(sls) == "table" then
-    if sls.slIndex == self.ofCount-1 then
-sls.nextSubLayout = slID
-self[slID].previousSubLayout = slsn
+if shouldPatchGlobals then
+if currentSublayout == slID then
+if prevSub then
+currentSublayout = prevSub
+elseif nextSub then
+currentSublayout = nextSub
 end
 end
 end
-for slsn, sls in pairs(self) do
-    if type(sls) == "table" then
-        sls.slIndex = sls.slIndex-1
-        if sls.slIndex == 1 then
-            sls.previousSubLayout = nil
-        elseif sls.slIndex == self.ofCount then
-            sls.nextSubLayout = nil
-        end
-        end
-    end
-    end,
+for _, sField in pairs(self) do
+if type(sField) =="table" then
+if sField.type == "sublayout" then
+if sField.slIndex > curIndex then
+sField.slIndex = sField.slIndex-1
+end
+end
+
+end
+end
+end,
 properties = setmetatable({}, {
 __index = function(self, key)
 layout.pIndex = #self
@@ -832,7 +848,7 @@ end
 local layoutLevel
 if currentExtProperty then
 layoutLevel = layout.properties[layout.pIndex].extendedProperties 
-else
+else 
 layoutLevel = layout
 end
 if layout.canProvide() == true then
