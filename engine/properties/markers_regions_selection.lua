@@ -785,7 +785,7 @@ end
 end
 
 -- creating the stretch markers properties by the items list
-if type(items) == "table" then
+if istable(items) then
 for _, item in ipairs(items) do
 formStretchMarkerProperties(item)
 end
@@ -850,7 +850,7 @@ end
 end
 
 -- creating the take markers properties by the items list
-if type(items) == "table" then
+if istable(items) then
 for _, item in ipairs(items) do
 formTakeMarkersProperties(item)
 end

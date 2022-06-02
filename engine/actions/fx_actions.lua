@@ -33,7 +33,7 @@ end
 end
 })
 local result = nil
-if type(where) == "function" then
+if isfunction(where) then
 result = where()
 else
 result = where

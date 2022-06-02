@@ -895,7 +895,7 @@ configLayout:registerSublayout("fxExcludeList", "FX parameters exclude list")
 
 local fxMaskList = setmetatable({}, {
 __index=function(self, idx)
-if type(idx) == "number" then
+if isnumber(idx) then
 local fxMask = extstate[string.format("fx_properties.excludeMask%u.fx", idx)]
 local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
 return {["fxMask"]=fxMask,["paramMask"]=parmMask}
@@ -904,7 +904,7 @@ error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 end,
 __newindex=function(self, idx, maskTable)
 if maskTable then
-assert(type(maskTable) == "table", string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
+assert(istable(maskTable), string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
 assert(maskTable.fxMask, "Expected field fxMask")
 assert(maskTable.paramMask, "Expected field paramMask")
 extstate._forever[string.format("fx_properties.excludeMask%u.fx", idx)] = maskTable.fxMask

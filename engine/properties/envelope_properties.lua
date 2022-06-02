@@ -24,7 +24,7 @@ if state ~= prevState and state == nextState then
 message({value=string.format("points from %s ", getPointID(points[k], true))})
 elseif state == prevState and state ~= nextState then
 message({value=string.format("to %s ", getPointID(points[k], true))})
-if inaccuracy and type(state) == "number" then
+if inaccuracy and isnumber(state) then
 message({value=string.format("%s", states[state+inaccuracy])})
 else
 message({value=string.format("%s", states[state])})
@@ -35,7 +35,7 @@ end
 elseif state == prevState and state == nextState then
 else
 message({value=string.format("%s ", getPointID(points[k]))})
-if inaccuracy and type(state) == "number" then
+if inaccuracy and isnumber(state) then
 message({value=string.format("%s", states[state+inaccuracy])})
 else
 message({value=string.format("%s", states[state])})
@@ -175,7 +175,7 @@ end
 message:addType(" Perform this property to set the raw point value for example coppied from FX parameters.", 1)
 end
 message({label="Value"})
-if type(points) == "table" then
+if istable(points) then
 message(composeMultiplePointsMessage(self.getValue, envelopeRepresentation))
 else
 message({objectId=getPointID(points), value=envelopeRepresentation[self.getValue(points)]})
@@ -189,7 +189,7 @@ if direction == actions.set.decrease.direction then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtodecibels(state)-adjustStep >= -150 then
@@ -210,7 +210,7 @@ end
 elseif envelopeType == 2 then
 -- Remember about strange pan values...
 local adjustStep = config.getinteger("percentStep", 1)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtopercent(state)+adjustStep <= 100 then
@@ -231,7 +231,7 @@ end
 elseif envelopeType == 3 then
 local adjustStep = config.getinteger("rateStep", 1)
 adjustStep = ({0.6, 6})[adjustStep]
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtopercent(state)-adjustStep >= 0 then
@@ -252,7 +252,7 @@ end
 elseif envelopeType == 4 then
 local adjustStep = config.getinteger("pitchStep", 1.0)
 local bounce = config.getinteger("pitchBounces", 24.0)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if state-adjustStep >= -bounce then
@@ -273,7 +273,7 @@ end
 end
 elseif envelopeType == 6 then
 local adjustStep = config.getinteger("percentStep", 1)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtopercent(state)-adjustStep >= -100 then
@@ -298,7 +298,7 @@ elseif direction == actions.set.increase.direction then
 if envelopeType == 1 then
 local adjustStep = config.getinteger("dbStep", 0.1)
 local maxDBValue = config.getinteger("maxDBValue", 12.0)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtodecibels(state)+adjustStep <= maxDBValue then
@@ -319,7 +319,7 @@ end
 elseif envelopeType == 2 then
 -- Remember about strange pan values...
 local adjustStep = config.getinteger("percentStep", 1)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtopercent(state)-adjustStep >= -100 then
@@ -340,7 +340,7 @@ end
 elseif envelopeType == 3 then
 local adjustStep = config.getinteger("rateStep", 1)
 adjustStep = ({0.6, 6})[adjustStep]
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 self.setValue(point, utils.percenttonum(utils.numtopercent(self.getValue(point))+adjustStep))
 end
@@ -350,7 +350,7 @@ end
 elseif envelopeType == 4 then
 local adjustStep = config.getinteger("pitchStep", 1.0)
 local bounce = config.getinteger("pitchBounces", 24.0)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if state-adjustStep <= bounce then
@@ -371,7 +371,7 @@ end
 end
 elseif envelopeType == 6 then
 local adjustStep = config.getinteger("percentStep", 1)
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 local state = self.getValue(point)
 if utils.numtopercent(state)+adjustStep <= 100 then
@@ -399,7 +399,7 @@ end
 
 function valueProperty:set_perform()
 if envelopeType == 5 then
-if type(points) == "table" then
+if istable(points) then
 local switchedOnPoints, switchedOffPoints = 0, 0
 for _, point in ipairs(points) do
 local state = utils.round(self.getValue(point), 0)
@@ -439,7 +439,7 @@ end
 })
 envelopeFormatCaption = "Type the REAPER proposed format playrate value:"
 end
-if type(points) == "table" then
+if istable(points) then
 retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1, envelopeFormatCaption, envelopeRepresentation[self.getValue(points[1])])
 curvalue = self.getValue(points[1])
 else
@@ -453,7 +453,7 @@ end
 if retval then
 answer = envelopeProcess		(answer, curvalue)
 if answer then
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 self.setValue(point, answer)
 end
@@ -502,7 +502,7 @@ message:addType((' If the group of points has been selected, the value will enum
 end
 message:addType(" Perform this property to set the default point shape set in REAPER preferences.", 1)
 message({label="shape"})
-if type(points) == "table" then
+if istable(points) then
 message(composeMultiplePointsMessage(self.getValue, self.states))
 else
 message({objectId=getPointID(points), value=self.states[self.getValue(points)]})
@@ -512,7 +512,7 @@ end
 
 function shapeProperty:set_adjust(direction)
 local message = initOutputMessage()
-if type(points) == "table" then
+if istable(points) then
 local allIsSame = true
 for idx, point in ipairs(points) do
 if idx > 1 then
@@ -554,7 +554,7 @@ local message = initOutputMessage()
 local retval, defShape = reaper.get_config_var_string("deffadeshape")
 if retval then
 defShape = tonumber(defShape)
-if type(points) == "table" then
+if istable(points) then
 message(("Reset selected point shapes to %s. "):format(self.states[defShape]))
 for _, point in ipairs(points) do
 self.setValue(point, defShape)
@@ -612,7 +612,7 @@ if multiSelectionSupport == true then
 message:addType(string.format(" Please note: if one of selected points has not %s tension, it will be skipped while adjusting or performing!", shapeProperty.states[5]), 1)
 end
 message({label="Bezier tension"})
-if type(points) == "table" then
+if istable(points) then
 message(composeMultiplePointsMessage(self.getValue, self.states))
 else
 message({objectId=getPointID(points), value=self.states[self.getValue(points)]})
@@ -631,7 +631,7 @@ adjustStep = utils.percenttonum(adjustStep)
 if direction == actions.set.decrease.direction then
 adjustStep = -utils.percenttonum(adjustStep)
 end
-if type(points) == "table" then
+if istable(points) then
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then
 local state = self.getValue(point)
@@ -668,7 +668,7 @@ end
 
 function tensionProperty:set_perform()
 local message = initOutputMessage()
-if type(points) == "table" then
+if istable(points) then
 message(string.format("Reset selected points to %s. ", self.states[0]))
 for _, point in ipairs(points) do
 if shapeProperty.getValue(point) == 5 then
@@ -700,7 +700,7 @@ message:initType("Perform this property to move the play or edit cursor to timel
 if multiSelectionSupport then
 message:addType(" If the group of points has been selected, the cursor will set to first selected point position.", 1)
 end
-if type(points) == "table" then
+if istable(points) then
 message(string.format("Go to %s position", getPointID(points[1])))
 else
 message(string.format("Go to %s position", getPointID(points)))
@@ -711,7 +711,7 @@ end
 function gotoPositionProperty:set_perform()
 local message = initOutputMessage()
 local point = nil
-if type(points) == "table" then
+if istable(points) then
 point = points[1]
 else
 point = points
@@ -736,7 +736,7 @@ message:initType("Perform this property to delete the envelope point.", "Perform
 if multiSelectionSupport then
 message:addType(" If the group of points has been selected, all these points will be deleted.", 1)
 end	
-if type(points) == "table" then
+if istable(points) then
 message(string.format("Delete %u selected %s points", #points, name))
 else	
 message(string.format("Delete %s", getPointID(points)))

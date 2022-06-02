@@ -4,6 +4,9 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]]--
 
+-- Including the types check simplifier
+require "typescheck"
+
 -- Include the configuration provider
 config = require "config_provider"
 config.section = "Properties_Ribbon_script"
@@ -217,7 +220,7 @@ __type = "output_message",
 -- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
 __call = function(self, obj, shouldCopyTypeLevel)
 shouldCopyTypeLevel = shouldCopyTypeLevel or false
-if type(obj) == "table" then
+if istable(obj) then
 if obj.msg then
 if self.msg then
 self.msg = self.msg..obj.msg
@@ -284,7 +287,7 @@ end
 -- The layout initialization
 -- The input parameter "str" waits the new class message
 function initLayout(str)
-local t = {
+local t = setmetatable({
 name = str,
 section = string.format(utils.removeSpaces(str), ""),
 ofCount = 0,
@@ -294,7 +297,6 @@ ofCount = 0,
 registerSublayout = function(self, slID, slName)
 local parentName = self.name
 self[slID] = setmetatable({
-type="sublayout",
 subname = slName,
 section = string.format("%s.%s", utils.removeSpaces(parentName), slID),
 properties = setmetatable({}, {
@@ -304,11 +306,12 @@ return rawget(t, #t)
 end
 })
 }, {
+__type="sublayout",
 __index = self})
 self.ofCount = self.ofCount+1
 self[slID].slIndex = self.ofCount
 for slsn, sls in pairs(self) do
-if type(sls) == "table" then
+if istable(sls) then
 if sls.slIndex == self.ofCount-1 then
 sls.nextSubLayout = slID
 self[slID].previousSubLayout = slsn
@@ -323,13 +326,11 @@ destroySublayout = function(self, slID, shouldPatchGlobals)
 local curIndex = self[slID].slIndex
 local prevSub, nextSub
 for sKey, sField in pairs(self) do
-if type(sField) =="table" then
-if sField.type == "sublayout" then
+if isSublayout(sField) then
 if sField.slIndex > 0 and sField.slIndex == curIndex-1 then
 prevSub = sKey
 elseif sField.slIndex <= self.ofCount and sField.slIndex == curIndex+1 then
 nextSub = sKey
-end
 end
 end
 end
@@ -347,13 +348,10 @@ end
 end
 end
 for _, sField in pairs(self) do
-if type(sField) =="table" then
-if sField.type == "sublayout" then
+if isSublayout(sField) then
 if sField.slIndex > curIndex then
 sField.slIndex = sField.slIndex-1
 end
-end
-
 end
 end
 end,
@@ -367,7 +365,7 @@ registerProperty = function(self, property)
  return table.insert(self.properties, property)
 end,
 canProvide = function() return true end
-}
+}, {__type="layout"})
 return t
 end
 
@@ -408,7 +406,7 @@ local message = initOutputMessage()
 if shouldReportParentLayout == nil then
 shouldReportParentLayout = true
 end
-if layout.type == "sublayout" then
+if isSublayout(layout) then
 message(layout.subname)
 if shouldReportParentLayout == true then
 message(string.format(" of %s", ({[true]=layout.name:lower(),[false]=layout.name})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
@@ -417,7 +415,7 @@ else
 message(layout.name)
 end
 local cfg = config.getinteger("reportPos", 3)
-if (cfg == 1 or cfg == 3) and (layout.type == "sublayout") then
+if (cfg == 1 or cfg == 3) and (isSublayout(layout)) then
 message(string.format(", %u of %u", layout.slIndex, layout.ofCount))
 end
 message(", ")
@@ -503,10 +501,8 @@ end
 function isHasSublayouts(lt)
 if not lt.properties then
 for _, field in pairs(lt) do
-if type(field) == "table" then
-if field.type == "sublayout" then
+if isSublayout(field) then
 return true
-end
 end
 end
 end
@@ -517,11 +513,9 @@ end
 
 function findDefaultSublayout(lt)
 for fieldName, field in pairs(lt) do
-if type(field) == "table" then
-if field.type == "sublayout" then
+if isSublayout(field) then
 if field.slIndex == 1 then
 return fieldName
-end
 end
 end
 end
@@ -581,7 +575,7 @@ if extstate.gotoMode then
 extstate.gotoMode = nil
 end
 if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
-if type(newLayout) == "table" then                  
+if istable(newLayout) then                  
 newLayout = newLayout.section.."//"..newLayout.layout or nil
 end
 end
@@ -646,7 +640,7 @@ restorePreviousLayout()
 script_finish()
 return
 end
-if layout.type == "sublayout" then
+if isSublayout(layout) then
 if action == actions.sublayout_next then
 if layout.nextSubLayout then
 extstate[currentLayout.."_sublayout"] = layout.nextSubLayout
@@ -878,7 +872,7 @@ message(string.format("No property with number %s in ", propertyNum))
 if currentExtProperty then
 message(string.format("%s extended properties on ", layout.properties[layout.pIndex].extendedProperties.name))
 end
-if layout.type == "sublayout" then
+if isSublayout(layout) then
 message(string.format(" %s category of ", layout.subname))
 end
 message(string.format("%s layout.", layout.name))
@@ -957,7 +951,7 @@ end
 if retval then
 currentExtProperty = nil
 if premsg then
-if type(msg) == "string" then if #msg > 0 then
+if isstring(msg) then if #msg > 0 then
 if msg:sub(-1, -1) ~= "." then
 msg = msg.."."
 end
@@ -990,13 +984,13 @@ end
 function script_reportLayout()
 if layout.canProvide() then
 local message = initOutputMessage()
-if layout.type == "sublayout" then
+if isSublayout(layout) then
 message(string.format("%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
 else
 message(string.format("%s layout", layout.name))
 end
 message(" currently loaded, ")
-if layout.type == "sublayout" then
+if isSublayout(layout) then
 if layout.ofCount > 1 then
 message(string.format("its number is %u of all %u categor%s", layout.slIndex, layout.ofCount, ({[false]="y",[true]="ies"})[(layout.ofCount > 1)]))
 else

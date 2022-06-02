@@ -57,7 +57,7 @@ return perc/(1*100)
 end
 
 function utils.toboolean(value)
-if type(value) == "string" then
+if isstring(value) then
 return ({["false"] = false, ["true"] = true})[value]
 else
 return (value > 0)
@@ -108,11 +108,11 @@ preproc = str:gsub("%s.", string.upper):gsub("%s", ""):gsub("%W", "_")
 end
 
 function utils.nor(state)
-if type(state) == "number" then
+if isnumber(state) then
 if state <= 1 then
 state = state~1
 end
-elseif type(state) == "boolean" then
+elseif isboolean(state) then
 if state == true then
 state = false
 elseif state == false then

@@ -23,7 +23,7 @@ message:initType("Perform this property to execute the specified action.", "Perf
 if msg then
 message(msg)
 else
-if type(cmd) == "table" then
+if istable(cmd) then
 message:changeType(string.format("Perform this property to execute these %u actions by queued order: ", #cmd),1 )
 message("Multiple actions: ")
 for id, ccmd in ipairs(cmd) do
@@ -52,7 +52,7 @@ set_perform = function(self)
 local message = initOutputMessage()
 restorePreviousLayout()
 local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
-if type(cmd) == "table" then
+if istable(cmd) then
 for _, command in ipairs(cmd) do
 reaper.Main_OnCommand(command, 1)
 end
@@ -184,7 +184,7 @@ end
 return message
 end,
 set_perform = setFunction or function(self, action)
-if type(cmd) == "table" then
+if istable(cmd) then
 for _, command in ipairs(cmd) do
 reaper.Main_OnCommand(command, 0)
 end

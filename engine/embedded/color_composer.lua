@@ -175,7 +175,7 @@ parentLayout:registerSublayout("region", "Regions")
 -- Here a special case, so we will not  use the native layout's methods as is
 local function registerProperty(property)
 for curClass, _ in pairs(parentLayout) do
-if type(parentLayout[curClass]) == "table" then
+if istable(parentLayout[curClass]) then
 parentLayout[curClass]:registerProperty(property)
 end
 end
@@ -570,23 +570,23 @@ applyColorProperty.states = setmetatable({
 __index = function(self, key)
 if key == "track" then
 local tracks = track_properties_macros.getTracks(multiSelectionSupport)
-if type(tracks) == "table" then
+if istable(tracks) then
 return string.format("%u selected tracks", #tracks)
-elseif type(tracks) == "userdata" then
+elseif isuserdata(tracks) then
 return track_properties_macros.getTrackID(tracks, true)
 end
 elseif key == "item" then
 local items = item_properties_macros.getItems(multiSelectionSupport)
-if type(items) == "table" then
+if istable(items) then
 return string.format("%u selected items", #items)
-elseif type(items) == "userdata" then
+elseif isuserdata(items) then
 return item_properties_macros.getItemID(items, true)
 end
 elseif key == "take" then
 local items = item_properties_macros.getItems(multiSelectionSupport)
-if type(items) == "table" then
+if istable(items) then
 return string.format("%u active takes in selected items", #items)
-elseif type(items) == "userdata" then
+elseif isuserdata(items) then
 return item_properties_macros.getTakeID(items, true)
 end
 end
@@ -596,34 +596,34 @@ end
 function applyColorProperty.setValue(value)
 if sublayout == "track" then
 local tracks = track_properties_macros.getTracks(multiSelectionSupport)
-if type(tracks) == "table" then
+if istable(tracks) then
 for _, track in ipairs(tracks) do
 reaper.SetTrackColor(track, value)
 end
 return true
-elseif type(tracks) == "userdata" then
+elseif isuserdata(tracks) then
 reaper.SetTrackColor(tracks, value)
 return true
 end
 elseif sublayout == "item" then
 local items = item_properties_macros.getItems(multiSelectionSupport)
-if type(items) == "table" then
+if istable(items) then
 for _, item in ipairs(items) do
 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", value|0x100000)
 end
 return true
-elseif type(items) == "userdata" then
+elseif isuserdata(items) then
 reaper.SetMediaItemInfo_Value(items, "I_CUSTOMCOLOR", value|0x100000)
 return true
 end
 elseif sublayout == "take" then
 local items = item_properties_macros.getItems(multiSelectionSupport)
-if type(items) == "table" then
+if istable(items) then
 for _, item in ipairs(items) do
 reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR", value|0x100000)
 end
 return true
-elseif type(items) == "userdata" then
+elseif isuserdata(items) then
 reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "I_CUSTOMCOLOR", value|0x100000)
 return true
 end

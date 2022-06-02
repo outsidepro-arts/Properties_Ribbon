@@ -175,7 +175,7 @@ return message:extract()
 end
 
 function item_properties_macros.getSelectedItemAtCursor(items)
-if type(items) == "table" then
+if istable(items) then
 for _, item in ipairs(items) do
 local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
 if reaper.GetCursorPosition() >= itemPosition and reaper.GetCursorPosition() <= (itemPosition+(itemLength/takePlayrate)) then
@@ -257,8 +257,8 @@ end,
 set_adjust = function(self, parent, direction)
 local message = initOutputMessage()
 vls = {[actions.set.decrease.direction]=minRootMax.min,[actions.set.increase.direction]=minRootMax.max}
-message(string.format(setMessages[type(obj) == "table"], minRootMax.representation[vls[direction]]))
-if type(obj) =="table" then
+message(string.format(setMessages[istable(obj)], minRootMax.representation[vls[direction]]))
+if istable(obj) then
 for _, o in ipairs(obj) do
 setValueFunc(o, vls[direction])
 end
@@ -270,8 +270,8 @@ end,
 set_perform = function(self, parent)
 local message = initOutputMessage()
 local state = minRootMax.rootmean
-message(string.format(setMessages[type(obj) == "table"], minRootMax.representation[state]))
-if type(obj) == "table" then
+message(string.format(setMessages[istable(obj)], minRootMax.representation[state]))
+if istable(obj) then
 for _, o in ipairs(obj) do
 setValueFunc(o, state)
 end
