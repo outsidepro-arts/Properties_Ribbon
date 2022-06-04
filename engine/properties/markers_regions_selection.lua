@@ -510,6 +510,7 @@ local curpos = reaper.GetCursorPosition()
 local itemPosition, takePlayrate, itemLength = reaper.GetMediaItemInfo_Value(parent.marker.item, "D_POSITION"), reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(parent.marker.item), "D_PLAYRATE"), reaper.GetMediaItemInfo_Value(parent.marker.item, "D_LENGTH")
 reaper.SetTakeStretchMarker(reaper.GetActiveTake(parent.marker.item), parent.marker.idx, ((curpos-itemPosition)*takePlayrate))
 message(parent:get())
+message:clearValue()
 message{value=string.format("pulled onto %s.", representation.defpos[curpos])}
 return true, message, true
 end
@@ -539,8 +540,9 @@ return message
 end,
 set_perform = function (self, parent)
 local message = initOutputMessage()
-message(self:get())
+message(parent:get())
 reaper.DeleteTakeStretchMarkers(reaper.GetActiveTake(parent.marker.item), parent.marker.idx)
+message:clearValue()
 message{label=" has been", value="deleted"}
 return true, message
 end
@@ -615,7 +617,7 @@ return message
 end,
 set_perform = function (self, parent)
 local curpos = reaper.GetCursorPosition()
-reaper.SetEditCurPos(pos_relativeToGlobal(parent.marker.item, self.marker.pos), false, false)
+reaper.SetEditCurPos(item_properties_macros.pos_relativeToGlobal(parent.marker.item, parent.marker.pos), false, false)
 reaper.Main_OnCommand(42385, 0)
 reaper.SetEditCurPos(curpos, false, false)
 setUndoLabel(self:get(true))
@@ -631,7 +633,8 @@ return message
 end,
 set_perform = function (self, parent)
 local message = initOutputMessage()
-message(self:get())
+message(parent:get())
+message:clearValue()
 if reaper.DeleteTakeMarker(reaper.GetActiveTake(parent.marker.item), parent.marker.idx) then
 message{label=" has been", value="deleted"}
 else
