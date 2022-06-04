@@ -377,7 +377,7 @@ properties = setmetatable({
 get = function(self, parent)
 local message = initOutputMessage()
 message:initType("Perform this property to return back to the properties view.", "Performable")
-message(string.format("Return to %s properties", layout.subname))
+message(string.format("Return to %s properties", layout.subname or layout.name))
 return message
 end,
 set_perform = function(self, parent)
