@@ -139,6 +139,20 @@ return (fullString:lower():find(searchString:lower()))
 end
 end
 
+function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatterns)
+assert(fullString, "source string did not provided")
+fullString = tostring(fullString)
+assert(searchString, "The search string did not provided")
+searchString = tostring(searchString)
+caseSensetive = caseSensetive or false
+luaPatterns = luaPatterns or false
+if caseSensetive then
+return fullString:find(searchString, nil, luaPatterns)
+else
+return fullString:lower():find(searchString:lower(), nil, luaPatterns)
+end
+end
+
 -- The multibyte strings cannot be processed by the Lua String library correctly.
 function utils.exposeUTF8Chars(utfString)
 local result = {}
