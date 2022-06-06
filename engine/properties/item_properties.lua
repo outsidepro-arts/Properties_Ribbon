@@ -160,70 +160,6 @@ Try to allow the user to perform actions on both one element and a selected grou
 and try to complement any getState message with short type label. I mean what the "ajust" method will perform.
 ]]--
 
--- Take name methods
-local currentTakeNameProperty = {}
-parentLayout.visualLayout:registerProperty(currentTakeNameProperty)
-
-function currentTakeNameProperty.getValue(item)
-return ({reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)})[2]
-end
-
-function currentTakeNameProperty.setValue(item, value)
-reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", value, true)
-end
-
-function currentTakeNameProperty:get()
-local message = initOutputMessage()
-message:initType("Perform this action to rename selected item current take.", "performable")
-if multiSelectionSupport == true then
-message:addType(" If the group of items has been selected, new name will applied to selected active takes of selected items.", 1)
-end
-message{label="Current take name"}
-if istable(items) then
-message{value="s"}
-for k = 1, #items do
-local name = self.getValue(items[k])
-message{value=string.format("Take of %s ", getItemID(items[k]))}
-if name and name ~= "" then
-message{value=string.format("named as %s", name)}
-else
-message{value="unnamed"}
-end
-if k < #items then
-message{value=", "}
-end
-end
-else
-message{objectId=getItemID(items)}
-local name = self.getValue(items)
-if name and name ~= "" then
-message{value=name}
-else
-message{value="unnamed"}
-end
-end
-return message
-end
-
-function currentTakeNameProperty:set_perform()
-local message = initOutputMessage()
-if istable(items) then
-local state, answer = reaper.GetUserInputs("Change name active takes of selected items", 1, 'Type new take name:', "")
-if state == true then
-for k = 1, #items do
-self.setValue(items[k], answer.." "..k)
-end
-message(string.format("The name %s has been set for %u items.", answer, #items))
-end
-else
-local name = self.getValue(items)
-local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemNumber(items)), 1, 'Type new item name:', name)
-if aState == true then
-self.setValue(items, answer)
-end
-end
-return message
-end
 
 -- Lock item methods
 local lockProperty = {}
@@ -322,7 +258,7 @@ local maxDBValue = config.getinteger("maxDBValue", 12.0)
 if direction == actions.set.decrease.direction then
 ajustStep = -ajustStep
 end	
-if istable(tracks) then
+if istable() then
 for _, item in ipairs(items) do
 local state = self.getValue(item)
 state = utils.decibelstonum(utils.numtodecibels(state)+ajustStep)
@@ -1564,6 +1500,71 @@ end
 message(self:get())
 return message
 end
+
+activeTakeProperty.extendedProperties = initExtendedProperties("Active take extended interraction")
+activeTakeProperty.extendedProperties:registerProperty{
+getValue = function (item)
+return ({reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)})[2]
+end,
+setValue = function (item, value)
+reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", value, true)
+end,
+get = function(self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to rename the active take of item.", "Performable")
+if multiSelectionSupport then
+message:addType(" If the group of item has been selected, the every take of will get new specified name with ordered number.", 1)
+end
+if istable(items) then
+message("Rename active takes of selected items")
+else
+message("Rename this take")
+end
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+if istable(items) then
+local state, answer = reaper.GetUserInputs("Change name active takes of selected items", 1, 'Type new take name:', "")
+if state == true then
+for k = 1, #items do
+self.setValue(items[k], answer.." "..k)
+end
+message(string.format("The name %s has been set for %u items.", answer, #items))
+end
+else
+local name = self.getValue(items)
+local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemNumber(items)), 1, 'Type new item name:', name)
+if aState == true then
+self.setValue(items, answer)
+message(string.format("The take %s renamed to %s", name, answer))
+else
+return false
+end
+end
+return true, message, true
+end
+}
+activeTakeProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to delete active take of selected item.", "Performable")
+if multiSelectionSupport then
+message:addType(" If the group of items has been selected, every active take of will be deleted.", 1)
+end
+if istable(items) then
+message("Delete active takes of selected items")
+else
+message("Delete this take")
+end
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(40130, 0) -- 
+return true, nil, true
+end
+}
+
 
 -- Take volume methods
 local takeVolumeProperty = {}
