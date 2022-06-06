@@ -1018,7 +1018,6 @@ message:initType("Adjust this property to setup desired fadein length for select
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 message{label="Fade-in length"}
 if istable(items) then
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
@@ -1058,25 +1057,53 @@ message(self:get())
 return message
 end
 
-function fadeinLenProperty:set_perform()
+fadeinLenProperty.extendedProperties = initExtendedProperties("Fade length extended interraction")
+fadeinLenProperty.extendedProperties:registerProperty{
+get = function (self, parent)
 local message = initOutputMessage()
-local ajustingValue
-local result, str = reaper.get_config_var_string("deffadelen")
-if result == true then
-ajustingValue = utils.round(tonumber(str), 3)
-message("Restore default value, ")
-else
-return "No default fade length value has read in preferences."
+message(string.format("Set %s (off the fade)", representation.timesec[0.000]))
+message:initType("Perform this property to set the minimal length value that means the fade will be not applied.", "Performable")
+return message
+end,
+set_perform = function (self, parent)
+local message = initOutputMessage()
+local label = parent:get().label
+if istable(items) then
+for _, item in ipairs(items) do
+parent.setValue(item, 0)
 end
+message(string.format("Set selected items %s to %s", label, representation.timesec[0.000]))
+else
+parent.setValue(items, 0)
+message{label=label, value=string.format("set to %s", representation.timesec[0.000])}
+end
+return true, message, true
+end
+}
+-- We will use the default value restore in other cases independently
+local restoreFadeDefaultsEProperty = {}
+if reaper.get_config_var_string("deffadelen") then
+fadeinLenProperty.extendedProperties:registerProperty(restoreFadeDefaultsEProperty)
+function restoreFadeDefaultsEProperty:get(parent)
+local message = initOutputMessage()
+local _, str = reaper.get_config_var_string("deffadelen")
+message(string.format("Restore default value (%s)", representation.timesec[tonumber(str)]))
+return message
+end
+function restoreFadeDefaultsEProperty:set_perform(parent)
+local message = initOutputMessage()
+local _, str = reaper.get_config_var_string("deffadelen")
+local ajustingValue = utils.round(tonumber(str), 3)
+message("Restore default value, ")
 if istable(items) then
 for k = 1, #items do
-self.setValue(items[k], ajustingValue)
+parent.setValue(items[k], ajustingValue)
 end
 else
-self.setValue(items, ajustingValue)
+parent.setValue(items, ajustingValue)
 end
-message(self:get())
-return message
+return true, message, true
+end
 end
 
 -- Fadein curve methods
@@ -1170,7 +1197,7 @@ end
 
 -- Fadeout shape
 local fadeoutShapeProperty = {}
- parentLayout.itemLayout:registerProperty(fadeoutShapeProperty)
+parentLayout.itemLayout:registerProperty(fadeoutShapeProperty)
 fadeoutShapeProperty.states =  fadeinShapeProperty.states
 
 function fadeoutShapeProperty.getValue(item)
@@ -1217,7 +1244,6 @@ message:initType("Adjust this property to setup desired fadeout length for selec
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" Perform this property to reset the length value to default in preferences.", 1)
 message{label="Fade-out length"}
 if istable(items) then
 message(composeMultipleItemMessage(self.getValue, representation.timesec))
@@ -1228,7 +1254,7 @@ return message
 end
 
 fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeoutLenProperty.set_perform = fadeinLenProperty.set_perform
+fadeoutLenProperty.extendedProperties = fadeinLenProperty.extendedProperties
 
 -- fadeout curve methods
 local fadeoutDirProperty = {}
@@ -1281,7 +1307,6 @@ message:initType("Adjust this property to setup desired automatic fadein length 
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" If you want to switch off automatic fadein, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 message{label="Automatic fade-in length"}
 if istable(items) then
 message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
@@ -1305,27 +1330,36 @@ return message
 end
 
 fadeinAutoLenProperty.set_adjust = fadeinLenProperty.set_adjust
+fadeinAutoLenProperty.extendedProperties = initExtendedProperties("Automatic fade length extended interraction")
 
-function  fadeinAutoLenProperty:set_perform()
+fadeinAutoLenProperty.extendedProperties:registerProperty{
+get = function (self, parent)
 local message = initOutputMessage()
-local ajustingValue
-local result, str = reaper.get_config_var_string("defsplitxfadelen")
-if result == true then
-ajustingValue = utils.round(tonumber(str), 3)
-message("Restore default value, ")
-else
-return "No default fade length value has read in preferences."
-end
+local label = parent:get().label
 if istable(items) then
-for k = 1, #items do
-self.setValue(items[k], ajustingValue)
-end
+message(string.format("Switch off %s for selected items", label))
 else
-self.setValue(items, ajustingValue)
+message(string.format("Switch off %s for this item", label))
 end
-message(self:get())
 return message
+end,
+set_perform = function (self, parent)
+local label = parent:get().label
+if istable(items) then
+for _, item in ipairs(items) do
+parent.setValue(item, -1)
 end
+return true, string.format("Switching off the %s for selected items", label), true
+else
+parent.setValue(items, -1)
+return true, string.format("Switching off the %s", label), true
+end
+end
+}
+if restoreFadeDefaultsEProperty then
+fadeinAutoLenProperty.extendedProperties:registerProperty(restoreFadeDefaultsEProperty)
+end
+
 
 -- Automatic fadeout length methods
 local fadeoutAutoLenProperty = {}
@@ -1345,7 +1379,6 @@ message:initType("Adjust this property to setup desired automatic fadeout length
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
-message:addType(" If you want to switch off automatic fadeout, set the value less than 0.000 MS. Perform this property to reset the length value to default in preferences.", 1)
 message{label="Automatic fade-out length"}
 if istable(items) then
 message(composeMultipleItemMessage(self.getValue, setmetatable({}, {__index = function(self, state)
@@ -1369,7 +1402,7 @@ return message
 end
 
 fadeoutAutoLenProperty.set_adjust = fadeinAutoLenProperty.set_adjust
-fadeoutAutoLenProperty.set_perform = fadeinAutoLenProperty.set_perform
+fadeoutAutoLenProperty.extendedProperties = fadeinAutoLenProperty.extendedProperties
 
 
 -- active take methods
