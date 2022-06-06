@@ -13,6 +13,8 @@ When i was starting write this scripts complex i imagined this as real OOP. But 
 After this preambula, let me begin.
 ]]--
 
+useMacros("properties")
+
 -- global pseudoclass initialization
 local configLayout = initLayout("Properties Ribbon configuration")
 
@@ -893,46 +895,7 @@ end
 
 configLayout:registerSublayout("fxExcludeList", "FX parameters exclude list")
 
-local fxMaskList = setmetatable({}, {
-__index=function(self, idx)
-if isnumber(idx) then
-local fxMask = extstate[string.format("fx_properties.excludeMask%u.fx", idx)]
-local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
-return {["fxMask"]=fxMask,["paramMask"]=parmMask}
-end
-error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
-end,
-__newindex=function(self, idx, maskTable)
-if maskTable then
-assert(istable(maskTable), string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
-assert(maskTable.fxMask, "Expected field fxMask")
-assert(maskTable.paramMask, "Expected field paramMask")
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", idx)] = maskTable.fxMask
-extstate._forever[string.format("fx_properties.excludeMask%u.param", idx)] = maskTable.paramMask
-else
-local i = idx
-while extstate[string.format("fx_properties.excludeMask%u.fx", i)] do
-if i == idx then
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
-elseif i > idx then
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i-1)] = extstate[string.format("fx_properties.excludeMask%u.fx", i)]
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i-1)] = extstate[string.format("fx_properties.excludeMask%u.param", i)]
-extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
-extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
-end
-i = i+1
-end
-end
-end,
-__len=function(self)
-local mCount = 0
-while extstate[string.format("fx_properties.excludeMask%u.fx", mCount+1)] do
-mCount = mCount+1
-end
-return mCount
-end
-})
+local fxMaskList = fx_properties_macros.fxMaskList
 
 for i = 1, #fxMaskList do
 local fxExcludeElem = fxMaskList[i]

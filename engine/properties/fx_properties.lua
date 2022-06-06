@@ -20,7 +20,7 @@ After this preambula, let me begin.
 local context = reaper.GetCursorContext()
 -- Fixing the unexpected items context
 if context == 1 and reaper.GetLastTouchedTrack() == nil then
-	context = 0
+context = 0
 -- Remember of unexpected contexts
 elseif context < 0 then
 context = extstate.lastKnownContext
@@ -49,47 +49,7 @@ local knownAssyncPlugins = {
 
 -- API simplification to make calls as contextual
 -- capi stands for "contextual API"
-local capi = setmetatable({
-_contextObj = setmetatable({}, {
--- REAPER generates error when media item is nil so we have to wrap these handles to metatable
-__index = function(self, key)
-if key == 0 then
-	local lastTouched = reaper.GetLastTouchedTrack()
-	if lastTouched then
-	return lastTouched
-	else
-		if (reaper.GetMasterTrackVisibility()&1) == 1 then
-			return reaper.GetMasterTrack(0)
-		end
-		end
-elseif key == 1 then
-if reaper.GetSelectedMediaItem(0, 0) then
-return reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
-end
-return nil
-end
-end
-}),
-_contextPrefix = {
-[0]="TrackFX_",
-[1]="TakeFX_"
-}
-}, {
-__index = function(self, key)
-return function(...)
-if reaper.APIExists(self._contextPrefix[context]..key) then
-return reaper[self._contextPrefix[context]..key](self._contextObj[context], ...)
-else
-if context == 0 and key:find("Envelope") then
-if reaper[key] then
-return reaper[key](self._contextObj[context], ...)
-end 
-end
-error(string.format("Contextual API wasn't found method %s", self._contextPrefix[context]..key))
-end
-end
-end
-})
+local capi = fx_properties_macros.newContextualAPI(context)
 --[[
 All done! Now we can call an FX API without needs to think about a context every our step.
 For example, instead of TakeFX_GetParamName and TrackFX_GetParamName we can call it as GetParamName through new capi metatable.
@@ -114,46 +74,7 @@ capi.GetParamName(fxIndex, parmIndex)
 
 -- Some internal functions
 -- Exclude masks metatable
-local fxMaskList = setmetatable({}, {
-__index=function(self, idx)
-if isnumber(idx) then
-local fxMask = extstate._layout[string.format("excludeMask%u.fx", idx)]
-local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
-return {["fxMask"]=fxMask,["paramMask"]=parmMask}
-end
-error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
-end,
-__newindex=function(self, idx, maskTable)
-if maskTable then
-assert(istable(maskTable), string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
-assert(maskTable.fxMask, "Expected field fxMask")
-assert(maskTable.paramMask, "Expected field paramMask")
-extstate._layout._forever[string.format("excludeMask%u.fx", idx)] = maskTable.fxMask
-extstate._layout._forever[string.format("excludeMask%u.param", idx)] = maskTable.paramMask
-else
-local i = idx
-while extstate._layout[string.format("excludeMask%u.fx", i)] do
-if i == idx then
-extstate._layout._forever[string.format("excludeMask%u.fx", i)] = nil
-extstate._layout._forever[string.format("excludeMask%u.param", i)] = nil
-elseif i > idx then
-extstate._layout._forever[string.format("excludeMask%u.fx", i-1)] = extstate._layout[string.format("excludeMask%u.fx", i)]
-extstate._layout._forever[string.format("excludeMask%u.param", i-1)] = extstate._layout[string.format("excludeMask%u.param", i)]
-extstate._layout._forever[string.format("excludeMask%u.fx", i)] = nil
-extstate._layout._forever[string.format("excludeMask%u.param", i)] = nil
-end
-i = i+1
-end
-end
-end,
-__len=function(self)
-local mCount = 0
-while extstate._layout[string.format("excludeMask%u.fx", mCount+1)] do
-mCount = mCount+1
-end
-return mCount
-end
-})
+local fxMaskList = fx_properties_macros.fxMaskList
 
 local pluginsFilenames = {}
 local function getPluginFilename(fxId)
