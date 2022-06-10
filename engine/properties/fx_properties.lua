@@ -49,7 +49,8 @@ local knownAssyncPlugins = {
 
 -- API simplification to make calls as contextual
 -- capi stands for "contextual API"
-local capi = fx_properties_macros.newContextualAPI(context)
+local capi = fx_properties_macros.newContextualAPI()
+capi._context = context
 --[[
 All done! Now we can call an FX API without needs to think about a context every our step.
 For example, instead of TakeFX_GetParamName and TrackFX_GetParamName we can call it as GetParamName through new capi metatable.
@@ -255,6 +256,7 @@ if whichFXCanbeLoaded then
 capi._contextObj[0] = reaper.GetMasterTrack(0)
 contextPrompt = "Master track"
 context = 0
+capi._context = 0
 end
 
 local fxLayout = initLayout("FX properties")

@@ -286,9 +286,9 @@ end
 
 fx_properties_macros = {}
 
-function fx_properties_macros.newContextualAPI(context)
+function fx_properties_macros.newContextualAPI()
 local capi = setmetatable({
-_context = context,
+_context = 0,
 _contextObj = setmetatable({}, {
 -- REAPER generates error when media item is nil so we have to wrap these handles to metatable
 __index = function(self, key)
@@ -317,7 +317,7 @@ _contextPrefix = {
 __index = function(self, key)
 return function(...)
 if reaper.APIExists(self._contextPrefix[self._context]..key) then
-return reaper[self._contextPrefix[self._context]..key](self._contextObj[context], ...)
+return reaper[self._contextPrefix[self._context]..key](self._contextObj[self._context], ...)
 else
 if self._context == 0 and key:find("Envelope") then
 if reaper[key] then
