@@ -341,6 +341,31 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
+message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward).", actions.set.increase.label, actions.set.decrease.label), "Adjustable")
+message{label="Preset"}
+retval, presetname = capi.GetPreset(parent.fxIndex)
+if retval then
+message{value=presetname}
+end
+return message
+end,
+set_adjust = function (self, parent, direction)
+local message = initOutputMessage()
+presetIndex, numberOfPresets = capi.GetPresetIndex(parent.fxIndex)
+if presetIndex+direction < 0 then
+message("No more previous property values.")
+elseif presetIndex+direction >= numberOfPresets  then
+message("No more next property values.")
+else
+capi.NavigatePresets(parent.fxIndex, direction)
+end
+message(self:get(parent))
+return false, message
+end
+}
+firstExtendedFXProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
 message:initType("Perform this property to set current FX either offline or online.", "Performable")
 message("Set FX ")
 if capi.GetOffline(i+fxInaccuracy) then
