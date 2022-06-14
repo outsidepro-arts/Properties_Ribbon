@@ -726,13 +726,18 @@ message("Add stretch marker at cursor")
 return message
 end,
 set_perform = function (self, parent)
-local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local item = item_properties_macros.getSelectedItemAtCursor(items)
+if item then
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 reaper.Main_OnCommand(41842, 0)
-local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 if prevMarkersCount < newMarkersCount then
 return false, "Stretch marker added."
 else
 return false, "No stretch markers created."
+end
+else
+return false, "Not in an item"
 end
 end
 }
@@ -744,13 +749,18 @@ message("Add stretch markers at time selection")
 return message
 end,
 set_perform = function ()
-local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local item = item_properties_macros.getSelectedItemAtCursor(items)
+if item then
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 reaper.Main_OnCommand(41843, 0)
-local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 if prevMarkersCount < newMarkersCount then
 return false, "Stretch markers added by time selection."
 else
 return false, "No stretch markers created."
+end
+else
+return false, "Not in an item"
 end
 end
 }
@@ -775,13 +785,18 @@ message("Delete all stretch markers")
 return message
 end,
 set_perform = function (self, parent)
-local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local item = item_properties_macros.getSelectedItemAtCursor(items)
+if item then
+local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 reaper.Main_OnCommand(41844, 0)
-local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 if prevMarkersCount > newMarkersCount then
 return "All Stretch markers deleted."
 else
 return "No stretch markers deleted."
+end
+else
+return false, "Not in an item"
 end
 end
 }
@@ -820,10 +835,15 @@ message("Create take marker at current position")
 return message
 end,
 set_perform = function (self, parent)
-local prevTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local item = item_properties_macros.getSelectedItemAtCursor(items)
+if item then
+local prevTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item))
 reaper.Main_OnCommand(42390, 0)
-local newTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item_properties_macros.getSelectedItemAtCursor(items)))
+local newTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item))
 return false, string.format("%u take markers created", (newTakeMarkersCount-prevTakeMarkersCount))
+else
+return false, "Not in an item"
+end
 end
 }
 takeMarkersActionsProperty.extendedProperties:registerProperty{
