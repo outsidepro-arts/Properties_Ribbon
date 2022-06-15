@@ -737,7 +737,7 @@ else
 return false, "No stretch markers created."
 end
 else
-return false, "Not in an item"
+return false, "No item selected at this position"
 end
 end
 }
@@ -760,7 +760,7 @@ else
 return false, "No stretch markers created."
 end
 else
-return false, "Not in an item"
+return false, "No item selected at this position"
 end
 end
 }
@@ -796,7 +796,7 @@ else
 return "No stretch markers deleted."
 end
 else
-return false, "Not in an item"
+return false, "No item selected at this position"
 end
 end
 }
@@ -842,7 +842,7 @@ reaper.Main_OnCommand(42390, 0)
 local newTakeMarkersCount = reaper.GetNumTakeMarkers(reaper.GetActiveTake(item))
 return false, string.format("%u take markers created", (newTakeMarkersCount-prevTakeMarkersCount))
 else
-return false, "Not in an item"
+return false, "No item selected at this position"
 end
 end
 }
