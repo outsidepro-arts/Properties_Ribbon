@@ -716,25 +716,40 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Toggle this property to switch the configuration for searching for nearest value for this parameter only.", "Toggleable")
+message:initType("Adjust this property to switch the configuration for searching for nearest value for this parameter only. Perform this property to reset this parameter to default value by Properties Ribbon configuration.", "Adjustable, performable")
 message{label="Use find nearest parameter value method for this parameter"}
-message{value=({[false]="disabled",[true]="enabled"})[getFindNearestConfig(makeUniqueKey(i, k))]}
+message{value=({[false]="disabled",[true]="enabled"})[getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex))]}
+if getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
+message{value=" (by default)"}
+end
 return message
 end,
-set_perform=function(self, parent)
+set_adjust = function (self, parent, direction)
 local message = initOutputMessage()
-local cfg= getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), true)
-if cfg == false then
-cfg = true
-elseif cfg == true then
-setFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), nil)
-message("Set to default value")
-elseif cfg == nil then
+local cfg = getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), true)
+if direction == actions.set.decrease.direction then
+if cfg ~= false then
 cfg = false
+else
+message("No more previous property values.")
+end
+elseif direction == actions.set.increase.direction then
+if cfg ~= true then
+cfg = true
+else
+message("No more next property values.")
+end
 end
 setFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), cfg)
 message(self:get(parent))
 return false, message
+end,
+set_perform=function(self, parent)
+local message = initOutputMessage()
+setFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), nil)
+message("Set to default value.")
+message(self:get(parent))
+return true, message
 end
 }
 extendedFXProperties:registerProperty{
