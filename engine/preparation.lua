@@ -164,13 +164,29 @@ end
 return nil
 end
 
-function prepareUserData.rate(udata, curvalue)
-udata = prepareUserData.basic(udata)
-udata = udata:match("^(%d+[.]?%d*)")
-if udata then
-return tonumber(utils.percenttonum(udata))
+prepareUserData.rate = {
+formatCaption = [[
+Type the humanbeeing playrate value. The following formats are supported:
+1.25X
+0 995
+<0.1 x (means relative value i.e. the current rate value will be decreased by this value)
+>0 2 (means relative value i.e. the current rate value will be increased by this value)
+original [or orig or o] (will set a playrate value to original pitch)
+Please note: these format may be combined with eachother.
+]]}
+
+function prepareUserData.rate.process(udata, curvalue)
+local relative = string.match(udata, "^[<>]")
+udata = string.gsub(udata, "^(%d*)(%s)(%d*)", "%1.%2")
+udata = string.match(udata, "^[<>]?%d*%.?%d*")
+if not udata then return nil end
+if relative then
+if relative == "<" then
+udata = -udata
 end
-return nil
+return curvalue+udata
+end
+return udata
 end
 
 -- The macro for prepare the values with pitch values.
