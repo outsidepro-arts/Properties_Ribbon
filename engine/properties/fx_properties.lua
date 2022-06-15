@@ -687,16 +687,15 @@ get = function(self, parent)
 local message = initOutputMessage()
 message:initType("Adjust this property to choose the needed step for this parameter. Perform this property to reset the parameter step to default configured step.", "Adjustable, performable")
 message{label="Set adjusting step for this parameter"}
-if getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex)) then
-message{value=stepsList[getStep(makeUniqueKey(i, k))].label}
-else
-message{value="default value"}
+message{value=stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].label}
+if getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
+message{value=" (by default)"}
 end
 return message
 end,
 set_adjust=function(self, parent, direction)
 local message = initOutputMessage()
-	local curStepIndex = getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) or config.getinteger("fxParmStep", 4)
+local curStepIndex = getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) or config.getinteger("fxParmStep", 4)
 if (curStepIndex+direction) > #stepsList then
 message("No more next property values. ")
 elseif (curStepIndex+direction) < 1 then
@@ -710,7 +709,7 @@ return false, message
 end,
 set_perform = function(self, parent)
 setStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), nil)
-return false, "Reset to default step adjustment"
+return true, "Reset to default step adjustment"
 end
 }
 extendedFXProperties:registerProperty{
