@@ -2065,13 +2065,57 @@ message(self:get())
 return message
 end
 
-function takePlayrateProperty:set_perform()
+takePlayrateProperty.extendedProperties = initExtendedProperties("Take play rate extended interraction")
+takePlayrateProperty.extendedProperties:registerProperty{
+get = function (self, parent)
 local message = initOutputMessage()
-message("Reset,")
-reaper.Main_OnCommand(40652, 0)
-message(self:get())
+message:initType("Perform this property to reset the play rate to original.", "Performable")
+message(string.format("Reset play rate to %s", representation.playrate[1.0]))
 return message
+end,
+set_perform = function(self, parent)
+reaper.Main_OnCommand(40652, 0)
+local item = nil
+if istable(items) then
+item = items[1]
+else
+item = items
 end
+return true, string.format("Reset to %s", representation.playrate[parent.getValue(item)]), true
+end
+}
+takePlayrateProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
+message:initType("Perform this property to type a custom play rate value.", "Performable")
+message("Type custom play rate")
+return message
+end,
+set_perform = function (self, parent)
+if istable(items) then
+local retval, answer = reaper.GetUserInputs(string.format("Playrate for active takes of %u selected items", #items), 1, prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items[1])])
+if not retval then return false end
+for _, item in ipairs(items) do
+local state = parent.getValue(item)
+state = prepareUserData.rate.process(answer, state)
+if state then
+parent.setValue(item, state)
+end
+end
+else
+local retval, answer = reaper.GetUserInputs(string.format("Play rate for %s", getTakeID(items)), 1, prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items)])
+if retval then
+local state = prepareUserData.rate.process(answer, parent.getValue(items))
+if state then
+parent.setValue(items, state)
+return true
+else
+reaper.ShowMessageBox("Couldn't convert a data to aproppriate value.", "Converting error", showMessageBoxConsts.sets.ok)
+end
+end	
+end
+end
+}
 
 -- Preserve pitch when playrate changes methods
 local preserveTakePitchProperty = {}
