@@ -177,7 +177,7 @@ Please note: these format may be combined with eachother.
 
 function prepareUserData.rate.process(udata, curvalue)
 local relative = string.match(udata, "^[<>]")
-udata = string.gsub(udata, "^(%d*)(%s)(%d*)", "%1.%2")
+udata = string.gsub(udata, "^(%d*)(%D)(%d*)", "%1.%3")
 udata = string.match(udata, "^[<>]?%d*%.?%d*")
 if not udata then return nil end
 if relative then
