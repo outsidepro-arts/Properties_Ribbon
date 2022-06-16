@@ -1015,4 +1015,23 @@ message(self:get())
 return message
 end
 
+-- Allow to switch off the identification
+local disableIdentificationProperty = {}
+configLayout.main:registerProperty(disableIdentificationProperty)
+
+function disableIdentificationProperty:get()
+local message = initOutputMessage()
+message:initType("Toggle this property to switch the object identification when navigating.", "Toggleable")
+local state = config.getboolean("objectsIdentificationWhenNavigating", true)
+message{label="Report objects identification when navigating",value=({[true]="enabled",[false]="disabled"})[state]}
+return message
+end
+
+function disableIdentificationProperty:set_perform()
+local message = initOutputMessage()
+config.setboolean("objectsIdentificationWhenNavigating", utils.nor(config.getboolean("objectsIdentificationWhenNavigating", true)))
+message(self:get())
+return message
+end
+
 return configLayout

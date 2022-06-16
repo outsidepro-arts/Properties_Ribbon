@@ -726,7 +726,7 @@ result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 setUndoLabel(message:extract(0, false))
-message:output()
+message:output(({[true]=nil,[false]=1})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 if currentExtProperty then
 currentExtProperty = pIndex
 else
@@ -791,7 +791,7 @@ result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 setUndoLabel(message:extract(0, false))
-message:output()
+message:output(({[true]=nil,[false]=1})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 if currentExtProperty then
 currentExtProperty = pIndex
 else
@@ -906,10 +906,10 @@ result({focusIndex=("%u of %u"):format(pIndex, #layoutLevel.properties)})
 end
 message(result, true)
 if percentageNavigationApplied then
-message = message:extract(0, true):gsub("(.+)([.])$", "%1")
+message = message:extract(({[true]=0,[false]=1})[config.getboolean("objectsIdentificationWhenNavigating", true)], true):gsub("(.+)([.])$", "%1")
 message = message..string.format(". Percentage navigation has chosen property %u", propertyNum)
 end
-message:output()
+message:output(({[true]=0,[false]=1})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 script_finish()
 end
 
