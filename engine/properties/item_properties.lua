@@ -2103,7 +2103,7 @@ parent.setValue(item, state)
 end
 end
 else
-local retval, answer = reaper.GetUserInputs(string.format("Play rate for %s", getTakeID(items)), 1, prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items)])
+local retval, answer = reaper.GetUserInputs(string.format("Play rate for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items)])
 if retval then
 local state = prepareUserData.rate.process(answer, parent.getValue(items))
 if state then
