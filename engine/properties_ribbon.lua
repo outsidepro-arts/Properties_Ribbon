@@ -729,6 +729,21 @@ return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 if result:isTypeInitialized() then
+if not result:isTypeInitialized(1) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.", actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType(string.format("%s this property to perform its action.", actions.set.perform.label:gsub("^%w", string.upper)), 1)
+end
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType("No any more detailed usability prompt could be provided.", 1)
+end
 if not result:isTypeInitialized(2) then
 if layoutLevel.properties[pIndex].set_adjust then
 result:addType("Adjustable", 2)
@@ -815,6 +830,21 @@ return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 if result:isTypeInitialized() then
+if not result:isTypeInitialized(1) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.", actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType(string.format("%s this property to perform its action.", actions.set.perform.label:gsub("^%w", string.upper)), 1)
+end
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType("No any more detailed usability prompt could be provided.", 1)
+end
 if not result:isTypeInitialized(2) then
 if layoutLevel.properties[pIndex].set_adjust then
 result:addType("Adjustable", 2)
@@ -951,6 +981,21 @@ pIndex = layout.pIndex
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
 if result:isTypeInitialized() then
+if not result:isTypeInitialized(1) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.", actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType(string.format("%s this property to perform its action.", actions.set.perform.label:gsub("^%w", string.upper)), 1)
+end
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+result:addType("No any more detailed usability prompt could be provided.", 1)
+end
 if not result:isTypeInitialized(2) then
 if layoutLevel.properties[pIndex].set_adjust then
 result:addType("Adjustable", 2)
