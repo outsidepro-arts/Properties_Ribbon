@@ -32,7 +32,7 @@ parentLayout.propertiesRibbonPrefs:registerProperty(prConfigProperty)
 
 function prConfigProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to load the Properties Ribbon configuration layout.", "Performable")
+message:initType("Perform this property to load the Properties Ribbon configuration layout.")
 message("Configure Properties Ribbon")
 return message
 end
@@ -48,7 +48,7 @@ parentLayout.propertiesRibbonPrefs:registerProperty(prHomepageProperty)
 function prHomepageProperty:get()
 local message = initOutputMessage()
 -- I'll separate Github by space" for synthesizer report the brand's name correctly
-message:initType("Perform this property to go to the Properties Ribbon home page on Git hub.", "Performable")
+message:initType("Perform this property to go to the Properties Ribbon home page on Git hub.")
 message("Properties ribbon home page on Git hub")
 return message
 end
@@ -63,7 +63,7 @@ parentLayout.propertiesRibbonPrefs:registerProperty(prDownloadArchiveProperty)
 
 function prDownloadArchiveProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to download the latest Main branch archive contained the Properties Ribbon from Git hub.", "Performable")
+message:initType("Perform this property to download the latest Main branch archive contained the Properties Ribbon from Git hub.")
 message("Download the latest Properties Ribbon scripts complex")
 return message
 end

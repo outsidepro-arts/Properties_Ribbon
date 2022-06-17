@@ -117,7 +117,7 @@ parentLayout.visualLayout:registerProperty(trackNameProperty)
 
 function trackNameProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this action to rename selected track.", "performable")
+message:initType("Perform this action to rename selected track.")
 if multiSelectionSupport == true then
 message:addType(" If the group of tracks has been selected, new name will applied to all selected tracks.", 1)
 end
@@ -183,7 +183,7 @@ folderStateProperty.compactStates = {
 
 function folderStateProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to switch the folder state of selected tracks.", "Adjustable")
+message:initType("Adjust this property to switch the folder state of selected tracks.")
 if multiSelectionSupport == true then
 message:addType(" This property is adjustable for one track only.", 1)
 end
@@ -307,7 +307,7 @@ parentLayout.recordingLayout:registerProperty(volumeProperty)
 
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for selected track.", "Adjustable")
+message:initType("Adjust this property to set the desired volume value for selected track.")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -373,7 +373,7 @@ end
 volumeProperty.extendedProperties:registerProperty({
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to type the volume value manualy.", "Performable")
+message:initType("Perform this property to type the volume value manualy.")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the input value will be applied for each track of.", 1)
 end
@@ -418,7 +418,7 @@ parentLayout.recordingLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for selected track.", "Adjustable")
+message:initType("Adjust this property to set the desired pan value for selected track.")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -486,7 +486,7 @@ end
 panProperty.extendedProperties:registerProperty({
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to type the custom pan value.", "Performable")
+message:initType("Perform this property to type the custom pan value.")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the input value will be applied for each track of.", 1)
 end
@@ -530,7 +530,7 @@ parentLayout.playbackLayout:registerProperty(widthProperty)
 
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for selected track.", "Adjustable")
+message:initType("Adjust this property to set the desired width value for selected track.")
 if multiSelectionSupport == true then
 message:addType(" If the group of track has been selected, the relative of previous value will be applied for each track of.", 1)
 end
@@ -598,7 +598,7 @@ end
 widthProperty.extendedProperties:registerProperty({
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom width value.", "Performable")
+message:initType("Perform this property to specify a custom width value.")
 message("Type custom width value")
 return message
 end,
@@ -870,7 +870,7 @@ local recmonitoringProperty = {}
 
 function recmonitoringProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired record monitoring state.", "Adjustable")
+message:initType("Adjust this property to choose the desired record monitoring state.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the record monitoring state will be set to "%s" first, then will enumerate this.', self.states[1]), 1)
 end
@@ -1219,7 +1219,7 @@ __index = function(self, key) return "Unknown record mode "..key end
 
 function recmodeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired mode for recording.", "Adjustable")
+message:initType("Adjust this property to set the desired mode for recording.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, The value will enumerate only if selected tracks have the same value. Otherwise, the record mode state will be set to "%s", then will enumerate this.', self.states[1]), 1)
 end
@@ -1289,7 +1289,7 @@ __index = function(self, key) return "Unknown automation mode "..key end
 
 function automationModeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired automation mode for selected track.", "Adjustable")
+message:initType("Adjust this property to set the desired automation mode for selected track.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of track has been selected, The value will enumerate only if selected tracks have the same value. Otherwise, the automation mode state will be set to "%s", then will enumerate this.', self.states[1]), 1)
 end
@@ -1545,7 +1545,7 @@ __index = function(self, key) return "Unknown timebase mode "..key end
 
 function timebaseProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired time base mode for selected track.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired time base mode for selected track.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of tracks has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -1904,7 +1904,7 @@ parentLayout.visualLayout:registerProperty(osaraParamsProperty)
 
 function osaraParamsProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to view the OSARA parameters window for last touched track.", "Performable")
+message:initType("Perform this property to view the OSARA parameters window for last touched track.")
 -- This property will obey the last touched track cuz the OSARA action works with that only.
 if istable(tracks) then
 message{objectId="Last touched "}
@@ -1932,7 +1932,7 @@ parentLayout.visualLayout:registerProperty(routingViewProperty)
 
 function routingViewProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to view the routing and input/output options for last touched track", "Performable")
+message:initType("Perform this property to view the routing and input/output options for last touched track")
 local track = reaper.GetLastTouchedTrack()
 if track then
 message{objectId=getTrackID(track)}

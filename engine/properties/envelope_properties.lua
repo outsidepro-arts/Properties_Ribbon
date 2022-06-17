@@ -138,7 +138,7 @@ local addEnvelopePointProperty = {}
 
 function addEnvelopePointProperty:get()
 	local message = initOutputMessage()
-	message:initType("Perform this property to add new envelope point at current play or edit cursor position for selected envelope.", "Performable")
+	message:initType("Perform this property to add new envelope point at current play or edit cursor position for selected envelope.")
 	message(string.format("Add new %s envelope point at cursor", name))
 	return message
 end
@@ -168,7 +168,7 @@ if multiSelectionSupport == true then
 message:addType(" If the group of points has been selected, the  state will be set to oposite value depending of moreness envelope points with the same value.", 1)
 end
 else
-message:initType("Adjust this property to set the desired envelope point value. ", "Adjustable, performable")
+message:initType("Adjust this property to set the desired envelope point value. ")
 if multiSelectionSupport == true then
 message:addType(" If the group of points has been selected, the relative of previous value will be applied for each point of.", 1)
 end
@@ -496,7 +496,7 @@ end
 
 function shapeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired point shape.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired point shape.")
 if multiSelectionSupport == true then
 message:addType((' If the group of points has been selected, the value will enumerate up if selected points have the same value. If one of points has different value, all points will set to "%s" first, then will enumerate up this.'):format(self.states[0]), 1)
 end
@@ -603,7 +603,7 @@ end
 
 function tensionProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Adjust this property to set the desired curvature of %s tension.", shapeProperty.states[5]), "Adjustable, performable")
+message:initType(string.format("Adjust this property to set the desired curvature of %s tension.", shapeProperty.states[5]))
 if multiSelectionSupport == true then
 message:addType(" If the group of points has been selected, the relative of previous value will be applied for each point of.", 1)
 end
@@ -696,7 +696,7 @@ envelopePointsLayout:registerProperty(gotoPositionProperty)
 
 function gotoPositionProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to timeline position where this point has positioned.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to timeline position where this point has positioned.")
 if multiSelectionSupport then
 message:addType(" If the group of points has been selected, the cursor will set to first selected point position.", 1)
 end
@@ -732,7 +732,7 @@ envelopePointsLayout:registerProperty(deletePointsProperty)
 
 function deletePointsProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to delete the envelope point.", "Performable")
+message:initType("Perform this property to delete the envelope point.")
 if multiSelectionSupport then
 message:addType(" If the group of points has been selected, all these points will be deleted.", 1)
 end	

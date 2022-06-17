@@ -237,7 +237,7 @@ end
 
 function itemVolumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -302,7 +302,7 @@ itemVolumeProperty.setValue
 itemVolumeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom volume value manualy.", "Performable")
+message:initType("Perform this property to specify a custom volume value manualy.")
 message("Type custom volume")
 return message
 end,
@@ -529,7 +529,7 @@ end
 
 function timebaseProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired time base mode for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired time base mode for selected item.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the timebase state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -651,7 +651,7 @@ end
 
 function itemSnapOffsetProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired snap offset time.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired snap offset time.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has selected, the relative depending on previous value will be set for each selected item.", 1)
 end
@@ -733,7 +733,7 @@ end
 
 function groupingProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set up the desired group number for selected item.", "Adjustable")
+message:initType("Adjust this property to set up the desired group number for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the group will be set to 1 first, then will begins enumerate up of.", 1)
 end
@@ -799,7 +799,7 @@ end
 
 function leftEdgeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to grow or shrink the left item edge. Perform this property to trim left item edge to edit or play cursor.", "Adjustable")
+message:initType("Adjust this property to grow or shrink the left item edge. Perform this property to trim left item edge to edit or play cursor.")
 if multiSelectionSupport then
 message:addType(" This property doesn't work with group of selected items.", 1)
 end
@@ -830,7 +830,7 @@ leftEdgeProperty.extendedProperties = initExtendedProperties("Left edge extended
 leftEdgeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to left item edge position.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to left item edge position.")
 message("Go to left item edge position")
 return message
 end,
@@ -844,7 +844,7 @@ end
 leftEdgeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to trim left item edge to edit or play cursor.", "Performable")
+message:initType("Perform this property to trim left item edge to edit or play cursor.")
 message("Trim left item edge to here")
 return message
 end,
@@ -865,7 +865,7 @@ end
 
 function rightEdgeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to shrink or grow the right item edge.", "Adjustable")
+message:initType("Adjust this property to shrink or grow the right item edge.")
 if multiSelectionSupport then
 message:addType(" This property doesn't work with group of selected items.", 1)
 end
@@ -896,7 +896,7 @@ rightEdgeProperty.extendedProperties = initExtendedProperties("Right edge extend
 rightEdgeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to right item edge position.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to right item edge position.")
 message("Go to right item edge position")
 return message
 end,
@@ -910,7 +910,7 @@ end
 rightEdgeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to trim right item edge to edit or play cursor.", "Performable")
+message:initType("Perform this property to trim right item edge to edit or play cursor.")
 message("Trim right item edge to here")
 return message
 end,
@@ -950,7 +950,7 @@ end
 
 function fadeinShapeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired shape mode for fadein in selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired shape mode for fadein in selected item.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -1014,7 +1014,7 @@ end
 
 function  fadeinLenProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to setup desired fadein length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired fadein length for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1062,7 +1062,7 @@ fadeinLenProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
 message(string.format("Set %s (off the fade)", representation.timesec[0.000]))
-message:initType("Perform this property to set the minimal length value that means the fade will be not applied.", "Performable")
+message:initType("Perform this property to set the minimal length value that means the fade will be not applied.")
 return message
 end,
 set_perform = function (self, parent)
@@ -1131,7 +1131,7 @@ end
 
 function  fadeinDirProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired fadein curvature for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired fadein curvature for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1210,7 +1210,7 @@ end
 
 function fadeoutShapeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired shape mode for fadeout in selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired shape mode for fadeout in selected item.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if these items have the same value. Otherwise, the shape state will be set to "%s", then will enumerate this.', self.states[0]), 1)
 end
@@ -1240,7 +1240,7 @@ end
 
 function  fadeoutLenProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to setup desired fadeout length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired fadeout length for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1271,7 +1271,7 @@ end
 
 function  fadeoutDirProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired fadeout curvature for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired fadeout curvature for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1303,7 +1303,7 @@ end
 
 function  fadeinAutoLenProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to setup desired automatic fadein length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired automatic fadein length for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1375,7 +1375,7 @@ end
 
 function  fadeoutAutoLenProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to setup desired automatic fadeout length for selected item.", "Adjustable")
+message:initType("Adjust this property to setup desired automatic fadeout length for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1419,7 +1419,7 @@ end
 
 function activeTakeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to switch the desired  active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to switch the desired  active take of selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item of.", 1)
 end
@@ -1544,7 +1544,7 @@ reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", valu
 end,
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to rename the active take of item.", "Performable")
+message:initType("Perform this property to rename the active take of item.")
 if multiSelectionSupport then
 message:addType(" If the group of item has been selected, the every take of will get new specified name with ordered number.", 1)
 end
@@ -1581,7 +1581,7 @@ end
 activeTakeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete active take of selected item.", "Performable")
+message:initType("Perform this property to delete active take of selected item.")
 if multiSelectionSupport then
 message:addType(" If the group of items has been selected, every active take of will be deleted.", 1)
 end
@@ -1621,7 +1621,7 @@ end
 
 function takeVolumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired volume value for active take of selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -1652,7 +1652,7 @@ takeVolumeProperty.setValue
 takeVolumeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom vvolume value manualy.", "performable")
+message:initType("Perform this property to specify a custom vvolume value manualy.")
 message("Type custom volume")
 return message
 end,
@@ -1694,7 +1694,7 @@ end
 takeVolumeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to use normalize items option.", "Performable")
+message:initType("Perform this property to use normalize items option.")
 if istable(items) then
 message(string.format("Normalize takes of %u selected items", #items))
 else
@@ -1723,7 +1723,7 @@ end
 
 function takePanProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired current take pan value for selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired current take pan value for selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item active take of.", 1)
 end
@@ -1789,7 +1789,7 @@ takePanProperty.setValue
 takePanProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom pan value manualy.", "Performable")
+message:initType("Perform this property to specify a custom pan value manualy.")
 message("Type custom pan")
 return message
 end,
@@ -2037,7 +2037,7 @@ end
 
 function takePlayrateProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired playrate value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired playrate value for active take of selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -2069,7 +2069,7 @@ takePlayrateProperty.extendedProperties = initExtendedProperties("Take play rate
 takePlayrateProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to reset the play rate to original.", "Performable")
+message:initType("Perform this property to reset the play rate to original.")
 message(string.format("Reset play rate to %s", representation.playrate[1.0]))
 return message
 end,
@@ -2087,7 +2087,7 @@ end
 takePlayrateProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to type a custom play rate value.", "Performable")
+message:initType("Perform this property to type a custom play rate value.")
 message("Type custom play rate")
 return message
 end,
@@ -2194,7 +2194,7 @@ end
 
 function takePitchProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pitch value for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired pitch value for active take of selected item.")
 if multiSelectionSupport == true then
 message:addType(" If the group of items has been selected, the relative of previous value will be applied for each item take of.", 1)
 end
@@ -2265,7 +2265,7 @@ takePitchProperty.setValue
 takePitchProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom pitch value manualy.", "Performable")
+message:initType("Perform this property to specify a custom pitch value manualy.")
 message("Type custom pitch")
 return message
 end,
@@ -2335,7 +2335,7 @@ end
 
 function takePitchShifterProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.", "Adjustable, performable")
+message:initType("Adjust this property to choose the desired pitch shifter (i.e., pitch algorhythm) for active take of selected item.")
 if multiSelectionSupport == true then
 message:addType(string.format(' If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter state will be set to "%s", then will enumerate this.', self.states[-1]), 1)
 end
@@ -2471,7 +2471,7 @@ takePitchShifterModeProperty.getValue, takePitchShifterModeProperty.setValue = t
 
 function takePitchShifterModeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired mode for active shifter  of active take on selected item.", "Adjustable")
+message:initType("Adjust this property to choose the desired mode for active shifter  of active take on selected item.")
 if multiSelectionSupport == true then
 message:addType(string.format(" If the group of items has been selected, the value will enumerate only if selected items have the same value. Otherwise, the pitch shifter mode will be set to first setting for this shifter, then will enumerate this. Please note: if one of selected items will has pitch shifter set to %s, the adjusting of this property will not available until selected shifters will not set to any different.", takePitchShifterProperty.states[-1]), 1)
 end
@@ -2555,7 +2555,7 @@ parentLayout.visualLayout:registerProperty(itemPropertiesProperty)
 
 function itemPropertiesProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to open the item properties window.", "Performable")
+message:initType("Perform this property to open the item properties window.")
 if istable(items) then
 message{objectId="Selected items"}
 else
@@ -2574,7 +2574,7 @@ parentLayout.visualLayout:registerProperty(osaraParamsProperty)
 
 function osaraParamsProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to view the OSARA parameters window for selected item.", "Performable")
+message:initType("Perform this property to view the OSARA parameters window for selected item.")
 -- This property will obey the one selected item cuz the OSARA action works with that only.
 if multiSelectionSupport == true then
 message:addType(" If the group of items selected, OSARA parameters will show for first selected item.", 1)

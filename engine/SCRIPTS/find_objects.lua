@@ -151,7 +151,7 @@ end
 
 function searchinAction:get()
 local message = initOutputMessage()
-message:initType(string.format("Adjust this action to search a %s by specified options on approppriate direction.", self.objStrings[context]), "Adjustable")
+message:initType(string.format("Adjust this action to search a %s by specified options on approppriate direction.", self.objStrings[context]))
 message(string.format("Search a specified %s", self.objStrings[context]))
 message(string.format(" (%s - forward, %s - backward)", actions.set.increase.label, actions.set.decrease.label))
 return message
@@ -198,7 +198,7 @@ message(string.format("(currently set as %s)", curQuery))
 else
 message(" (must set)")
 end
-message:initType("Perform this property to specify a search query.", "Performable")
+message:initType("Perform this property to specify a search query.")
 return message
 end,
 set_perform = function (self, parent)
@@ -261,7 +261,7 @@ end
 
 function searchbyPluginsAction:get()
 local message = initOutputMessage()
-message:initType(string.format("Adjust this action to search a  %s by specified query at approppriate direction.", self.objStrings[context]), "Adjustable")
+message:initType(string.format("Adjust this action to search a  %s by specified query at approppriate direction.", self.objStrings[context]))
 message(string.format("Search a specified %s", self.objStrings[context]))
 message(string.format(" (%s - forward, %s - backward)", actions.set.increase.label, actions.set.decrease.label))
 return message

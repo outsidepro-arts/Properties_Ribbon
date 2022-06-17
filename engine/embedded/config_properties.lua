@@ -48,7 +48,7 @@ typeLevelProperty.states = {[0] = "no prompt for property actions", [1] = "detai
 function typeLevelProperty:get()
 local message = initOutputMessage()
 local typeLevel = config.getinteger("typeLevel", 1)
-message:initType("Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.", "Adjustable")
+message:initType("Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.")
 message{label="Types prompts level", value=self.states[typeLevel]}
 return message
 end
@@ -78,7 +78,7 @@ reportPosProperty.states = {
 }
 function reportPosProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.", "Adjustable")
+message:initType("Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.")
 local state = config.getinteger("reportPos", 3)
 message{label="Reporting navigation position", value=self.states[state]}
 return message
@@ -109,7 +109,7 @@ resetSublayoutProperty.states = {
 }
 function resetSublayoutProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.", "Adjustable")
+message:initType("Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.")
 local state = config.getinteger("rememberSublayout", 3)
 message{label="Remember position in layouts when loading", value=self.states[state]}
 return message
@@ -136,7 +136,7 @@ configLayout.stepAdjustment:registerProperty( dbStepProperty)
 
 function dbStepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.")
 local state = config.getinteger("dbStep", 0.1)
 message{label="Decibel step adjustment", value=representation.db[-utils.decibelstonum(state)]}
 return message
@@ -211,7 +211,7 @@ configLayout.stepAdjustment:registerProperty( maxDbProperty)
 
 function maxDbProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.")
 local state = config.getinteger("maxDBValue", 12.0)
 message{label="Maximum decibels value", value=representation.db[-utils.decibelstonum(state)]}
 return message
@@ -270,7 +270,7 @@ configLayout.stepAdjustment:registerProperty( percentagestepProperty)
 
 function percentagestepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.")
 local state = config.getinteger("percentStep", 1)
 message{label="Percent step adjustment", value=string.format("%s%%", state)}
 return message
@@ -341,7 +341,7 @@ configLayout.stepAdjustment:registerProperty( timeStepProperty)
 
 function timeStepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.")
 local state = config.getinteger("timeStep", 0.001)
 message{label="Time step adjustment", value=representation.timesec[state]}
 return message
@@ -414,7 +414,7 @@ playrateStepProperty.states = {
 
 function playrateStepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.", "adjustable")
+message:initType("Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.")
 local state = config.getinteger("rateStep", 1)
 message{label="Play rate step adjustment", value=self.states[state]}
 return message
@@ -441,7 +441,7 @@ configLayout.stepAdjustment:registerProperty( pitchStepProperty)
 
 function pitchStepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.", "adjustable, performable")
+message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.")
 local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
 message{label="Pitch step adjustment", value=representation.pitch[state]}
 return message
@@ -509,7 +509,7 @@ configLayout.stepAdjustment:registerProperty(pitchBouncesProperty)
 
 function pitchBouncesProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired value either more or less than the pitch properties will not adjust. Perform this property to type the custom pitch bounces value manualy.", "Adjustable, performable")
+message:initType("Adjust this property to set the desired value either more or less than the pitch properties will not adjust. Perform this property to type the custom pitch bounces value manualy.")
 local state = config.getinteger("pitchBounces", 24.0)
 message{label="Pitch bounces", value=representation.pitch[state]}
 return message
@@ -606,7 +606,7 @@ truncateIdByProperty.states = {5,10,25,50}
 
 function truncateIdByProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to specify the length for name should be truncated when the report names identification configuration is enabled. Perform this property to specify the custom value for.", "Adjustable, performable")
+message:initType("Adjust this property to specify the length for name should be truncated when the report names identification configuration is enabled. Perform this property to specify the custom value for.")
 local depend = config.getboolean("reportName", false)
 if depend == false then
 message:addType(" This property is unavailable right now because the report name configuration isn't set.", 1)
@@ -794,7 +794,7 @@ fxParmstepProperty.states = {
 
 function fxParmstepProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.", "Adjustable")
+message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.")
 local state = config.getinteger("fxParmStep", 4)
 message{label="FX parameters step adjustment", value=self.states[state]}
 return message
@@ -844,7 +844,7 @@ reportParmIndexProperty.states = {
 
 function reportParmIndexProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the report method of the parameter identification prefix when navigating.", "Adjustable")
+message:initType("Adjust this property to choose the report method of the parameter identification prefix when navigating.")
 local state = config.getinteger("reportParmId", 2)
 message{label="Parameter identification when navigating", value=self.states[state]}
 return message
@@ -873,7 +873,7 @@ reportRealParmValueProperty.states = {
 
 function reportRealParmValueProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to set the reporting parameter number behavior.", "Adjustable")
+	message:initType("Adjust this property to set the reporting parameter number behavior.")
 	local state = config.getinteger("reportParmMethod", 1)
 	message{label="Report FX parameter number when navigating as", value=self.states[state]}
 	return message
@@ -913,7 +913,7 @@ excludeElementProperty.extendedProperties:registerProperty{
 -- The methods written below get second parameter but Lua allows s to omit this if it's not needed.
 get = function ()
 local message = initOutputMessage()
-message:initType("Perform this property to edit this exclude mask.", "Performable")
+message:initType("Perform this property to edit this exclude mask.")
 message"Edit"
 return message
 end,
@@ -941,7 +941,7 @@ end
 excludeElementProperty.extendedProperties:registerProperty{
 get = function ()
 local message = initOutputMessage()
-message:initType("Perform this property to delete this exclude mask.", "Performable")
+message:initType("Perform this property to delete this exclude mask.")
 message"Delete"
 return message
 end,
@@ -961,7 +961,7 @@ configLayout.fxExcludeList:registerProperty(addExcludeMaskProperty)
 
 function addExcludeMaskProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to add new exclude mask.", "Performable")
+message:initType("Perform this property to add new exclude mask.")
 message("Add new exclude mask")
 return message
 end
@@ -995,7 +995,7 @@ outputOrderProperty.states = {
 
 function outputOrderProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose needed output order when you're adjusting a property.", "Adjustable")
+message:initType("Adjust this property to choose needed output order when you're adjusting a property.")
 local state = config.getinteger("adjustOutputOrder", 0)
 message{label="Output when adjusting a property", value=self.states[state]}
 return message

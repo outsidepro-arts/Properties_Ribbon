@@ -59,7 +59,7 @@ markersActionsProperty.extendedProperties = initExtendedProperties(markersAction
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to add new marker at play or edit cursor position.", "Performable")
+message:initType("Perform this property to add new marker at play or edit cursor position.")
 message("Insert marker at current position")
 return message
 end,
@@ -74,7 +74,7 @@ end
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create new marker and edit it.", "Performable")
+message:initType("Perform this property to create new marker and edit it.")
 message("Insert and edit marker at current position")
 return message
 end,
@@ -88,7 +88,7 @@ end
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to renumber all marker in project timeline. Please note: the standart REAPER action used here, so all regions will be renumbered aswell.", "Performable")
+message:initType("Perform this property to renumber all marker in project timeline. Please note: the standart REAPER action used here, so all regions will be renumbered aswell.")
 message("Renumber all markers in timeline order")
 return message
 end,
@@ -107,7 +107,7 @@ end
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to remove all markers in time selection.", "performable")
+message:initType("Perform this property to remove all markers in time selection.")
 message("Remove all markers from time selection")
 return message
 end,
@@ -120,7 +120,7 @@ end
 markersActionsProperty.extendedProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to remove all markers in the project.", "Performable")
+message:initType("Perform this property to remove all markers in the project.")
 message("Clear all markers")
 return message
 end,
@@ -145,7 +145,7 @@ if allowMove == false then
 markerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to the marker's position.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to the marker's position.")
 message("Go to marker position")
 return message
 end,
@@ -161,7 +161,7 @@ end
 markerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to edit this marker.", "Performable")
+message:initType("Perform this property to edit this marker.")
 message("Edit marker")
 return message	
 end,
@@ -178,7 +178,7 @@ end
 markerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete this marker.", "Performable")
+message:initType("Perform this property to delete this marker.")
 message("Delete marker")
 return message
 end,
@@ -238,7 +238,7 @@ regionsActionsProperty.extendedProperties = initExtendedProperties(regionsAction
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to insert new region from time selection.", "Performable")
+message:initType("Perform this property to insert new region from time selection.")
 message("Insert region from time selection")
 return message
 end,
@@ -251,7 +251,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to insert new region from time selection and edit it.", "Performable")
+message:initType("Perform this property to insert new region from time selection and edit it.")
 message("Insert region from time selection and edit")
 return message
 end,
@@ -263,7 +263,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to insert new region from selected items.", "Performable")
+message:initType("Perform this property to insert new region from selected items.")
 message("Insert region from selected items")
 return message
 end,
@@ -276,7 +276,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create new region from selected items then edit it.", "Performable")
+message:initType("Perform this property to create new region from selected items then edit it.")
 message("Insert region from selected items and edit")
 return message
 end,
@@ -288,7 +288,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create separate region for each selected item.", "Performable")
+message:initType("Perform this property to create separate region for each selected item.")
 message("Insert separate regions for each selected item")
 return message
 end,
@@ -300,7 +300,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to renumber all regions in project timeline. Please note: the standart REAPER action used here, so all markers will be renumbered aswell.", "Performable")
+message:initType("Perform this property to renumber all regions in project timeline. Please note: the standart REAPER action used here, so all markers will be renumbered aswell.")
 message("Renumber all markers and regions in timeline order")
 return message
 end,
@@ -320,7 +320,7 @@ end
 regionsActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to clear all regions in this project.", "Performable")
+message:initType("Perform this property to clear all regions in this project.")
 message("Clear all regions")
 return message
 end,
@@ -344,7 +344,7 @@ if allowMove == false then
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to smooth seek to the region position after currently region finishes playing..", "Performable")
+message:initType("Perform this property to smooth seek to the region position after currently region finishes playing..")
 message("Smooth seek to the region")
 return message
 end,
@@ -360,7 +360,7 @@ end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to the timestamp when this region starts.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to the timestamp when this region starts.")
 message("Immediately jump to start of this region")
 return message
 end,
@@ -375,7 +375,7 @@ end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to the timestamp when this region ends.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to the timestamp when this region ends.")
 message("Immediately jump to end of this region")
 return message
 end,
@@ -390,7 +390,7 @@ end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to edit this region.", "Performable")
+message:initType("Perform this property to edit this region.")
 message("Edit region")
 return message
 end,
@@ -406,7 +406,7 @@ end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete this marker.", "Performable")
+message:initType("Perform this property to delete this marker.")
 message("Delete region")
 return message
 end,
@@ -485,7 +485,7 @@ if allowMove == false then
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to stretch marker position.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to stretch marker position.")
 message("Go to stretch marker position")
 return message
 end,
@@ -500,7 +500,7 @@ end
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to pull this stretch marker to play or edit cursor position.", "Performable")
+message:initType("Perform this property to pull this stretch marker to play or edit cursor position.")
 message("Pull stretch marker")
 return message
 end,
@@ -518,7 +518,7 @@ end
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to edit this stretch marker.", "Performable")
+message:initType("Perform this property to edit this stretch marker.")
 message("Edit stretch marker")
 return message
 end,
@@ -534,7 +534,7 @@ end
 stretchMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete this stretch marker.", "Performable")
+message:initType("Perform this property to delete this stretch marker.")
 message("Delete stretch marker")
 return message
 end,
@@ -596,7 +596,7 @@ if allowMove == false then
 takeMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to move the play or edit cursor to take marker position.", "Performable")
+message:initType("Perform this property to move the play or edit cursor to take marker position.")
 message("Go to take marker")
 return message
 end,
@@ -611,7 +611,7 @@ end
 takeMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to edit this take marker.", "Performable")
+message:initType("Perform this property to edit this take marker.")
 message("Edit take marker")
 return message
 end,
@@ -627,7 +627,7 @@ end
 takeMarkerActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete this take marker.", "Performable")
+message:initType("Perform this property to delete this take marker.")
 message("Delete take marker")
 return message
 end,
@@ -721,7 +721,7 @@ stretchMarkersActionsProperty.extendedProperties = initExtendedProperties(stretc
 stretchMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to insert a stretch marker at the play or edit cursor position.", "Performable")
+message:initType("Perform this property to insert a stretch marker at the play or edit cursor position.")
 message("Add stretch marker at cursor")
 return message
 end,
@@ -744,7 +744,7 @@ end
 stretchMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to add a stretch markers at the edges of the time selection.", "Performable")
+message:initType("Perform this property to add a stretch markers at the edges of the time selection.")
 message("Add stretch markers at time selection")
 return message
 end,
@@ -767,7 +767,7 @@ end
 stretchMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to add a stretch marker at the play or edit cursor and edit it right now", "performable")
+message:initType("Perform this property to add a stretch marker at the play or edit cursor and edit it right now")
 message("Add stretch marker at cursor and edit")
 return message
 end,
@@ -780,7 +780,7 @@ end
 stretchMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete all stretch markers in selected items takes.", "Performable")
+message:initType("Perform this property to delete all stretch markers in selected items takes.")
 message("Delete all stretch markers")
 return message
 end,
@@ -830,7 +830,7 @@ takeMarkersActionsProperty.extendedProperties = initExtendedProperties(takeMarke
 takeMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parentLayout)
 local message = initOutputMessage()
-message:initType("Perform this property to create a take marker at the play or edit cursor position.", "Performable")
+message:initType("Perform this property to create a take marker at the play or edit cursor position.")
 message("Create take marker at current position")
 return message
 end,
@@ -849,7 +849,7 @@ end
 takeMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create a take marker at play or edit cursor position and edit it.", "Performable")
+message:initType("Perform this property to create a take marker at play or edit cursor position and edit it.")
 message("Create take marker at current position and edit it")
 return message
 end,
@@ -861,7 +861,7 @@ end
 takeMarkersActionsProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete all stretch markers.", "Performable")
+message:initType("Perform this property to delete all stretch markers.")
 message("Delete all take markers")
 return message
 end,

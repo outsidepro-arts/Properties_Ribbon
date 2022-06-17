@@ -117,7 +117,7 @@ end
 
 function contextualFXChain:get()
 local message = initOutputMessage()
-message:initType(("Adjust this property to choose which %s FX chain you wish to open. Perform this property to show the chosen FX chain."):format(contexts[context]), "Adjustable, performable")
+message:initType(("Adjust this property to choose which %s FX chain you wish to open. Perform this property to show the chosen FX chain."):format(contexts[context]))
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
@@ -189,7 +189,7 @@ end
 
 function masterTrackFXChain:get()
 local message = initOutputMessage()
-message:initType("Perform this action to view the FX chain of master track.", "Performable")
+message:initType("Perform this action to view the FX chain of master track.")
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
@@ -323,7 +323,7 @@ fxActionsLayout.contextLayout:registerProperty{
 getValue = contextualFXChain.getValue,
 get = function(self)
 local message = initOutputMessage()
-message:initType(("Perform this property to work with %s FX properties."):format(contexts[context]), "Performable")
+message:initType(("Perform this property to work with %s FX properties."):format(contexts[context]))
 local chainCount, inputCount = self.getValue()
 if context == 0 and inputCount > 0 then
 message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
@@ -358,7 +358,7 @@ fxActionsLayout.contextLayout:registerProperty{
 getValue = contextualFXChain.getValue,
 get = function(self)
 local message = initOutputMessage()
-message:initType(("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]), "Performable")
+message:initType(("Perform this property to show the %s FX parameters using OSARA."):format(contexts[context]))
 local chainCount, inputCount = self.getValue()
 if context == 0 and inputCount > 0 then
 message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
@@ -397,7 +397,7 @@ fxPropertiesForMasterTrack.getValue = masterTrackFXChain.getValue
 
 function fxPropertiesForMasterTrack:get()
 local message = initOutputMessage()
-message:initType("Perform this property to work with FX parameters for master track.", "Performable")
+message:initType("Perform this property to work with FX parameters for master track.")
 local chainCount = self.getValue()
 if chainCount == 0 then
 message:addType(" This action is unavailable right now because there are no FX.", 1)
@@ -429,7 +429,7 @@ osaraMasterFXParametersProperty.getValue = masterTrackFXChain.getValue
 
 function osaraMasterFXParametersProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to show the FX parameters for master track using OSARA.", "Performable")
+message:initType("Perform this property to show the FX parameters for master track using OSARA.")
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
@@ -472,7 +472,7 @@ end
 
 function monitorFXChainAction:get()
 local message = initOutputMessage()
-message:initType("Perform this property to show the monitoring FX chain.", "Performable")
+message:initType("Perform this property to show the monitoring FX chain.")
 if config.getboolean("allowLayoutsrestorePrev", true) then
 message:addType(" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored.", 1)
 message:addType(", onetime", 2)
@@ -530,7 +530,7 @@ fxPropertiesForMonitoring.getValue = masterTrackFXChain.getValue
 
 function fxPropertiesForMonitoring:get()
 local message = initOutputMessage()
-message:initType("Perform this property to work with FX parameters for monitoring section.", "Performable")
+message:initType("Perform this property to work with FX parameters for monitoring section.")
 local _, monitoringCount = self.getValue()
 if monitoringCount == 0 then
 message:addType(" This action is unavailable right now because there are no FX.", 1)

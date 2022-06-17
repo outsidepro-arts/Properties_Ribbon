@@ -40,7 +40,7 @@ local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty( volumeProperty)
 function volumeProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired volume value for master track.", "adjustable")
+message:initType("Adjust this property to set the desired volume value for master track.")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
 message({objectId="Master", label="Volume", value=representation.db[state]})
 return message
@@ -85,7 +85,7 @@ end
 volumeProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom volume value manualy.", "Performable")
+message:initType("Perform this property to specify a custom volume value manualy.")
 message("Type custom volume")
 return message
 end,
@@ -112,7 +112,7 @@ parentLayout.playbackLayout:registerProperty(panProperty)
 
 function panProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired pan value for master track.", "Adjustable")
+message:initType("Adjust this property to set the desired pan value for master track.")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 message({objectId="Master", label="Pan", value=representation.pan[state]})
 return message
@@ -159,7 +159,7 @@ end
 panProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom pan value manualy", "Performable")
+message:initType("Perform this property to specify a custom pan value manualy")
 message("Type custom pan")
 return message
 end,
@@ -185,7 +185,7 @@ local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
 function widthProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired width value for master track.", "Adjustable")
+message:initType("Adjust this property to set the desired width value for master track.")
 local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
 message({objectId="Master", label="Width", value=string.format("%s%%", utils.numtopercent(state))})
 return message
@@ -228,7 +228,7 @@ end
 widthProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a custom width value manualy.", "Performable")
+message:initType("Perform this property to specify a custom width value manualy.")
 message("Type custom width")
 return message
 end,
@@ -364,7 +364,7 @@ local playrateProperty = {}
 parentLayout.playbackLayout:registerProperty(playrateProperty)
 function playrateProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.", "adjustable, performable")
+message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.")
 local state = reaper.Master_GetPlayRate(0)
 message{objectId="Master", label="Play rate", value=representation.playrate[state]}
 return message
@@ -418,7 +418,7 @@ local tempoProperty = {}
 parentLayout.playbackLayout:registerProperty(tempoProperty)
 function tempoProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.", "Adjustable, performable")
+message:initType("Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
 local state = reaper.Master_GetTempo()
 message{objectId="Master", label="Tempo", value=string.format("%s BPM", utils.round(state, 3))}
 return message
@@ -542,7 +542,7 @@ end
 
 function masterTrackMixerPosProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the desired master track position on the mixer panel.", "Adjustable")
+message:initType("Adjust this property to choose the desired master track position on the mixer panel.")
 local state = self.getValue()
 message{objectId="Master track", label="Positioned"}
 if state == 0 then
@@ -574,7 +574,7 @@ parentLayout.visualLayout:registerProperty(osaraParamsProperty)
 
 function osaraParamsProperty:get()
 local message = initOutputMessage()
-message:initType("Perform this property to view the OSARA parameters window for master track.", "Performable")
+message:initType("Perform this property to view the OSARA parameters window for master track.")
 message{objectId="Master ", label="OSARA parameters"}
 return message
 end

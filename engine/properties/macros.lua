@@ -247,7 +247,7 @@ function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc
 local t = {
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.", "Adjustable, performable")
+message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.")
 message("three-position setter")
 message(string.format(" (%s - %s, ", actions.set.decrease.label, minRootMax.representation[minRootMax.min]))
 message(string.format("%s - %s, ", actions.set.perform.label, minRootMax.representation[minRootMax.rootmean]))

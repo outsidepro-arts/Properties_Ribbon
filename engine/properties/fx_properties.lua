@@ -318,7 +318,7 @@ firstExtendedFXProperties = initExtendedProperties("FX operation")
 firstExtendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.", "Performable")
+message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
 message("Filter parameters")
 if getFilter(sid) then
 message(string.format(" (currently is set to %s", getFilter(sid)))
@@ -341,7 +341,7 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward).", actions.set.increase.label, actions.set.decrease.label), "Adjustable")
+message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward).", actions.set.increase.label, actions.set.decrease.label))
 message{label="Preset"}
 retval, presetname = capi.GetPreset(parent.fxIndex)
 if retval then
@@ -366,7 +366,7 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to set current FX either offline or online.", "Performable")
+message:initType("Perform this property to set current FX either offline or online.")
 message("Set FX ")
 if capi.GetOffline(i+fxInaccuracy) then
 message("online")
@@ -385,7 +385,7 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.", "Performable")
+message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.")
 if extstate._layout.fxDrag then
 if extstate._layout.fxDrag == parent.fxIndex then
 message("Cancel drag")
@@ -440,7 +440,7 @@ end
 firstExtendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete current FX from FX chain. You will not get any questions, but you can undo this action at anytime.", "Performable")
+message:initType("Perform this property to delete current FX from FX chain. You will not get any questions, but you can undo this action at anytime.")
 message("Delete FX")
 return message
 end,
@@ -498,7 +498,7 @@ extendedFXProperties = initExtendedProperties("Parameter actions")
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.", "Adjustable, performable")
+message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.")
 message("three-position setter")
 message(string.format(" (%s - %s, ", actions.set.decrease.label, "minimal parameter value"))
 message(string.format("%s - %s, ", actions.set.perform.label, "root-mean parameter value"))
@@ -529,7 +529,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify a raw VST parameter data", "Performable")
+message:initType("Perform this property to specify a raw VST parameter data")
 message("Type raw parameter data")
 return message
 end,
@@ -552,7 +552,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to search the specified parameter value.", "Performable")
+message:initType("Perform this property to search the specified parameter value.")
 message("Search for parameter value")
 if checkKnownAssyncPlugin(parent.fxIndex) then
 message(" (use with caution here)")
@@ -633,7 +633,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create an envelope with this parameter on an object where this plugin set.", "Performable")
+message:initType("Perform this property to create an envelope with this parameter on an object where this plugin set.")
 message("Create envelope with this parameter")
 return message
 end,
@@ -664,7 +664,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to specify the new filter based on this parameter name. When you use this property, the new filer query input will be opened where the name of this parameter will be filled.", "Performable")
+message:initType("Perform this property to specify the new filter based on this parameter name. When you use this property, the new filer query input will be opened where the name of this parameter will be filled.")
 message("Compose filter based on this parameter")
 return message
 end,
@@ -685,7 +685,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Adjust this property to choose the needed step for this parameter. Perform this property to reset the parameter step to default configured step.", "Adjustable, performable")
+message:initType("Adjust this property to choose the needed step for this parameter. Perform this property to reset the parameter step to default configured step.")
 message{label="Set adjusting step for this parameter"}
 message{value=stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].label}
 if getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
@@ -715,7 +715,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Adjust this property to switch the configuration for searching for nearest value for this parameter only. Perform this property to reset this parameter to default value by Properties Ribbon configuration.", "Adjustable, performable")
+message:initType("Adjust this property to switch the configuration for searching for nearest value for this parameter only. Perform this property to reset this parameter to default value by Properties Ribbon configuration.")
 message{label="Use find nearest parameter value method for this parameter"}
 message{value=({[false]="disabled",[true]="enabled"})[getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex))]}
 if getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
@@ -754,7 +754,7 @@ end
 extendedFXProperties:registerProperty{
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to create new exclude mask based on this FX and its parameter data.", "Performable")
+message:initType("Perform this property to create new exclude mask based on this FX and its parameter data.")
 message("Add exclude mask based on this parameter")
 return message
 end,
@@ -805,7 +805,7 @@ fxIndex=i+fxInaccuracy,
 parmIndex = k,
 get = function(self)
 local message = initOutputMessage()
-message:initType("Adjust this property to set necessary value for this parameter.", "Adjustable")
+message:initType("Adjust this property to set necessary value for this parameter.")
 -- Define the host native parameters
 if self.parmIndex > fxParmsCount-4 then
 message{objectId="Host "}

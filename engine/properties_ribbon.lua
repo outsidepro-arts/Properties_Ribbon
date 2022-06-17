@@ -91,7 +91,7 @@ focusIndex = nil,
 -- type prompts initialization method
 -- The type prompts adds the string message set by default to the end of value message.
 -- Parameters:
--- infinite parameters (string): the prompts messages in supported order.
+-- infinite parameters (string, optional): the prompts messages in supported order.
 -- returns none.
 initType = function(self, ...)
 local args = {...}
@@ -132,6 +132,20 @@ self.tLevels[level] = self.tLevels[level]..str
 else
 self.tLevels[level] = str
 end
+end
+end,
+
+-- Checking the types initialization
+-- Parameters:
+-- level -- (number, optional): which level should be checked. If omited, the types will be checked fully.
+-- Returns true if specified type (or all types) initialized, false otherwise.
+isTypeInitialized = function (self, level)
+if level then
+if self.tLevels then
+return self.tLevels[level] ~= nil
+end
+else
+return self.tLevels ~= nil and self.tl ~= nil
 end
 end,
 
@@ -376,7 +390,7 @@ properties = setmetatable({
 {
 get = function(self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to return back to the properties view.", "Performable")
+message:initType("Perform this property to return back to the properties view.")
 message(string.format("Return to %s properties", layout.subname or layout.name))
 return message
 end,
@@ -714,10 +728,31 @@ script_finish()
 return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
-if result.tLevels then
+if result:isTypeInitialized() then
+if not result:isTypeInitialized(2) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType("Adjustable", 2)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(2) then
+result:addType(", p", 2)
+else
+result:addType("P", 2)
+end
+result:addType("erformable", 2)
+end
+end
 if layoutLevel.properties[pIndex].extendedProperties then
-result:addType(" Perform this property to activate the extended properties for.", 1)
-result:addType(", has extended properties", 2)
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+if result:isTypeInitialized(2) then
+result:addType(", h", 2)
+else
+result:addType("H", 2)
+end
+result:addType("Perform this property to activate the extended properties for.", 1)
+result:addType("as extended properties", 2)
 end
 end
 local cfg = config.getinteger("reportPos", 3)
@@ -779,10 +814,31 @@ script_finish()
 return
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
-if result.tLevels then
+if result:isTypeInitialized() then
+if not result:isTypeInitialized(2) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType("Adjustable", 2)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(2) then
+result:addType(", p", 2)
+else
+result:addType("P", 2)
+end
+result:addType("erformable", 2)
+end
+end
 if layoutLevel.properties[pIndex].extendedProperties then
-result:addType(" Perform this property to activate the extended properties for.", 1)
-result:addType(", has extended properties", 2)
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+if result:isTypeInitialized(2) then
+result:addType(", h", 2)
+else
+result:addType("H", 2)
+end
+result:addType("Perform this property to activate the extended properties for.", 1)
+result:addType("as extended properties", 2)
 end
 end
 local cfg = config.getinteger("reportPos", 3)
@@ -894,10 +950,31 @@ else
 pIndex = layout.pIndex
 end
 local result = layoutLevel.properties[pIndex]:get(({[true]=layout.properties[layout.pIndex],[false]=nil})[currentExtProperty ~= nil])
-if result.tLevels then
+if result:isTypeInitialized() then
+if not result:isTypeInitialized(2) then
+if layoutLevel.properties[pIndex].set_adjust then
+result:addType("Adjustable", 2)
+end
+if layoutLevel.properties[pIndex].set_perform then
+if result:isTypeInitialized(2) then
+result:addType(", p", 2)
+else
+result:addType("P", 2)
+end
+result:addType("erformable", 2)
+end
+end
 if layoutLevel.properties[pIndex].extendedProperties then
-result:addType(" Perform this property to activate the extended properties for.", 1)
-result:addType(", has extended properties", 2)
+if result:isTypeInitialized(1) then
+result:addType(" ", 1)
+end
+if result:isTypeInitialized(2) then
+result:addType(", h", 2)
+else
+result:addType("H", 2)
+end
+result:addType("Perform this property to activate the extended properties for.", 1)
+result:addType("as extended properties", 2)
 end
 end
 local cfg = config.getinteger("reportPos", 3)
@@ -952,6 +1029,7 @@ if retval then
 currentExtProperty = nil
 if premsg then
 if isstring(msg) then if #msg > 0 then
+---@diagnostic disable-next-line: need-check-nil
 if msg:sub(-1, -1) ~= "." then
 msg = msg.."."
 end

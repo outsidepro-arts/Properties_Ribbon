@@ -196,7 +196,7 @@ end
 
 function presetsProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.", "Adjustable, performable")
+message:initType("Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.")
 message{objectId="Color", label="Preset"}
 if #self.states > 0 then
 message{value=self.states[self.getValue()].name}
@@ -306,7 +306,7 @@ end
 
 function shadeProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color", #colors.colorList), "Adjustable, performable")
+message:initType(string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color", #colors.colorList))
 message(string.format("Color %s", colors.colorList[self.getValue()].name))
 local filter = getFilter()
 if filter then
@@ -421,7 +421,7 @@ end
 
 function rgbRProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to find nearest  red shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  red shade intensity value which belongs to different color.")
 message(string.format("Color red intensity %u", self.getValue()))
 return message
 end
@@ -497,7 +497,7 @@ end
 
 function rgbGProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
 message(string.format("Color green intensity %u", self.getValue()))
 return message
 end
@@ -537,7 +537,7 @@ end
 
 function rgbBProperty:get()
 local message = initOutputMessage()
-message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.", "Adjustable")
+message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
 message(string.format("Color blue intensity %u", self.getValue()))
 return message
 end
@@ -647,7 +647,7 @@ end
 
 function applyColorProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to apply composed color to %s.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]), "Performable")
+message:initType(string.format("Perform this property to apply composed color to %s.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]))
 local gotState = self.states[sublayout]
 if gotState then
 message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), gotState))
@@ -744,7 +744,7 @@ end
 
 function grabColorProperty:get()
 local message = initOutputMessage()
-message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]), "Performable")
+message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.", ({track="last touched track",item="first selected item",take="active take of first selected item"})[sublayout]))
 if self.getValue() then
 message(string.format("Grab a color from %s", self.states[sublayout]))
 else
