@@ -552,8 +552,8 @@ local state = self.getValue(item)
 st[state+2] = st[state+2]+1
 end
 local state
-if math.max(st[1], st[2], st[3], st[4]) == #tracks then
-state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
+if math.max(st[1], st[2], st[3], st[4]) == #items then
+state = self.getValue(items[1])
 -- We have to patch our states metatable to avoid always existing values
 self.states = setmetatable(self.states, {})
 if self.states[state+direction]  then
@@ -698,7 +698,7 @@ end
 
 function itemSnapOffsetProperty:set_perform()
 local message = initOutputMessage()
-if istable(tracks) then
+if istable(items) then
 message("Remove snap offset for selected items. ")
 for _, item in ipairs(items) do
 self.setValue(item, 0.000)
@@ -1434,14 +1434,16 @@ if IDX ~= prevIDX and IDX == nextIDX then
 message{value=string.format("items from %s ", getItemID(items[k]))}
 elseif IDX == prevIDX and IDX ~= nextIDX then
 message{value=string.format("to %s ", getItemID(items[k]))}
-message{value=string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k]))}
+local _, name = reaper.GetSetMediaItemTakeInfo_String(self.getValue(items[k]), "P_NAME", "", false)
+message{value=string.format("%u, %s", getTakeNumber(items[k]), name)}
 if k < #items then
 message{value=", "}
 end
 elseif IDX == prevIDX and IDX == nextIDX then
 else
 message{value=string.format("%s ", getItemID(items[k]))}
-message{value=string.format("%u, %s", getTakeNumber(items[k]), currentTakeNameProperty.getValue(items[k]))}
+local _, name = reaper.GetSetMediaItemTakeInfo_String(self.getValue(items[k]), "P_NAME", "", false)
+message{value=string.format("%u, %s", getTakeNumber(items[k]), name)}
 if k < #items then
 message{value=", "}
 end
@@ -1670,22 +1672,17 @@ self.setValue(items[k], state)
 end
 end
 else
-local state = self.getValue(items)
-local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption..'normalize (or n) - will normalize items to maximum volume for active take of selected item.', representation.db[self.getValue(items)])
+local state = parent.getValue(items)
+local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s", getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[parent.getValue(items)])
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
-if prepareUserData.basic(answer):find("^[n]") then
-message("Normalize item take volume")
-reaper.Main_OnCommand(40108, 0)
-else
 state = prepareUserData.db.process(answer, state)
 if state then
 self.setValue(items, state)
 else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
-end
 end
 end
 return true
@@ -2593,7 +2590,6 @@ end
 function osaraParamsProperty:set_perform()
 reaper.SetCursorContext(1, nil)
 reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
-return
 end	
 
 parentLayout.defaultSublayout = "itemLayout"

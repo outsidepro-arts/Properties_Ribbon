@@ -934,7 +934,7 @@ end
 if layout.canProvide() == true then
 if #layoutLevel.properties < 1 then
 local definedName = layoutLevel.subname or layoutLevel.name
-(string.format("The ribbon of %s is empty.", definedName)):output()
+string.format("The ribbon of %s is empty.", definedName):output()
 restorePreviousLayout()
 script_finish()
 return
@@ -1086,7 +1086,7 @@ if premsg and getShouldReported then
 msg = msg..layout.properties[layout.pIndex]:get():extract()
 end
 if premsg then
-msg:output()
+if msg then msg:output() end
 end
 script_finish()
 return

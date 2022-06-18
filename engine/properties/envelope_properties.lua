@@ -398,6 +398,7 @@ return message
 end
 
 function valueProperty:set_perform()
+local message = initOutputMessage()
 if envelopeType == 5 then
 if istable(points) then
 local switchedOnPoints, switchedOffPoints = 0, 0
@@ -427,6 +428,8 @@ local state = self.getValue(points)
 if state < 0 then state = -state end
 self.setValue(points, utils.nor(utils.round(state, 0)))
 end
+message(self:get())
+return message
 else
 local retval, answer, curvalue, oldRepresentation
 -- The playrate converting methods aren't written, so we have to do a little substitution the representation metatable to an user was seeing the raw data instead of real representation.
