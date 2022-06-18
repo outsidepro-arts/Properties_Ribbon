@@ -576,7 +576,7 @@ message("Maximum width. ")
 end
 reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
 end
- message(self:get())
+message(self:get())
 return message
 end
 
@@ -603,11 +603,10 @@ message("Type custom width value")
 return message
 end,
 set_perform = function(self, parent)
-local message = initOutputMessage()
 if istable(tracks) then
 local retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 for k = 1, #tracks do
 local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
@@ -620,17 +619,17 @@ else
 local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
 local retval, answer = reaper.GetUserInputs(string.format("Width for %s", getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption, string.format("%s%%", utils.numtopercent(state)))
 if not retval then
-return "Canceled"
+return false, "Canceled"
 end
 state = prepareUserData.percent.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(tracks, "D_WIDTH", state)
- else
+else
 reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 end
-return true, message
+return true
 end
 })
 
