@@ -372,3 +372,15 @@ end
 return mCount
 end
 })
+
+markers_regions_selection_macros = {}
+
+function markers_regions_selection_macros.isTimeSelectionSet()
+local selectionStart, selectionEnd = reaper.GetSet_LoopTimeRange(false, false, 0, 0, false)
+return (selectionStart ~= 0 or selectionEnd ~= 0)
+end
+
+function markers_regions_selection_macros.isLoopSet()
+local loopStart, loopEnd = reaper.GetSet_LoopTimeRange(false, true, 0, 0, false)
+return (loopStart ~= 0 or loopEnd ~= 0)
+end

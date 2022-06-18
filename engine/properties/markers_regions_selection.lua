@@ -243,9 +243,12 @@ message("Insert region from time selection")
 return message
 end,
 set_perform = function (self, parent)
+if markers_regions_selection_macros.isTimeSelectionSet() then
 reaper.Main_OnCommand(40174, 0)
 setUndoLabel(self:get())
 return false
+end
+return false, "No time selection set."
 end
 }
 regionsActionsProperty.extendedProperties:registerProperty{
@@ -256,8 +259,11 @@ message("Insert region from time selection and edit")
 return message
 end,
 set_perform = function (self, parent)
+if markers_regions_selection_macros.isTimeSelectionSet() then
 reaper.Main_OnCommand(40306, 0)
 return true
+end
+return false, "No time selection set."
 end
 }
 regionsActionsProperty.extendedProperties:registerProperty{
@@ -749,6 +755,9 @@ message("Add stretch markers at time selection")
 return message
 end,
 set_perform = function ()
+if not markers_regions_selection_macros.isTimeSelectionSet() then
+return false, "No time selection set."
+end
 local item = item_properties_macros.getSelectedItemAtCursor(items)
 if item then
 local prevMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
