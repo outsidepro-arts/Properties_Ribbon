@@ -183,8 +183,12 @@ message("Delete marker")
 return message
 end,
 set_perform = function (self, parent)
+local message = initOutputMessage()
+message(parent:get())
 reaper.DeleteProjectMarker(0, parent.mIndex, false)
-return true, string.format("Marker %u has been deleted.", parent.mIndex)
+message:clearValue()
+message{value="deleted"}
+return true, message
 end
 }
 
@@ -412,13 +416,17 @@ end
 regionActions:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
-message:initType("Perform this property to delete this marker.")
+message:initType("Perform this property to delete this region.")
 message("Delete region")
 return message
 end,
 set_perform = function (self, parent)
+local message = initOutputMessage()
+message(parent:get())
 reaper.DeleteProjectMarker(0, parent.rIndex, true)
-return true, string.format("Region %u deleted.", parent.rIndex)
+message:clearValue()
+message{value="deleted"}
+return true, message
 end
 }
 
