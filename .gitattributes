@@ -2,3 +2,4 @@
 .gitattributes export-ignore
 .vscode/ export-ignore
 *.code-workspace export-ignore
+.idea/ export-ignore
