@@ -463,7 +463,7 @@ extendedProperties = firstExtendedFXProperties,
 get = function(self)
 local message = initOutputMessage()
 -- The extended properties notify will be added by the main script side
-message:initType("", "")
+message:initType()
 message("FX operations")
 local filter = getFilter(sid)
 if filter or extstate._layout.fxDrag then

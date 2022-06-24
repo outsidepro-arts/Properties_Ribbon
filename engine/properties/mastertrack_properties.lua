@@ -596,7 +596,6 @@ reaper.SetTrackSelected(track, true)
 end
 reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 0)
 end
-return
 end
 
 return parentLayout
