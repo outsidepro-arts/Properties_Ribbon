@@ -82,13 +82,14 @@ function fxActionsLayout.canProvide()
 if reaper.GetLastTouchedTrack() then
 if context == 0 then return true
 elseif context == 1 then
-return (reaper.GetSelectedMediaItem(0,0) ~= nil)
+local retval = reaper.GetSelectedMediaItem(0,0)
+if retval then
+retval = reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0))
+end
+return retval ~= nil
 end
 end
-if reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1 then
-return true
-end
-return false
+return reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility()&1) == 1
 end
 
 -- Contextual FX chain action
