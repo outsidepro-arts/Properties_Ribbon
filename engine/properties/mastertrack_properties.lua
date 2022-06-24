@@ -287,7 +287,6 @@ function soloProperty:get()
 local message = initOutputMessage()
 message:initType("Toggle this property to solo or unsolo master track.", "Toggleable")
 local states = {[0] = "not soloed", [16] = "soloed"}
-local master = reaper.GetMasterTrack(0)
 local state = ({reaper.GetTrackState(master)})[2]&16
 message({objectId="Master", value=states[state]})
 return message
@@ -580,7 +579,7 @@ return message
 end
 
 function osaraParamsProperty:set_perform()
--- Ensure the master track has touched
+-- Ensure the master track h    as touched
 local lastSelection = {}
 if reaper.GetLastTouchedTrack() ~= master then
 local selectedTracksCount = reaper.CountSelectedTracks(0)
