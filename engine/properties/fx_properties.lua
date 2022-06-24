@@ -97,7 +97,7 @@ local firstPart, lastPart
 local retval, fxName = getPluginFilename(fxID)
 if retval then
 firstPart = utils.removeSpaces(fxName)
-end			
+end
 local retval, parmName = capi.GetParamName(fxID, fxParm, "")
 if retval then
 lastPart = utils.removeSpaces(parmName)
@@ -957,7 +957,7 @@ end
 end
 end
 end
-message(self:get(true))
+message(self:get())
 return message
 end
 end
