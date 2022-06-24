@@ -132,33 +132,27 @@ message(self.actions[state]:format(contexts[context], getStringPluginsCount(({se
 return message
 end
 
+if context == 0 then
 function contextualFXChain:set_adjust(direction)
 local message = initOutputMessage()
 if direction == actions.set.increase.direction then
-if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction+1) <= #self.actions then
 setCurrentChainAction(curAction+1)
 else
 message("No more next action.")
 end
-else
-return ("The %s has not any extended actions."):format(contexts[context])
-end
 elseif direction == actions.set.decrease.direction then
-if context == 0 then
 local curAction = getCurrentChainAction()
 if (curAction-1) >= 1 then
 setCurrentChainAction(curAction-1)
 else
 message("No more previous action.")
 end
-else
-return ("The %s has not any extended actions."):format(contexts[context])
-end
 end
 message(self:get())
 return message
+end
 end
 
 function contextualFXChain:set_perform()
