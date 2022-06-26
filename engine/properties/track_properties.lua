@@ -436,7 +436,7 @@ end
 function panProperty:set_adjust(direction)
 local message = initOutputMessage()
 local ajustingValue = config.getinteger("percentStep", 1)
-ajustingValue = -utils.percenttonum(ajustingValue)
+ajustingValue = utils.percenttonum(ajustingValue)
 if direction == actions.set.decrease.direction then
 ajustingValue = -ajustingValue
 end
