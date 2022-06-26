@@ -133,7 +133,10 @@ local function setFindNearestConfig(uniqueKey, value)
 end
 
 local function getFilter(sid)
-return extstate._layout[string.format("%s.parmFilter", sid)]
+local retval = extstate._layout[string.format("%s.parmFilter", sid)]
+if retval ~= nil then
+return tostring(retval)
+end
 end
 
 local function setFilter(sid, filter)
