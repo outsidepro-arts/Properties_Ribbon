@@ -203,7 +203,7 @@ return message
 end,
 set_perform = function (self, parent)
 local curQuery = parent.options.query or ""
-local retval, answer = reaper.GetUserInputs(string.format("Search specified %s", parent.objStrings[context]), 1, string.format("Type a part or full %s name which you wish to find:", parent.objStrings[context]), curQuery)
+local retval, answer = reaper.GetUserInputs(string.format("Search specified %s", parent.objStrings[context]), 1, string.format("Type a part or full %s name which you wish to find:", parent.objStrings[context]), tostring(curQuery))
 if retval then
 parent.options.query = answer
 end
