@@ -1061,6 +1061,18 @@ fadeinLenProperty.extendedProperties = initExtendedProperties("Fade length exten
 fadeinLenProperty.extendedProperties:registerProperty{
 get = function (self, parent)
 local message = initOutputMessage()
+message("Fade in this item to cursor")
+message:initType("Perform this property to fade in the selected item to play or edit cursor.")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(40509, 0) -- Item: Fade items in to cursor
+return true, "", true
+end
+}
+fadeinLenProperty.extendedProperties:registerProperty{
+get = function (self, parent)
+local message = initOutputMessage()
 message(string.format("Set %s (off the fade)", representation.timesec[0.000]))
 message:initType("Perform this property to set the minimal length value that means the fade will be not applied.")
 return message
@@ -1254,7 +1266,28 @@ return message
 end
 
 fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeoutLenProperty.extendedProperties = fadeinLenProperty.extendedProperties
+fadeoutLenProperty.extendedProperties = initExtendedProperties(fadeinLenProperty.extendedProperties.name)
+-- We have to make a hack: copy all extended properties from fade-in length but without first property
+-- Remember that really, extended properties start from 2 but not from 1: 1 is return back
+-- We will not use the iterators factory cuz the changed metatable will make the infinite cycle there
+for i = 1, #fadeinLenProperty.extendedProperties.properties do
+if i == 2 then
+fadeoutLenProperty.extendedProperties.properties[i] = {
+get = function (self, parent)
+local message = initOutputMessage()
+message("Fade out this item from cursor")
+message:initType("Perform this property to fade out the selected item from play or edit cursor to.")
+return message
+end,
+set_perform = function (self, parent)
+reaper.Main_OnCommand(40510, 0) -- Item: Fade items out from cursor
+return true, "", true
+end
+}
+else
+fadeoutLenProperty.extendedProperties.properties[i] = fadeinLenProperty.extendedProperties.properties[i]
+end
+end
 
 -- fadeout curve methods
 local fadeoutDirProperty = {}
