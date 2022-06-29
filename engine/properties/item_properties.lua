@@ -329,7 +329,6 @@ state = prepareUserData.db.process(answer, state)
 if state then
 parent.setValue(items, state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 end
@@ -1714,7 +1713,6 @@ state = prepareUserData.db.process(answer, state)
 if state then
 self.setValue(items, state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 end
@@ -1846,7 +1844,6 @@ state = prepareUserData.pan.process(answer, state)
 if state then
 parent.setValue(items, state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 end
@@ -2139,8 +2136,6 @@ local state = prepareUserData.rate.process(answer, parent.getValue(items))
 if state then
 parent.setValue(items, state)
 return true
-else
-reaper.ShowMessageBox("Couldn't convert a data to aproppriate value.", "Converting error", showMessageBoxConsts.sets.ok)
 end
 end	
 end
@@ -2322,7 +2317,6 @@ state = prepareUserData.pitch.process(answer, state)
 if state then
 parent.setValue(items, state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 end

@@ -99,7 +99,6 @@ state = prepareUserData.db.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_VOL", state)
 else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 return false
 end
 return true
@@ -173,8 +172,6 @@ state = prepareUserData.pan.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
 return true
-else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end
 return false
 end
@@ -242,8 +239,6 @@ state = prepareUserData.percent.process(answer, state)
 if state then
 reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
 return true
-else
-reaper.ShowMessageBox("Couldn't convert the data to appropriate value.", "Properties Ribbon error", showMessageBoxConsts.sets.ok)
 end
 return false
 end

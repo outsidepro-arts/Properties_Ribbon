@@ -60,7 +60,7 @@ else
 return utils.decibelstonum(udata)
 end
 end
-return nil
+reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error", showMessageBoxConsts.sets.ok)
 end
 
 -- The macro for prepare the values with pan values.
@@ -102,7 +102,6 @@ return nil
 else
 if udata:find("[lr]") == nil then
 reaper.ShowMessageBox('The pan direction is not set. You have to set the pan direction like \"left\" or \"right\" or \"l\" or \"r\".', "Converting error", showMessageBoxConsts.sets.ok)
-return nil
 end
 if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
 converted = udata:match("^[-<>]?(%d+)")
@@ -122,7 +121,7 @@ if converted then
 return utils.round(converted, 3)
 end
 end
-return nil
+reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error", showMessageBoxConsts.sets.ok)
 end
 
 -- The macro for prepare the values with percentage values.
@@ -161,7 +160,7 @@ udata = -1
 end
 return udata
 end
-return nil
+reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error", showMessageBoxConsts.sets.ok)
 end
 
 prepareUserData.rate = {
@@ -179,7 +178,7 @@ function prepareUserData.rate.process(udata, curvalue)
 local relative = string.match(udata, "^[<>]")
 udata = string.gsub(udata, "^(%d*)(%D)(%d*)", "%1.%3")
 udata = string.match(udata, "^[<>]?%d*%.?%d*")
-if not udata then return nil end
+if not udata then reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error", showMessageBoxConsts.sets.ok) return end
 if relative then
 if relative == "<" then
 udata = -udata
@@ -237,7 +236,7 @@ else
 return tonumber(converted)
 end
 end
-return nil
+reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error", showMessageBoxConsts.sets.ok)
 end
 
 return prepareUserData
