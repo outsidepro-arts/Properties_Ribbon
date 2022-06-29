@@ -13,78 +13,78 @@ string
 number
 boolean
 nil (when reading from, it means that no any value for this key read. When assigning the table key will be removed from extstate if any value exists there.)
-]]--
+]] --
 
 local extstate = {
-_section = "",
-_forever ={},
-_layout = {
-_forever = {}
-},
-_sublayout = {
-_forever = {}
-}
+	_section = "",
+	_forever = {},
+	_layout = {
+		_forever = {}
+	},
+	_sublayout = {
+		_forever = {}
+	}
 }
 
 
 function extstate.__index(self, key)
-local state = reaper.GetExtState(self._section, key)
-if tonumber(state) then
-return tonumber(state)
-elseif state == "true" or state == "false" then
-return ({["true"]=true,["false"]=false})[state]
-elseif state == "" then
-return nil
-else
-return state
-end
+	local state = reaper.GetExtState(self._section, key)
+	if tonumber(state) then
+		return tonumber(state)
+	elseif state == "true" or state == "false" then
+		return ({ ["true"] = true, ["false"] = false })[state]
+	elseif state == "" then
+		return nil
+	else
+		return state
+	end
 end
 
 function extstate.__newindex(self, key, value)
-if value == nil then
-reaper.DeleteExtState(self._section, key, false)
-else
-reaper.SetExtState(self._section, key, tostring(value), false)
-end
+	if value == nil then
+		reaper.DeleteExtState(self._section, key, false)
+	else
+		reaper.SetExtState(self._section, key, tostring(value), false)
+	end
 end
 
 extstate._forever = {}
 extstate._forever.__index = extstate
 
 function extstate._forever.__newindex(self, key, value)
-if value == nil then
-reaper.DeleteExtState(self._section, key, true)
-else
-reaper.SetExtState(self._section, key, tostring(value), true)
-end
+	if value == nil then
+		reaper.DeleteExtState(self._section, key, true)
+	else
+		reaper.SetExtState(self._section, key, tostring(value), true)
+	end
 end
 
 function extstate._layout.__index(self, key)
-return extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)]
+	return extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)]
 end
 
 function extstate._layout.__newindex(self, key, value)
-extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
+	extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
 end
 
 extstate._layout._forever.__index = extstate._layout
 
 function extstate._layout._forever.__newindex(self, key, value)
-extstate._forever[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
+	extstate._forever[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
 end
 
 function extstate._sublayout.__index(self, key)
-return extstate[string.format("%s.%s", layout.section, key)]
+	return extstate[string.format("%s.%s", layout.section, key)]
 end
 
 function extstate._sublayout.__newindex(self, key, value)
-extstate[string.format("%s.%s", layout.section, key)] = value
+	extstate[string.format("%s.%s", layout.section, key)] = value
 end
 
 extstate._sublayout._forever.__index = extstate._sublayout
 
 function extstate._sublayout._forever.__newindex(self, key, value)
-extstate._forever[string.format("%s.%s", layout.section, key)] = value
+	extstate._forever[string.format("%s.%s", layout.section, key)] = value
 end
 
 setmetatable(extstate, extstate)

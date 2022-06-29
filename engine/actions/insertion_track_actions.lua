@@ -11,7 +11,7 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]]--
+]] --
 
 -- It's just another vision of Properties Ribbon can be applied on
 
@@ -21,13 +21,12 @@ reaper.SetCursorContext(0)
 local insertionLayout = initLayout("Track insertion actions")
 
 function insertionLayout.canProvide()
-return true
+	return true
 end
-
 
 insertionLayout:registerProperty(composeSimpleProperty(40701))
 insertionLayout:registerProperty(composeSimpleProperty(40001))
-insertionLayout:registerProperty(composeSimpleProperty({40001,40696}, "Insert new track with specified name"))
+insertionLayout:registerProperty(composeSimpleProperty({ 40001, 40696 }, "Insert new track with specified name"))
 insertionLayout:registerProperty(composeSimpleProperty(40702))
 insertionLayout:registerProperty(composeSimpleProperty(46000))
 insertionLayout:registerProperty(composeSimpleProperty(41067))

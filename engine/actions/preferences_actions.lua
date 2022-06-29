@@ -11,7 +11,7 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]]--
+]] --
 
 -- It's just another vision of Properties Ribbon can be applied on
 
@@ -22,7 +22,7 @@ parentLayout:registerSublayout("reaperPrefs", "REAPER")
 parentLayout:registerSublayout("osaraLayout", "OSARA extension")
 parentLayout:registerSublayout("swsLayout", "SWS extension")
 if reaper.APIExists("ReaPack_AboutInstalledPackage") == true then
-parentLayout:registerSublayout("reaPackLayout", "ReaPack extension")
+	parentLayout:registerSublayout("reaPackLayout", "ReaPack extension")
 end
 
 
@@ -31,14 +31,14 @@ local prConfigProperty = {}
 parentLayout.propertiesRibbonPrefs:registerProperty(prConfigProperty)
 
 function prConfigProperty:get()
-local message = initOutputMessage()
-message:initType("Perform this property to load the Properties Ribbon configuration layout.")
-message("Configure Properties Ribbon")
-return message
+	local message = initOutputMessage()
+	message:initType("Perform this property to load the Properties Ribbon configuration layout.")
+	message("Configure Properties Ribbon")
+	return message
 end
 
 function prConfigProperty:set_perform()
-executeLayout{section="embedded", layout="config_properties"}
+	executeLayout { section = "embedded", layout = "config_properties" }
 end
 
 -- The repository page of Properties Ribbon on Github
@@ -46,15 +46,15 @@ local prHomepageProperty = {}
 parentLayout.propertiesRibbonPrefs:registerProperty(prHomepageProperty)
 
 function prHomepageProperty:get()
-local message = initOutputMessage()
--- I'll separate Github by space" for synthesizer report the brand's name correctly
-message:initType("Perform this property to go to the Properties Ribbon home page on Git hub.")
-message("Properties ribbon home page on Git hub")
-return message
+	local message = initOutputMessage()
+	-- I'll separate Github by space" for synthesizer report the brand's name correctly
+	message:initType("Perform this property to go to the Properties Ribbon home page on Git hub.")
+	message("Properties ribbon home page on Git hub")
+	return message
 end
 
 function prHomepageProperty:set_perform()
-openPath("https://github.com/outsidepro-arts/properties_ribbon")
+	openPath("https://github.com/outsidepro-arts/properties_ribbon")
 end
 
 -- Download the latest Main branch archive
@@ -62,14 +62,14 @@ local prDownloadArchiveProperty = {}
 parentLayout.propertiesRibbonPrefs:registerProperty(prDownloadArchiveProperty)
 
 function prDownloadArchiveProperty:get()
-local message = initOutputMessage()
-message:initType("Perform this property to download the latest Main branch archive contained the Properties Ribbon from Git hub.")
-message("Download the latest Properties Ribbon scripts complex")
-return message
+	local message = initOutputMessage()
+	message:initType("Perform this property to download the latest Main branch archive contained the Properties Ribbon from Git hub.")
+	message("Download the latest Properties Ribbon scripts complex")
+	return message
 end
 
 function prDownloadArchiveProperty:set_perform()
-openPath("https://github.com/outsidepro-arts/Properties_Ribbon/archive/main.zip")
+	openPath("https://github.com/outsidepro-arts/Properties_Ribbon/archive/main.zip")
 end
 
 -- REAPER preferences
@@ -86,25 +86,29 @@ parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40619)
 
 -- OSARA configuration
 -- We will not check OSARA install status,cuz it's supposet should be installed there
-parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"), "OSARA configuration"))
+parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"),
+	"OSARA configuration"))
 parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_PEAKWATCHER")))
-parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_ABOUT"), "About currently installed OSARA"))
+parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_ABOUT"),
+	"About currently installed OSARA"))
 
 -- ReaPack actions
 if parentLayout.reaPackLayout then
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_BROWSE")))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_IMPORT")))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_MANAGE")))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_SYNC")))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_UPLOAD")))
-parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_ABOUT"), "About currently installed ReaPack"))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_BROWSE")))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_IMPORT")))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_MANAGE")))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_SYNC")))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_UPLOAD")))
+	parentLayout.reaPackLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_REAPACK_ABOUT")
+		, "About currently installed ReaPack"))
 end
 
 -- SWS actions
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_LOUDNESS_PREF")))
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_XENAKIOS_DISKSPACECALC")))
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_AUTORENDER_PREFERENCES")))
-parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_SWS_ABOUT"), "About currently installed SWS extension"))
+parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_SWS_ABOUT"),
+	"About currently installed SWS extension"))
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK")))
 
 return parentLayout
