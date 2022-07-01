@@ -564,8 +564,8 @@ end
 
 -- Main body
 
-layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty, layoutHasReset = {}, nil, nil,
-	false, "Unknown Change via Properties Ribbon script", nil, false
+layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty, layoutHasReset, layoutSaid = {}, nil, nil,
+	false, "Unknown Change via Properties Ribbon script", nil, false, false
 
 -- The main initialization function
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
@@ -591,10 +591,11 @@ function script_init(newLayout, shouldSpeakLayout)
 		if extstate.gotoMode then
 			extstate.gotoMode = nil
 		end
-		if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
 		if istable(newLayout) then
 			newLayout = newLayout.section .. "//" .. newLayout.layout or nil
 		end
+		if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
+		if extstate.isTwice and newLayout ~= extstate.currentLayout then extstate.isTwice = nil end
 	end
 	if newLayout ~= nil then
 		currentLayout = newLayout
@@ -937,6 +938,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 			layout.pIndex = 1
 		end
 		speakLayout = false
+		layoutSaid = true
 	end
 	local layoutLevel
 	if currentExtProperty then
@@ -1048,7 +1050,18 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 			], true):gsub("(.+)([.])$", "%1")
 		message = message .. string.format(". Percentage navigation has chosen property %u", propertyNum)
 	end
-	message:output(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
+	local isTwice = propertyNum ~= nil and config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and extstate.isTwice == pIndex
+	if isTwice then
+		script_ajustProperty(actions.set.perform)
+		if extstate.isTwice ~= pIndex then
+			extstate.isTwice = nil
+		end
+	else
+		message:output(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
+		if not layoutSaid then
+			extstate.isTwice = pIndex
+		end
+	end
 	script_finish()
 end
 
