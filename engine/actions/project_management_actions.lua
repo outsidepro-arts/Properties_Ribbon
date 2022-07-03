@@ -19,6 +19,7 @@ local projectLayout = initLayout("Project management actions")
 
 projectLayout:registerProperty(composeSimpleProperty(40021))
 projectLayout:registerProperty(composeSimpleProperty(40015))
+projectLayout:registerProperty(composeSimpleProperty(40017))
 projectLayout:registerProperty(composeSimpleProperty(40098))
 
 return projectLayout
