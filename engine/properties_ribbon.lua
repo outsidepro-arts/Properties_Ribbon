@@ -660,7 +660,10 @@ function script_switchSublayout(action)
 		return
 	end
 	if isSublayout(layout) then
-		if action == actions.sublayout_next then
+		if extstate.isTwice then
+			extstate.isTwice = nil
+		end
+	if action == actions.sublayout_next then
 			if layout.nextSubLayout then
 				extstate[currentLayout .. "_sublayout"] = layout.nextSubLayout
 			else
@@ -694,6 +697,9 @@ function script_nextProperty()
 	if extstate.gotoMode then
 		message("Goto mode deactivated. ")
 		extstate.gotoMode = nil
+	end
+	if extstate.isTwice then
+		extstate.isTwice = nil
 	end
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if speakLayout == true then
@@ -801,6 +807,9 @@ function script_previousProperty()
 	if extstate.gotoMode then
 		message("Goto mode deactivated. ")
 		extstate.gotoMode = nil
+	end
+	if extstate.isTwice then
+		extstate.isTwice = nil
 	end
 	local pIndex = ({ [true] = currentExtProperty, [false] = layout.pIndex })[currentExtProperty ~= nil]
 	if speakLayout == true then
@@ -1058,7 +1067,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 		end
 	else
 		message:output(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
-		if not layoutSaid then
+		if config.getboolean("twicePressPerforms", false) and not layoutSaid and layoutLevel.properties[pIndex].set_perform and currentSublayout == extstate[currentLayout .. "_sublayout"] then
 			extstate.isTwice = pIndex
 		end
 	end
