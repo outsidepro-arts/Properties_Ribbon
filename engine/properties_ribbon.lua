@@ -913,6 +913,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 	local gotoMode = extstate.gotoMode
+	local propertyNumPassed = propertyNum ~= nil
 	if gotoMode and propertyNum then
 		if propertyNum == 10 then
 			propertyNum = 0
@@ -1059,15 +1060,18 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 			], true):gsub("(.+)([.])$", "%1")
 		message = message .. string.format(". Percentage navigation has chosen property %u", propertyNum)
 	end
-	local isTwice = propertyNum ~= nil and config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and extstate.isTwice == pIndex
+	if not propertyNumPassed then if extstate.isTwice then
+			extstate.isTwice = nil
+	end end
+	if extstate.isTwice then if extstate.isTwice ~= pIndex then
+			extstate.isTwice = nil
+	end end
+	local isTwice = config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and extstate.isTwice == pIndex
 	if isTwice then
 		script_ajustProperty(actions.set.perform)
-		if extstate.isTwice ~= pIndex then
-			extstate.isTwice = nil
-		end
 	else
 		message:output(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
-		if config.getboolean("twicePressPerforms", false) and not layoutSaid and layoutLevel.properties[pIndex].set_perform and currentSublayout == extstate[currentLayout .. "_sublayout"] then
+		if config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform and currentSublayout == extstate[currentLayout .. "_sublayout"] and propertyNumPassed then
 			extstate.isTwice = pIndex
 		end
 	end
