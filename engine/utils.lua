@@ -130,27 +130,51 @@ function debug(str)
 	end
 end
 
-function utils.simpleSearch(fullString, searchString)
+function utils.simpleSearch(fullString, searchString, delimiter)
 	fullString = tostring(fullString)
 	searchString = tostring(searchString)
-	if searchString:find("%u") then
-		return (fullString:find(searchString))
+	local searchParts
+	if delimiter then
+		searchParts = utils.splitstring(searchString, delimiter, false)
 	else
-		return (fullString:lower():find(searchString:lower()))
+		searchParts = {searchString}
+	end
+	for _, sBlock in ipairs(searchParts) do
+		if sBlock:find("%u") then
+			if fullString:find(sBlock) then
+				return true
+			end
+		else
+			if fullString:lower():find(sBlock:lower()) then
+				return true
+			end
+		end
 	end
 end
 
-function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatterns)
+function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatterns, delimiter)
 	assert(fullString, "source string did not provided")
 	fullString = tostring(fullString)
 	assert(searchString, "The search string did not provided")
 	searchString = tostring(searchString)
 	caseSensetive = caseSensetive or false
 	luaPatterns = luaPatterns or false
-	if caseSensetive then
-		return fullString:find(searchString, nil, luaPatterns)
+	local searchParts
+	if delimiter then
+		searchParts = utils.splitstring(searchString, delimiter)
 	else
-		return fullString:lower():find(searchString:lower(), nil, luaPatterns)
+		searchParts = {searchString}
+	end
+	for _, sBlock in ipairs(searchParts) do
+		if caseSensetive then
+			if fullString:find(sBlock, nil, luaPatterns) then
+				return true
+			end
+		else
+			if fullString:lower():find(sBlock:lower(), nil, luaPatterns) then
+				return true
+			end
+		end
 	end
 end
 
