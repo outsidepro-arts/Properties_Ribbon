@@ -811,7 +811,7 @@ if fxLayout.canProvide() then
 						goto skipFilter
 					end
 					if retval then
-						if not utils.simpleSearch(fxParmName, getFilter(sid)) then
+						if not utils.simpleSearch(fxParmName, getFilter(sid), ";") then
 							goto continue
 						end
 					else
