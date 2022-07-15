@@ -201,6 +201,48 @@ parentLayout.options:registerProperty(
 	)
 )
 
+-- Ripple switching
+local rippleSwitcherProperty = {}
+parentLayout.options:registerProperty(rippleSwitcherProperty)
+rippleSwitcherProperty.states = {
+	{ cmd = 40309, label = "off"},
+	{cmd = 40310, label = "per track"},
+	{ cmd = 40311, label = "per all tracks"}
+}
+
+function rippleSwitcherProperty.getValue()
+	for index, state in ipairs(rippleSwitcherProperty.states) do
+		if reaper.GetToggleCommandState(state.cmd) == 1 then
+			return index
+		end
+	end
+	return 1
+end
+
+function rippleSwitcherProperty.setValue(index)
+	reaper.Main_OnCommand(rippleSwitcherProperty.states[index].cmd, 1)
+end
+
+function rippleSwitcherProperty:get()
+	local message  = initOutputMessage()
+	message{label = "Ripple editing", value = self.states[self.getValue()].label}
+	message:initType("Adjust this property to choose the needed ripple editing mode.")
+	return message
+end
+
+function rippleSwitcherProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = self.getValue()
+	if state+direction > #self.states then
+		message "No more next property values."
+	elseif state+direction < 1 then
+		message "No more previous property values."
+	else
+		self.setValue(state+direction)
+	end
+	message(self:get())
+	return message
+end
 
 -- Repeat option property
 parentLayout.options:registerProperty(

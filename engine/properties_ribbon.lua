@@ -450,32 +450,31 @@ end
 -- optional forced (boolean): should the function return the contextual layout forcedly even if one of context has been set earlier. False or nil: only if one of contextual layouts is set, true - immediately.
 function proposeLayout(forced)
 	forced = forced or false
-	local context, contextLayout, curLayout = reaper.GetCursorContext(), nil, extstate.currentLayout
+	local context, contextLayout, curLayout = reaper.GetCursorContext(), {section = "properties", proposed=true}, extstate.currentLayout
 	-- Sometimes REAPER returns bizarre contexts...
 	if context == -1 then
 		context = extstate.lastKnownContext or context
 	end
 	if context == 0 then
 		if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
-			contextLayout = "properties//mastertrack_properties"
+			contextLayout.layout = "mastertrack_properties"
 		else
 			if reaper.CountTracks(0) > 0 then
-				contextLayout = "properties//track_properties"
+				contextLayout.layout = "track_properties"
 			else
 				if (reaper.GetMasterTrackVisibility() & 1) == 1 then
-					contextLayout = "properties//mastertrack_properties"
+					contextLayout.layout = "mastertrack_properties"
 				else
-					contextLayout = "properties//track_properties"
+					contextLayout.layout =  "track_properties"
 				end
 			end
 		end
 	elseif context == 1 then
-		contextLayout = "properties//item_properties"
+		contextLayout.layout = "item_properties"
 	elseif context == 2 then
-		contextLayout = "properties//envelope_properties"
+		contextLayout.layout = "envelope_properties"
 	end
-	if forced == true or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or
-		curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
+	if forced or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
 		return contextLayout
 	end
 	return nil
@@ -596,9 +595,7 @@ function script_init(newLayout, shouldSpeakLayout)
 		if extstate.gotoMode then
 			extstate.gotoMode = nil
 		end
-		if istable(newLayout) then
-			newLayout = newLayout.section .. "//" .. newLayout.layout or nil
-		end
+		newLayout = newLayout.section .. "//" .. newLayout.layout or nil
 		if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
 		if extstate.isTwice and newLayout ~= extstate.currentLayout then extstate.isTwice = nil end
 	end
