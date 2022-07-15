@@ -4,6 +4,8 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
 
+-- Patching the C-libraries loader
+package.cpath = ({ reaper.get_action_context() })[2]:match('^.+[\\//]') .. 'engine//libs//?.dll'
 -- Including the types check simplifier
 require "typescheck"
 
@@ -13,6 +15,9 @@ config.section = "Properties_Ribbon_script"
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 utils = require "utils"
+
+-- Including the speech module
+speech = require "speech"
 
 -- including the colors module
 colors = require "colors_provider"
@@ -64,7 +69,7 @@ showMessageBoxConsts = {
 -- Little injections
 -- Make string type as outputable to OSARA directly
 function string:output()
-	reaper.osara_outputMessage(self)
+	speech.output(self)
 end
 
 -- Ad the trap method to the string type to avoid superfluous check writing when we are working with outputMessage metamethod
@@ -181,7 +186,7 @@ function initOutputMessage()
 		output = function(self, outputOrder)
 			local message = self:extract(outputOrder, true)
 			if message then
-				reaper.osara_outputMessage(message)
+				speech.output(message)
 			end
 		end,
 		-- Extract the message composed string
@@ -571,7 +576,7 @@ layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtPro
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
 function script_init(newLayout, shouldSpeakLayout)
 	-- Checking the speech output method existing
-	if not reaper.APIExists("osara_outputMessage") then
+	if #speech.availableOutputs < 1 then
 		if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?'
 			, "Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			openPath("https://osara.reaperaccessibility.com/snapshots/")

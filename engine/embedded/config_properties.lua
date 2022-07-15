@@ -39,6 +39,31 @@ Try to allow the user to perform actions on both one element and a selected grou
 and try to complement any getState message with short type label. I mean what the "ajust" method will perform.
 ]] --
 
+-- Speech output choose
+local speechOutputProperty = {}
+configLayout.main:registerProperty(speechOutputProperty)
+
+function speechOutputProperty:get()
+	local message = initOutputMessage()
+	local state = config.getinteger("speechEngine", 1)
+	message{label="Speech output engine",value=speech.availableOutputs[state].label}
+	message:initType("Adjust this property to choose the needed speech engine for output of Properties Ribbon script.")
+	return message
+end
+
+function speechOutputProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = config.getinteger("speechEngine", 1)
+	if state+direction > #speech.availableOutputs then
+		message"No more next property values."
+	elseif state+direction < 1 then
+		message"No more previous property values."
+	else
+		config.setinteger("speechEngine", state+direction)
+	end 
+	message(self:get())
+	return message
+end
 
 -- type level methods
 local typeLevelProperty = {}
