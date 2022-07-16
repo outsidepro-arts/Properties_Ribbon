@@ -60,7 +60,7 @@ local function navigateTracks(category, trackFrom, direction)
 		local track = reaper.GetTrack(0, i - 1)
 		local retval, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
 		if retval then
-			if utils.removeSpaces(category) == data then
+			if category == data then
 -- OSARA shows the selection dialog with text message representation when the same action performs twice in specified time. We absolutely don't need it, so we are forced to hack this.
 				-- We have to start hack OSARA here
 				local restoreStep, backTrack
@@ -78,17 +78,6 @@ local function navigateTracks(category, trackFrom, direction)
 	end
 end
 
-local function reportFocusAvoidSelectionWindow(direction)
-	local curTrackId = reaper.GetMediaTrackInfo_Value(reaper.GetSelectedTrack(0, 0), "IP_TRACKNUMBER")-1
-	local cmds = {
-		[-1] = 40285, -- Track: Go to next track
-		[1] = 40286 -- Track: Go to previous track
-	}
-	if curTrackId+direction >= 0 and curTrackId+direction < reaper.CountTracks(0) then
-		reaper.SetOnlyTrackSelected(reaper.GetTrack(curTrackId-direction))
-		reaper.Main_OnCommand(cmds[direction], 0)
-	end
-end
 
 local catnavLayout = initLayout("Track navigation by category")
 
@@ -141,12 +130,12 @@ categoryExtendedProperties:registerProperty{
 		local message = initOutputMessage()
 		if istable(tracks) then
 			for _, track in ipairs(tracks) do
-				reaper.GetSetMediaTrackInfo_String(track, scriptExtData, utils.removeSpaces(parent.name), true)
+				reaper.GetSetMediaTrackInfo_String(track, scriptExtData, parent.name, true)
 			end
 			message(string.format("Assign selected tracks to %s category", parent.name))
 		else
 			message{label=track_properties_macros.getTrackID(tracks, true)}
-			local retval = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, utils.removeSpaces(parent.name), true)
+			local retval = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, parent.name, true)
 			if retval then
 				message{ value=string.format("Assigned to %s", parent.name) }
 			else
@@ -174,7 +163,7 @@ categoryExtendedProperties:registerProperty{
 		if istable(tracks) then
 			for _, track in ipairs(tracks) do
 				local _, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
-				if data == utils.removeSpaces(parent.name) then
+				if data == parent.name then
 					reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", true)
 				end
 			end
@@ -183,7 +172,7 @@ categoryExtendedProperties:registerProperty{
 			message{label=track_properties_macros.getTrackID(tracks, true)}
 			local retval, data = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, "", false)
 			if retval then
-				if data == utils.removeSpaces(parent.name) then
+				if data == parent.name then
 					reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, "", true)
 					message{ value = "De-assigned" }
 				else
