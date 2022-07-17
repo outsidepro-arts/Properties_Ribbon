@@ -18,21 +18,28 @@ local tracks = track_properties_macros.getTracks(config.getboolean("multiSelecti
 local categories = setmetatable({}, {
 	__index = function(self, idx)
 		if isnumber(idx) then
-			return extstate._layout[string.format("category%u", idx)]
+			return {
+				id = extstate._layout[string.format("category%u_id", idx)],
+				name = extstate._layout[string.format("category%u_name", idx)]
+			}
 		end
 		error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 	end,
-	__newindex = function(self, idx, catID)
-		if catID then
-			extstate._layout._forever[string.format("category%u", idx)] = catID
+	__newindex = function(self, idx, cat)
+		if cat then
+			extstate._layout._forever[string.format("category%u_id", idx)] = assert(cat.id, "Expected table field 'id'")
+			extstate._layout._forever[string.format("category%u_name", idx)] = assert(cat.name, "Expected table field 'name'")
 		else
 			local i = idx
-			while extstate._layout[string.format("category%u", i)] do
+			while extstate._layout[string.format("category%u_name", i)] do
 				if i == idx then
-					extstate._layout._forever[string.format("category%u", i)] = nil
+					extstate._layout._forever[string.format("category%u_name", i)] = nil
+					extstate._layout._forever[string.format("category%u_id", i)] = nil
 				elseif i > idx then
-					extstate._layout._forever[string.format("category%u", i - 1)] = extstate._layout[string.format("category%u", i)]
-					extstate._layout._forever[string.format("category%u", i)] = nil
+					extstate._layout._forever[string.format("category%u_name", i - 1)] = extstate._layout[string.format("category%u_name", i)]
+					extstate._layout._forever[string.format("category%u_id", i - 1)] = extstate._layout[string.format("category%u_id", i)]
+					extstate._layout._forever[string.format("category%u_name", i)] = nil
+					extstate._layout._forever[string.format("category%u_id", i)] = nil
 				end
 				i = i + 1
 			end
@@ -40,7 +47,7 @@ local categories = setmetatable({}, {
 	end,
 	__len = function(self)
 		local mCount = 0
-		while extstate._layout[string.format("category%u", mCount + 1)] do
+		while extstate._layout[string.format("category%u_name", mCount + 1)] do
 			mCount = mCount + 1
 		end
 		return mCount
@@ -60,7 +67,7 @@ local function navigateTracks(category, trackFrom, direction)
 		local track = reaper.GetTrack(0, i - 1)
 		local retval, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
 		if retval then
-			if category == data then
+			if category.id == data then
 -- OSARA shows the selection dialog with text message representation when the same action performs twice in specified time. We absolutely don't need it, so we are forced to hack this.
 				-- We have to start hack OSARA here
 				local restoreStep, backTrack
@@ -88,7 +95,7 @@ end
 -- The category property get/set functions to form this in loop
 local function categoryGet(self)
 	local message = initOutputMessage()
-	message(self.name)
+	message(self.category.name)
 	message:initType("Adjust this property in appropriate direction to move the selection focus to a track which was beeing markqued as belonging for this category.")
 	return message
 end
@@ -100,12 +107,12 @@ local function categorySet_adjust(self, direction)
 		[1] = 40286 -- Track: Go to previous track
 	}
 	local trackFrom = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
-	local retval, step = navigateTracks(self.name, trackFrom+direction, direction)
+	local retval, step = navigateTracks(self.category, trackFrom+direction, direction)
 	if retval then
 		-- Keep OSARA hack implementation
 		reaper.Main_OnCommand(cmds[step], 0)
 	else
-		return string.format("No %s track in category %s", ({[-1] = "previous", [1] = "next"})[direction], self.name)
+		return string.format("No %s track in category %s", ({[-1] = "previous", [1] = "next"})[direction], self.category.name)
 	end
 end
 
@@ -130,14 +137,14 @@ categoryExtendedProperties:registerProperty{
 		local message = initOutputMessage()
 		if istable(tracks) then
 			for _, track in ipairs(tracks) do
-				reaper.GetSetMediaTrackInfo_String(track, scriptExtData, parent.name, true)
+				reaper.GetSetMediaTrackInfo_String(track, scriptExtData, parent.category.id, true)
 			end
-			message(string.format("Assign selected tracks to %s category", parent.name))
+			message(string.format("Assign selected tracks to %s category", parent.category.name))
 		else
 			message{label=track_properties_macros.getTrackID(tracks, true)}
-			local retval = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, parent.name, true)
+			local retval = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, parent.category.id, true)
 			if retval then
-				message{ value=string.format("Assigned to %s", parent.name) }
+				message{ value=string.format("Assigned to %s", parent.category.name) }
 			else
 				message{value="cannot be assigned to this group"}
 			end
@@ -163,16 +170,16 @@ categoryExtendedProperties:registerProperty{
 		if istable(tracks) then
 			for _, track in ipairs(tracks) do
 				local _, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
-				if data == parent.name then
+				if data == parent.category.id then
 					reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", true)
 				end
 			end
-			message(string.format("De-assign selected tracks out of %s category", parent.name))
+			message(string.format("De-assign selected tracks out of %s category", parent.category.name))
 		else
 			message{label=track_properties_macros.getTrackID(tracks, true)}
 			local retval, data = reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, "", false)
 			if retval then
-				if data == parent.name then
+				if data == parent.category.id then
 					reaper.GetSetMediaTrackInfo_String(tracks, scriptExtData, "", true)
 					message{ value = "De-assigned" }
 				else
@@ -195,12 +202,8 @@ categoryExtendedProperties:registerProperty{
 	set_perform = function (self, parent)
 		local retval, answer = reaper.GetUserInputs("Rename category", 1, "Type new category name:", parent.name)
 		if retval then
-			if not extstate._layout.renameCategoryNotify then
-				reaper.ShowMessageBox("Category navigation script assigns a track to specified category using its name as ID, thus when you'll rename the category, all tracks will be stay at old ID assigned. You will have to re-assign these tracks to new category manualy.", "Please note", showMessageBoxConsts.sets.ok)
-				extstate._layout._forever.renameCategoryNotify = true
-			end
 			if #answer > 0 then
-				categories[parent.id] = answer
+				categories[parent.id].name = answer
 			else
 				reaper.ShowMessageBox("The category name cannot be empty.", "Category rename error", showMessageBoxConsts.sets.ok)
 				return false
@@ -218,7 +221,7 @@ categoryExtendedProperties:registerProperty{
 		return message
 	end,
 	set_perform = function (self, parent)
-		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the category %s?", parent.name), "Category deletion confirm", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the category %s?", parent.category.name), "Category deletion confirm", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			categories[parent.id] = nil
 			return true
 		end
@@ -229,7 +232,7 @@ if catnavLayout.canProvide() then
 	for i = 1, #categories do
 		local catForm = {
 			id = i,
-			name = categories[i],
+			category = categories[i],
 			get = categoryGet,
 			set_adjust = categorySet_adjust,
 			extendedProperties = categoryExtendedProperties
@@ -252,7 +255,10 @@ function addNewCategoryProperty:set_perform()
 	local retval, answer = reaper.GetUserInputs("Create new category", 1, "Type category name:", "")
 	if retval then
 		if #answer > 0 then
-			categories[#categories+1] = answer
+			categories[#categories+1] = {
+				id = utils.generateID(10, 30),
+				name = answer
+			}
 		else
 			reaper.ShowMessageBox("The category name cannot be empty.", "Category creation error", showMessageBoxConsts.sets.ok)
 		end

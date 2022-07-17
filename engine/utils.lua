@@ -233,4 +233,14 @@ function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 	return truncatedString
 end
 
+function utils.generateID(minLength, maxLength)
+	local result = ""
+	local base = "abcdefghijklmnopqrstuvwxyz" .. os.date():gsub("%D", "")
+	for i = 1, math.random(minLength, maxLength) do
+		local charIndex = math.random(#base)
+		result = result .. ({ [1] = base:sub(charIndex, charIndex):lower(), [2] = base:sub(charIndex, charIndex):upper() })[math.random(1, 2)]
+	end
+	return result
+end
+
 return utils
