@@ -242,6 +242,7 @@ if presetsProperty.states[getPresetIndex()] then
 			if retval then
 				if answer then
 					preset.name = answer
+					parent.states[parent.getValue()] = preset
 				else
 					reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
 					return false
@@ -259,7 +260,9 @@ if presetsProperty.states[getPresetIndex()] then
 		end,
 		set_perform = function (self, parent)
 			local message = initOutputMessage()
-			parent.states[parent.getValue()].value = getColor()
+			local preset = parent.states[parent.getValue()]
+			preset.value = getColor()
+			parent.states[parent.getValue()] = preset
 			message{ label = parent:get():extract(2, false), value = "Updated" }
 			return true, message, true
 		end
