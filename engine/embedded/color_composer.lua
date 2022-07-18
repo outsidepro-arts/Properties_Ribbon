@@ -37,115 +37,90 @@ end
 -- This layout should have the self-providing service methods
 
 local function getPresets()
-	-- This function returns the table with presets which positioning at the ipairs and with some methods to control the presets inside. Please call this methods via colon separator instead of dot
-	local presets = {
-		-- Updating presets from disk
-		update = function(self)
-			if #self > 0 then
-				for _, v in ipairs(self) do
-					v = nil
+	local presets = setmetatable({}, {
+		__index = function(self, idx)
+			if isnumber(idx) then
+				local name, value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")], extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")]
+				if name and value then
+					return {
+						name = name,
+						value = value
+					}
 				end
 			end
-			-- At first run the layout hasn't any selected preset, so we should to have this element
-			self[0] = { name = "choose preset" }
-			local i = 1
-			while extstate["colcon_" .. sublayout .. "_preset" .. i .. "Value"] do
-				table.insert(self, {
-					name = extstate["colcon_" .. sublayout .. "_preset" .. i .. "Name"],
-					value = extstate["colcon_" .. sublayout .. "_preset" .. i .. "Value"]
-				})
-				i = i + 1
-			end
 		end,
-		remove = function(self, index)
-			local i = 1
-			local removed = nil
-			while extstate["colcon_" .. sublayout .. "_preset" .. i .. "Value"] do
-				if i == index then
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Name"] = nil
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Value"] = nil
-				elseif i > index then
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. (i - 1) .. "Name"] = self[i].name
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Name"] = nil
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. (i - 1) .. "Value"] = self[i].value
-					extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Value"] = nil
+		__newindex = function (self, idx, preset)
+			if preset then
+				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")] = assert(preset.name, "Expected table field 'name'")
+				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")] = assert(preset.value, "Expected table field 'value'")
+			else
+				local i = idx
+				while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] do
+					if i == idx then
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
+					elseif i > idx then
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "name")] = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")]
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "value")] = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")]
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
+					end
+					i = i + 1
 				end
-				i = i + 1
 			end
-			table.remove(self, index)
-			self:update()
-			return 1
 		end,
-		rename = function(self, index, str)
-			if self[index] then
-				self[index].name = str
-				extstate._forever["colcon_" .. sublayout .. "_preset" .. index .. "Name"] = str
-				return true
+		__len = function (self)
+			local mCount = 0
+			while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "value")] and extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "name")] do
+				mCount = mCount + 1
 			end
-			return false
+			return mCount
 		end,
-		change = function(self, index, color)
-			if self[index] then
-				self[index].value = color
-				extstate._forever["colcon_" .. sublayout .. "_preset" .. index .. "Value"] = color
-				return true
+		__ipairs = function (self)
+			local lambda = function (obj, idx)
+				if extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx+1), "name")] and extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")] then
+					return idx + 1, {
+						name = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "name")],
+						value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")]
+					}
+				end
 			end
-			return false
-		end,
-		create = function(self, str, color)
-			local i = #self + 1
-			self[i] = { name = str, value = color }
-			extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Name"] = str
-			extstate._forever["colcon_" .. sublayout .. "_preset" .. i .. "Value"] = color
-			return i
+			return self, lambda, 1
 		end
-	}
-	presets:update()
+	})
 	return presets
 end
 
 local function getColorIndex()
-	local colorIndex = extstate["colcom_" .. sublayout .. "_colorIndex"]
-	if colorIndex == nil then
-		colorIndex = 1
-	end
-	return colorIndex
+	return extstate._layout[utils.makeKeySequence(sublayout, "colorIndex")]
 end
 
 local function getPresetIndex()
-	local presetIndex = extstate["colcom_" .. sublayout .. "_presetIndex"]
-	if presetIndex == nil then
-		presetIndex = 0
-	end
-	return presetIndex
+	return extstate._layout[utils.makeKeySequence(sublayout, "presetIndex")]
 end
 
 local function setColorIndex(value)
-	extstate["colcom_" .. sublayout .. "_colorIndex"] = value
+	extstate._layout[utils.makeKeySequence(sublayout, "colorIndex")] = value
 end
 
 local function setPresetIndex(value)
-	extstate["colcom_" .. sublayout .. "_presetIndex"] = value
+	extstate._layout[utils.makeKeySequence(sublayout, "presetIndex")] = value
 end
 
 local function getFilter()
-	return extstate[("colcom_%s_colorFilter"):format(sublayout)]
+	return extstate._layout[utils.makeKeySequence(sublayout, "colorFilter")]
 end
 
 local function getColor()
-	local color = extstate[("colcom_%s_curValue"):format(sublayout)]
-	if color == nil then
-		color = reaper.ColorToNative(0, 0, 0)
-	end
-	return color
+	return extstate._layout[utils.makeKeySequence(sublayout, "curValue")] or reaper.ColorToNative(0, 0, 0)
 end
 
 local function setFilter(filter)
-	extstate[("colcom_%s_colorFilter"):format(sublayout)] = filter
+	extstate._layout[utils.makeKeySequence(sublayout, "colorFilter")] = filter
 end
 
 local function setColor(color)
-	extstate[("colcom_%s_curValue"):format(sublayout)] = color
+	extstate._layout[utils.makeKeySequence(sublayout, "curValue")] = color
 end
 
 -- global pseudoclass initialization
@@ -193,10 +168,14 @@ end
 
 function presetsProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to choose desired preset created at the past. Perform this property to manage a preset.")
+	message:initType("Adjust this property to choose desired preset created at the past.")
 	message { objectId = "Color", label = "Preset" }
 	if #self.states > 0 then
-		message { value = self.states[self.getValue()].name }
+		if self.getValue() then
+			message { value = self.states[self.getValue()].name }
+		else
+			message{ value = "Not selected" }
+		end
 	else
 		message { value = "empty" }
 	end
@@ -205,17 +184,13 @@ end
 
 function presetsProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = self.getValue()
-	if #self.states > 0 then
-		if (state + direction) > #self.states then
-			message("No more next property values. ")
-		elseif (state + direction) <= 0 then
-			message("No more previous property values. ")
-		else
-			state = state + direction
-		end
+	local state = self.getValue() or 1
+	if (state + direction) > #self.states then
+		message("No more next property values. ")
+	elseif (state + direction) <= 0 then
+		message("No more previous property values. ")
 	else
-		return "There is no presets."
+		state = state + direction
 	end
 	self.setValue(state)
 	state = self.getValue()
@@ -227,67 +202,89 @@ function presetsProperty:set_adjust(direction)
 	return message
 end
 
-function presetsProperty:set_perform()
-	local message = initOutputMessage()
-	local state = self.getValue()
-	local maybeName = ""
-	if self.states[state] then
-		maybeName = self.states[state].name
-	end
-	local retval, answer = reaper.GetUserInputs("Preset management", 1,
-		'Type new preset name to create new preset.\nDo not clear current preset name to change the preset value to new.\nIf current color value will equal with preset value the preset will be renamed.\nType dslash symbol (/) to remove current preset.'
-		, maybeName)
-	if retval == true then
-		if #self.states > 0 then
-			if answer == "/" then
-				rpName = self.states[state].name
-				local result = self.states:remove(state)
-				if result then
-					message(string.format("Preset %s has been removed. ", rpName))
-					state = result
-				else
-					message(string.format("Unable to remove the preset %s. ", rpName))
-				end
-			elseif answer == self.states[state].name then
-				if self.states:change(state, getColor()) then
-					message(string.format("Preset %s has been updated. ", self.states[state].name))
-				else
-					message(string.format("Unable to update preset %s. ", self.states[state].name))
-				end
-			elseif answer ~= self.states[state].name and self.states[state].value == getColor() then
-				local oldName = self.states[state].name
-				if self.states:rename(state, answer) == true then
-					message(string.format("Preset %s has been renamed to %s. ", oldName, answer))
-				else
-					message(string.format("Unable to rename preset %s. ", self.states[state].name))
-				end
+presetsProperty.extendedProperties = initExtendedProperties("Preset context actions")
+
+presetsProperty.extendedProperties:registerProperty{
+	get = function (self, parent)
+		local message = initOutputMessage()
+		message "Create new preset"
+		message:initType("Perform this property to create new preset based on current color value.")
+		return message
+	end,
+	set_perform = function (self, parent)
+		local retval, answer = reaper.GetUserInputs("Create new preset", 1, "Type a name for new preset:", "")
+		if retval then
+			if answer then
+				table.insert(parent.states, {
+					name = answer,
+					value = getColor()
+				})
+				setPresetIndex(#parent.states)
 			else
-				local result = self.states:create(answer, getColor())
-				if result then
-					message(string.format("Preset %s has been created.", self.states[result].name))
-					state = result
-				else
-					message("Unable to create new preset.")
-				end
-			end
-		else
-			local result = self.states:create(answer, getColor())
-			if result then
-				message(string.format("Preset %s has been created.", self.states[result].name))
-				state = result
-			else
-				message("Unable to create new preset.")
+				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
+				return false
 			end
 		end
+		return true
 	end
-	self.setValue(state)
-	state = self.getValue()
-	if #self.states > 0 then
-		setColor(self.states[state].value)
-		setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	end
-	message(self:get())
-	return message
+}
+if presetsProperty.states[getPresetIndex()] then
+	presetsProperty.extendedProperties:registerProperty{
+		get = function (self, parent)
+			local message = initOutputMessage()
+			message "Rename preset"
+			message:initType("Perform this property to rename currently selected preset.")
+			return message
+		end,
+		set_perform = function (self, parent)
+			local preset = parent.states[parent.getValue()]
+			local retval, answer = reaper.GetUserInputs("Rename preset", 1, "Type new preset name:", preset.name)
+			if retval then
+				if answer then
+					preset.name = answer
+				else
+					reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
+					return false
+				end
+			end
+			return true
+		end
+	}
+	presetsProperty.extendedProperties:registerProperty{
+		get = function (self, parent)
+			local message = initOutputMessage()
+			message "Update this preset color"
+			message:initType("Perform this property to update the color of selected preset.")
+			return message
+		end,
+		set_perform = function (self, parent)
+			local message = initOutputMessage()
+			parent.states[parent.getValue()].value = getColor()
+			message{ label = parent:get():extract(2, false), value = "Updated" }
+			return true, message, true
+		end
+	}
+	presetsProperty.extendedProperties:registerProperty{
+		get = function (self, parent)
+			local message = initOutputMessage()
+			message "Delete selected preset"
+			message:initType("Perform this property to delete selected preset.")
+			return message
+		end,
+		set_perform = function (self, parent)
+			local preset = parent.states[parent.getValue()]
+			if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name), "Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+				parent.states[parent.getValue()] = nil
+				if parent.getValue()-1 > 0 then
+					parent.setValue(parent.getValue()-1)
+				else
+					parent.setValue(nil)
+				end
+				return true
+			end
+			return false
+		end
+	}
 end
 
 -- Color shade methods
@@ -306,7 +303,11 @@ function shadeProperty:get()
 	local message = initOutputMessage()
 	message:initType(string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color"
 		, #colors.colorList))
-	message(string.format("Color %s", colors.colorList[self.getValue()].name))
+	if getColorIndex() then
+		message(string.format("Color %s", colors.colorList[self.getValue()].name))
+	else
+		message("Color not selected")
+	end
 	local filter = getFilter()
 	if filter then
 		message(string.format(", filter set to %s", filter))
