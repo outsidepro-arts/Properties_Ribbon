@@ -19,27 +19,27 @@ local categories = setmetatable({}, {
 	__index = function(self, idx)
 		if isnumber(idx) then
 			return {
-				id = extstate._layout[string.format("category%u_id", idx)],
-				name = extstate._layout[string.format("category%u_name", idx)]
+				id = extstate._layout[utils.makeKeySequence(string.format("category%u", idx), "id")],
+				name = extstate._layout[utils.makeKeySequence(string.format("category%u", idx), "name")]
 			}
 		end
 		error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 	end,
 	__newindex = function(self, idx, cat)
 		if cat then
-			extstate._layout._forever[string.format("category%u_id", idx)] = assert(cat.id, "Expected table field 'id'")
-			extstate._layout._forever[string.format("category%u_name", idx)] = assert(cat.name, "Expected table field 'name'")
+			extstate._layout._forever[utils.makeKeySequence(string.format("category%u", idx), "id")] = assert(cat.id, "Expected table field 'id'")
+			extstate._layout._forever[utils.makeKeySequence(string.format("category%u", idx), "name")] = assert(cat.name, "Expected table field 'name'")
 		else
 			local i = idx
-			while extstate._layout[string.format("category%u_name", i)] do
+			while extstate._layout[utils.makeKeySequence(string.format("category%u", i), "name")] do
 				if i == idx then
-					extstate._layout._forever[string.format("category%u_name", i)] = nil
-					extstate._layout._forever[string.format("category%u_id", i)] = nil
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "name")] = nil
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "id")] = nil
 				elseif i > idx then
-					extstate._layout._forever[string.format("category%u_name", i - 1)] = extstate._layout[string.format("category%u_name", i)]
-					extstate._layout._forever[string.format("category%u_id", i - 1)] = extstate._layout[string.format("category%u_id", i)]
-					extstate._layout._forever[string.format("category%u_name", i)] = nil
-					extstate._layout._forever[string.format("category%u_id", i)] = nil
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i - 1), "name")] = extstate._layout[utils.makeKeySequence(string.format("category%u", i), "name")]
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i - 1), "id")] = extstate._layout[utils.makeKeySequence(string.format("category%u", i), "id")]
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "name")] = nil
+					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "id")] = nil
 				end
 				i = i + 1
 			end
@@ -47,7 +47,7 @@ local categories = setmetatable({}, {
 	end,
 	__len = function(self)
 		local mCount = 0
-		while extstate._layout[string.format("category%u_name", mCount + 1)] do
+		while extstate._layout[utils.makeKeySequence(string.format("category%u", mCount + 1), "name")] do
 			mCount = mCount + 1
 		end
 		return mCount
