@@ -243,4 +243,8 @@ function utils.generateID(minLength, maxLength)
 	return result
 end
 
+function utils.makeKeySequence(...)
+	return table.concat(table.pack(...), ".")
+end
+
 return utils
