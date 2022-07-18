@@ -200,10 +200,13 @@ categoryExtendedProperties:registerProperty{
 		return message
 	end,
 	set_perform = function (self, parent)
-		local retval, answer = reaper.GetUserInputs("Rename category", 1, "Type new category name:", parent.name)
+		local retval, answer = reaper.GetUserInputs("Rename category", 1, "Type new category name:", parent.category.name)
 		if retval then
 			if #answer > 0 then
-				categories[parent.id].name = answer
+				-- Our metatable is not so smart so we have to pass it the full value table
+				local category = categories[parent.id]
+				 category.name = answer
+				 categories[parent.id] = category
 			else
 				reaper.ShowMessageBox("The category name cannot be empty.", "Category rename error", showMessageBoxConsts.sets.ok)
 				return false
