@@ -215,11 +215,23 @@ presetsProperty.extendedProperties:registerProperty{
 		local retval, answer = reaper.GetUserInputs("Create new preset", 1, "Type a name for new preset:", "")
 		if retval then
 			if answer then
-				table.insert(parent.states, {
-					name = answer,
-					value = getColor()
-				})
-				setPresetIndex(#parent.states)
+				local exists = false
+				for _, preset in ipairs(parent.states) do
+					if preset.name == answer then
+						exists = true
+						break
+					end
+				end
+				if not exists then
+					table.insert(parent.states, {
+						name = answer,
+						value = getColor()
+					})
+					setPresetIndex(#parent.states)
+				else
+					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer), "Creation error", showMessageBoxConsts.sets.ok)
+					return false
+				end
 			else
 				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
 				return false
