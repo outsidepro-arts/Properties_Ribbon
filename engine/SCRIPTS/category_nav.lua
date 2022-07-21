@@ -68,18 +68,8 @@ local function navigateTracks(category, trackFrom, direction)
 		local retval, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
 		if retval then
 			if category.id == data then
--- OSARA shows the selection dialog with text message representation when the same action performs twice in specified time. We absolutely don't need it, so we are forced to hack this.
-				-- We have to start hack OSARA here
-				local restoreStep, backTrack
-				if reaper.GetTrack(0, i-2) then
-					restoreStep = -1
-					backTrack = reaper.GetTrack(0, i-2)
-				elseif reaper.GetTrack(0, i) then
-					restoreStep = 1
-					backTrack = reaper.GetTrack(0, i)
-				end
-				reaper.SetOnlyTrackSelected(backTrack)
-				return true, restoreStep
+				reaper.SetOnlyTrackSelected(track)
+				return true
 			end
 		end
 	end
@@ -102,15 +92,13 @@ end
 
 local function categorySet_adjust(self, direction)
 	local message = initOutputMessage()
-	local cmds = {
-		[-1] = 40285, -- Track: Go to next track
-		[1] = 40286 -- Track: Go to previous track
-	}
 	local trackFrom = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
-	local retval, step = navigateTracks(self.category, trackFrom+direction, direction)
-	if retval then
-		-- Keep OSARA hack implementation
-		reaper.Main_OnCommand(cmds[step], 0)
+	if navigateTracks(self.category, trackFrom+direction, direction) then
+		message{
+			label = "Focus on",
+			value = representation.getFocusLikeOSARA(0)
+		}
+		return message
 	else
 		return string.format("No %s track in category %s", ({[-1] = "previous", [1] = "next"})[direction], self.category.name)
 	end
