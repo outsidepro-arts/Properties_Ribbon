@@ -217,4 +217,106 @@ representation.defpos = setmetatable({}, {
 	end
 })
 
+function representation.getFocusLikeOSARA(context)
+	context = context or reaper.GetCursorContext()
+	local contexts = {
+		[0] = function ()
+			local tracks = track_properties_macros.getTracks(config.getboolean("multiSelectionSupport", true))
+			if not istable(tracks) then
+				tracks = {tracks}
+			end
+			local msgCalculator = {}
+			for _, track in ipairs(tracks) do
+				local parts = {}
+				do
+					local trackPrefix = {}
+					if reaper.GetTrackColor(track) ~= 0 then
+						table.insert(trackPrefix, colors:getName(reaper.ColorFromNative(reaper.GetTrackColor(track))))
+					end
+					table.insert(trackPrefix, string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")))
+					local trackName = select(2, reaper.GetSetMediaTrackInfo_String(track, "P_NAME", "", false))
+					if #trackName > 0 then
+						table.insert(trackPrefix, trackName)
+					end
+					table.insert(parts, table.concat(trackPrefix, " "))
+				end
+				if reaper.CountTrackMediaItems(track) > 0 then
+					table.insert(parts, string.format("%u item%s",
+						reaper.CountTrackMediaItems(track),
+						({[true]="", [false] = "s"})[reaper.CountTrackMediaItems(track) == 1]
+					))
+				end
+				if reaper.TrackFX_GetCount(track) > 0 then
+					local fxForm = {}
+					for i = 0, reaper.TrackFX_GetCount(track)-1 do
+						local retval, fxName = reaper.TrackFX_GetFXName(track, i, "")
+						if retval then
+							if fxName:find(":") and fxName:find(": ") then
+								local startPos = fxName:find(":") + 2
+								local endPos = fxName:find("[(].+$")
+								if endPos then
+									endPos = endPos - 2
+								end
+								fxName = fxName:sub(startPos, endPos)
+							end
+							table.insert(fxForm, fxName)
+						end
+						table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
+					end
+				end
+				table.insert(msgCalculator, table.concat(parts, "; "))
+			end
+			return table.concat(msgCalculator, '.\n')
+		end,
+		[1] = function ()
+			local items = item_properties_macros.getItems(config.getboolean("multiSelectionSupport", true))
+			if not istable(items) then
+				items = {items}
+			end
+			local msgCalculator = {}
+			for _, item in ipairs(items) do
+				local parts = {}
+				do
+					local takePrefix = {}
+					if reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR") ~= 0 then
+						table.insert(takePrefix,
+							colors:getName(
+								reaper.ColorFromNative(
+									reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
+								)
+							)
+						)
+					end
+					table.insert(takePrefix, item_properties_macros.getTakeNumber(item))
+					if reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false) then
+						table.insert(takePrefix, select(2, reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false)))
+					end
+					table.insert(parts, table.concat(takePrefix, " "))
+				end
+				if reaper.TakeFX_GetCount(reaper.GetactiveTake(item)) > 0 then
+					local fxForm = {}
+					for i = 0, reaper.TakeFX_GetCount(reaper.GetActiveTake(item))-1 do
+						local retval, fxName = reaper.TakeFX_GetFXName(reaper.GetactiveTake(item), i, "")
+						if retval then
+							if fxName:find(":") and fxName:find(": ") then
+								local startPos = fxName:find(":") + 2
+								local endPos = fxName:find("[(].+$")
+								if endPos then
+									endPos = endPos - 2
+								end
+								fxName = fxName:sub(startPos, endPos)
+							end
+							table.insert(fxForm, fxName)
+						end
+						table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
+					end
+				end
+				table.insert(msgCalculator, table.concat(parts, "; "))
+			end
+			return table.concat(msgCalculator, '.\n')
+		end
+	}
+	return contexts[context]()
+end
+
 return representation
