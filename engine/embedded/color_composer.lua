@@ -332,7 +332,7 @@ end
 
 function shadeProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = self.getValue()
+	local state = self.getValue() or 0
 	local filter = getFilter()
 	if direction == actions.set.increase.direction then
 		if filter then
