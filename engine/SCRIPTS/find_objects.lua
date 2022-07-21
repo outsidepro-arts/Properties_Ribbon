@@ -177,8 +177,10 @@ function searchinAction:set_adjust(direction)
 			objectId = function() return reaper.GetSelectedMediaItem(0) end
 		end
 		if self.searchProcesses[context](self.options, fromPosition + direction, direction) then
-			--message{label="Focus set to", value=getId(objectId())}
-			reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_REPORTSEL"), 0)
+			message{
+				label="Focus set to",
+				value=representation.getFocusLikeOSARA(context)
+			}
 		else
 			message(string.format("No any %s with setting up search criteria at this direction.", self.objStrings[context]))
 		end
