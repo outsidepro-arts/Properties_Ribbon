@@ -365,24 +365,24 @@ if fxLayout.canProvide() then
 					elseif presetIndex + direction >= numberOfPresets then
 						message("No more next property values.")
 					else
-						capi.NavigatePresets(parent.fxIndex, direction)
+						capi.SetPresetByIndex(parent.fxIndex, presetIndex+direction)
 					end
 					message(self:get(parent))
 					return false, message
 				end,
 				set_perform = function (self, parent)
 					local presetIndex, numberOfPresets = capi.GetPresetIndex(parent.fxIndex)
-					local retval, answer = reaper.GetUserInputs("Specify preset", 1, "Type a preset index:", presetIndex)
+					local retval, answer = reaper.GetUserInputs("Specify preset", 1, "Type a preset index:", presetIndex+1)
 					if retval then
 						if tonumber(presetIndex) then
-							if tonumber(answer) <= numberOfPresets then
-								if capi.SetPresetByIndex(parent.fxIndex, answer) then
+							if tonumber(answer) <= numberOfPresets and tonumber(answer) > 0 then
+								if capi.SetPresetByIndex(parent.fxIndex, answer - 1) then
 									return true
 								else
 									reaper.ShowMessageBox(string.format("Unable to set a preset with ID %u.", answer), "Preset specify error", showMessageBoxConsts.sets.ok)
 								end
 							else
-								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %u, available presets amount: %u', answer, numberOfPresets), "Preset specify error", showMessageBoxConsts.sets.ok)
+								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available presets range: from 1 to %u', answer, numberOfPresets), "Preset specify error", showMessageBoxConsts.sets.ok)
 							end
 						else
 							reaper.ShowMessageBox("Please enter a valid preset ID", "Preset specify error", showMessageBoxConsts.sets.ok)
