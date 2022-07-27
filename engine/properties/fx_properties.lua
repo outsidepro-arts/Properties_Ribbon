@@ -474,15 +474,22 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self, parent)
 					local fxName = getFormattedFXName(parent.fxIndex)
-					if capi.Delete(parent.fxIndex) then
-						-- Is this FX not dragged?
-						if extstate._layout.fxDrag then if extstate._layout.fxDrag == parent.fxIndex then
-								extstate._layout.fxDrag = nil
-							end
+					if reaper.ShowMessageBox(
+						("Are you sure you want to delete the FX \"%s\" from %s?"):format(fxName,
+						fxPrefix:gsub("^%u", string.lower)
+						:gsub("%s$", ""))
+						"Delete FX", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+						if capi.Delete(parent.fxIndex) then
+							-- Is this FX not dragged?
+							if extstate._layout.fxDrag then if extstate._layout.fxDrag == parent.fxIndex then
+									extstate._layout.fxDrag = nil
+							end end
+							return true, string.format("%s has been deleted.", fxName)
+						else
+							return false, string.format("%s cannot be deleted.", fxName)
 						end
-						return true, string.format("%s has been deleted.", fxName)
 					else
-						return false, string.format("%s cannot be deleted.", fxName)
+						return false
 					end
 				end
 			}
