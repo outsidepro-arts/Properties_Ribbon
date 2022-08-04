@@ -43,7 +43,8 @@ local stepsList = {
 local knownAssyncPlugins = {
 	{ name = "M%u%w+[.].+", delay = 6 },
 	{ name = "Pulsar", delay = 2 },
-	{ name = "Replika", delay = 5 }
+	{ name = "Replika", delay = 5 },
+	{ name = "SynthMasterOne", delay = 10 }
 }
 
 
@@ -365,7 +366,9 @@ if fxLayout.canProvide() then
 					elseif presetIndex + direction >= numberOfPresets then
 						message("No more next property values.")
 					else
-						capi.SetPresetByIndex(parent.fxIndex, presetIndex+direction)
+						if not capi.SetPresetByIndex(parent.fxIndex, presetIndex+direction) then
+							return false, "Could not switch the presets"
+						end
 					end
 					message(self:get(parent))
 					return false, message
@@ -374,7 +377,7 @@ if fxLayout.canProvide() then
 					local presetIndex, numberOfPresets = capi.GetPresetIndex(parent.fxIndex)
 					local retval, answer = reaper.GetUserInputs("Specify preset", 1, "Type a preset index:", presetIndex+1)
 					if retval then
-						if tonumber(presetIndex) then
+						if tonumber(answer) then
 							if tonumber(answer) <= numberOfPresets and tonumber(answer) > 0 then
 								if capi.SetPresetByIndex(parent.fxIndex, answer - 1) then
 									return true
@@ -383,6 +386,18 @@ if fxLayout.canProvide() then
 								end
 							else
 								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available presets range: from 1 to %u', answer, numberOfPresets), "Preset specify error", showMessageBoxConsts.sets.ok)
+							end
+						elseif utils.simpleSearch(answer, "default") then
+							if capi.SetPresetByIndex(parent.fxIndex, -1) then
+								return true
+							else
+								reaper.ShowMessageBox("Unable to set default preset in this FX.", "Preset specify error", showMessageBoxConsts.sets.ok)
+							end
+						elseif utils.simpleSearch(answer, "factory") then
+							if capi.SetPresetByIndex(parent.fxIndex, -2) then
+								return true
+							else
+								reaper.ShowMessageBox("Unable to set the factory preset.", "Preset specify error", showMessageBoxConsts.sets.ok)
 							end
 						else
 							reaper.ShowMessageBox("Please enter a valid preset ID", "Preset specify error", showMessageBoxConsts.sets.ok)
