@@ -87,9 +87,8 @@ function utils.splitstring(str, delimiter, mode)
 end
 
 function utils.delay(ms)
-	ms = ms * 0.001
-	local curTime = os.clock()
-	while (os.clock() - curTime) <= ms do math.pow(2, 64) end
+	local curTime = os.clock() / 0.001
+	while (os.clock() / 0.001 - curTime) <= ms do math.pow(2, 64) end
 end
 
 -- The math.pow method is removed from ReaScript platform
