@@ -489,10 +489,10 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self, parent)
 					local fxName = getFormattedFXName(parent.fxIndex)
-					if reaper.ShowMessageBox(
-						("Are you sure you want to delete the FX \"%s\" from %s?"):format(fxName,
+					if reaper.ShowMessageBox(string.format('Are you sure you want to delete the FX \"%s\" from %s?',
+						fxName,
 						fxPrefix:gsub("^%u", string.lower)
-						:gsub("%s$", ""))
+						:gsub("%s$", "")),
 						"Delete FX", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 						if capi.Delete(parent.fxIndex) then
 							-- Is this FX not dragged?
