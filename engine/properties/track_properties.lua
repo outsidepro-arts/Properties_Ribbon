@@ -78,11 +78,7 @@ local parentLayout = initLayout("Track properties")
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
-	if tracks then
-		return true
-	else
-		return false
-	end
+	return tracks ~= nil
 end
 
 -- sublayouts
