@@ -1144,7 +1144,7 @@ function script_ajustProperty(action)
 			script_finish()
 			return
 		end
-		setUndoLabel(msg)
+		setUndoLabel(msg:extract(0, false) or layout.properties[layout.pIndex]:get())
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
