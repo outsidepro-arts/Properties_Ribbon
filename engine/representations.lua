@@ -259,10 +259,10 @@ function representation.getFocusLikeOSARA(context)
 								end
 								fxName = fxName:sub(startPos, endPos)
 							end
-							table.insert(fxForm, fxName)
 						end
-						table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
+						table.insert(fxForm, fxName)
 					end
+					table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
 				end
 				table.insert(msgCalculator, table.concat(parts, "; "))
 			end
@@ -306,10 +306,10 @@ function representation.getFocusLikeOSARA(context)
 								end
 								fxName = fxName:sub(startPos, endPos)
 							end
-							table.insert(fxForm, fxName)
 						end
-						table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
+						table.insert(fxForm, fxName)
 					end
+					table.insert(parts, string.format("FX: %s", table.concat(fxForm, ", ")))
 				end
 				table.insert(msgCalculator, table.concat(parts, "; "))
 			end
