@@ -399,6 +399,21 @@ regionActions:registerProperty {
 		return message
 	end
 }
+regionActions:registerProperty{
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message:initType("Perform this property to set the project selection by this region range.")
+		message("Set selection by this region")
+		return message
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		if reaper.GetSet_LoopTimeRange(true, false, parent.position, parent.endPosition, true) then
+			message("Selection set.")
+		end
+		return true, message, true
+	end
+}
 regionActions:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
