@@ -1749,7 +1749,7 @@ takeVolumeProperty.extendedProperties:registerProperty {
 			end
 			state = prepareUserData.db.process(answer, state)
 			if state then
-				self.setValue(items, state)
+				parent.setValue(items, state)
 			else
 				return false
 			end
