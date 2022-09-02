@@ -414,6 +414,21 @@ regionActions:registerProperty{
 		return true, message, true
 	end
 }
+regionActions:registerProperty{
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message:initType("Perform this property to set the project loop points by this region range.")
+		message("Set loop points by this region")
+		return message
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		if reaper.GetSet_LoopTimeRange(true, true, parent.position, parent.endPosition, true) then
+			message("Loop points set.")
+		end
+		return true, message, true
+	end
+}
 regionActions:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
