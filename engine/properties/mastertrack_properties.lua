@@ -417,7 +417,7 @@ local tempoProperty = {}
 parentLayout.playbackLayout:registerProperty(tempoProperty)
 function tempoProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to set new master tempo. Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
+	message:initType("Adjust this property to set new master tempo.")
 	local state = reaper.Master_GetTempo()
 	message { objectId = "Master", label = "Tempo", value = string.format("%s BPM", utils.round(state, 3)) }
 	return message
@@ -438,7 +438,7 @@ tempoProperty.extendedProperties:registerProperty{
 	get = function (self, parent)
 		local message = initOutputMessage()
 		message"Tap tempo"
-		message:initType("Perform this property periodicaly to tap needed tempo. Please note that when you'll tap the tempo via this property, you will hear no any information, so no one message will distract you.")
+		message:initType("Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
 		return message
 	end,
 	set_perform = function (self, parent)
