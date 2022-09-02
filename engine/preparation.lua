@@ -244,4 +244,30 @@ function prepareUserData.pitch.process(udata, curvalue)
 		showMessageBoxConsts.sets.ok)
 end
 
+prepareUserData.tempo = {
+	formatCaption = [[
+Type the humanbeeing tempo value. The following formats are supported:
+120 BPM
+90.320
+<5bpm (means relative value i.e. the current tempo value will be decreased by this value)
+>0 400 (means relative value i.e. the current tempo value will be increased by this value)
+Please note: these format may be combined with eachother.
+]] }
+
+function prepareUserData.tempo.process(udata, curvalue)
+	local relative = string.match(udata, "^[<>]")
+	udata = udata:gsub("[<>]", "")
+	udata = string.gsub(udata, "^(%d*)(%D)(%d*)", "%1.%3")
+	udata = string.match(udata, "^%d*%.?%d*")
+	if not udata then reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.",
+		"Preparation error", showMessageBoxConsts.sets.ok) return end
+	if relative then
+		if relative == "<" then
+			udata = -udata
+		end
+		return curvalue + udata
+	end
+	return udata
+end
+
 return prepareUserData
