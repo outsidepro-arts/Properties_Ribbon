@@ -433,11 +433,42 @@ function tempoProperty:set_adjust(direction)
 	setUndoLabel(self:get())
 end
 
-function tempoProperty:set_perform()
-	reaper.Main_OnCommand(1134, 0)
-	-- OSARA provides the state value for tempo
-	setUndoLabel(self:get())
-end
+tempoProperty.extendedProperties = initExtendedProperties("Tempo extended interraction")
+tempoProperty.extendedProperties:registerProperty{
+	get = function (self, parent)
+		local message = initOutputMessage()
+		message"Tap tempo"
+		message:initType("Perform this property periodicaly to tap needed tempo. Please note that when you'll tap the tempo via this property, you will hear no any information, so no one message will distract you.")
+		return message
+	end,
+	set_perform = function (self, parent)
+		reaper.Main_OnCommand(1134, 0)
+		-- OSARA provides the state value for tempo
+		setUndoLabel(self:get())
+		return false
+	end
+}
+
+tempoProperty.extendedProperties:registerProperty{
+	get = function (self, parent)
+		local message = initOutputMessage()
+		message"Type custom tempo"
+		message:initType("Perform this property to type new custom project tempo.")
+		return message
+	end,
+	set_perform = function (self, parent)
+		local retval, answer = reaper.GetUserInputs("Specify project tempo", 1, prepareUserData.tempo.formatCaption, parent:get():extract(2, false))
+		if retval then
+			local newTempo = prepareUserData.tempo.process(answer, reaper.Master_GetTempo())
+			if newTempo then
+				reaper.CSurf_OnTempoChange(newTempo)
+				return true, "", true
+			end
+		end
+		return false
+	end
+}
+
 
 -- Master visibility methods
 -- TCP visibility
