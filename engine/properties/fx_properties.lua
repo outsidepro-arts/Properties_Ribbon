@@ -406,6 +406,34 @@ if fxLayout.canProvide() then
 					return false
 				end
 			}
+			-- We have to check some conditions because here's local variable with
+			local fxChainOpenEP = {}
+			firstExtendedFXProperties:registerProperty(fxChainOpenEP)
+			function fxChainOpenEP:get()
+				local message = initOutputMessage()
+				message "Open FX chain with this FX"
+				message:initType("Perform this property to open the FX chain where this FX will be selected.")
+				if fxInaccuracy ~= 0 or context ~= 0 then
+					message:addType(string.format(" This property currently unavailable because you're on %s chain., This FX chain is not supported.", fxPrefix:gsub("^u", string.lower)), 1)
+					message:addType("Unavailable", 2)
+				end
+				return message
+			end
+			-- Unfortunately we can only select FX in a track and only with main chains (no input FX chain or monitoring FX).
+			if fxInaccuracy == 0 and context == 0 then
+				function fxChainOpenEP:set_perform(parent)
+					if fxCount > 1 then
+						reaper.CF_SelectTrackFX(capi._contextObj[0], parent.fxIndex)
+					end
+					if capi._contextObj[0] == reaper.GetMasterTrack(0) then
+						reaper.Main_OnCommand(40846, 1) -- Track: View FX chain for master track
+					else
+						reaper.Main_OnCommand(40291, 1) -- Track: View FX chain for current/last touched track
+					end
+					return true
+				end
+			end
+
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
