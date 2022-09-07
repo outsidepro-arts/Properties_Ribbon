@@ -540,12 +540,10 @@ end
 -- path (string): the physical or web-address
 function openPath(path)
 	-- We have to define the operating system to choose needed terminal command.
-	-- Currently I don't know another way to define which platform we are using right now.
 	local startCmd = nil
-	if package.config:sub(1, 1) == "\\" then -- We are on Windows
+	if utils.platform() == "Windows" then
 		startCmd = "start"
-	elseif package.config:sub(1, 1) == "/" then -- We are on Unix system which implies that's MacOS
-		-- TODO: clarify should the slash be escaped. Currently it works without interpretation errors.
+	else -- We are on another platform, that assumes Unix systems (REAPER builds only for two OS) which implies that's MacOS
 		startCmd = "open"
 	end
 	if startCmd then
