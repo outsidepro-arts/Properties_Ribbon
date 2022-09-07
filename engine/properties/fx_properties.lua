@@ -147,6 +147,14 @@ local function setFilter(sid, filter)
 	extstate._layout[string.format("%s.parmFilter", sid)] = filter
 end
 
+local function getTheBestValue(fxId, parmId)
+	return extstate._layout[utils.makeKeySequence(makeUniqueKey(fxId, parmId), "bestValue")]
+end
+
+local function setTheBestValue(fxId, parmId, value)
+	extstate._layout[utils.makeKeySequence(makeUniqueKey(fxId, parmId), "bestValue")] = value
+end
+
 local function shouldBeExcluded(fxId, parmId)
 	local retval, fxName = getPluginFilename(fxId)
 	if retval == false then
@@ -717,6 +725,35 @@ if fxLayout.canProvide() then
 					end
 				}
 
+				extendedFXProperties:registerProperty{
+					get = function (self, parent)
+						local message = initOutputMessage()
+						message:initType()
+						if getTheBestValue(parent.fxIndex, parent.parmIndex) then
+							message "Revert the best value of this parameter"
+							message:addType("Perform this property to revert the previously committed  best value back into this parameter.", 1)
+						else
+							message "Commit current parameter value as the best value"
+							message:addType("Perform this property to commit current parameter value as the best value. When a best parameter committed, you always may revert it back when you're not satisfied any   adjustment results.", 1)
+						end
+						return message
+					end,
+					set_perform = function (self, parent)
+						local message = initOutputMessage()
+						local state = getTheBestValue(parent.fxIndex, parent.parmIndex)
+						if state then
+							setParmValue(parent.fxIndex, parent.parmIndex, state)
+							endParmEdit(parent.fxIndex, parent.parmIndex)
+							setTheBestValue(parent.fxIndex, parent.parmIndex, nil)
+							message{ label = "The best parameter value", value = "Reverted" }
+						else
+							setTheBestValue(parent.fxIndex, parent.parmIndex, utils.round(capi.GetParam(parent.fxIndex, parent.parmIndex), 4))
+							message{ label = "The best parameter value is ", value = string.format("Committed as %s", getStringParmValue(parent.fxIndex, parent.parmIndex)) }
+						end
+						return true, message, true
+					end
+				}
+
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
@@ -921,6 +958,9 @@ if fxLayout.canProvide() then
 						end
 						message({ label = ({ capi.GetParamName(self.fxIndex, self.parmIndex) })[2],
 							value = getStringParmValue(self.fxIndex, self.parmIndex) })
+						if getTheBestValue(self.fxIndex, self.parmIndex) then if getTheBestValue(self.fxIndex, self.parmIndex) ~= utils.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
+								message{ value = " (is not the best value)" }
+						end end
 						return message
 					end,
 					set_adjust = function(self, direction)
