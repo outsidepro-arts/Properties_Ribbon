@@ -122,8 +122,13 @@ function utils.nor(state)
 	return state
 end
 
-function debug(str)
-	reaper.ShowConsoleMsg(string.format("%s\n", str))
+function debug(...)
+local args = {}
+	-- Forcedly converting all arguments to string
+	for _, arg in ipairs{...} do
+		table.insert(args, tostring(arg))
+	end
+	reaper.ShowConsoleMsg(string.format("%s\n", table.concat(args, '\t')))
 	-- WIN32 functions are exist only in Windows
 	if utils.platform() == "Windows" then
 		-- ReaConsole does not takes the focus by itself, so we have to make it forcedly.
