@@ -123,9 +123,17 @@ function utils.nor(state)
 end
 
 function debug(str)
-	local retval, cmd = reaper.GetUserInputs("Debug", 1, "Output:", tostring(str))
-	if retval then
-		if cmd:lower() == "terminate" then error("Terminated by debug command") end
+	reaper.ShowConsoleMsg(string.format("%s\n", str))
+	-- WIN32 functions are exist only in Windows
+	if utils.platform() == "Windows" then
+		-- ReaConsole does not takes the focus by itself, so we have to make it forcedly.
+		local consoleWindow = reaper.BR_Win32_FindWindowEx(
+			reaper.BR_Win32_HwndToString(
+				reaper.BR_Win32_GetParent(
+					reaper.BR_Win32_GetMainHwnd()
+				)
+			), "0", "#32770", "ReaScript console output", true, true)
+		reaper.BR_Win32_SetFocus(consoleWindow)
 	end
 end
 
@@ -244,6 +252,15 @@ end
 
 function utils.makeKeySequence(...)
 	return table.concat(table.pack(...), ".")
+end
+
+-- Returns the platform name based on REAPER's runnen version
+function utils.platform()
+	local platform = reaper.GetAppVersion():match("/([a-zA-Z]+)%W?%d?")
+	if not platform or (platform and string.len(platform) < 3) then
+		platform = "Windows"
+	end
+	return platform
 end
 
 return utils
