@@ -127,13 +127,21 @@ function debug(str)
 	-- WIN32 functions are exist only in Windows
 	if utils.platform() == "Windows" then
 		-- ReaConsole does not takes the focus by itself, so we have to make it forcedly.
-		local consoleWindow = reaper.BR_Win32_FindWindowEx(
-			reaper.BR_Win32_HwndToString(
+		if select(2,
+			reaper.BR_Win32_GetWindowText(
 				reaper.BR_Win32_GetParent(
-					reaper.BR_Win32_GetMainHwnd()
+					reaper.BR_Win32_GetFocus()
 				)
-			), "0", "#32770", "ReaScript console output", true, true)
-		reaper.BR_Win32_SetFocus(consoleWindow)
+			)
+		) ~= "ReaScript console output" then
+			local consoleWindow = reaper.BR_Win32_FindWindowEx(
+				reaper.BR_Win32_HwndToString(
+					reaper.BR_Win32_GetParent(
+						reaper.BR_Win32_GetMainHwnd()
+					)
+				), "0", "#32770", "ReaScript console output", true, true)
+			reaper.BR_Win32_SetFocus(consoleWindow)
+		end
 	end
 end
 
