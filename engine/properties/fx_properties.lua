@@ -333,30 +333,6 @@ if fxLayout.canProvide() then
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
-					message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
-					message("Filter parameters")
-					if getFilter(sid) then
-						message(string.format(" (currently is set to %s", getFilter(sid)))
-					end
-					return message
-				end,
-				set_perform = function(self, parent)
-					local curFilter = getFilter(sid) or ""
-					local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
-						"Type either full parameter name or a part of (Lua patterns supported):", curFilter)
-					if retval then
-						if answer ~= "" then
-							setFilter(sid, answer)
-						else
-							setFilter(sid, nil)
-						end
-					end
-					return true
-				end
-			}
-			firstExtendedFXProperties:registerProperty {
-				get = function(self, parent)
-					local message = initOutputMessage()
 					message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward). Perform this property to set a preset by its ID."
 						, actions.set.increase.label, actions.set.decrease.label))
 					message { label = "Preset" }
@@ -544,6 +520,30 @@ if fxLayout.canProvide() then
 					end
 				end
 			}
+			fxLayout[sid]:registerProperty{
+				get = function(self)
+					local message = initOutputMessage()
+					message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
+					message("Filter parameters")
+					if getFilter(sid) then
+						message(string.format(" (currently is set to %s", getFilter(sid)))
+					end
+					return message
+				end,
+				set_perform = function(self)
+					local curFilter = getFilter(sid) or ""
+					local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
+						"Type either full parameter name or a part of (Lua patterns supported):", curFilter)
+					if retval then
+						if answer ~= "" then
+							setFilter(sid, answer)
+						else
+							setFilter(sid, nil)
+						end
+					end
+					return
+				end
+			}
 			fxLayout[sid]:registerProperty({
 				fxIndex = i + fxInaccuracy,
 				extendedProperties = firstExtendedFXProperties,
@@ -552,17 +552,8 @@ if fxLayout.canProvide() then
 					-- The extended properties notify will be added by the main script side
 					message:initType()
 					message("FX operations")
-					local filter = getFilter(sid)
-					if filter or extstate._layout.fxDrag then
-						message(" (")
-						if filter then
-							message(string.format("filter set to %s", filter))
-							if extstate._layout.fxDrag then message(", ") end
-						end
-						if extstate._layout.fxDrag then
-							message("drag and drop process started")
-						end
-						message(")")
+					if extstate._layout.fxDrag then
+						message("drag and drop process started")
 					end
 					return message
 				end
