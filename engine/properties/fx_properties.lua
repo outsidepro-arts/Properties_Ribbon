@@ -544,21 +544,23 @@ if fxLayout.canProvide() then
 					return
 				end
 			}
-			fxLayout[sid]:registerProperty({
-				fxIndex = i + fxInaccuracy,
-				extendedProperties = firstExtendedFXProperties,
-				get = function(self)
-					local message = initOutputMessage()
-					-- The extended properties notify will be added by the main script side
-					message:initType()
-					message("FX operations")
-					if extstate._layout.fxDrag then
-						message("drag and drop process started")
+			if not getFilter(sid) then
+				fxLayout[sid]:registerProperty({
+					fxIndex = i + fxInaccuracy,
+					extendedProperties = firstExtendedFXProperties,
+					get = function(self)
+						local message = initOutputMessage()
+						-- The extended properties notify will be added by the main script side
+						message:initType()
+						message("FX operations")
+						if extstate._layout.fxDrag then
+							message("drag and drop process started")
+						end
+						return message
 					end
-					return message
-				end
-			}
-			)
+				}
+				)
+			end
 			local fxParmsCount = capi.GetNumParams(i + fxInaccuracy)
 			if extstate._layout.lastObjectId then
 				if currentSublayout and currentSublayout ~= sid then
