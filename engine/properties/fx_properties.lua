@@ -246,6 +246,15 @@ local function getFormattedFXName(fxId)
 	end
 end
 
+local function selectFXInChain(fxId)
+	if config.getboolean("selectFXWhenFocusOn", false) then
+		if context == 0 and fxId >= capi.GetCount() then
+			return reaper.CF_SelectTrackFX(capi._contextObj[0], fxId)
+		end
+	end
+	return false
+end
+
 -- One FX parms rendering implementation
 -- We have to know the currently rendering FX list has the same sublayouts or not
 if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() and not whichFXCanbeLoaded then
@@ -954,6 +963,8 @@ if fxLayout.canProvide() then
 						if getTheBestValue(self.fxIndex, self.parmIndex) then if getTheBestValue(self.fxIndex, self.parmIndex) ~= utils.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
 								message{ value = " (is not the best value)" }
 						end end
+						-- Select current FX in FX chain because we can't make this by another way
+						selectFXInChain(self.fxIndex)
 						return message
 					end,
 					set_adjust = function(self, direction)

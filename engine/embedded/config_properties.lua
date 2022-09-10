@@ -1052,8 +1052,9 @@ function disableIdentificationProperty:get()
 	local message = initOutputMessage()
 	message:initType("Toggle this property to switch the object identification when navigating.", "Toggleable")
 	local state = config.getboolean("objectsIdentificationWhenNavigating", true)
-	message { label = "Report objects identification when navigating", value = ({ [true] = "enabled", [false] = "disabled" }
-		)[state] }
+	message { label = "Report objects identification when navigating",
+		value = ({ [true] = "enabled", [false] = "disabled" }
+			)[state] }
 	return message
 end
 
@@ -1071,7 +1072,8 @@ configLayout.main:registerProperty(twicePressPerformProperty)
 function twicePressPerformProperty:get()
 	local message = initOutputMessage()
 	local state = config.getboolean("twicePressPerforms", false)
-	message{label="Twice navigation onto the same property", value=({[true]="performs this (if perform action supported)",[false]="does nothing"})[state]}
+	message { label = "Twice navigation onto the same property",
+		value = ({ [true] = "performs this (if perform action supported)", [false] = "does nothing" })[state] }
 	message:initType("Toggle this property to allow properties ribbon perform a property straightaway when you're navigating twice or more times onto.")
 	return message
 end
@@ -1079,6 +1081,28 @@ end
 function twicePressPerformProperty:set_perform()
 	local message = initOutputMessage()
 	config.setboolean("twicePressPerforms", utils.nor(config.getboolean("twicePressPerforms", false)))
+	message(self:get())
+	return message
+end
+
+local selectFXProperty = {}
+configLayout.fxPropertiesConfig:registerProperty(selectFXProperty)
+selectFXProperty.states = {
+	[false] = "disabled",
+	[true] = "enabled"
+}
+
+function selectFXProperty:get()
+	local message = initOutputMessage()
+	local state = config.getboolean("selectFXWhenFocusOn", false)
+	message { label = "Attempt select focused FX in FX chain", value = self.states[state] }
+	message:initType("Toggle this property the ability FX properties attempt to select an FX which you're working on. Please note that not all of FX can be selected. SWS is used for this operation, but SWS does not support the take FX chains, track input FX chains and monitoring FX chains.")
+	return message
+end
+
+function selectFXProperty:set_perform()
+	local message = initOutputMessage()
+	config.setboolean("selectFXWhenFocusOn", utils.nor(config.getboolean("selectFXWhenFocusOn", false)))
 	message(self:get())
 	return message
 end
