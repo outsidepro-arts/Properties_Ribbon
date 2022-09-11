@@ -432,7 +432,7 @@ if fxLayout.canProvide() then
 					local message = initOutputMessage()
 					message:initType("Perform this property to set current FX either offline or online.")
 					message("Set FX ")
-					if capi.GetOffline(i + fxInaccuracy) then
+					if capi.GetOffline(self.fxIndex) then
 						message("online")
 					else
 						message("offline")
@@ -504,7 +504,7 @@ if fxLayout.canProvide() then
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
-					message:initType("Perform this property to delete current FX from FX chain. You will not get any questions, but you can undo this action at anytime.")
+					message:initType("Perform this property to delete current FX from FX chain.")
 					message("Delete FX")
 					return message
 				end,
@@ -1117,12 +1117,10 @@ if fxLayout.canProvide() then
 	if realParmID then
 		for i = 1, #fxLayout[currentSublayout].properties do
 			local v = fxLayout[currentSublayout].properties[i]
-			if v.parmIndex then
-				if v.parmIndex == realParmID then
+			if v.parmIndex then if v.parmIndex == realParmID then
 					extstate[fxLayout[currentSublayout].section] = i
 					extstate._layout.lastRealParmID = nil
-				end
-			end
+			end end
 		end
 	end
 end
