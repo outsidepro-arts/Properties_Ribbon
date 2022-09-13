@@ -1060,7 +1060,7 @@ setmetatable(fxLayout,{
 		if getFormattedFXName(fxId) then
 			-- Ah this beautifull prefixes and postfixes
 			local fxName = getFormattedFXName(fxId)
-			local sid = capi.GetFXGUID(fxId):gsub("%W", "") .. tostring(fxId)
+			local sid = string.format("%s_%s", capi.GetFXGUID(fxId):gsub("%W", ""), getCurrentObjectId():gsub("%W", ""))
 			if fxName then
 				local fxPrefix = contextPrompt .. " "
 				if context == 0 then
