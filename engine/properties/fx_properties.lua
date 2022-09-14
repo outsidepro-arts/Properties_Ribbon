@@ -254,15 +254,6 @@ local function selectFXInChain(fxId)
 	end
 	return false
 end
-
--- One FX parms rendering implementation
--- We have to know the currently rendering FX list has the same sublayouts or not
-if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() and not whichFXCanbeLoaded then
-	extstate._layout.lastObjectId = nil
-	-- Let's take a chance and reset the drag
-	extstate._layout.fxDrag = nil
-end
-
 -- Find the appropriated context prompt for newly created layout
 local contextPrompt = nil
 if context == 0 then
@@ -273,6 +264,16 @@ if context == 0 then
 	end
 elseif context == 1 then
 	contextPrompt = "Take"
+end
+
+-- Some cases where you have to reset a few states
+if extstate._layout.lastObjectId and extstate._layout.lastObjectId ~= getCurrentObjectId() and whichFXCanbeLoaded then
+-- Patching the current sublayout state to avoid of wrong FX indexing
+if extstate._layout[utils.makeKeySequence(getCurrentObjectId(), whichFXCanbeLoaded, "slPatch")] then
+		currentSublayout = extstate._layout[utils.makeKeySequence(getCurrentObjectId(), whichFXCanbeLoaded, "slPatch")]
+	end
+	-- Let's take a chance and reset the drag
+	extstate._layout.fxDrag = nil
 end
 
 -- Keeping split FX implementation
@@ -1102,6 +1103,9 @@ setmetatable(fxLayout,{
 					mayPrevSub = rawFXId - 1
 				end
 			end
+			-- Create patch for sublayout per object
+			extstate._layout[utils.makeKeySequence(getCurrentObjectId(), whichFXCanbeLoaded, "slPatch")] = rawFXId
+			extstate._layout.lastObjectId = getCurrentObjectId()
 			return setmetatable({
 				subname = fxName,
 				section = string.format("%s.%s", utils.removeSpaces(fxLayout.name), sid),
@@ -1162,9 +1166,5 @@ if realParmID then
 		end end
 	end
 end
-
--- Finishing the one parm FX rendering implementation
--- After all rendering cases you have to store current object to next rendering will be fast
-extstate._layout.lastObjectId = getCurrentObjectId()
 
 return fxLayout
