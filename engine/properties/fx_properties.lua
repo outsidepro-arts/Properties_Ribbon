@@ -374,40 +374,13 @@ firstExtendedFXProperties:registerProperty {
 		return false
 	end
 }
--- We have to check some conditions because here's local variable with
-local fxChainOpenEP = {}
-firstExtendedFXProperties:registerProperty(fxChainOpenEP)
-function fxChainOpenEP:get()
-	local message = initOutputMessage()
-	message "Open FX chain with this FX"
-	message:initType("Perform this property to open the FX chain where this FX will be selected.")
-	if fxInaccuracy ~= 0 or context ~= 0 then
-		message:addType(string.format(" This property currently unavailable because you're on %s chain., This FX chain is not supported.", fxPrefix:gsub("^u", string.lower)), 1)
-		message:addType("Unavailable", 2)
-	end
-	return message
-end
--- Unfortunately we can only select FX in a track and only with main chains (no input FX chain or monitoring FX).
-if fxInaccuracy == 0 and context == 0 then
-	function fxChainOpenEP:set_perform(parent)
-		if fxCount > 1 then
-			reaper.CF_SelectTrackFX(capi._contextObj[0], parent.fxIndex)
-		end
-		if capi._contextObj[0] == reaper.GetMasterTrack(0) then
-			reaper.Main_OnCommand(40846, 1) -- Track: View FX chain for master track
-		else
-			reaper.Main_OnCommand(40291, 1) -- Track: View FX chain for current/last touched track
-		end
-		return true
-	end
-end
 
 firstExtendedFXProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType("Perform this property to set current FX either offline or online.")
 		message("Set FX ")
-		if capi.GetOffline(self.fxIndex) then
+		if capi.GetOffline(parent.fxIndex) then
 			message("online")
 		else
 			message("offline")
@@ -487,7 +460,7 @@ firstExtendedFXProperties:registerProperty {
 		local fxName = getFormattedFXName(parent.fxIndex)
 		if reaper.ShowMessageBox(string.format('Are you sure you want to delete the FX \"%s\" from %s?',
 			fxName,
-			fxPrefix:gsub("^%u", string.lower)
+			parent.fxPrefix:gsub("^%u", string.lower)
 			:gsub("%s$", "")),
 			"Delete FX", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			if capi.Delete(parent.fxIndex) then
@@ -505,45 +478,45 @@ firstExtendedFXProperties:registerProperty {
 	end
 }
 
-
-local filterProperty = {
-	get = function(self)
-		local message = initOutputMessage()
-		message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
-		message("Filter parameters")
-		if getFilter(sid) then
-			message(string.format(" (currently is set to %s", getFilter(sid)))
-		end
-		return message
-	end,
-	set_perform = function(self)
-		local curFilter = getFilter(sid) or ""
-		local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
-			"Type either full parameter name or a part of (Lua patterns supported):", curFilter)
-		if retval then
-			if answer ~= "" then
-				setFilter(sid, answer)
-			else
-				setFilter(sid, nil)
+local firstProperties = {
+	{
+		get = function(self)
+			local message = initOutputMessage()
+			message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
+			message("Filter parameters")
+			if getFilter(sid) then
+				message(string.format(" (currently is set to %s", getFilter(sid)))
 			end
+			return message
+		end,
+		set_perform = function(self)
+			local curFilter = getFilter(sid) or ""
+			local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
+				"Type either full parameter name or a part of (Lua patterns supported):", curFilter)
+			if retval then
+				if answer ~= "" then
+					setFilter(sid, answer)
+				else
+					setFilter(sid, nil)
+				end
+			end
+			return
 		end
-		return
-	end
-}
-
-local fxOperationsProperty = {
-	fxIndex = 0,
-	extendedProperties = firstExtendedFXProperties,
-	get = function(self)
-		local message = initOutputMessage()
-		-- The extended properties notify will be added by the main script side
-		message:initType()
-		message("FX operations")
-		if extstate._layout.fxDrag then
-			message("drag and drop process started")
+	},
+	{
+		fxIndex = 0,
+		extendedProperties = firstExtendedFXProperties,
+		get = function(self)
+			local message = initOutputMessage()
+			-- The extended properties notify will be added by the main script side
+			message:initType()
+			message("FX operations")
+			if extstate._layout.fxDrag then
+				message("drag and drop process started")
+			end
+			return message
 		end
-		return message
-	end
+	}
 }
 
 local extendedFXProperties = initExtendedProperties("Parameter actions")
@@ -1061,9 +1034,9 @@ setmetatable(fxLayout,{
 		if getFormattedFXName(fxId) then
 			-- Ah this beautifull prefixes and postfixes
 			local fxName = getFormattedFXName(fxId)
+			local fxPrefix = contextPrompt .. " "
 			local sid = string.format("%s_%s", capi.GetFXGUID(fxId):gsub("%W", ""), getCurrentObjectId():gsub("%W", ""))
 			if fxName then
-				local fxPrefix = contextPrompt .. " "
 				if context == 0 then
 					if fxId < capi.GetCount() and capi.GetInstrument() == fxId then
 						fxPrefix = "Instrument "
@@ -1127,19 +1100,25 @@ setmetatable(fxLayout,{
 							get = fxGet,
 							set_adjust = fxSet
 						}
-						if tonumber(paramId) >= 0 and tonumber(paramId) < capi.GetNumParams(fxId) then
-							-- not implemented yet
+						if tonumber(paramId) >= 0 and tonumber(paramId) < #self then
+							if paramId + 1 <= #firstProperties then
+								propertyTemplate = firstProperties[paramId + 1]
+								propertyTemplate.parmIndex = paramId - #firstProperties
+								propertyTemplate.fxPrefix = fxPrefix
+							else
+								propertyTemplate.parmIndex = paramId - #firstProperties
+								propertyTemplate.parmNum = (paramId + 1) - #firstProperties
+							end
 						elseif tonumber(paramId) >= 0 and tonumber(paramId) >= capi.GetNumParams(fxId) then
 							propertyTemplate.parmIndex = capi.GetNumParams(fxId) - 1
-							propertyTemplate.parmNum = capi.GetNumParams(fxId)
+							propertyTemplate.parmNum = #self
 						elseif tonumber(paramId) < 0 then
-							propertyTemplate.parmIndex = 0
-							propertyTemplate.parmNum = 1
+							propertyTemplate = firstProperties[1]
 						end
 						return propertyTemplate
 					end,
 					__len = function (self)
-						return capi.GetNumParams(fxId)
+						return capi.GetNumParams(fxId) + #firstProperties
 					end
 				})
 			}, {
