@@ -1597,9 +1597,7 @@ function timebaseProperty:set_adjust(direction)
 		local state
 		if math.max(st[1], st[2], st[3], st[4]) == #tracks then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
-			-- We have to patch our states metatable to avoid always existing values
-			self.states = setmetatable(self.states, {})
-			if self.states[state + direction] then
+			if state + direction >= -1 and state + direction < #self.states then
 				state = state + direction
 			end
 		else
