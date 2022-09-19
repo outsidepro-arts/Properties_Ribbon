@@ -432,7 +432,7 @@ if fxLayout.canProvide() then
 					local message = initOutputMessage()
 					message:initType("Perform this property to set current FX either offline or online.")
 					message("Set FX ")
-					if capi.GetOffline(self.fxIndex) then
+					if capi.GetOffline(parent.fxIndex) then
 						message("online")
 					else
 						message("offline")
