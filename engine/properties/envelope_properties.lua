@@ -115,6 +115,10 @@ if envelope then
 				envelopeProcess = prepareUserData.pitch.process
 			elseif name:lower():find "mute" then
 				envelopeType = 5
+			elseif name:lower():find "tempo" then
+				envelopeType = 7
+				envelopeFormatCaption = prepareUserData.tempo.formatCaption
+				envelopeProcess = prepareUserData.tempo.process
 			end
 		end
 	end
@@ -295,6 +299,25 @@ if points ~= nil then
 						message("Minimal width value.")
 					end
 				end
+			elseif envelopeType == 7 then
+				if istable(points) then
+					for _, point in ipairs(points) do
+						local state = self.getValue(point)
+						if state - 1.0 >= 1 then
+							self.setValue(point, state - 1.0)
+						else
+							self.setValue(point, 1.0)
+						end
+					end
+				else
+					local state = self.getValue(points)
+					if state - 1.0 >= 1 then
+						self.setValue(points, state - 1.0)
+					else
+						self.setValue(points, 1.0)
+						message "Minimal tempo value"
+					end
+				end
 			else
 				reaper.Main_OnCommand(42382, 0)
 			end
@@ -392,6 +415,16 @@ if points ~= nil then
 						self.setValue(points, utils.percenttonum(100))
 						message("Maximal width value.")
 					end
+				end
+			elseif envelopeType == 7 then
+				if istable(points) then
+					for _, point in ipairs(points) do
+						local state = self.getValue(point)
+						self.setValue(point, state + 1.0)
+					end
+				else
+					local state = self.getValue(points)
+					self.setValue(points, state + 1.0)
 				end
 			else
 				reaper.Main_OnCommand(42381, 0)
