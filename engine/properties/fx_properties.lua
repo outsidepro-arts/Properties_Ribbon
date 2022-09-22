@@ -338,7 +338,7 @@ if fxLayout.canProvide() then
 			fxName = fxName .. ({ [false] = "", [true] = " (offline)" })[capi.GetOffline(i + fxInaccuracy)]
 			fxLayout:registerSublayout(sid, fxPrefix .. fxName)
 			local firstExtendedFXProperties = {}
-			firstExtendedFXProperties = initExtendedProperties("FX operation")
+			firstExtendedFXProperties = initExtendedProperties("FX operations")
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
