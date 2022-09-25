@@ -261,6 +261,7 @@ function prepareUserData.tempo.process(udata, curvalue)
 	udata = string.match(udata, "^%d*%.?%d*")
 	if not udata then reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.",
 		"Preparation error", showMessageBoxConsts.sets.ok) return end
+		udata = tonumber(udata)
 	if relative then
 		if relative == "<" then
 			udata = -udata
