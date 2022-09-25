@@ -75,6 +75,15 @@ local function navigateTracks(category, trackFrom, direction)
 	end
 end
 
+local function checkExistingCategoryID(id)
+	for i = 1, #categories do
+		local category = categories[i]
+		if category.id == id then
+			return true
+		end
+	end
+	return false
+end
 
 local catnavLayout = initLayout("Track navigation by category")
 
@@ -246,8 +255,14 @@ function addNewCategoryProperty:set_perform()
 	local retval, answer = reaper.GetUserInputs("Create new category", 1, "Type category name:", "")
 	if retval then
 		if #answer > 0 then
+		local maxLength = 15
+		local newID = utils.generateID(10, maxLength)
+		while checkExistingCategoryID(newID) do
+			maxLength = maxLength + 5
+			newID = utils.generateID(10, maxLength)
+		end
 			categories[#categories+1] = {
-				id = utils.generateID(10, 30),
+				id = newID,
 				name = answer
 			}
 		else
