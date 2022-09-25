@@ -1107,4 +1107,64 @@ function selectFXProperty:set_perform()
 	return message
 end
 
+local tempoStepProperty = {}
+configLayout.stepAdjustment:registerProperty(tempoStepProperty)
+
+function tempoStepProperty:get()
+	local message = initOutputMessage()
+	local state = config.getinteger("tempoStep", 1.000)
+	message{ label = "Tempo step adjustment", value = string.format("%s BPM", utils.round(state, 3)) }
+	message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with tempo values. Perform this property to input needed custom step value manualy.")
+	return message
+end
+
+function tempoStepProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = config.getinteger("tempoStep", 1.000)
+	local ajustingValue
+	if direction == actions.set.increase.direction then
+		if state >= 0.100 and state < 0.500 then
+			ajustingValue = 0.500
+		elseif state >= 0.500 and state < 1.000 then
+			ajustingValue = 1.000
+		else
+			message "Maximal step value."
+		end
+	elseif direction == actions.set.decrease.direction then
+		if state <= 1.000 and state > 0.500 then
+			ajustingValue = 0.500
+		elseif state <= 0.500 and state > 0.100 then
+			ajustingValue = 0.100
+		else
+			message "Minimal step value."
+		end
+	end
+	if ajustingValue then
+		config.setinteger("tempoStep", ajustingValue)
+	end
+	message(self:get())
+	return message
+end
+
+function tempoStepProperty:set_perform()
+	local state = config.getinteger("tempoStep", 1.000)
+	local retval, answer = reaper.GetUserInputs("Tempo step input", 1, prepareUserData.tempo.formatCaption, string.format("%.3f BPM", utils.round(state, 3)))
+	if retval then
+		local ajustingValue = prepareUserData.tempo.process(answer, state)
+		if ajustingValue < 200 and ajustingValue > 0.001 then
+			config.setinteger("tempoStep", ajustingValue)
+		elseif ajustingValue >= 200 then
+			if reaper.ShowMessageBox(
+				"Are you sure you want to set the step value more than 200 BPM per one adjustment? Are you seriously? 😦",
+				"Just one question",
+				showMessageBoxConsts.sets.yesno)
+			== showMessageBoxConsts.button.yes then
+				config.setinteger("tempoStep", ajustingValue)
+			end
+		elseif ajustingValue < 0.001 then
+			reaper.ShowMessageBox("Set the tempo step as less than zero is pointless.", "Tempo step value specify error", showMessageBoxConsts.sets.ok)
+		end
+	end
+end
+
 return configLayout

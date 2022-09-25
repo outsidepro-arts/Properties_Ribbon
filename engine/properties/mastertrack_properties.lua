@@ -424,13 +424,20 @@ function tempoProperty:get()
 end
 
 function tempoProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local ajustStep = config.getinteger("tempoStep", 1.0)
+	local state = reaper.Master_GetTempo()
 	if direction == actions.set.increase.direction then
-		reaper.Main_OnCommand(41129, 0)
+		reaper.CSurf_OnTempoChange(state + ajustStep)
 	elseif direction == actions.set.decrease.direction then
-		reaper.Main_OnCommand(41130, 0)
+		if (state - ajustStep) > 0 then
+			reaper.CSurf_OnTempoChange(state - ajustStep)
+		else
+			message "Unable to set the tempo less than zero"
+		end
 	end
-	-- OSARA provides the state value for tempo
-	setUndoLabel(self:get())
+	message(self:get())
+	return message
 end
 
 tempoProperty.extendedProperties = initExtendedProperties("Tempo extended interraction")
