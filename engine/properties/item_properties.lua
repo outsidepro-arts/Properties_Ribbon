@@ -560,18 +560,22 @@ end
 function timebaseProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	if istable(items) then
-		local st = { 0, 0, 0, 0 }
-		for _, item in ipairs(items) do
-			local state = self.getValue(item)
-			st[state + 2] = st[state + 2] + 1
+		local allIdentical, prevState = true, nil
+		for k = 1, #items do
+			local state = self.getValue(items[k])
+			if prevState and prevState ~= state then
+				allIdentical = false
+				break
+			end
+			prevState = state
 		end
 		local state
-		if math.max(st[1], st[2], st[3], st[4]) == #items then
+		if allIdentical then
 			state = self.getValue(items[1])
-			-- We have to patch our states metatable to avoid always existing values
-			self.states = setmetatable(self.states, {})
-			if self.states[state + direction] then
-				state = state + direction
+			if state + ajustingValue < #self.states and state + ajustingValue >= 0 then
+				state = state + ajustingValue
+			else
+				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous"})[direction]))
 			end
 		else
 			state = -1
@@ -988,16 +992,22 @@ function fadeinShapeProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local ajustingValue = direction
 	if istable(items) then
-		local st = { 0, 0, 0, 0, 0, 0, 0 }
+		local allIdentical, prevState = true, nil
 		for k = 1, #items do
 			local state = self.getValue(items[k])
-			st[state + 1] = st[state + 1] + 1
+			if prevState and prevState ~= state then
+				allIdentical = false
+				break
+			end
+			prevState = state
 		end
 		local state
-		if math.max(st[1], st[2], st[3], st[4], st[5], st[6], st[7]) == #items then
+		if allIdentical then
 			state = self.getValue(items[1])
-			if self.states[(state + ajustingValue)] then
+			if state + ajustingValue < #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
+			else
+				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous"})[direction]))
 			end
 		else
 			state = 1
@@ -1007,7 +1017,7 @@ function fadeinShapeProperty:set_adjust(direction)
 		end
 	else
 		local state = self.getValue(items)
-		if state + ajustingValue > 6 then
+		if state + ajustingValue > #self.states then
 			message("No more next property values. ")
 		elseif state + ajustingValue < 0 then
 			message("No more previous property values. ")
