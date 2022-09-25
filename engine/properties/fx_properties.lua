@@ -345,9 +345,11 @@ if fxLayout.canProvide() then
 					message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward). Perform this property to set a preset by its ID."
 						, actions.set.increase.label, actions.set.decrease.label))
 					message { label = "Preset" }
-					retval, presetname = capi.GetPreset(parent.fxIndex)
+					local retval, presetname = capi.GetPreset(parent.fxIndex)
 					if retval then
 						message { value = presetname }
+					else
+						message{value = "unavailable"}
 					end
 					return message
 				end,
