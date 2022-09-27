@@ -855,9 +855,9 @@ if canWorkWithItems() then
 				reaper.Main_OnCommand(41844, 0)
 				local newMarkersCount = reaper.GetTakeNumStretchMarkers(reaper.GetActiveTake(item))
 				if prevMarkersCount > newMarkersCount then
-					return "All Stretch markers deleted."
+					return true, "All Stretch markers deleted."
 				else
-					return "No stretch markers deleted."
+					return true, "No stretch markers deleted."
 				end
 			else
 				return false, "No item selected at this position"
