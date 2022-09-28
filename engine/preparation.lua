@@ -103,6 +103,7 @@ function prepareUserData.pan.process(udata, curvalue)
 		if udata:find("[lr]") == nil then
 			reaper.ShowMessageBox('The pan direction is not set. You have to set the pan direction like \"left\" or \"right\" or \"l\" or \"r\".'
 				, "Converting error", showMessageBoxConsts.sets.ok)
+			return nil
 		end
 		if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
 			converted = udata:match("^[-<>]?(%d+)")
