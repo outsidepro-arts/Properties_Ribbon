@@ -561,8 +561,15 @@ end
 
 -- Main body
 
-layout, currentLayout, currentSublayout, SpeakLayout, g_undoState, currentExtProperty, layoutHasReset, layoutSaid = {}, nil, nil,
-	false, "Unknown Change via Properties Ribbon script", nil, false, false
+-- Global variables initialization
+layout = {}
+currentLayout = nil
+currentSublayout = nil
+SpeakLayout = false
+g_undoState = "Unknown Change via Properties Ribbon script"
+currentExtProperty = nil
+layoutHasReset = false
+layoutSaid = false
 
 -- The main initialization function
 -- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
@@ -638,7 +645,6 @@ function script_init(newLayout, shouldSpeakLayout)
 		layout = layout[sublayout]
 		currentSublayout = sublayout
 	end
-	setUndoLabel(("Switch properties layout to %s"):format(layout.name))
 	layout.pIndex = extstate[layout.section] or 1
 	return (layout)
 end
@@ -1203,6 +1209,9 @@ function script_finish()
 		end
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = currentExtProperty
+		if  g_undoState == "Unknown Change via Properties Ribbon script" then
+			setUndoLabel(("Some actions via layout %s"):format(layout.name))
+		end
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
