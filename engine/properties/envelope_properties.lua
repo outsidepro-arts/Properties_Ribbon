@@ -677,7 +677,7 @@ if points ~= nil then
 		local adjustStep = config.getinteger("percentStep", 1)
 		adjustStep = utils.percenttonum(adjustStep)
 		if direction == actions.set.decrease.direction then
-			adjustStep = -utils.percenttonum(adjustStep)
+			adjustStep = -adjustStep
 		end
 		if istable(points) then
 			for _, point in ipairs(points) do
