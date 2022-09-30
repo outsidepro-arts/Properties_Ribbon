@@ -381,7 +381,7 @@ regionActions:registerProperty {
 		reaper.SetEditCurPos(parent.position, true, true)
 		message { label = "Jumping to" }
 		message { value = representation.defpos[reaper.GetCursorPosition()] }
-		return false, message
+		return true, message
 	end
 }
 regionActions:registerProperty {
@@ -396,7 +396,7 @@ regionActions:registerProperty {
 		reaper.SetEditCurPos(parent.endPosition, true, true)
 		message { label = "Jumping to" }
 		message { value = representation.defpos[reaper.GetCursorPosition()] }
-		return message
+		return true, message
 	end
 }
 regionActions:registerProperty{
@@ -483,7 +483,7 @@ if numRegions > 0 then
 						message { value = self.str }
 					end
 					if allowMove then
-						reaper.GoToRegion(0, self.rIndex, true)
+						reaper.GoToRegion(0, self.rIndex+1, true)
 						message { value = representation.defpos[self.position] }
 					end
 					return message
