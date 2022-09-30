@@ -204,6 +204,9 @@ searchinAction.extendedProperties:registerProperty {
 		message:initType("Perform this property to specify a search query.")
 		return message
 	end,
+	set_adjust = function (self, parent, direction)
+		return false, parent:set_adjust(direction)
+	end,
 	set_perform = function(self, parent)
 		local curQuery = parent.options.query or ""
 		local retval, answer = reaper.GetUserInputs(string.format("Search specified %s", parent.objStrings[context]), 1,
@@ -221,6 +224,9 @@ searchinAction.extendedProperties:registerProperty {
 		message:initType("Toggle this property to specify should search process be case sensetive or not.", "Toggleable")
 		return message
 	end,
+	set_adjust = function (self, parent, direction)
+		return false, parent:set_adjust(direction)
+	end,
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
 		parent.options.caseSensetive = utils.nor(parent.options.caseSensetive or false)
@@ -236,6 +242,9 @@ searchinAction.extendedProperties:registerProperty {
 		message:initType("Toggle this property to enable or disable the Lua patterns in search queries. The Lua patterns like RegExp patterns, so your search query can be more powerfull."
 			, "Toggleable")
 		return message
+	end,
+	set_adjust = function (self, parent, direction)
+		return false, parent:set_adjust(direction)
 	end,
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
