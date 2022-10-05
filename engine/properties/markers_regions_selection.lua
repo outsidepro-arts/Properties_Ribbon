@@ -23,7 +23,7 @@ do
 	if extstate.currentLayout then
 		currentAndPreviousEqual = currentSublayout == extstate[extstate.currentLayout .. "_sublayout"]
 	end
-	allowMove = allowMove == true and currentAndPreviousEqual == true
+	allowMove = allowMove == true and currentAndPreviousEqual == true and currentExtProperty == nil
 end
 
 -- Before define which sublayout we will load when no sublayout found, just load all marker/regions data.
