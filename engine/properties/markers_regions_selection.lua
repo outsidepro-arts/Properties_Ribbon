@@ -16,7 +16,7 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 -- Preloading some configs
-local allowMove = config.getboolean("allowMoveCursorWhenNavigating", true)
+local allowMove, allowMoveConfig = config.getboolean("allowMoveCursorWhenNavigating", true), config.getboolean("allowMoveCursorWhenNavigating", true)
 -- Extended check
 do
 	local currentAndPreviousEqual
@@ -142,7 +142,7 @@ markersActionsProperty.extendedProperties:registerProperty {
 
 markerActions = initExtendedProperties("Marker actions")
 
-if allowMove == false then
+if allowMoveConfig == false then
 	markerActions:registerProperty {
 		get = function(self, parent)
 			local message = initOutputMessage()
@@ -352,7 +352,7 @@ regionsActionsProperty.extendedProperties:registerProperty {
 }
 local regionActions = initExtendedProperties("Region actions")
 
-if allowMove == false then
+if allowMoveConfig == false then
 	regionActions:registerProperty {
 		get = function(self, parent)
 			local message = initOutputMessage()
@@ -483,7 +483,7 @@ if numRegions > 0 then
 						message { value = self.str }
 					end
 					if allowMove then
-						reaper.GoToRegion(0, self.rIndex+1, true)
+						reaper.GoToRegion(0, self.rIndex, true)
 						message { value = representation.defpos[self.position] }
 					end
 					return message
@@ -528,7 +528,7 @@ end
 
 stretchMarkerActions = initExtendedProperties("Stretch marker actions")
 
-if allowMove == false then
+if allowMoveConfig == false then
 	stretchMarkerActions:registerProperty {
 		get = function(self, parent)
 			local message = initOutputMessage()
@@ -650,7 +650,7 @@ end
 parentLayout:registerSublayout("takeMarkersLayout", "Take markers")
 -- Take markers pre-defined actions
 local takeMarkerActions = initExtendedProperties("Take marker actions")
-if allowMove == false then
+if allowMoveConfig == false then
 	takeMarkerActions:registerProperty {
 		get = function(self, parent)
 			local message = initOutputMessage()
