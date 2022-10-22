@@ -316,7 +316,7 @@ itemVolumeProperty.extendedProperties:registerProperty {
 	set_perform = function(self, parent)
 		if istable(items) then
 			local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1,
-				prepareUserData.db.formatCaption, representation.db[self.getValue(items[1])])
+				prepareUserData.db.formatCaption, representation.db[parent.getValue(items[1])])
 			if not retval then
 				return "Canceled"
 			end
