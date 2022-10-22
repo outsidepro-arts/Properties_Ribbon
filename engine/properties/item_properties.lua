@@ -265,7 +265,7 @@ function itemVolumeProperty:set_adjust(direction)
 	if direction == actions.set.decrease.direction then
 		ajustStep = -ajustStep
 	end
-	if istable() then
+	if istable(items) then
 		for _, item in ipairs(items) do
 			local state = self.getValue(item)
 			state = utils.decibelstonum(utils.numtodecibels(state) + ajustStep)
