@@ -26,11 +26,6 @@ local getItemNumber = item_properties_macros.getItemNumber
 -- And another one:
 local getTakeNumber = item_properties_macros.getTakeNumber
 
--- Default messages set for threeposition setters
-local tpMessages = {
-	[true] = "Set selected tracks to %s. ",
-	[false] = "Set to %s. "
-}
 
 -- We should obey the configuration to report the take's name
 local getItemID, getTakeID = item_properties_macros.getItemID, item_properties_macros.getTakeID
@@ -302,7 +297,10 @@ itemVolumeProperty.extendedProperties:registerProperty(composeThreePositionPrope
 		rootmean = utils.decibelstonum(0.0),
 		max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
 	},
-	tpMessages,
+	{
+		[true] = "Set selected items to %s. ",
+		[false] = "Set to %s. "
+	},
 	itemVolumeProperty.setValue
 ))
 
@@ -1724,7 +1722,10 @@ takeVolumeProperty.extendedProperties:registerProperty(composeThreePositionPrope
 		rootmean = utils.decibelstonum(0.0),
 		max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
 	},
-	tpMessages,
+	{
+		[true] = "Set selected items takes to %s. ",
+		[false] = "Set to %s. "
+	},
 	takeVolumeProperty.setValue
 ))
 
@@ -1859,7 +1860,10 @@ takePanProperty.extendedProperties:registerProperty(composeThreePositionProperty
 		rootmean = 0,
 		max = 1
 	},
-	tpMessages,
+	{
+		[true] = "Set selected items takes to %s. ",
+		[false] = "Set to %s. "
+	},
 	takePanProperty.setValue
 ))
 
@@ -2346,7 +2350,10 @@ takePitchProperty.extendedProperties:registerProperty(composeThreePositionProper
 		rootmean = 0,
 		max = config.getinteger("pitchBounces", 24.0)
 	},
-	tpMessages,
+	{
+		[true] = "Set selected items takes to %s. ",
+		[false] = "Set to %s. "
+	},
 	takePitchProperty.setValue
 ))
 takePitchProperty.extendedProperties:registerProperty {
