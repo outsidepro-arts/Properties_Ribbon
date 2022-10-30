@@ -488,7 +488,8 @@ end
 function restorePreviousLayout()
 	if config.getboolean("allowLayoutsrestorePrev", true) == true then
 		if config.getboolean("automaticLayoutLoading", false) == true then
-			currentLayout = proposeLayout(true)
+			local plBuild = proposeLayout(true)
+			currentLayout = table.concat({plBuild.section, plBuild.layout}, "//")
 			speakLayout = true
 			layoutHasReset = true
 		else
