@@ -102,6 +102,7 @@ volumeProperty.extendedProperties:registerProperty {
 		else
 			return false
 		end
+		setUndoLabel(parent:get())
 		return true
 	end
 }
@@ -173,6 +174,7 @@ panProperty.extendedProperties:registerProperty {
 		state = prepareUserData.pan.process(answer, state)
 		if state then
 			reaper.SetMediaTrackInfo_Value(master, "D_PAN", state)
+			setUndoLabel(parent:get())
 			return true
 		end
 		return false
@@ -242,6 +244,7 @@ widthProperty.extendedProperties:registerProperty {
 		state = prepareUserData.percent.process(answer, state)
 		if state then
 			reaper.SetMediaTrackInfo_Value(master, "D_WIDTH", state)
+			setUndoLabel(parent:get())
 			return true
 		end
 		return false
@@ -469,6 +472,7 @@ tempoProperty.extendedProperties:registerProperty{
 			local newTempo = prepareUserData.tempo.process(answer, reaper.Master_GetTempo())
 			if newTempo then
 				reaper.CSurf_OnTempoChange(newTempo)
+				setUndoLabel(parent:get())
 				return true, "", true
 			end
 		end

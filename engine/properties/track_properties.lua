@@ -392,6 +392,8 @@ volumeProperty.extendedProperties:registerProperty({
 					reaper.SetMediaTrackInfo_Value(track, "D_VOL", state)
 				end
 			end
+			setUndoLabel(parent:get())
+			return true
 		else
 			local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
 			local retval, answer = reaper.GetUserInputs(string.format("Volume for %s",
@@ -402,6 +404,7 @@ volumeProperty.extendedProperties:registerProperty({
 			state = prepareUserData.db.process(answer, state)
 			if state then
 				reaper.SetMediaTrackInfo_Value(tracks, "D_VOL", state)
+				setUndoLabel(parent:get())
 				return true
 			end
 		end
@@ -506,6 +509,8 @@ panProperty.extendedProperties:registerProperty({
 					reaper.SetMediaTrackInfo_Value(track, "D_PAN", state)
 				end
 			end
+			setUndoLabel(parent:get())
+			return true
 		else
 			local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
 			local retval, answer = reaper.GetUserInputs(string.format("Pan for %s",
@@ -516,6 +521,7 @@ panProperty.extendedProperties:registerProperty({
 			state = prepareUserData.pan.process(answer, state)
 			if state then
 				reaper.SetMediaTrackInfo_Value(tracks, "D_PAN", state)
+				setUndoLabel(parent:get())
 				return true
 			end
 		end
@@ -633,6 +639,7 @@ widthProperty.extendedProperties:registerProperty({
 				return false
 			end
 		end
+		setUndoLabel(parent:get())
 		return true
 	end
 })

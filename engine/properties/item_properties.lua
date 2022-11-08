@@ -340,6 +340,7 @@ itemVolumeProperty.extendedProperties:registerProperty {
 				return false
 			end
 		end
+		setUndoLabel(parent:get())
 		return true
 	end
 }
@@ -1765,6 +1766,7 @@ takeVolumeProperty.extendedProperties:registerProperty {
 				return false
 			end
 		end
+		setUndoLabel(parent:get())
 		return true
 	end
 }
@@ -1903,6 +1905,7 @@ takePanProperty.extendedProperties:registerProperty {
 				return false
 			end
 		end
+		setUndoLabel(parent:get())
 		return true
 	end
 }
@@ -2190,6 +2193,8 @@ takePlayrateProperty.extendedProperties:registerProperty {
 					parent.setValue(item, state)
 				end
 			end
+			setUndoLabel(parent:get())
+			return true
 		else
 			local retval, answer = reaper.GetUserInputs(string.format("Play rate for %s of %s",
 				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1,
@@ -2198,6 +2203,7 @@ takePlayrateProperty.extendedProperties:registerProperty {
 				local state = prepareUserData.rate.process(answer, parent.getValue(items))
 				if state then
 					parent.setValue(items, state)
+					setUndoLabel(parent:get())
 					return true
 				end
 			end
@@ -2392,6 +2398,7 @@ takePitchProperty.extendedProperties:registerProperty {
 				return false
 			end
 		end
+		setUndoLabel(parent:get())
 		return true, "", true
 	end
 }
