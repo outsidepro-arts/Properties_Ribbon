@@ -5,7 +5,7 @@ License: MIT License
 ]] --
 
 
-package.path = ({ reaper.get_action_context() })[2]:match('^.+[\\//]') .. 'engine//?.lua'
+package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. 'engine//?.lua'
 require "properties_ribbon"
 
 if script_init({ section = "scripts", layout = "FIND_OBJECTS" }, true) then

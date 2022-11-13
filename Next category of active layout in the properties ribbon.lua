@@ -4,7 +4,7 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
 
-package.path = ({ reaper.get_action_context() })[2]:match('^.+[\\//]') .. 'engine//?.lua'
+package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. 'engine//?.lua'
 require "properties_ribbon"
 
 if config.getboolean("automaticLayoutLoading", false) == true then
