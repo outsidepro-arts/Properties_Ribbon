@@ -590,6 +590,7 @@ function script_init(newLayout, shouldSpeakLayout)
 		end
 		return nil
 	end
+	reaper.Undo_BeginBlock()
 	currentExtProperty = extstate.extProperty
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if newLayout and newLayout ~= extstate.currentLayout then
@@ -1217,4 +1218,5 @@ function script_finish()
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
 	end
+	reaper.Undo_EndBlock(g_undoState, -1)	
 end

@@ -4,8 +4,6 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
 
-reaper.Undo_BeginBlock()
-
 package.path = ({ reaper.get_action_context() })[2]:match('^.+[\\//]') .. 'engine//?.lua'
 require "properties_ribbon"
 
@@ -16,5 +14,3 @@ end
 if script_init(proposedLayout) then
 	script_switchSublayout(actions.sublayout_prev)
 end
-
-reaper.Undo_EndBlock(g_undoState, -1)

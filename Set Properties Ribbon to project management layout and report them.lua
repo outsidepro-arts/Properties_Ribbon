@@ -5,11 +5,9 @@ License: MIT License
 ]] --
 
 
-reaper.Undo_BeginBlock()
 package.path = ({ reaper.get_action_context() })[2]:match('^.+[\\//]') .. 'engine//?.lua'
 require "properties_ribbon"
 
 if script_init({ section = "actions", layout = "project_management_actions" }, true) then
 	script_reportOrGotoProperty()
 end
-reaper.Undo_EndBlock(g_undoState, -1)
