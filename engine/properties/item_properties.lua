@@ -1745,10 +1745,10 @@ takeVolumeProperty.extendedProperties:registerProperty {
 				return false, "Canceled"
 			end
 			for k = 1, #items do
-				local state = self.getValue(items[k])
+				local state = parent.getValue(items[k])
 				state = prepareUserData.db.process(answer, state)
 				if state then
-					self.setValue(items[k], state)
+					parent.setValue(items[k], state)
 				end
 			end
 		else
