@@ -481,7 +481,7 @@ function setUndoLabel(label)
 	elseif label == "" then
 		-- do nothing
 	else
-		g_undoState = string.format("Properties Ribbon: %s", label:extract(0, false))
+		g_undoState = label:extract(0, false)
 	end
 end
 
@@ -590,7 +590,6 @@ function script_init(newLayout, shouldSpeakLayout)
 		end
 		return nil
 	end
-	reaper.Undo_BeginBlock()
 	currentExtProperty = extstate.extProperty
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if newLayout and newLayout ~= extstate.currentLayout then
@@ -1097,8 +1096,14 @@ function script_ajustProperty(action)
 				return
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
+				reaper.Undo_BeginBlock()
 				msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex],
 					action.direction)
+				if msg then
+					reaper.Undo_EndBlock(msg:extract(0, false), -1)
+				else
+					reaper.Undo_EndBlock(g_undoState, -1)
+				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
 				script_finish()
@@ -1108,9 +1113,19 @@ function script_ajustProperty(action)
 			local retval, premsg, getShouldReported
 			if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][
 				string.format("set_%s", action.value)] then
+				reaper.Undo_BeginBlock()
 				retval, premsg, getShouldReported = layout.properties[layout.pIndex].extendedProperties.properties[
 					currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties
 						[currentExtProperty], layout.properties[layout.pIndex], action.direction)
+				if getShouldReported then
+					reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), -1)
+				else
+					if premsg then
+						reaper.Undo_EndBlock(premsg:extract(0, false), -1)
+					else
+						reaper.Undo_EndBlock(g_undoState, -1)
+					end
+				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
 				script_finish()
@@ -1138,7 +1153,6 @@ function script_ajustProperty(action)
 				end
 				if premsg then
 					if msg then
-						setUndoLabel(premsg)
 						msg:output()
 					end
 				end
@@ -1150,7 +1164,6 @@ function script_ajustProperty(action)
 			script_finish()
 			return
 		end
-		setUndoLabel(msg:extract(0, false) or layout.properties[layout.pIndex]:get())
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
@@ -1218,5 +1231,4 @@ function script_finish()
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
 	end
-	reaper.Undo_EndBlock(g_undoState, -1)	
 end
