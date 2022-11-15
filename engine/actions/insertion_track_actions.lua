@@ -19,6 +19,7 @@ After this preambula, let me begin.
 -- For what? REAPER should set the some actions to track context that user can perform them
 reaper.SetCursorContext(0)
 local insertionLayout = initLayout("Track insertion actions")
+insertionLayout.undoContext = undo.contexts.tracks
 
 function insertionLayout.canProvide()
 	return true

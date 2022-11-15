@@ -21,6 +21,9 @@ reaper.SetCursorContext(1)
 
 local insertionLayout = initLayout("Item insertion actions")
 
+insertionLayout.undoContext = undo.contexts.items
+
+
 function insertionLayout.canProvide()
 	if reaper.CountSelectedTracks() > 0 then
 		return true

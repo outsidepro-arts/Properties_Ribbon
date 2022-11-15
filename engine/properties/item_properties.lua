@@ -113,6 +113,8 @@ local pos_globalToRelative = item_properties_macros.pos_globalToRelative
 -- global pseudoclass initialization
 local parentLayout = initLayout("Item and take properties")
 
+parentLayout.undoContext = undo.contexts.items
+
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 	-- We do not support the empty lanes

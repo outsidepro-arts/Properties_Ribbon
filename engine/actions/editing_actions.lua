@@ -17,6 +17,7 @@ After this preambula, let me begin.
 
 
 local parentLayout = initLayout("Editor selection")
+parentLayout.undoContext = undo.contexts.items
 
 function parentLayout.canProvide()
 -- Just check one of items has been selected

@@ -22,6 +22,8 @@ local tpMessages = {
 -- global pseudoclass initialization
 local parentLayout = initLayout("Master track properties")
 
+parentLayout.undoContext = undo.contexts.tracks
+
 function parentLayout.canProvide()
 	-- We will check the TCP visibility only
 	if (reaper.GetMasterTrackVisibility() & 1) == 1 then

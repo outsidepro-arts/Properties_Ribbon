@@ -76,6 +76,9 @@ end
 -- global pseudoclass initialization
 local parentLayout = initLayout("Track properties")
 
+-- Define the tracks undo context
+parentLayout.undoContext = undo.contexts.tracks
+
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
 	return tracks ~= nil

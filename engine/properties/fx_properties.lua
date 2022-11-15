@@ -285,6 +285,8 @@ end
 
 local fxLayout = initLayout("FX properties")
 
+fxLayout.undoContext = undo.contexts.fx
+
 function fxLayout.canProvide()
 	local result = false
 	if context == 0 then

@@ -65,7 +65,7 @@ undo = {
 	-- Taken from https://forums.cockos.com/showpost.php?p=2557019&postcount=7
 	contexts = {
 		any = -1,
-		track = 1,
+		tracks = 1,
 		fx = 2,
 		items = 4,
 		project = 8,

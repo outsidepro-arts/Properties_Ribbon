@@ -16,6 +16,7 @@ After this preambula, let me begin.
 -- It's just another vision of Properties Ribbon can be applied on
 
 local projectLayout = initLayout("Project management actions")
+projectLayout.undoContext = undo.contexts.project
 
 projectLayout:registerProperty(composeSimpleProperty(40021))
 projectLayout:registerProperty(composeSimpleProperty(40015))

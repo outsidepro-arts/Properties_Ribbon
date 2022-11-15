@@ -40,6 +40,8 @@ end
 -- Main class initialization
 local parentLayout = initLayout("Markers and regions management")
 
+parentLayout.undoContext = undo.contexts.project
+
 -- This layout is available always because here creating markers/regions property is.
 
 parentLayout:registerSublayout("markersLayout", "Markers")
