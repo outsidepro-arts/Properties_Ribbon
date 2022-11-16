@@ -1114,8 +1114,10 @@ function script_ajustProperty(action)
 					action.direction)
 				if layout.undoContext then if msg then
 						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
-					else
+					elseif g_undoState then
 						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
+					else
+						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout.undoContext)
 				end end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
