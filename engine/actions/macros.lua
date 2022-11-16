@@ -77,7 +77,9 @@ msg
 				end
 				message(string.format("%u items removed", oldItemsCount - newItemsCount))
 			end
-			return message
+			if #message > 0 then
+				return message
+			end
 		end
 	}
 	return usual
