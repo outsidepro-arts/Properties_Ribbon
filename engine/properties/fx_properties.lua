@@ -585,7 +585,7 @@ if fxLayout.canProvide() then
 			end
 			for k = 0, fxParmsCount - 1 do
 				local extendedFXProperties = {}
-				extendedFXProperties = initExtendedProperties("Parameter actions")
+				extendedFXProperties = initExtendedProperties(string.format("%s parameter actions", select(2, capi.GetParamName(i+fxInaccuracy, k))))
 
 				-- Here is non-standart case, so we will write our three-position setter
 				extendedFXProperties:registerProperty {
