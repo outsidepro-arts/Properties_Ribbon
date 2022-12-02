@@ -30,14 +30,7 @@ end
 local whichFXCanbeLoaded = extstate._layout.loadFX
 
 -- Steps list for adjusting (will be defined using configuration)
-local stepsList = {
-	{ label = "smallest", value = 0.000001 }, -- less smallest step causes the REAPER freezes
-	{ label = "small", value = 0.00001 },
-	{ label = "medium", value = 0.0001 },
-	{ label = "big", value = 0.001 },
-	{ label = "biggest", value = 0.01 },
-	{ label = "huge", value = 0.1 }
-}
+local stepsList = fx_properties_macros.stepsList
 
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {

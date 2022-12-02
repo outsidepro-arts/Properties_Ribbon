@@ -804,20 +804,12 @@ end
 
 local fxParmstepProperty = {}
 configLayout.stepAdjustment:registerProperty(fxParmstepProperty)
-fxParmstepProperty.states = {
-	"smallest",
-	"small",
-	"medium",
-	"big",
-	"biggest",
-	"huge"
-}
 
 function fxParmstepProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.")
 	local state = config.getinteger("fxParmStep", 4)
-	message { label = "FX parameters step adjustment", value = self.states[state] }
+	message { label = "FX parameters step adjustment", value = fx_properties_macros.stepsList[state].label }
 	return message
 end
 
