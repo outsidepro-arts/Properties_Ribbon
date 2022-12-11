@@ -573,6 +573,12 @@ function useMacros(propertiesDir)
 	return false
 end
 
+function beginUndoBlock()
+	if layout.undoContext then
+		reaper.Undo_BeginBlock()
+	end
+end
+
 -- Main body
 
 -- Global variables initialization
@@ -580,7 +586,7 @@ layout = {}
 currentLayout = nil
 currentSublayout = nil
 SpeakLayout = false
-g_undoState = "Unknown Change via Properties Ribbon script"
+g_undoState = nil
 currentExtProperty = nil
 layoutHasReset = false
 layoutSaid = false
@@ -1109,12 +1115,12 @@ function script_ajustProperty(action)
 				return
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
-				if layout.undoContext then reaper.Undo_BeginBlock() end
+				beginUndoBlock()
 				msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex],
 					action.direction)
 				if layout.undoContext then if msg then
 						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
-					elseif g_undoState then
+					elseif not msg and g_undoState then
 						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
 					else
 						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout.undoContext)
