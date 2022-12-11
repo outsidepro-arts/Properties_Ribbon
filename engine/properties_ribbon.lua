@@ -1134,19 +1134,17 @@ function script_ajustProperty(action)
 			local retval, premsg, getShouldReported
 			if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][
 				string.format("set_%s", action.value)] then
-				if layout.undoContext then reaper.Undo_BeginBlock() end
+				beginUndoBlock()
 				retval, premsg, getShouldReported = layout.properties[layout.pIndex].extendedProperties.properties[
 					currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties
 						[currentExtProperty], layout.properties[layout.pIndex], action.direction)
-				if layout.undoContext then if getShouldReported then
-						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout.undoContext)
+				if layout.undoContext then
+					if premsg then
+						reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
 					else
-						if premsg then
-							reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
-						else
-							reaper.Undo_EndBlock(g_undoState, layout.undoContext)
-						end
-				end end
+						reaper.Undo_EndBlock(g_undoState or layout.properties[layout.pIndex]:get():extract(0, false), layout.undoContext)
+					end
+				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
 				script_finish()
