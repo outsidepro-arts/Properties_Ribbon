@@ -141,6 +141,9 @@ parentLayout:registerSublayout("visualLayout", "Visualization")
 --Item properties
 parentLayout:registerSublayout("itemLayout", "Item")
 
+-- Item Position and length management properties
+parentLayout:registerSublayout("positionAndLength", "Item position and length management")
+
 -- Current take properties
 parentLayout:registerSublayout("takeLayout", "Current take")
 
@@ -814,7 +817,7 @@ end
 -- Item edges
 -- It not works with multiselected items yet
 local leftEdgeProperty = {}
-parentLayout.itemLayout:registerProperty(leftEdgeProperty)
+parentLayout.positionAndLength:registerProperty(leftEdgeProperty)
 
 function leftEdgeProperty.getValue(item)
 	return reaper.GetMediaItemInfo_Value(item, "D_POSITION")
@@ -878,9 +881,43 @@ if type(items) ~= "table" then
 	}
 end
 
+-- Item position in timeline
+local positionProperty = {}
+parentLayout.positionAndLength:registerProperty(positionProperty)
+
+positionProperty.getValue = leftEdgeProperty.getValue
+
+function positionProperty:get()
+	local message = initOutputMessage()
+	if istable(items) then
+		message{ label = "Items position" }
+		message{ value = composeMultipleItemMessage(self.getValue, representation.defpos) }
+	else
+		message{ objectId = getItemID(items) }
+		message{ label = "Position" }
+		message{ value = representation.defpos[self.getValue(items)] }
+	end
+	message:initType("Adjust this property to move the item on time ruler", "Adjustable")
+	if multiSelectionSupport then
+		message:addType(" If the group of items has been selected, these items will move every relative its position.", 1)
+	end
+	return message
+end
+
+function positionProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local cmds = {
+		[-1] = 40120, -- Item edit: Move items/envelope points left
+		[1] = 40119 -- Item edit: Move items/envelope points right
+	}
+	reaper.Main_OnCommand(cmds[direction], 0)
+	message(self:get())
+	return
+end
+
 -- Right item edge
 local rightEdgeProperty = {}
-parentLayout.itemLayout:registerProperty(rightEdgeProperty)
+parentLayout.positionAndLength:registerProperty(rightEdgeProperty)
 
 function rightEdgeProperty.getValue(item)
 	return reaper.GetMediaItemInfo_Value(item, "D_POSITION") + reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
