@@ -87,6 +87,9 @@ end
 
 local catnavLayout = initLayout("Track navigation by category")
 
+catnavLayout:registerSublayout("basic", "Basic")
+catnavLayout:registerSublayout("custom", "Custom")
+
 function catnavLayout.canProvide()
 	return tracks ~= nil
 end
@@ -237,12 +240,12 @@ if catnavLayout.canProvide() then
 			set_adjust = categorySet_adjust,
 			extendedProperties = categoryExtendedProperties
 		}
-		catnavLayout:registerProperty(catForm)
+		catnavLayout.custom:registerProperty(catForm)
 	end
 end
 
 local addNewCategoryProperty = {}
-catnavLayout:registerProperty(addNewCategoryProperty)
+catnavLayout.custom:registerProperty(addNewCategoryProperty)
 
 function addNewCategoryProperty:get()
 	local message = initOutputMessage()
@@ -268,6 +271,30 @@ function addNewCategoryProperty:set_perform()
 		else
 			reaper.ShowMessageBox("The category name cannot be empty.", "Category creation error", showMessageBoxConsts.sets.ok)
 		end
+	end
+end
+
+local folderNavigator = {}
+catnavLayout.basic:registerProperty(folderNavigator)
+
+function folderNavigator:get()
+	local message = initOutputMessage()
+	message "Folders"
+	message:initType("Adjust this property to move by tracks which have folder state.")
+	return message
+end
+
+function folderNavigator:set_adjust(direction)
+	local curTrack = reaper.GetLastTouchedTrack()
+	local cmds = {
+		[1] = reaper.NamedCommandLookup("_SWS_SELNEARESTNEXTFOLDER"), -- SWS: Select nearest next folder
+		[-1] = reaper.NamedCommandLookup("_SWS_SELNEARESTPREVFOLDER") -- SWS: Select nearest previous folder
+	}
+	reaper.Main_OnCommand(cmds[direction], 0)
+	if curTrack ~= reaper.GetLastTouchedTrack() then
+		return
+	else
+		return string.format("No %s folder track.", ({ [1] = "next", [-1] = "previous" })[direction])
 	end
 end
 
