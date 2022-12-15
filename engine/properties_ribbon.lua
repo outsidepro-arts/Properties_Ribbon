@@ -1243,9 +1243,6 @@ function script_finish()
 		end
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = currentExtProperty
-		if  g_undoState == "Unknown Change via Properties Ribbon script" then
-			setUndoLabel(("Some actions via layout %s"):format(layout.name))
-		end
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
