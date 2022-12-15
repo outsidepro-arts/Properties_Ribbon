@@ -234,6 +234,38 @@ function representation.getFocusLikeOSARA(context)
 						table.insert(trackPrefix, colors:getName(reaper.ColorFromNative(reaper.GetTrackColor(track))))
 					end
 					table.insert(trackPrefix, string.format("%u", reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER")))
+					local states = {
+						[0] = "track",
+						[1] = "folder",
+						[2] = "end of folder",
+						[3] = "end of %u folders"
+					}
+					local compactStates = {
+						[0] = "opened",
+						[1] = "small",
+						[2] = "closed"
+					}
+					local state = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH")
+					if state == 0 or state == 1 then
+						if state == 1 then
+							local compactState = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
+							table.insert(trackPrefix, compactStates[compactState])
+						end
+						table.insert(trackPrefix, states[state])
+					elseif state < 0 then
+						state = -(state - 1)
+						if state < 3 then
+							table.insert(trackPrefix, states[state])
+						else
+							table.insert(trackPrefix, string.format(states[3], state - 1))
+						end
+					end
+					if reaper.GetMediaTrackInfo_Value(track, "B_MUTE") == 1 then
+						table.insert(trackPrefix, "muted")
+					end
+					if reaper.GetMediaTrackInfo_Value(track, "I_SOLO") > 0 then
+						table.insert(trackPrefix, "soloed")
+					end
 					local trackName = select(2, reaper.GetSetMediaTrackInfo_String(track, "P_NAME", "", false))
 					if #trackName > 0 then
 						table.insert(trackPrefix, trackName)
