@@ -126,6 +126,8 @@ end
 -- global pseudoclass initialization
 local parentLayout = initLayout("Color composer")
 
+parentLayout.undoContext = undo.contexts.any
+
 -- sublayouts
 -- Track properties
 parentLayout:registerSublayout("track", "Tracks")

@@ -456,7 +456,6 @@ tempoProperty.extendedProperties:registerProperty{
 	set_perform = function (self, parent)
 		reaper.Main_OnCommand(1134, 0)
 		-- OSARA provides the state value for tempo
-		setUndoLabel(self:get())
 		return false
 	end
 }

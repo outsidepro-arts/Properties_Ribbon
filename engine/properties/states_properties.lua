@@ -19,6 +19,8 @@ useMacros("actions")
 -- global pseudoclass initialization
 local parentLayout = initLayout("State management")
 
+parentLayout.undoContext = undo.contexts.any
+
 parentLayout:registerSublayout("options", "Options")
 parentLayout:registerSublayout("areas", "Areas and panels")
 parentLayout:registerSublayout("windows", "Windows")
