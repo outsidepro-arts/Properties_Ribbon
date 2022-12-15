@@ -54,7 +54,7 @@ local categories = setmetatable({}, {
 	end
 })
 
-local function navigateTracks(category, trackFrom, direction)
+local function navigateTracks(checkFunction, trackFrom, direction)
 	local startRange, endRange
 	if direction >= actions.set.increase.direction then
 		startRange = trackFrom
@@ -65,12 +65,9 @@ local function navigateTracks(category, trackFrom, direction)
 	end
 	for i = startRange, endRange, direction do
 		local track = reaper.GetTrack(0, i - 1)
-		local retval, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
-		if retval then
-			if category.id == data then
-				reaper.SetOnlyTrackSelected(track)
-				return true
-			end
+		if checkFunction(track) then
+			reaper.SetOnlyTrackSelected(track)
+			return true
 		end
 	end
 end
@@ -102,10 +99,22 @@ local function categoryGet(self)
 	return message
 end
 
+-- Iteration function for checking track in a custom category
+local function customCategoryCheck(category)
+	return function(track)
+		local retval, data = reaper.GetSetMediaTrackInfo_String(track, scriptExtData, "", false)
+		if retval then
+			if category.id == data then
+				return true
+			end
+		end
+	end
+end
+
 local function categorySet_adjust(self, direction)
 	local message = initOutputMessage()
 	local trackFrom = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
-	if navigateTracks(self.category, trackFrom+direction, direction) then
+	if navigateTracks(customCategoryCheck(self.category), trackFrom+direction, direction) then
 		message{
 			label = "Focus on",
 			value = representation.getFocusLikeOSARA(0)
@@ -274,6 +283,31 @@ function addNewCategoryProperty:set_perform()
 	end
 end
 
+local function generateGetMethod(label)
+	return function(self)
+		local message = initOutputMessage()
+		message(label)
+		message:initType(string.format("Adjust this property to navigate throughby %s.", label:gsub("^.", string.lower)))
+		return message
+	end
+end
+
+local function generateSetMethod(func, fmess)
+	return function(self, direction)
+		local message = initOutputMessage()
+		local trackFrom = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
+		if navigateTracks(func, trackFrom+direction, direction) then
+			message{
+				label = "Focus on",
+				value = representation.getFocusLikeOSARA(0)
+			}
+			return message
+		else
+			return string.format(fmess, ({[-1] = "previous", [1] = "next"})[direction])
+		end
+	end
+end
+
 local folderNavigator = {}
 catnavLayout.basic:registerProperty(folderNavigator)
 
@@ -297,5 +331,40 @@ function folderNavigator:set_adjust(direction)
 		return string.format("No %s folder track.", ({ [1] = "next", [-1] = "previous" })[direction])
 	end
 end
+
+local mutedTracksNavigator = {}
+catnavLayout.basic:registerProperty(mutedTracksNavigator)
+
+mutedTracksNavigator.get = generateGetMethod("Muted tracks")
+mutedTracksNavigator.set_adjust = generateSetMethod(function(track)
+	return reaper.GetMediaTrackInfo_Value(track, "B_MUTE") == 1
+end, "No %s muted track")
+
+local soloedTracksNavigator = {}
+catnavLayout.basic:registerProperty(soloedTracksNavigator)
+
+soloedTracksNavigator.get = generateGetMethod("Soloed tracks")
+soloedTracksNavigator.set_adjust = generateSetMethod(function(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") > 0
+end, "No %s soloed track")
+
+local instrumentTracksNavigator = {}
+catnavLayout.basic:registerProperty(instrumentTracksNavigator)
+
+instrumentTracksNavigator.get = generateGetMethod("Tracks with instruments")
+instrumentTracksNavigator.set_adjust = generateSetMethod(function(track)
+	return reaper.TrackFX_GetInstrument(track) > 0
+end, "No %s track with an instrument on")
+
+local nonProcessedTracksNavigator = {}
+catnavLayout.basic:registerProperty(nonProcessedTracksNavigator)
+
+nonProcessedTracksNavigator.get = generateGetMethod("Tracks which are like as non-processed")
+nonProcessedTracksNavigator.set_adjust = generateSetMethod(function(track)
+	return reaper.TrackFX_GetCount(track) == 0
+		and reaper.GetMediaTrackInfo_Value(track, "D_VOL") == utils.decibelstonum(0.0)
+		and reaper.GetMediaTrackInfo_Value(track, "D_PAN") == utils.percenttonum(0)
+		and reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") == utils.percenttonum(100)
+end, "No %s track which looks like as non-processed")
 
 return catnavLayout
