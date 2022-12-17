@@ -8,6 +8,10 @@ License: MIT License
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. 'engine//?.lua'
 require "properties_ribbon"
 
-if script_init() then
-	script_activateGotoMode()
-end
+-- We have to execute all Properties Ribbon actions  through defer. We need to do this to prevent REAPER create useless undo points.
+-- Yeah, it is  dirty hack, but all ReaScripters do the same untill Cockos provides a special API method to prevent it normaly.
+reaper.defer(function ()
+	if script_init() then
+		script_activateGotoMode()
+	end
+end)
