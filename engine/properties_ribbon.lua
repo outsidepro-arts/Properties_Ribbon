@@ -74,6 +74,9 @@ undo = {
 	}
 }
 
+-- REAPER hack to prevent useless undo points creation
+reaper.defer(function() end)
+
 -- Little injections
 -- Make string type as outputable to OSARA directly
 function string:output()
