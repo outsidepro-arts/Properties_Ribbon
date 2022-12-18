@@ -5,9 +5,10 @@ License: MIT License
 ]] --
 
 
-package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. 'engine//?.lua'
+package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
+
 require "properties_ribbon"
 
-if script_init({ section = "embedded", layout = "color_composer" }, true) then
+if script_init(getEmbeddedProperties("color_composer"), true) then
 	script_reportOrGotoProperty()
 end

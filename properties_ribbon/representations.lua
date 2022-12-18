@@ -27,7 +27,7 @@ representation.db = setmetatable({},
 			end
 		end
 		if not tonumber(key) then return key end
-		local predb = utils.splitstring(string.format("%.2f", key), ".")
+		local predb = string.format("%.2f", key):split(".")
 		local udb, ddb = tonumber(predb[1]), tonumber(predb[2])
 		local msg = ""
 		if tonumber(key) < 0 then
@@ -59,7 +59,7 @@ representation.pan = setmetatable({},
 
 representation.timesec = setmetatable({},
 	{ __index = function(self, key)
-		local pretime = utils.splitstring(string.format("%.3f", key), ".")
+		local pretime = string.format("%.3f", key):split(".")
 		local s, ms = tonumber(pretime[1]), tonumber(pretime[2])
 		local msg = ""
 		if s == 0 and ms == 0 then
@@ -81,7 +81,7 @@ representation.pitch = setmetatable({
 	[0.00] = "original"
 },
 	{ __index = function(self, key)
-		local prepitch = utils.splitstring(string.format("%.2f", key), ".")
+		local prepitch = string.format("%.2f", key):split(".")
 		local s, c = tonumber(prepitch[1]), tonumber(prepitch[2])
 		local msg = ""
 		if tonumber(key) < 0 then
@@ -104,7 +104,7 @@ representation.playrate = setmetatable({
 	[1.000] = "original"
 }, {
 	__index = function(self, key)
-		local preproc = utils.splitstring(tostring(key), ".")
+		local preproc = tostring(key):split(".")
 		local msg = tostring(preproc[1])
 		if tonumber(preproc[2]) ~= 0 then
 			msg = msg ..

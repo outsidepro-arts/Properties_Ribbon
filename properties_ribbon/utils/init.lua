@@ -71,21 +71,6 @@ function utils.getBitValue(value, first, last)
 	return ((value & ((1 << last) - 1)) >> (first - 1))
 end
 
-function utils.splitstring(str, delimiter, mode)
-	str = tostring(str)
-	delimiter = tostring(delimiter)
-	delimiter = delimiter or "%s"
-	mode = utils.nor(mode) or true
-	local t, spos = {}, 1
-	while string.find(str, delimiter, spos, mode) ~= nil do
-		local startFindPos, endFindPos = str:find(delimiter, spos, mode)
-		table.insert(t, str:sub(spos, startFindPos - 1))
-		spos = endFindPos + 1
-	end
-	table.insert(t, str:sub(spos))
-	return t
-end
-
 function utils.delay(ms)
 	local curTime = os.clock() / 0.001
 	while (os.clock() / 0.001 - curTime) <= ms do math.pow(2, 64) end
@@ -155,7 +140,7 @@ function utils.simpleSearch(fullString, searchString, delimiter)
 	searchString = tostring(searchString)
 	local searchParts
 	if delimiter then
-		searchParts = utils.splitstring(searchString, delimiter, false)
+		searchParts = searchString:split(delimiter, false)
 	else
 		searchParts = {searchString}
 	end
@@ -181,7 +166,7 @@ function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatter
 	luaPatterns = luaPatterns or false
 	local searchParts
 	if delimiter then
-		searchParts = utils.splitstring(searchString, delimiter)
+		searchParts = searchString:split(delimiter)
 	else
 		searchParts = {searchString}
 	end

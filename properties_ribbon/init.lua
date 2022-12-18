@@ -4,27 +4,36 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
 
+-- Define the script path constant
+script_path = select(2, reaper.get_action_context()):match('^.+[\\//]')
+
+-- Patching the loader paths
+package.path = string.format("%s;%s%s", package.path, script_path, "?.lua")
+
 -- Including the types check simplifier
-require "typescheck"
+require "properties_ribbon.typescheck"
 
 -- Include the configuration provider
-config = require "config_provider"
+config = require "properties_ribbon.config_provider"
 config.section = "Properties_Ribbon_script"
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
-utils = require "utils"
+utils = require "properties_ribbon.utils"
+
+-- Including the extended string utilities methods
+require "properties_ribbon.utils.string"
 
 -- including the colors module
-colors = require "colors_provider"
+colors = require "properties_ribbon.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "extstate_wrapper"
+extstate = require "properties_ribbon.extstate_wrapper"
 extstate._section = config.section
 
 -- Including the humanbeing representations metamethods
-representation = require "representations"
+representation = require "properties_ribbon.representations"
 
 -- The preparation of typed data by an user when sets the custom values using input dialogs
-prepareUserData = require "preparation"
+prepareUserData = require "properties_ribbon.preparation"
 
 -- Actions for set methods or some another cases
 actions = {
@@ -570,8 +579,8 @@ function openPath(path)
 end
 
 function useMacros(propertiesDir)
-	if reaper.file_exists(package.path:gsub("?", propertiesDir .. "//macros")) then
-		dofile(package.path:gsub("?", propertiesDir .. "//macros"))
+	if reaper.file_exists(script_path:joinsep("//", propertiesDir, "macros.lua")) then
+		dofile(script_path:joinsep("//", propertiesDir, "macros.lua"))
 		return true
 	end
 	return false
@@ -580,6 +589,12 @@ end
 function beginUndoBlock()
 	if layout.undoContext then
 		reaper.Undo_BeginBlock()
+	end
+end
+
+function getEmbeddedProperties(name)
+	if reaper.file_exists(script_path:joinsep("//", "properties_ribbon", "embedded", name:join(".lua"))) then
+		return {section = "properties_ribbon//embedded", layout = name }
 	end
 end
 
@@ -667,7 +682,7 @@ You have to allow REAPER only create new instance and not finish previous task. 
 	-- Some layouts has executes the linear code... Woops...
 	currentSublayout = extstate[currentLayout .. "_sublayout"]
 	useMacros(currentLayout:match('^(.+)//'))
-	layout = dofile(package.path:gsub("?", currentLayout))
+	layout = dofile(script_path:joinsep("//", currentLayout:join(".lua")))
 	if layout == nil then
 		reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout),
 			"Properties ribbon error", showMessageBoxConsts.sets.ok)

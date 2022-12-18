@@ -194,10 +194,10 @@ function folderStateProperty:get()
 					local msg = ""
 					local states = folderStateProperty.states
 					local compactStates = folderStateProperty.compactStates
-					local state = tonumber(utils.splitstring(key, "|")[1])
+					local state = tonumber(key:split("|")[1])
 					if state == 0 or state == 1 then
 						if state == 1 then
-							local compactState = tonumber(utils.splitstring(key, "|")[2])
+							local compactState = tonumber(key:split("|")[2])
 							msg = msg .. compactStates[compactState] .. " "
 						end
 						msg = msg .. states[state]
@@ -1450,8 +1450,8 @@ function mainSendProperty:get()
 		end,
 			setmetatable({}, {
 				__index = function(self, key)
-					local msg, state, masterOrParent = "", tonumber(utils.splitstring(key, "|")[1]),
-						utils.toboolean(utils.splitstring(key, "|")[2])
+					local msg, state, masterOrParent = "", tonumber(key:split("|")[1]),
+						utils.toboolean(key:split("|")[2])
 					msg = mainSendProperty.states[state] .. " to "
 					if masterOrParent then
 						msg = msg .. "parent"

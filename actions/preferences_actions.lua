@@ -38,7 +38,7 @@ function prConfigProperty:get()
 end
 
 function prConfigProperty:set_perform()
-	executeLayout { section = "embedded", layout = "config_properties" }
+	executeLayout(getEmbeddedProperties("config_properties"))
 end
 
 -- The repository page of Properties Ribbon on Github

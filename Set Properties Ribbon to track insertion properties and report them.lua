@@ -5,7 +5,7 @@ License: MIT License
 ]] --
 
 
-package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. 'engine//?.lua'
+package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
 require "properties_ribbon"
 
 if script_init({ section = "actions", layout = "insertion_track_actions" }, true) then
