@@ -77,6 +77,7 @@ undo = {
 -- REAPER hack to prevent useless undo points creation
 reaper.defer(function() end)
 
+
 -- Little injections
 -- Make string type as outputable to OSARA directly
 function string:output()
@@ -611,6 +612,15 @@ function script_init(newLayout, shouldSpeakLayout)
 			openPath("https://sws-extension.org/")
 		end
 		return nil
+	end
+	-- We have to notify you about ReaScript task control window and instructions for.
+	if not extstate.reascriptTasksAvoid then
+		reaper.ShowMessageBox(
+[[Since Properties Ribbon tries to avoid of useless undo points creation, it does some non-trivial things under the hood. Thus when you'll try to execute any Properties Ribbon action extra-fast (for example, you may push adjust action and not release it long time), you may get a window which called "ReaScript task control" where REAPER asks you what would you want to do with newly runnen script while previous defer action isn't finished yet.
+You have to allow REAPER only create new instance and not finish previous task. To do this, firstly check the checkbox with label "Remember my answer for this script" then press "New instance" button. After this answer, the window will never open anymore.]],
+			"Properties Ribbon warning", showMessageBoxConsts.sets.ok
+		)
+		extstate._forever.reascriptTasksAvoid = true
 	end
 	currentExtProperty = extstate.extProperty
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
