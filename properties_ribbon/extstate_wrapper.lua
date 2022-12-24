@@ -95,4 +95,7 @@ setmetatable(extstate._sublayout, extstate._sublayout)
 setmetatable(extstate._sublayout._forever, extstate._sublayout._forever)
 
 
-return extstate
+return function(section)
+	extstate._section = section
+	return extstate
+end

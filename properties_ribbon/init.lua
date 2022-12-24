@@ -10,12 +10,14 @@ script_path = select(2, reaper.get_action_context()):match('^.+[\\//]')
 -- Patching the loader paths
 package.path = string.format("%s;%s%s", package.path, script_path, "?.lua")
 
+-- The script section internal name
+script_section = "Properties_Ribbon_script"
+
 -- Including the types check simplifier
 require "properties_ribbon.typescheck"
 
 -- Include the configuration provider
-config = require "properties_ribbon.config_provider"
-config.section = "Properties_Ribbon_script"
+config = require "properties_ribbon.config_provider"(script_section)
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 utils = require "properties_ribbon.utils"
@@ -26,8 +28,7 @@ require "properties_ribbon.utils.string"
 -- including the colors module
 colors = require "properties_ribbon.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "properties_ribbon.extstate_wrapper"
-extstate._section = config.section
+extstate = require "properties_ribbon.extstate_wrapper"(script_section)
 
 -- Including the humanbeing representations metamethods
 representation = require "properties_ribbon.representations"

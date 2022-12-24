@@ -66,4 +66,7 @@ function config.setstring(key, value)
 	reaper.SetExtState(config.section, "cfg_" .. key, tostring(value), true)
 end
 
-return config
+return function(section)
+	config.section = section
+	return config
+end
