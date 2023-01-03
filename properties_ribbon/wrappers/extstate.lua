@@ -94,8 +94,12 @@ setmetatable(extstate._layout._forever, extstate._layout._forever)
 setmetatable(extstate._sublayout, extstate._sublayout)
 setmetatable(extstate._sublayout._forever, extstate._sublayout._forever)
 
-
-return function(section)
+-- Initialize the config provider module
+---@param section (string): the section where config provider will search al requested keys. Usualy it is first param in reaper.GetExtState/reaper.SetExtState
+---@return the namespace of this module already initialized and ready to work.
+local function init(section)
 	extstate._section = section
 	return extstate
 end
+
+return init

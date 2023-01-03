@@ -28,13 +28,13 @@ require "properties_ribbon.utils.string"
 -- including the colors module
 colors = require "properties_ribbon.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "properties_ribbon.extstate_wrapper"(script_section)
+extstate = require "properties_ribbon.wrappers.extstate"(script_section)
 
 -- Including the humanbeing representations metamethods
-representation = require "properties_ribbon.representations"
+representation = require "properties_ribbon.representations.representations"
 
 -- The preparation of typed data by an user when sets the custom values using input dialogs
-prepareUserData = require "properties_ribbon.preparation"
+prepareUserData = require "properties_ribbon.representations.preparation"
 
 -- Actions for set methods or some another cases
 actions = {
