@@ -4,14 +4,14 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
 
--- Before use this module, please fill the config.section by your unique name which should set to ExtState
-
 local config = {}
 
 -- A few local functions
+local string2booleanStates = { ["false"] = false, ["true"] = true }
+
 local function toboolean(value)
 	if type(value) == "string" then
-		return ({ ["false"] = false, ["true"] = true })[value]
+		return string2booleanStates[value]
 	else
 		return (value > 0)
 	end
@@ -66,7 +66,12 @@ function config.setstring(key, value)
 	reaper.SetExtState(config.section, "cfg_" .. key, tostring(value), true)
 end
 
-return function(section)
+-- Initialize the config provider module
+---@param section (string): the section where config provider will search al requested keys. Usualy it is first param in reaper.GetExtState/reaper.SetExtState
+---@return the namespace of this module already initialized and ready to work.
+local function init(section)
 	config.section = section
 	return config
 end
+
+return init
