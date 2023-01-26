@@ -1054,8 +1054,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 	else
 		pIndex = layout.pIndex
 	end
-	local result = layoutLevel.properties[pIndex]:get(({ [true] = layout.properties[layout.pIndex], [false] = nil })[
-		currentExtProperty ~= nil])
+	local result = layoutLevel.properties[pIndex]:get((currentExtProperty ~= nil and layout.properties[layout.pIndex]) or nil)
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
