@@ -130,7 +130,7 @@ function panProperty:set_adjust(direction)
 		ajustingValue = -utils.percenttonum(ajustingValue)
 	end
 	local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-	state = utils.round((state + ajustingValue), 3)
+	state = math.round((state + ajustingValue), 3)
 	if state > 1 then
 		state = 1
 		message("Right boundary. ")
@@ -203,7 +203,7 @@ function widthProperty:set_adjust(direction)
 		ajustingValue = -utils.percenttonum(ajustingValue)
 	end
 	local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-	state = utils.round((state + ajustingValue), 3)
+	state = math.round((state + ajustingValue), 3)
 	if state > 1 then
 		state = 1
 		message("Maximum width. ")
@@ -335,7 +335,7 @@ end
 function masterFXProperty:set_perform()
 	local message = initOutputMessage()
 	if reaper.TrackFX_GetCount(master) > 0 then
-		local state = utils.nor(reaper.GetToggleCommandState(16))
+		local state = nor(reaper.GetToggleCommandState(16))
 		reaper.Main_OnCommand(16, state)
 		message(self:get())
 	else
@@ -356,7 +356,7 @@ function monoProperty:get()
 end
 
 function monoProperty:set_perform()
-	local state = utils.nor(reaper.GetToggleCommandState(40917))
+	local state = nor(reaper.GetToggleCommandState(40917))
 	reaper.Main_OnCommand(40917, state)
 	-- OSARA reports this state by itself
 	setUndoLabel(self:get())
@@ -410,7 +410,7 @@ end
 
 function pitchPreserveProperty:set_perform()
 	local message = initOutputMessage()
-	local state = utils.nor(reaper.GetToggleCommandState(40671))
+	local state = nor(reaper.GetToggleCommandState(40671))
 	reaper.Main_OnCommand(40671, state)
 	message(self:get())
 	return message
@@ -424,7 +424,7 @@ function tempoProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set new master tempo.")
 	local state = reaper.Master_GetTempo()
-	message { objectId = "Master", label = "Tempo", value = string.format("%s BPM", utils.round(state, 3)) }
+	message { objectId = "Master", label = "Tempo", value = string.format("%s BPM", math.round(state, 3)) }
 	return message
 end
 
@@ -512,7 +512,7 @@ end
 
 function tcpVisibilityProperty:set_perform()
 	local message = initOutputMessage()
-	local state = utils.nor(self.getValue())
+	local state = nor(self.getValue())
 	if state == false then
 		if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon."
 			, "Caution", showMessageBoxConsts.sets.okcancel) == showMessageBoxConsts.button.ok then
@@ -553,7 +553,7 @@ end
 function mcpVisibilityProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
-	self.setValue(utils.nor(state))
+	self.setValue(nor(state))
 	message(self:get())
 	return message
 end

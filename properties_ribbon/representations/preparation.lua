@@ -120,7 +120,7 @@ function prepareUserData.pan.process(udata, curvalue)
 			converted = -converted
 		end
 		if converted then
-			return utils.round(converted, 3)
+			return math.round(converted, 3)
 		end
 	end
 	reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error",

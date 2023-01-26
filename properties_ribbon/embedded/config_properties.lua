@@ -447,14 +447,14 @@ configLayout.stepAdjustment:registerProperty(pitchStepProperty)
 function pitchStepProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.")
-	local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
+	local state = math.round(config.getinteger("pitchStep", 1.00), 2)
 	message { label = "Pitch step adjustment", value = representation.pitch[state] }
 	return message
 end
 
 function pitchStepProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
+	local state = math.round(config.getinteger("pitchStep", 1.00), 2)
 	local ajustingValue
 	if direction == actions.set.increase.direction then
 		if state >= 0.01 and state < 0.50 then
@@ -491,7 +491,7 @@ end
 
 function pitchStepProperty:set_perform()
 	local message = initOutputMessage()
-	local state = utils.round(config.getinteger("pitchStep", 1.00), 2)
+	local state = math.round(config.getinteger("pitchStep", 1.00), 2)
 	local ajustingValue
 	local result, answer = reaper.GetUserInputs("Pitch step input", 1, prepareUserData.pitch.formatCaption,
 		representation.pitch[state])
@@ -582,7 +582,7 @@ function multiSelectionSupportProperty:get()
 end
 
 function multiSelectionSupportProperty:set_perform()
-	local state = utils.nor(config.getboolean("multiSelectionSupport", true))
+	local state = nor(config.getboolean("multiSelectionSupport", true))
 	config.setboolean("multiSelectionSupport", state)
 	local message = initOutputMessage()
 	message(self:get())
@@ -604,7 +604,7 @@ end
 
 function reportNameProperty:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("reportName", utils.nor(config.getboolean("reportName", false)))
+	config.setboolean("reportName", nor(config.getboolean("reportName", false)))
 	message(self:get())
 	return message
 end
@@ -716,7 +716,7 @@ end
 
 function autoProposeLayoutProperty:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("automaticLayoutLoading", utils.nor(config.getboolean("automaticLayoutLoading", false)))
+	config.setboolean("automaticLayoutLoading", nor(config.getboolean("automaticLayoutLoading", false)))
 	message(self:get())
 	return message
 end
@@ -736,7 +736,7 @@ end
 
 function allowRestorePreviousProperty:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("allowLayoutsrestorePrev", utils.nor(config.getboolean("allowLayoutsrestorePrev", true)))
+	config.setboolean("allowLayoutsrestorePrev", nor(config.getboolean("allowLayoutsrestorePrev", true)))
 	message(self:get())
 	return message
 end
@@ -757,7 +757,7 @@ end
 function allowMoveCursorProperty:set_perform()
 	local message = initOutputMessage()
 	local state = config.getboolean("allowMoveCursorWhenNavigating", true)
-	config.setboolean("allowMoveCursorWhenNavigating", utils.nor(state))
+	config.setboolean("allowMoveCursorWhenNavigating", nor(state))
 	message(self:get())
 	return message
 end
@@ -778,7 +778,7 @@ end
 function clearFileExtsProperty:set_perform()
 	local message = initOutputMessage()
 	local state = config.getboolean("clearFileExts", true)
-	config.setboolean("clearFileExts", utils.nor(state))
+	config.setboolean("clearFileExts", nor(state))
 	message(self:get())
 	return message
 end
@@ -797,7 +797,7 @@ end
 
 function percentageNavigation:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("percentagePropertyNavigation", utils.nor(config.getboolean("percentagePropertyNavigation", false)))
+	config.setboolean("percentagePropertyNavigation", nor(config.getboolean("percentagePropertyNavigation", false)))
 	message(self:get())
 	return message
 end
@@ -843,7 +843,7 @@ function fxUseNearestParmValueProperty:get()
 end
 
 function fxUseNearestParmValueProperty:set_perform()
-	config.setboolean("fx_useFindNearestParmValue", utils.nor(config.getboolean("fx_useFindNearestParmValue", true)))
+	config.setboolean("fx_useFindNearestParmValue", nor(config.getboolean("fx_useFindNearestParmValue", true)))
 	local message = initOutputMessage()
 	message(self:get())
 	return message
@@ -1053,7 +1053,7 @@ end
 function disableIdentificationProperty:set_perform()
 	local message = initOutputMessage()
 	config.setboolean("objectsIdentificationWhenNavigating",
-		utils.nor(config.getboolean("objectsIdentificationWhenNavigating", true)))
+		nor(config.getboolean("objectsIdentificationWhenNavigating", true)))
 	message(self:get())
 	return message
 end
@@ -1072,7 +1072,7 @@ end
 
 function twicePressPerformProperty:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("twicePressPerforms", utils.nor(config.getboolean("twicePressPerforms", false)))
+	config.setboolean("twicePressPerforms", nor(config.getboolean("twicePressPerforms", false)))
 	message(self:get())
 	return message
 end
@@ -1094,7 +1094,7 @@ end
 
 function selectFXProperty:set_perform()
 	local message = initOutputMessage()
-	config.setboolean("selectFXWhenFocusOn", utils.nor(config.getboolean("selectFXWhenFocusOn", false)))
+	config.setboolean("selectFXWhenFocusOn", nor(config.getboolean("selectFXWhenFocusOn", false)))
 	message(self:get())
 	return message
 end
@@ -1105,7 +1105,7 @@ configLayout.stepAdjustment:registerProperty(tempoStepProperty)
 function tempoStepProperty:get()
 	local message = initOutputMessage()
 	local state = config.getinteger("tempoStep", 1.000)
-	message{ label = "Tempo step adjustment", value = string.format("%s BPM", utils.round(state, 3)) }
+	message{ label = "Tempo step adjustment", value = string.format("%s BPM", math.round(state, 3)) }
 	message:initType("Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with tempo values. Perform this property to input needed custom step value manualy.")
 	return message
 end
@@ -1140,7 +1140,7 @@ end
 
 function tempoStepProperty:set_perform()
 	local state = config.getinteger("tempoStep", 1.000)
-	local retval, answer = reaper.GetUserInputs("Tempo step input", 1, prepareUserData.tempo.formatCaption, string.format("%.3f BPM", utils.round(state, 3)))
+	local retval, answer = reaper.GetUserInputs("Tempo step input", 1, prepareUserData.tempo.formatCaption, string.format("%.3f BPM", math.round(state, 3)))
 	if retval then
 		local ajustingValue = prepareUserData.tempo.process(answer, state)
 		if ajustingValue < 200 and ajustingValue > 0.001 then

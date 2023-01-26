@@ -149,7 +149,7 @@ function composeExtendedSwitcherProperty(states, cmd, msg, types, getFunction, s
 		end,
 		set_perform = setFunction or function(self)
 			local message = initOutputMessage()
-			local state = utils.nor(self.getValue())
+			local state = nor(self.getValue())
 			self.setValue(state)
 			message(self:get())
 			if shouldBeOnetime then

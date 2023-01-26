@@ -448,7 +448,7 @@ function panProperty:set_adjust(direction)
 	if istable(tracks) then
 		for k = 1, #tracks do
 			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_PAN")
-			state = utils.round((state + ajustingValue), 3)
+			state = math.round((state + ajustingValue), 3)
 			if state <= -1 then
 				state = -1
 			elseif state > 1 then
@@ -458,7 +458,7 @@ function panProperty:set_adjust(direction)
 		end
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-		state = utils.round((state + ajustingValue), 3)
+		state = math.round((state + ajustingValue), 3)
 		if state < -1 then
 			state = -1
 			message("Left boundary. ")
@@ -565,7 +565,7 @@ function widthProperty:set_adjust(direction)
 	if istable(tracks) then
 		for k = 1, #tracks do
 			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "D_WIDTH")
-			state = utils.round((state + ajustingValue), 3)
+			state = math.round((state + ajustingValue), 3)
 			if state < -1 then
 				state = -1
 			elseif state > 1 then
@@ -575,7 +575,7 @@ function widthProperty:set_adjust(direction)
 		end
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-		state = utils.round((state + ajustingValue), 3)
+		state = math.round((state + ajustingValue), 3)
 		if state < -1 then
 			state = -1
 			message("Minimum width. ")
@@ -696,7 +696,7 @@ function muteProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_MUTE", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_MUTE", state)
 	end
 	message(self:get())
@@ -873,7 +873,7 @@ function recarmProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECARM", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
 		reaper.SetMediaTrackInfo_Value(tracks, "I_RECARM", state)
 	end
 	message(self:get())
@@ -1421,7 +1421,7 @@ function phaseProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_PHASE", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_PHASE"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_PHASE", state)
 	end
 	message(self:get())
@@ -1502,7 +1502,7 @@ function mainSendProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_MAINSEND", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MAINSEND"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_MAINSEND", state)
 	end
 	message(self:get())
@@ -1558,7 +1558,7 @@ function freemodeProperty:set_perform()
 		end
 		reaper.UpdateTimeline()
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_FREEMODE"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_FREEMODE", state)
 		reaper.UpdateTimeline()
 	end
@@ -1697,7 +1697,7 @@ function recmonitorItemsProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECMONITEMS", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECMONITEMS"))
 		reaper.SetMediaTrackInfo_Value(tracks, "I_RECMONITEMS", state)
 	end
 	message(self:get())
@@ -1879,7 +1879,7 @@ function mixerVisibilityProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINMIXER", state)
 	end
 	message(self:get())
@@ -1937,7 +1937,7 @@ function tcpVisibilityProperty:set_perform()
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
+		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINTCP", state)
 	end
 	message(self:get())

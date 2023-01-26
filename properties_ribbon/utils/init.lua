@@ -4,13 +4,19 @@ Copyright (c) 2020-2022 outsidepro-arts & other contributors
 License: MIT License
 ]] --
 
+require "properties_ribbon.utils.conversion"
+require "properties_ribbon.utils.iters"
+require "properties_ribbon.utils.math"
+require "properties_ribbon.utils.string"
+require "properties_ribbon.utils.table"
+
 -- Here are some functions which I have been grabbed from some sources and opensource projects. Some of was needed to be rewritten for LUA, but some of already being presented as is also.
 -- Unfortunately, not all functions written here I remembered where grabbed, because I wrote it at the start of complex coding and did not planned to git this..
 -- If you outraged of, please let me know about via issues in the repository.
 
 local utils = {}
 
-function utils.round(num, numDecimalPlaces)
+function math.round(num, numDecimalPlaces)
 	local negative = false
 	if num < 0 then
 		negative = true
@@ -34,7 +40,7 @@ function utils.numtodecibels(num)
 	if v < -150 then
 		return -150.0
 	else
-		return utils.round(v, 2)
+		return math.round(v, 2)
 	end
 end
 
@@ -92,7 +98,7 @@ function utils.removeSpaces(str)
 	return preproc:gsub("^.", string.lower)
 end
 
-function utils.nor(state)
+function nor(state)
 	if isnumber(state) then
 		if state <= 1 then
 			state = state ~ 1

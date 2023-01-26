@@ -223,7 +223,7 @@ function lockProperty:set_perform()
 			self.setValue(items[k], ajustingValue)
 		end
 	else
-		self.setValue(items, utils.nor(self.getValue(items)))
+		self.setValue(items, nor(self.getValue(items)))
 	end
 	message(self:get())
 	return message
@@ -399,7 +399,7 @@ function muteItemProperty:set_perform()
 			reaper.SetMediaItemInfo_Value(items[k], "B_MUTE", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
+		local state = nor(reaper.GetMediaItemInfo_Value(items, "B_MUTE"))
 		reaper.SetMediaItemInfo_Value(items, "B_MUTE", state)
 		state = reaper.GetMediaItemInfo_Value(items, "B_MUTE")
 	end
@@ -457,7 +457,7 @@ function loopSourceProperty:set_perform()
 			reaper.SetMediaItemInfo_Value(items[k], "B_LOOPSRC", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
+		local state = nor(reaper.GetMediaItemInfo_Value(items, "B_LOOPSRC"))
 		reaper.SetMediaItemInfo_Value(items, "B_LOOPSRC", state)
 	end
 	message(self:get())
@@ -514,7 +514,7 @@ function itemAllTakesPlayProperty:set_perform()
 			reaper.SetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
+		local state = nor(reaper.GetMediaItemInfo_Value(items, "B_ALLTAKESPLAY"))
 		reaper.SetMediaItemInfo_Value(items, "B_ALLTAKESPLAY", state)
 	end
 	message(self:get())
@@ -654,7 +654,7 @@ function autoStretchProperty:set_perform()
 			reaper.SetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH", ajustingValue)
 		end
 	else
-		local state = utils.nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
+		local state = nor(reaper.GetMediaItemInfo_Value(items, "C_AUTOSTRETCH"))
 		reaper.SetMediaItemInfo_Value(items, "C_AUTOSTRETCH", state)
 	end
 	message(self:get())
@@ -686,7 +686,7 @@ function itemSnapOffsetProperty:get()
 		message(composeMultipleItemMessage(self.getValue, representation.timesec))
 	else
 		local state = self.getValue(items)
-		message { objectId = getItemID(items), value = representation.timesec[utils.round(state, 3)] }
+		message { objectId = getItemID(items), value = representation.timesec[math.round(state, 3)] }
 	end
 	return message
 end
@@ -1175,7 +1175,7 @@ if reaper.get_config_var_string("deffadelen") then
 	function restoreFadeDefaultsEProperty:set_perform(parent)
 		local message = initOutputMessage()
 		local _, str = reaper.get_config_var_string("deffadelen")
-		local ajustingValue = utils.round(tonumber(str), 3)
+		local ajustingValue = math.round(tonumber(str), 3)
 		message("Restore default value, ")
 		if istable(items) then
 			for k = 1, #items do
@@ -1240,7 +1240,7 @@ function fadeinDirProperty:set_adjust(direction)
 	if istable(items) then
 		for k = 1, #items do
 			local state = self.getValue(items[k])
-			state = utils.round((state + ajustingValue), 3)
+			state = math.round((state + ajustingValue), 3)
 			if state >= 1 then
 				state = 1
 			elseif state <= -1 then
@@ -1250,7 +1250,7 @@ function fadeinDirProperty:set_adjust(direction)
 		end
 	else
 		local state = self.getValue(items)
-		state = utils.round((state + ajustingValue), 3)
+		state = math.round((state + ajustingValue), 3)
 		if state > 1 then
 			state = 1
 			message("Right curve boundary. ")
@@ -1907,7 +1907,7 @@ function takePanProperty:set_adjust(direction)
 	if istable(items) then
 		for k = 1, #items do
 			local state = self.getValue(items[k])
-			state = utils.round((state + ajustingValue), 3)
+			state = math.round((state + ajustingValue), 3)
 			if state >= 1 then
 				state = 1
 			elseif state <= -1 then
@@ -1917,7 +1917,7 @@ function takePanProperty:set_adjust(direction)
 		end
 	else
 		local state = self.getValue(items)
-		state = utils.round((state + ajustingValue), 3)
+		state = math.round((state + ajustingValue), 3)
 		if state > 1 then
 			state = 1
 			message("Right boundary. ")
@@ -2061,7 +2061,7 @@ function takePhaseProperty:set_perform()
 			self.setValue(items[k], ajustingValue)
 		end
 	else
-		self.setValue(items, utils.nor(self.getValue(items)))
+		self.setValue(items, nor(self.getValue(items)))
 	end
 	message(self:get())
 	return message
@@ -2348,7 +2348,7 @@ function preserveTakePitchProperty:set_perform()
 			self.setValue(items[k], ajustingValue)
 		end
 	else
-		self.setValue(items, utils.nor(self.getValue(items)))
+		self.setValue(items, nor(self.getValue(items)))
 	end
 	message(self:get())
 	return message

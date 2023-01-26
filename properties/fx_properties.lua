@@ -438,9 +438,9 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self, parent)
 					local state = capi.GetOffline(parent.fxIndex)
-					capi.SetOffline(parent.fxIndex, utils.nor(state))
+					capi.SetOffline(parent.fxIndex, nor(state))
 					-- The state returns with some delay
-					return false, string.format("Fx is %s", ({ [true] = "offline", [false] = "online" })[utils.nor(state)])
+					return false, string.format("Fx is %s", ({ [true] = "offline", [false] = "online" })[nor(state)])
 				end
 			}
 			firstExtendedFXProperties:registerProperty {
@@ -622,7 +622,7 @@ if fxLayout.canProvide() then
 					set_perform = function(self, parent)
 						local state = capi.GetParamNormalized(parent.fxIndex, parent.parmIndex)
 						local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:",
-							tostring(utils.round(state, 5)))
+							tostring(math.round(state, 5)))
 						if retval then
 							if tonumber(answer) then
 								setParmValue(parent.fxIndex, parent.parmIndex, tonumber(answer))
@@ -746,7 +746,7 @@ if fxLayout.canProvide() then
 							setTheBestValue(parent.fxIndex, parent.parmIndex, nil)
 							message{ label = "The best parameter value", value = "Reverted" }
 						else
-							setTheBestValue(parent.fxIndex, parent.parmIndex, utils.round(capi.GetParam(parent.fxIndex, parent.parmIndex), 4))
+							setTheBestValue(parent.fxIndex, parent.parmIndex, math.round(capi.GetParam(parent.fxIndex, parent.parmIndex), 4))
 							message{ label = "The best parameter value is ", value = string.format("Committed as %s", getStringParmValue(parent.fxIndex, parent.parmIndex)) }
 						end
 						return true, message, true
@@ -957,7 +957,7 @@ if fxLayout.canProvide() then
 						end
 						message({ label = ({ capi.GetParamName(self.fxIndex, self.parmIndex) })[2],
 							value = getStringParmValue(self.fxIndex, self.parmIndex) })
-						if getTheBestValue(self.fxIndex, self.parmIndex) then if getTheBestValue(self.fxIndex, self.parmIndex) ~= utils.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
+						if getTheBestValue(self.fxIndex, self.parmIndex) then if getTheBestValue(self.fxIndex, self.parmIndex) ~= math.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
 								message{ value = " (is not the best value)" }
 						end end
 						-- Select current FX in FX chain because we can't make this by another way

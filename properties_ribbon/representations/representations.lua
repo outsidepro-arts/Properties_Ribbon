@@ -23,7 +23,7 @@ representation.db = setmetatable({},
 			if v < -150 then
 				key = "-inf"
 			else
-				key = utils.round(v, 2)
+				key = math.round(v, 2)
 			end
 		end
 		if not tonumber(key) then return key end
@@ -50,9 +50,9 @@ representation.pan = setmetatable({},
 		if key == 0 then
 			return "center"
 		elseif key > 0 then
-			return string.format("%u%% right", utils.round(key / (1 / 100), 0))
+			return string.format("%u%% right", math.round(key / (1 / 100), 0))
 		elseif key < 0 then
-			return string.format("%u%% left", utils.round(-key / (1 / 100), 0))
+			return string.format("%u%% left", math.round(-key / (1 / 100), 0))
 		end
 	end
 	})
@@ -108,7 +108,7 @@ representation.playrate = setmetatable({
 		local msg = tostring(preproc[1])
 		if tonumber(preproc[2]) ~= 0 then
 			msg = msg ..
-				string.format(" %u", tonumber(tostring(utils.round(tonumber("0." .. preproc[2]), 3)):match("^%d+[.](%d+)")))
+				string.format(" %u", tonumber(tostring(math.round(tonumber("0." .. preproc[2]), 3)):match("^%d+[.](%d+)")))
 		end
 		msg = msg .. " X"
 		return msg

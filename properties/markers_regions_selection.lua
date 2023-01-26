@@ -629,7 +629,7 @@ local function formStretchMarkerProperties(item)
 							reaper.GetMediaItemInfo_Value(self.marker.item, "D_LENGTH")
 						-- TODO: Clarify the symbols amount by which the values should be rounded. Also clarify whether the playrate should be used
 						markerPulled = (
-							utils.round(self.marker.pos, 6) ~= utils.round((self.marker.srcpos - ((srcLength - itemLength) * takePlayrate)), 6)
+							math.round(self.marker.pos, 6) ~= math.round((self.marker.srcpos - ((srcLength - itemLength) * takePlayrate)), 6)
 							)
 					end
 					message { label = string.format("%stretch marker %u of %s %s", ({ [false] = "S", [true] = "Pulled s" })[

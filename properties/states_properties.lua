@@ -39,7 +39,7 @@ local function setWindow(self, action)
 	end
 	local message = initOutputMessage()
 	states = { [0] = "closed", [1] = "opened" }
-	local state = utils.nor(self.getValue())
+	local state = nor(self.getValue())
 	self.setValue(state)
 	local label = self:get():extract(false)
 	message(string.format("%s has been %s", label:match("^%w+%s(.+)"), states[self.getValue()]))

@@ -442,7 +442,7 @@ if points ~= nil then
 			if istable(points) then
 				local switchedOnPoints, switchedOffPoints = 0, 0
 				for _, point in ipairs(points) do
-					local state = utils.round(self.getValue(point), 0)
+					local state = math.round(self.getValue(point), 0)
 					if state < 0 then state = -state end
 					if state == 1 then
 						switchedOnPoints = switchedOnPoints + 1
@@ -465,7 +465,7 @@ if points ~= nil then
 			else
 				local state = self.getValue(points)
 				if state < 0 then state = -state end
-				self.setValue(points, utils.nor(utils.round(state, 0)))
+				self.setValue(points, nor(math.round(state, 0)))
 			end
 			message(self:get())
 			return message

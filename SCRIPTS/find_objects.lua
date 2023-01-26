@@ -229,7 +229,7 @@ searchinAction.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
-		parent.options.caseSensetive = utils.nor(parent.options.caseSensetive or false)
+		parent.options.caseSensetive = nor(parent.options.caseSensetive or false)
 		message(self:get(parent))
 		return false, message
 	end
@@ -248,7 +248,7 @@ searchinAction.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
-		parent.options.usePatterns = utils.nor(parent.options.usePatterns or false)
+		parent.options.usePatterns = nor(parent.options.usePatterns or false)
 		message(self:get(parent))
 		return false, message
 	end
