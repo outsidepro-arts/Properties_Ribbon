@@ -283,9 +283,9 @@ fxLayout.undoContext = undo.contexts.fx
 function fxLayout.canProvide()
 	local result = false
 	if context == 0 then
-		result = (capi.GetCount() > 0 or capi.GetRecCount() > 0)
+		result = (capi.GetCount() > 0 or capi.GetRecCount() > 0) and capi._contextObj[0] ~= nil
 	elseif context == 1 then
-		result = (capi.GetCount() > 0)
+		result = capi.GetCount() > 0 and capi._contextObj[1] ~= nil
 	end
 	return result
 end
