@@ -165,7 +165,7 @@ Try to allow the user to perform actions on both one element and a selected grou
 and try to complement any getState message with short type label. I mean what the "ajust" method will perform.
 ]] --
 
-
+-- Item source property
 -- Lock item methods
 local lockProperty = {}
 parentLayout.itemLayout:registerProperty(lockProperty)
@@ -1694,6 +1694,46 @@ activeTakeProperty.extendedProperties:registerProperty {
 		return true, message, true
 	end
 }
+activeTakeProperty.extendedProperties:registerProperty{
+	get = function (self, parent, shouldExtractFilenameOnly)
+		local message = initOutputMessage()
+		if istable(items) then
+			message{ label = "Selected items takes sources"}
+			message(composeMultipleTakeMessage(
+				function (item)
+					return reaper.GetMediaItemTake_Source(parent.getValue(item))
+				end, setmetatable({}, {__index = function (self, key)
+					return (shouldExtractFilenameOnly and select(3, reaper.GetMediaSourceFileName(key):rpart("[//\\]"))) or reaper.GetMediaSourceFileName(key)
+				end})
+			))
+		else
+			local state = reaper.GetMediaItemTake_Source(parent.getValue(items))
+			message{
+				label = "Take source",
+				value = (shouldExtractFilenameOnly and select(3, reaper.GetMediaSourceFileName(state):rpart("[//\\]"))) or reaper.GetMediaSourceFileName(state)
+			}
+			end
+			message:initType("Adjust this property to choose new take source by respective file in the same folder.")
+			if multiSelectionSupport then
+				message:addType(" If the group of items has been selected, the take sources will be switched for each selected take respectively.", 1)
+			end
+			message:addType(" Perform this property to choose new source for take by using \"Open as\" dialog.", 1)
+		return message
+	end,
+	set_adjust = function (self, parent, direction)
+		local message = initOutputMessage()
+		local cmds = {
+			[-1] = reaper.NamedCommandLookup("_XENAKIOS_SISFTPREVIF"), -- Xenakios/SWS: Switch item source file to previous in folder
+			[1] = reaper.NamedCommandLookup("_XENAKIOS_SISFTNEXTIF") -- Xenakios/SWS: Switch item source file to next in folder
+		}
+		reaper.Main_OnCommand(cmds[direction], 0)
+		message(self:get(parent, true))
+		return false, message
+	end,
+	set_perform = function (self, parent)
+		return reaper.Main_OnCommand(reaper.NamedCommandLookup("_XENAKIOS_CHANGESOURCEFILE"), 0) == 1
+	end
+}
 activeTakeProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
@@ -1713,7 +1753,6 @@ activeTakeProperty.extendedProperties:registerProperty {
 		return true, nil, true
 	end
 }
-
 
 -- Take volume methods
 local takeVolumeProperty = {}
