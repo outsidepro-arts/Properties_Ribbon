@@ -348,6 +348,14 @@ soloedTracksNavigator.set_adjust = generateSetMethod(function(track)
 	return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") > 0
 end, "No %s soloed track")
 
+local armedTrackNavigator = {}
+catnavLayout.basic:registerProperty(armedTrackNavigator)
+
+armedTrackNavigator.get = generateGetMethod("Armed tracks")
+armedTrackNavigator.set_adjust = generateSetMethod(function(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_RECARM") ~= 0
+end, "No %s armed track")
+
 local instrumentTracksNavigator = {}
 catnavLayout.basic:registerProperty(instrumentTracksNavigator)
 
