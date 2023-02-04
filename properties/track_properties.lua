@@ -1994,6 +1994,48 @@ function routingViewProperty:set_perform()
 	end
 end
 
+local contextMenusProperty = {}
+parentLayout.visualLayout:registerProperty(contextMenusProperty)
+contextMenusProperty.states = {
+	[1] = { label = "Main", cmd = "_OSARA_CONTEXTMENU2"},
+	[2] = {label = "Recording", cmd = "_OSARA_CONTEXTMENU1"},
+	[3] = {label = "Routing", cmd = "_OSARA_CONTEXTMENU3"}
+}
+
+function contextMenusProperty:get()
+	local message = initOutputMessage()
+	local state = extstate._layout.contextMenuSelector or 1
+	local track = reaper.GetLastTouchedTrack()
+	message{ value = string.format("%s context menu", self.states[state].label) }
+	message:initType("Adjust this property to choose the needed context menu. Perform this property to pop selected up.")
+	if track then
+		message{ objectId = getTrackID(track) }
+	else
+		message:addType(" This property is unavailable right now because no track has touched.", 1)
+		message:changeType("Unavailable", 2)
+	end
+	return message
+end
+
+function contextMenusProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = extstate._layout.contextMenuSelector or 1
+	if self.states[state + direction] then
+		extstate._layout.contextMenuSelector = state +direction
+	else
+		message(string.format("No %s property values.", (direction == 1) and "next" or "previous"))
+	end
+	message(self:get())
+	return message
+end
+
+if reaper.GetLastTouchedTrack() then
+	function contextMenusProperty:set_perform()
+		local state = extstate._layout.contextMenuSelector or 1
+		reaper.Main_OnCommand(reaper.NamedCommandLookup(self.states[state].cmd), 0)
+	end
+end
+
 parentLayout.defaultSublayout = "playbackLayout"
 
 return parentLayout
