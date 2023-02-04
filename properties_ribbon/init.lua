@@ -599,6 +599,40 @@ function getEmbeddedProperties(name)
 	end
 end
 
+function getUserInputs(title, fields, instruction)
+	local captions, defInputs = {}, {}
+	local function procFields(field)
+		local preparedCaption = field.caption
+		-- Just light hope that REAPER's comas in CSV can be escaped...
+		if preparedCaption:find("[,]") then
+			preparedCaption = ('"'):join(preparedCaption, '"')
+		end
+		local preparedDefInput = field.defValue
+		if preparedDefInput:find("[,]") then
+			preparedDefInput = ('"'):join(preparedDefInput, '"')
+		end
+		table.insert(captions, preparedCaption)
+		table.insert(defInputs, preparedDefInput or "")
+	end
+	if isarray(fields) then
+		for _, field in ipairs(fields) do
+			procFields(field)
+		end
+	else
+		procFields(fields)
+	end
+	if instruction then
+		procFields{caption = "Instructions:", defValue = instruction}
+	end
+	local retval, answer = reaper.GetUserInputs(title, #captions, table.concat(captions, ","), table.concat(defInputs, ","))
+	answer = answer:split(",")
+	if instruction then
+		table.remove(answer, #answer)
+	end
+	return retval, #answer > 1 and answer or answer[1] or nil
+end
+
+
 -- Main body
 
 -- Global variables initialization
