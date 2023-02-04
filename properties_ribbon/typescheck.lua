@@ -40,7 +40,7 @@ end
 -- Some super-simplifies
 function isarray(var)
 	local lambda = ipairs(var)
-	return (lambda(var) ~= nil and true) or false
+	return (lambda(var, 0) ~= nil and true) or false
 end
 
 -- Properties Ribbon specific types
