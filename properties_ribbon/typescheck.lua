@@ -38,6 +38,7 @@ function isboolean(var)
 end
 
 -- Some super-simplifies
+
 function isarray(var)
 	local lambda = ipairs(var)
 	return (lambda(var, 0) ~= nil and true) or false
@@ -45,6 +46,7 @@ end
 
 -- Properties Ribbon specific types
 -- These types can be defined by metafield __type. Lua does not operates this, but we do.
+
 function isOutputMessage(var)
 	if istable(var) then
 		local mt = getmetatable(var)
