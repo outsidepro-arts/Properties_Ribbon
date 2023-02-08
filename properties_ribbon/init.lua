@@ -633,12 +633,12 @@ end
 function getUserInputs(title, fields, instruction)
 	local captions, defInputs = {}, {}
 	local function procFields(field)
-		local preparedCaption = field.caption
+		local preparedCaption = tostring(field.caption)
 		-- Just light hope that REAPER's comas in CSV can be escaped...
 		if preparedCaption:find("[,]") then
 			preparedCaption = ('"'):join(preparedCaption, '"')
 		end
-		local preparedDefInput = field.defValue
+		local preparedDefInput = tostring(field.defValue)
 		if preparedDefInput:find("[,]") then
 			preparedDefInput = ('"'):join(preparedDefInput, '"')
 		end
