@@ -3,7 +3,6 @@ This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]] --
-
 -- Define the script path constant
 script_path = select(2, reaper.get_action_context()):match('^.+[\\//]')
 
@@ -39,9 +38,20 @@ prepareUserData = require "properties_ribbon.representations.preparation"
 -- Actions for set methods or some another cases
 actions = {
 	set = {
-		perform = { label = "Perform or toggle", value = "perform" },
-		increase = { label = "increase", value = "adjust", direction = 1 },
-		decrease = { label = "decrease", value = "adjust", direction = -1 }
+		perform = {
+			label = "Perform or toggle",
+			value = "perform"
+		},
+		increase = {
+			label = "increase",
+			value = "adjust",
+			direction = 1
+		},
+		decrease = {
+			label = "decrease",
+			value = "adjust",
+			direction = -1
+		}
 	},
 	sublayout_next = 0x000001,
 	sublayout_prev = 0x000010
@@ -80,13 +90,13 @@ undo = {
 		items = 4,
 		project = 8,
 		freeze = 16
-		
+
 	}
 }
 
 -- REAPER hack to prevent useless undo points creation
-reaper.defer(function() end)
-
+reaper.defer(function()
+end)
 
 -- Little injections
 -- Make string type as outputable to OSARA directly
@@ -120,7 +130,7 @@ function initOutputMessage()
 		-- infinite parameters (string, optional): the prompts messages in supported order.
 		-- returns none.
 		initType = function(self, ...)
-			local args = { ... }
+			local args = {...}
 			self.tl = config.getinteger("typeLevel", 1)
 			self.tLevels = {}
 			for i = 1, #args do
@@ -230,14 +240,16 @@ function initOutputMessage()
 				table.insert(message, tostring(self.msg))
 			end
 			if outputOrder == 0 and self.objectId then
-				table.insert(message,
-					tostring(string.gsub(({ [true] = tostring(self.objectId):gsub("^%u", string.lower), [false] = tostring(self.objectId) }
-						)[(#message > 0)], "%s$", " ")))
+				table.insert(message, tostring(string.gsub(({
+					[true] = tostring(self.objectId):gsub("^%u", string.lower),
+					[false] = tostring(self.objectId)
+				})[(#message > 0)], "%s$", " ")))
 			end
 			if outputOrder <= 1 and self.label then
-				table.insert(message,
-					({ [true] = tostring(self.label):lower(), [false] = tostring(self.label) })[
-					(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
+				table.insert(message, ({
+					[true] = tostring(self.label):lower(),
+					[false] = tostring(self.label)
+				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
 			end
 			if self.value then
 				table.insert(message, tostring(string.gsub(self.value, "%s$", "")))
@@ -246,7 +258,9 @@ function initOutputMessage()
 				message[#message] = string.format("%s.", message[#message])
 				table.insert(message, self.focusIndex)
 			end
-			if #message == 0 then return end
+			if #message == 0 then
+				return
+			end
 			if shouldExtractType == true and self.tLevels and self.tl > 0 then
 				message[#message] = string.format("%s.", message[#message])
 				table.insert(message, self.tLevels[self.tl])
@@ -351,7 +365,8 @@ function initLayout(str)
 				})
 			}, {
 				__type = "sublayout",
-				__index = self })
+				__index = self
+			})
 			self.ofCount = self.ofCount + 1
 			self[slID].slIndex = self.ofCount
 			for slsn, sls in pairs(self) do
@@ -364,7 +379,9 @@ function initLayout(str)
 			end
 			self[slID].registerProperty = self.registerProperty
 			-- If a category has been created, the parent registration methods should be unavailable.
-			if self.properties then self.properties = nil end
+			if self.properties then
+				self.properties = nil
+			end
 		end,
 		destroySublayout = function(self, slID, shouldPatchGlobals)
 			local curIndex = self[slID].slIndex
@@ -378,8 +395,12 @@ function initLayout(str)
 					end
 				end
 			end
-			if self[nextSub] then self[nextSub].previousSubLayout = prevSub end
-			if self[prevSub] then self[prevSub].nextSubLayout = nextSub end
+			if self[nextSub] then
+				self[nextSub].previousSubLayout = prevSub
+			end
+			if self[prevSub] then
+				self[prevSub].nextSubLayout = nextSub
+			end
 			self[slID] = nil
 			self.ofCount = self.ofCount - 1
 			if shouldPatchGlobals then
@@ -408,28 +429,30 @@ function initLayout(str)
 		registerProperty = function(self, property)
 			return table.insert(self.properties, property)
 		end,
-		canProvide = function() return true end
-	}, { __type = "layout" })
+		canProvide = function()
+			return true
+		end
+	}, {
+		__type = "layout"
+	})
 	return t
 end
 
 function initExtendedProperties(str)
 	local t = {
 		name = str,
-		properties = setmetatable({
-			{
-				get = function(self, parent)
-					local message = initOutputMessage()
-					message:initType("Perform this property to return back to the properties view.")
-					message(string.format("Return to %s properties", layout.subname or layout.name))
-					return message
-				end,
-				set_perform = function(self, parent)
-					currentExtProperty = nil
-					return true, "", true
-				end
-			}
-		}, {
+		properties = setmetatable({{
+			get = function(self, parent)
+				local message = initOutputMessage()
+				message:initType("Perform this property to return back to the properties view.")
+				message(string.format("Return to %s properties", layout.subname or layout.name))
+				return message
+			end,
+			set_perform = function(self, parent)
+				currentExtProperty = nil
+				return true, "", true
+			end
+		}}, {
 			__index = function(self, key)
 				layout.pIndex = #self
 				return rawget(self, #self)
@@ -437,13 +460,12 @@ function initExtendedProperties(str)
 		}),
 		registerProperty = function(self, property)
 			return table.insert(self.properties, property)
-		end,
+		end
 	}
 	return t
 end
 
 -- }
-
 
 function composeSubLayout(shouldReportParentLayout)
 	local message = initOutputMessage()
@@ -453,8 +475,10 @@ function composeSubLayout(shouldReportParentLayout)
 	if isSublayout(layout) then
 		message(layout.subname)
 		if shouldReportParentLayout == true then
-			message(string.format(" of %s",
-				({ [true] = layout.name:lower(), [false] = layout.name })[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
+			message(string.format(" of %s", ({
+				[true] = layout.name:lower(),
+				[false] = layout.name
+			})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
 		end
 	else
 		message(layout.name)
@@ -472,7 +496,10 @@ end
 -- optional forced (boolean): should the function return the contextual layout forcedly even if one of context has been set earlier. False or nil: only if one of contextual layouts is set, true - immediately.
 function proposeLayout(forced)
 	forced = forced or false
-	local context, contextLayout, curLayout = reaper.GetCursorContext(), {section = "properties", proposed=true}, extstate.currentLayout
+	local context, contextLayout, curLayout = reaper.GetCursorContext(), {
+		section = "properties",
+		proposed = true
+	}, extstate.currentLayout
 	-- Sometimes REAPER returns bizarre contexts...
 	if context == -1 then
 		context = extstate.lastKnownContext or context
@@ -487,7 +514,7 @@ function proposeLayout(forced)
 				if (reaper.GetMasterTrackVisibility() & 1) == 1 then
 					contextLayout.layout = "mastertrack_properties"
 				else
-					contextLayout.layout =  "track_properties"
+					contextLayout.layout = "track_properties"
 				end
 			end
 		end
@@ -496,7 +523,8 @@ function proposeLayout(forced)
 	elseif context == 2 then
 		contextLayout.layout = "envelope_properties"
 	end
-	if forced or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
+	if forced or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or
+					curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
 		return contextLayout
 	end
 	return nil
@@ -595,7 +623,10 @@ end
 
 function getEmbeddedProperties(name)
 	if reaper.file_exists(script_path:joinsep("//", "properties_ribbon", "embedded", name:join(".lua"))) then
-		return {section = "properties_ribbon//embedded", layout = name }
+		return {
+			section = "properties_ribbon//embedded",
+			layout = name
+		}
 	end
 end
 
@@ -622,16 +653,19 @@ function getUserInputs(title, fields, instruction)
 		procFields(fields)
 	end
 	if instruction then
-		procFields{caption = "Instructions:", defValue = instruction}
+		procFields {
+			caption = "Instructions:",
+			defValue = instruction
+		}
 	end
-	local retval, answer = reaper.GetUserInputs(title, #captions, table.concat(captions, ","), table.concat(defInputs, ","))
+	local retval, answer =
+					reaper.GetUserInputs(title, #captions, table.concat(captions, ","), table.concat(defInputs, ","))
 	answer = answer:split(",")
 	if instruction then
 		table.remove(answer, #answer)
 	end
 	return retval, #answer > 1 and answer or answer[1] or nil
 end
-
 
 -- Main body
 
@@ -650,15 +684,17 @@ layoutSaid = false
 function script_init(newLayout, shouldSpeakLayout)
 	-- Checking the speech output method existing
 	if not reaper.APIExists("osara_outputMessage") then
-		if reaper.ShowMessageBox('Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?'
-			, "Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		if reaper.ShowMessageBox(
+						'Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?',
+						"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			openPath("https://osara.reaperaccessibility.com/snapshots/")
 		end
 		return nil
 	end
 	if not reaper.APIExists("CF_GetSWSVersion") == true then
-		if reaper.ShowMessageBox('Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?'
-			, "Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		if reaper.ShowMessageBox(
+						'Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?',
+						"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			openPath("https://sws-extension.org/")
 		end
 		return nil
@@ -666,10 +702,9 @@ function script_init(newLayout, shouldSpeakLayout)
 	-- We have to notify you about ReaScript task control window and instructions for.
 	if not extstate.reascriptTasksAvoid then
 		reaper.ShowMessageBox(
-[[Since Properties Ribbon tries to avoid of useless undo points creation, it does some non-trivial things under the hood. Thus when you'll try to execute any Properties Ribbon action extra-fast (for example, you may push adjust action and not release it long time), you may get a window which called "ReaScript task control" where REAPER asks you what would you want to do with newly runnen script while previous defer action isn't finished yet.
+						[[Since Properties Ribbon tries to avoid of useless undo points creation, it does some non-trivial things under the hood. Thus when you'll try to execute any Properties Ribbon action extra-fast (for example, you may push adjust action and not release it long time), you may get a window which called "ReaScript task control" where REAPER asks you what would you want to do with newly runnen script while previous defer action isn't finished yet.
 You have to allow REAPER only create new instance and not finish previous task. To do this, firstly check the checkbox with label "Remember my answer for this script" then press "New instance" button. After this answer, the window will never open anymore.]],
-			"Properties Ribbon warning", showMessageBoxConsts.sets.ok
-		)
+						"Properties Ribbon warning", showMessageBoxConsts.sets.ok)
 		extstate._forever.reascriptTasksAvoid = true
 	end
 	currentExtProperty = extstate.extProperty
@@ -679,8 +714,12 @@ You have to allow REAPER only create new instance and not finish previous task. 
 			extstate.gotoMode = nil
 		end
 		newLayout = newLayout.section .. "//" .. newLayout.layout or nil
-		if currentExtProperty and newLayout ~= extstate.currentLayout then currentExtProperty = nil end
-		if extstate.isTwice and newLayout ~= extstate.currentLayout then extstate.isTwice = nil end
+		if currentExtProperty and newLayout ~= extstate.currentLayout then
+			currentExtProperty = nil
+		end
+		if extstate.isTwice and newLayout ~= extstate.currentLayout then
+			extstate.isTwice = nil
+		end
 	end
 	if newLayout ~= nil then
 		currentLayout = newLayout
@@ -720,7 +759,7 @@ You have to allow REAPER only create new instance and not finish previous task. 
 	layout = dofile(script_path:joinsep("//", currentLayout:join(".lua")))
 	if layout == nil then
 		reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout),
-			"Properties ribbon error", showMessageBoxConsts.sets.ok)
+						"Properties ribbon error", showMessageBoxConsts.sets.ok)
 		return nil
 	end
 	if isHasSublayouts(layout) then
@@ -747,7 +786,7 @@ function script_switchSublayout(action)
 		if extstate.isTwice then
 			extstate.isTwice = nil
 		end
-	if action == actions.sublayout_next then
+		if action == actions.sublayout_next then
 			if layout.nextSubLayout then
 				extstate[currentLayout .. "_sublayout"] = layout.nextSubLayout
 			else
@@ -803,12 +842,16 @@ function script_nextProperty()
 	else
 		layoutLevel = layout
 	end
-	local pIndex = ({ [true] = currentExtProperty, [false] = layout.pIndex })[currentExtProperty ~= nil]
+	local pIndex = ({
+		[true] = currentExtProperty,
+		[false] = layout.pIndex
+	})[currentExtProperty ~= nil]
 	if layout.canProvide() == true then
 		if #layoutLevel.properties < 1 then
-			(
-				string.format("The ribbon of %s is empty.",
-					({ [true] = layoutLevel.name, [false] = layoutLevel.subname })[currentExtProperty ~= nil])):output()
+			(string.format("The ribbon of %s is empty.", ({
+				[true] = layoutLevel.name,
+				[false] = layoutLevel.subname
+			})[currentExtProperty ~= nil])):output()
 			restorePreviousLayout()
 			script_finish()
 			return
@@ -824,20 +867,22 @@ function script_nextProperty()
 		script_finish()
 		return
 	end
-	local result = layoutLevel.properties[pIndex]:get(({ [true] = layout.properties[layout.pIndex], [false] = nil })[
-		currentExtProperty ~= nil])
+	local result = layoutLevel.properties[pIndex]:get(({
+		[true] = layout.properties[layout.pIndex],
+		[false] = nil
+	})[currentExtProperty ~= nil])
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
 				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
-					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+								actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
 				result:addType(string.format("%s this property to perform its action.",
-					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+								actions.set.perform.label:gsub("^%w", string.upper)), 1)
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -872,11 +917,16 @@ function script_nextProperty()
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({ focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties) })
+		result({
+			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
+		})
 	end
 	message(result, true)
 	setUndoLabel(message:extract(0, false))
-	message:output(({ [true] = nil, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
+	message:output(({
+		[true] = nil,
+		[false] = 1
+	})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 	if currentExtProperty then
 		currentExtProperty = pIndex
 	else
@@ -895,7 +945,10 @@ function script_previousProperty()
 	if extstate.isTwice then
 		extstate.isTwice = nil
 	end
-	local pIndex = ({ [true] = currentExtProperty, [false] = layout.pIndex })[currentExtProperty ~= nil]
+	local pIndex = ({
+		[true] = currentExtProperty,
+		[false] = layout.pIndex
+	})[currentExtProperty ~= nil]
 	if speakLayout == true then
 		if currentExtProperty then
 			message(layout.properties[layout.pIndex].extendedProperties.name .. ". ")
@@ -931,20 +984,22 @@ function script_previousProperty()
 		script_finish()
 		return
 	end
-	local result = layoutLevel.properties[pIndex]:get(({ [true] = layout.properties[layout.pIndex], [false] = nil })[
-		currentExtProperty ~= nil])
+	local result = layoutLevel.properties[pIndex]:get(({
+		[true] = layout.properties[layout.pIndex],
+		[false] = nil
+	})[currentExtProperty ~= nil])
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
 				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
-					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+								actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
 				result:addType(string.format("%s this property to perform its action.",
-					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+								actions.set.perform.label:gsub("^%w", string.upper)), 1)
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -979,11 +1034,16 @@ function script_previousProperty()
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({ focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties) })
+		result({
+			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
+		})
 	end
 	message(result, true)
 	setUndoLabel(message:extract(0, false))
-	message:output(({ [true] = nil, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
+	message:output(({
+		[true] = nil,
+		[false] = 1
+	})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 	if currentExtProperty then
 		currentExtProperty = pIndex
 	else
@@ -993,7 +1053,7 @@ function script_previousProperty()
 end
 
 function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
-                                     shouldNotResetExtProperty)
+				shouldNotResetExtProperty)
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 	local gotoMode = extstate.gotoMode
@@ -1088,19 +1148,20 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 	else
 		pIndex = layout.pIndex
 	end
-	local result = layoutLevel.properties[pIndex]:get((currentExtProperty ~= nil and layout.properties[layout.pIndex]) or nil)
+	local result = layoutLevel.properties[pIndex]:get((currentExtProperty ~= nil and layout.properties[layout.pIndex]) or
+					                                                  nil)
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
 				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
-					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
+								actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
 				result:addType(string.format("%s this property to perform its action.",
-					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+								actions.set.perform.label:gsub("^%w", string.upper)), 1)
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -1135,26 +1196,40 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({ focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties) })
+		result({
+			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
+		})
 	end
 	message(result, true)
 	if percentageNavigationApplied then
-		message = message:extract(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)
-			], true):gsub("(.+)([.])$", "%1")
+		message = message:extract(({
+			[true] = 0,
+			[false] = 1
+		})[config.getboolean("objectsIdentificationWhenNavigating", true)], true):gsub("(.+)([.])$", "%1")
 		message = message .. string.format(". Percentage navigation has chosen property %u", propertyNum)
 	end
-	if not propertyNumPassed then if extstate.isTwice then
+	if not propertyNumPassed then
+		if extstate.isTwice then
 			extstate.isTwice = nil
-	end end
-	if extstate.isTwice then if extstate.isTwice ~= pIndex then
+		end
+	end
+	if extstate.isTwice then
+		if extstate.isTwice ~= pIndex then
 			extstate.isTwice = nil
-	end end
-	local isTwice = config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and extstate.isTwice == pIndex
+		end
+	end
+	local isTwice =
+					config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and
+									extstate.isTwice == pIndex
 	if isTwice then
 		script_ajustProperty(actions.set.perform)
 	else
-		message:output(({ [true] = 0, [false] = 1 })[config.getboolean("objectsIdentificationWhenNavigating", true)])
-		if config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform and currentSublayout == extstate[currentLayout .. "_sublayout"] and propertyNumPassed then
+		message:output(({
+			[true] = 0,
+			[false] = 1
+		})[config.getboolean("objectsIdentificationWhenNavigating", true)])
+		if config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform and currentSublayout ==
+						extstate[currentLayout .. "_sublayout"] and propertyNumPassed then
 			extstate.isTwice = pIndex
 		end
 	end
@@ -1179,14 +1254,16 @@ function script_ajustProperty(action)
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
 				beginUndoBlock()
 				msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](layout.properties[layout.pIndex],
-					action.direction)
-				if layout.undoContext then if msg then
+								action.direction)
+				if layout.undoContext then
+					if msg then
 						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
 					elseif not msg and g_undoState then
 						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
 					else
 						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout.undoContext)
-				end end
+					end
+				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
 				script_finish()
@@ -1194,12 +1271,13 @@ function script_ajustProperty(action)
 			end
 		elseif currentExtProperty then
 			local retval, premsg, getShouldReported
-			if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][
-				string.format("set_%s", action.value)] then
+			if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s",
+							action.value)] then
 				beginUndoBlock()
-				retval, premsg, getShouldReported = layout.properties[layout.pIndex].extendedProperties.properties[
-					currentExtProperty][string.format("set_%s", action.value)](layout.properties[layout.pIndex].extendedProperties.properties
-						[currentExtProperty], layout.properties[layout.pIndex], action.direction)
+				retval, premsg, getShouldReported =
+								layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s",
+												action.value)](layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty],
+												layout.properties[layout.pIndex], action.direction)
 				if layout.undoContext then
 					if premsg then
 						reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
@@ -1219,7 +1297,8 @@ function script_ajustProperty(action)
 			if retval then
 				currentExtProperty = nil
 				if premsg then
-					if isstring(msg) then if #msg > 0 then
+					if isstring(msg) then
+						if #msg > 0 then
 							---@diagnostic disable-next-line: need-check-nil
 							if msg:sub(-1, -1) ~= "." then
 								msg = msg .. "."
@@ -1263,15 +1342,19 @@ function script_reportLayout()
 		message(" currently loaded, ")
 		if isSublayout(layout) then
 			if layout.ofCount > 1 then
-				message(string.format("its number is %u of all %u categor%s", layout.slIndex, layout.ofCount,
-					({ [false] = "y", [true] = "ies" })[(layout.ofCount > 1)]))
+				message(string.format("its number is %u of all %u categor%s", layout.slIndex, layout.ofCount, ({
+					[false] = "y",
+					[true] = "ies"
+				})[(layout.ofCount > 1)]))
 			else
 				message("This layout has only 1 category")
 			end
 		end
 		if #layout.properties > 0 then
-			message(string.format(", here is %u propert%s", #layout.properties,
-				({ [false] = "y", [true] = "ies" })[(#layout.properties > 1)]))
+			message(string.format(", here is %u propert%s", #layout.properties, ({
+				[false] = "y",
+				[true] = "ies"
+			})[(#layout.properties > 1)]))
 		else
 			message(", here is no properties")
 		end
