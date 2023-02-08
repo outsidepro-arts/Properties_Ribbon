@@ -482,12 +482,16 @@ if points ~= nil then
 				envelopeFormatCaption = "Type the REAPER proposed format playrate value:"
 			end
 			if istable(points) then
-				retval, answer = reaper.GetUserInputs(string.format("Change the %u points of %s envelope", #points, name), 1,
-					envelopeFormatCaption, envelopeRepresentation[self.getValue(points[1])])
+				retval, answer = getUserInputs(string.format("Change the %u points of %s envelope", #points, name),
+					{ caption = "New envelope value:", defValue = envelopeRepresentation[self.getValue(points[1])] },
+					envelopeFormatCaption
+				)
 				curvalue = self.getValue(points[1])
 			else
-				retval, answer = reaper.GetUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)), 1,
-					envelopeFormatCaption, envelopeRepresentation[self.getValue(points)])
+				retval, answer = getUserInputs(string.format("Change the %s envelope %s", name, getPointID(points)),
+					{ caption = "New envelope value:", defValue = envelopeRepresentation[self.getValue(points)] },
+					envelopeFormatCaption
+				)
 				curvalue = self.getValue(points)
 			end
 			-- If oldRepresentation contains any metatable, we have to return back this. If do not do this, the get method will report the raw data instead of real representation. The case when the metatable substitutes we already defined.

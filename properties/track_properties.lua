@@ -146,7 +146,7 @@ end
 function trackNameProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local state, answer = reaper.GetUserInputs("Change tracks name", 1, 'Type new tracks name:', "")
+		local state, answer = getUserInputs("Change tracks name", { caption = 'new tracks name:' })
 		if state == true then
 			for k = 1, #tracks do
 				reaper.GetSetMediaTrackInfo_String(tracks[k], "P_NAME", answer .. " " .. k, true)
@@ -155,8 +155,8 @@ function trackNameProperty:set_perform()
 		end
 	else
 		local nameState, name = reaper.GetTrackName(tracks)
-		local aState, answer = reaper.GetUserInputs(string.format("Change name for track %s", getTrackID(tracks)), 1,
-			'Type new track name:', name)
+		local aState, answer = getUserInputs(string.format("Change name for track %s", getTrackID(tracks)),
+			{ caption = 'New track name:', defValue = name })
 		if aState == true then
 			reaper.GetSetMediaTrackInfo_String(tracks, "P_NAME", answer, true)
 		end
@@ -383,8 +383,9 @@ volumeProperty.extendedProperties:registerProperty({
 	end,
 	set_perform = function(self, parent)
 		if istable(tracks) then
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected tracks", #tracks), 1,
-				prepareUserData.db.formatCaption, representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")])
+			local retval, answer = getUserInputs(string.format("Volume for %u selected tracks", #tracks),
+				{ caption = "New volume value:", defValue = representation.db[reaper.GetMediaTrackInfo_Value(tracks[1], "D_VOL")] },
+				prepareUserData.db.formatCaption)
 			if not retval then
 				return "Canceled"
 			end
@@ -399,8 +400,10 @@ volumeProperty.extendedProperties:registerProperty({
 			return true
 		else
 			local state = reaper.GetMediaTrackInfo_Value(tracks, "D_VOL")
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for %s",
-				getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption, representation.db[state])
+			local retval, answer = getUserInputs(string.format("Volume for %s",
+				getTrackID(tracks, true):gsub("^%w", string.lower)),
+				{ caption = "New volume value:", defValue = representation.db[state] },
+				prepareUserData.db.formatCaption)
 			if not retval then
 				return false
 			end
@@ -500,8 +503,9 @@ panProperty.extendedProperties:registerProperty({
 	end,
 	set_perform = function(self, parent, action)
 		if istable(tracks) then
-			local retval, answer = reaper.GetUserInputs(string.format("Pan for %u selected tracks", #tracks), 1,
-				prepareUserData.pan.formatCaption, representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")])
+			local retval, answer = getUserInputs(string.format("Pan for %u selected tracks", #tracks)
+				{ caption = "New pan value:", defValue = representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")] },
+				prepareUserData.pan.formatCaption)
 			if not retval then
 				return false
 			end
@@ -516,8 +520,10 @@ panProperty.extendedProperties:registerProperty({
 			return true
 		else
 			local state = reaper.GetMediaTrackInfo_Value(tracks, "D_PAN")
-			local retval, answer = reaper.GetUserInputs(string.format("Pan for %s",
-				getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.pan.formatCaption, representation.pan[state])
+			local retval, answer = getUserInputs(string.format("Pan for %s",
+				getTrackID(tracks, true):gsub("^%w", string.lower)),
+				{ caption = "New pan value:", defValue = representation.pan[state] },
+				prepareUserData.pan.formatCaption)
 			if not retval then
 				return false
 			end
@@ -614,9 +620,12 @@ widthProperty.extendedProperties:registerProperty({
 	end,
 	set_perform = function(self, parent)
 		if istable(tracks) then
-			local retval, answer = reaper.GetUserInputs(string.format("Width for %u selected tracks", #tracks), 1,
-				prepareUserData.percent.formatCaption,
-				string.format("%s%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH"))))
+			local retval, answer = getUserInputs(string.format("Width for %u selected tracks", #tracks),
+				{
+					caption = "New width value:",
+					defValue  = string.format("%s%%", utils.numtopercent(reaper.GetMediaTrackInfo_Value(tracks[1], "D_WIDTH")))
+				},
+				prepareUserData.percent.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -629,9 +638,13 @@ widthProperty.extendedProperties:registerProperty({
 			end
 		else
 			local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-			local retval, answer = reaper.GetUserInputs(string.format("Width for %s",
-				getTrackID(tracks, true):gsub("^%w", string.lower)), 1, prepareUserData.percent.formatCaption,
-				string.format("%s%%", utils.numtopercent(state)))
+			local retval, answer = getUserInputs(string.format("Width for %s",
+				getTrackID(tracks, true):gsub("^%w", string.lower)),
+				{
+					caption = "New width value:",
+					defValue = string.format("%s%%", utils.numtopercent(state))
+				},
+				prepareUserData.percent.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end

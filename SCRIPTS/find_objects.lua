@@ -4,7 +4,6 @@ Copyright (C), Outsidepro Arts 2021-2022
 License: MIT license
 This script written for Properties Ribbon complex] and can be only runnen from this.
 ]] --
-
 useMacros("properties")
 
 local function searchTracks(options, trackFrom, direction)
@@ -117,7 +116,10 @@ end
 
 local context = reaper.GetCursorContext()
 
-local searchLayout = initLayout(({ [0] = "Search in tracks", [1] = "Search in items" })[context])
+local searchLayout = initLayout(({
+	[0] = "Search in tracks",
+	[1] = "Search in items"
+})[context])
 
 function searchLayout.canProvide()
 	if context == 0 then
@@ -140,18 +142,19 @@ searchinAction.searchProcesses = {
 }
 searchinAction.options = setmetatable({}, {
 	__index = function(self, key)
-		return extstate._layout[
-			string.format("searchinAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]), key)]
+		return extstate._layout[string.format("searchinAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]),
+						key)]
 	end,
 	__newindex = function(self, key, value)
-		extstate._layout[string.format("searchinAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]), key)] = value
+		extstate._layout[string.format("searchinAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]), key)] =
+						value
 	end
 })
 
 function searchinAction:get()
 	local message = initOutputMessage()
 	message:initType(string.format("Adjust this action to search a %s by specified options on approppriate direction.",
-		self.objStrings[context]))
+					self.objStrings[context]))
 	message(string.format("Search a specified %s", self.objStrings[context]))
 	message(string.format(" (%s - forward, %s - backward)", actions.set.increase.label, actions.set.decrease.label))
 	return message
@@ -166,20 +169,26 @@ function searchinAction:set_adjust(direction)
 		if context == 0 then
 			fromPosition = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
 			getId = track_properties_macros.getTrackID
-			objectId = function() return reaper.GetSelectedTrack(0, 0) end
+			objectId = function()
+				return reaper.GetSelectedTrack(0, 0)
+			end
 			if fromPosition < 0 then -- Master track suddenly selected
 				fromPosition = 0
 			end
 		elseif context == 1 then
 			fromPosition = reaper.GetMediaItemInfo_Value(reaper.GetSelectedMediaItem(0, 0), "IP_ITEMNUMBER")
-			getId = function(obj) return string.format("%s with take %s", item_properties_macros.getItemID(obj),
-				item_properties_macros.getTakeID(obj)) end
-			objectId = function() return reaper.GetSelectedMediaItem(0) end
+			getId = function(obj)
+				return
+								string.format("%s with take %s", item_properties_macros.getItemID(obj), item_properties_macros.getTakeID(obj))
+			end
+			objectId = function()
+				return reaper.GetSelectedMediaItem(0)
+			end
 		end
 		if self.searchProcesses[context](self.options, fromPosition + direction, direction) then
-			message{
-				label="Focus set to",
-				value=representation.getFocusLikeOSARA(context)
+			message {
+				label = "Focus set to",
+				value = representation.getFocusLikeOSARA(context)
 			}
 		else
 			message(string.format("No any %s with setting up search criteria at this direction.", self.objStrings[context]))
@@ -191,7 +200,7 @@ function searchinAction:set_adjust(direction)
 end
 
 searchinAction.extendedProperties = initExtendedProperties("Search setting up")
-searchinAction.extendedProperties:registerProperty {
+searchinAction.extendedProperties:registerProperty{
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message("Specify search query ")
@@ -204,27 +213,35 @@ searchinAction.extendedProperties:registerProperty {
 		message:initType("Perform this property to specify a search query.")
 		return message
 	end,
-	set_adjust = function (self, parent, direction)
+	set_adjust = function(self, parent, direction)
 		return false, parent:set_adjust(direction)
 	end,
 	set_perform = function(self, parent)
 		local curQuery = parent.options.query or ""
-		local retval, answer = reaper.GetUserInputs(string.format("Search specified %s", parent.objStrings[context]), 1,
-			string.format("Type a part or full %s name which you wish to find:", parent.objStrings[context]), tostring(curQuery))
+		local retval, answer = getUserInputs(string.format("Search specified %s", parent.objStrings[context]), {
+			caption = "Search query:",
+			defValue = tostring(curQuery)
+		}, string.format("Type a part or full %s name which you wish to find.", parent.objStrings[context]))
 		if retval then
 			parent.options.query = answer
 		end
 	end
 }
-searchinAction.extendedProperties:registerProperty {
+searchinAction.extendedProperties:registerProperty{
 	get = function(self, parent)
 		local message = initOutputMessage()
 		local state = parent.options.caseSensetive or false
-		message { label = "Case sensetive", value = ({ [true] = "enabled", [false] = "disabled" })[state] }
+		message {
+			label = "Case sensetive",
+			value = ({
+				[true] = "enabled",
+				[false] = "disabled"
+			})[state]
+		}
 		message:initType("Toggle this property to specify should search process be case sensetive or not.", "Toggleable")
 		return message
 	end,
-	set_adjust = function (self, parent, direction)
+	set_adjust = function(self, parent, direction)
 		return false, parent:set_adjust(direction)
 	end,
 	set_perform = function(self, parent)
@@ -234,16 +251,23 @@ searchinAction.extendedProperties:registerProperty {
 		return false, message
 	end
 }
-searchinAction.extendedProperties:registerProperty {
+searchinAction.extendedProperties:registerProperty{
 	get = function(self, parent)
 		local message = initOutputMessage()
 		local state = parent.options.usePatterns or false
-		message { label = "Use Lua patterns", value = ({ [true] = "enabled", [false] = "disabled" })[state] }
-		message:initType("Toggle this property to enable or disable the Lua patterns in search queries. The Lua patterns like RegExp patterns, so your search query can be more powerfull."
-			, "Toggleable")
+		message {
+			label = "Use Lua patterns",
+			value = ({
+				[true] = "enabled",
+				[false] = "disabled"
+			})[state]
+		}
+		message:initType(
+						"Toggle this property to enable or disable the Lua patterns in search queries. The Lua patterns like RegExp patterns, so your search query can be more powerfull.",
+						"Toggleable")
 		return message
 	end,
-	set_adjust = function (self, parent, direction)
+	set_adjust = function(self, parent, direction)
 		return false, parent:set_adjust(direction)
 	end,
 	set_perform = function(self, parent)
@@ -266,19 +290,19 @@ searchbyPluginsAction.searchProcesses = {
 
 searchbyPluginsAction.options = setmetatable({}, {
 	__index = function(self, key)
-		return extstate._layout[
-			string.format("searchbyPluginsAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]), key)]
+		return extstate._layout[string.format("searchbyPluginsAction.%s.%s",
+						utils.removeSpaces(searchinAction.objStrings[context]), key)]
 	end,
 	__newindex = function(self, key, value)
-		extstate._layout[
-			string.format("searchbyPluginsAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]), key)] = value
+		extstate._layout[string.format("searchbyPluginsAction.%s.%s", utils.removeSpaces(searchinAction.objStrings[context]),
+						key)] = value
 	end
 })
 
 function searchbyPluginsAction:get()
 	local message = initOutputMessage()
 	message:initType(string.format("Adjust this action to search a  %s by specified query at approppriate direction.",
-		self.objStrings[context]))
+					self.objStrings[context]))
 	message(string.format("Search a specified %s", self.objStrings[context]))
 	message(string.format(" (%s - forward, %s - backward)", actions.set.increase.label, actions.set.decrease.label))
 	return message
@@ -286,6 +310,5 @@ end
 
 searchbyPluginsAction.set_adjust = searchinAction.set_adjust
 searchbyPluginsAction.extendedProperties = searchinAction.extendedProperties
-
 
 return searchLayout

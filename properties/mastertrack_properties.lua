@@ -93,8 +93,9 @@ volumeProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		local state = reaper.GetMediaTrackInfo_Value(master, "D_VOL")
-		local retval, answer = reaper.GetUserInputs("Volume for master track", 1, prepareUserData.db.formatCaption,
-			representation.db[state])
+		local retval, answer = getUserInputs("Volume for master track",
+			{ caption = "New volume value:", defValue = representation.db[state] },
+			prepareUserData.db.formatCaption)
 		if not retval then
 			return false, "Canceled"
 		end
@@ -168,8 +169,9 @@ panProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
-		local retval, answer = reaper.GetUserInputs("Pan for master track", 1, prepareUserData.pan.formatCaption,
-			representation.pan[state])
+		local retval, answer = getUserInputs("Pan for master track",
+		{ caption = "New pan value:", defValue = representation.pan[state] },
+		prepareUserData.pan.formatCaption)
 		if not retval then
 			return false, "Canceled"
 		end
@@ -238,8 +240,9 @@ widthProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-		local retval, answer = reaper.GetUserInputs("Width for master track", 1, prepareUserData.percent.formatCaption,
-			string.format("%s%%", utils.numtopercent(state)))
+		local retval, answer = getUserInputs("Width for master track",
+			{ caption = "New width value:", defValue = string.format("%s%%", utils.numtopercent(state)) },
+			prepareUserData.percent.formatCaption)
 		if not retval then
 			return false, "Canceled"
 		end
@@ -468,7 +471,9 @@ tempoProperty.extendedProperties:registerProperty{
 		return message
 	end,
 	set_perform = function (self, parent)
-		local retval, answer = reaper.GetUserInputs("Specify project tempo", 1, prepareUserData.tempo.formatCaption, parent:get():extract(2, false))
+		local retval, answer = getUserInputs("Specify project tempo",
+			{ caption = "New tempo value:", defValue = parent:get():extract(2, false) },
+			prepareUserData.tempo.formatCaption)
 		if retval then
 			local newTempo = prepareUserData.tempo.process(answer, reaper.Master_GetTempo())
 			if newTempo then

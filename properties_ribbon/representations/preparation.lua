@@ -21,7 +21,6 @@ end
 -- The macro for prepare the values with decibels values.
 prepareUserData.db = {
 	-- These fields are format prompt captions. You may assign the third parameter in reaper.GetUserInputs method by these fields.
-	-- Please note: avoid the coma symbols (,) using, the reaper.GetUserInputs method is used, so coma means the CSV separation! I don't know what you will trip out this case, but REAPER doesn't proposes any other method to wait the typed value from an user.
 	formatCaption = [[
 Type the humanbeeing volume value. The following formats are supported:
 1 25 dB

@@ -12,7 +12,6 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]] --
-
 -- Some needfull configs
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
@@ -40,7 +39,8 @@ local function getPresets()
 	local presets = setmetatable({}, {
 		__index = function(self, idx)
 			if isnumber(idx) then
-				local name, value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")], extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")]
+				local name, value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")],
+								extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")]
 				if name and value then
 					return {
 						name = name,
@@ -49,10 +49,12 @@ local function getPresets()
 				end
 			end
 		end,
-		__newindex = function (self, idx, preset)
+		__newindex = function(self, idx, preset)
 			if preset then
-				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")] = assert(preset.name, "Expected table field 'name'")
-				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")] = assert(preset.value, "Expected table field 'value'")
+				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")] = assert(
+								preset.name, "Expected table field 'name'")
+				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")] = assert(
+								preset.value, "Expected table field 'value'")
 			else
 				local i = idx
 				while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] do
@@ -60,25 +62,29 @@ local function getPresets()
 						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
 						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
 					elseif i > idx then
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "name")] = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")]
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "name")] =
+										extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")]
 						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "value")] = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")]
+						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "value")] =
+										extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")]
 						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
 					end
 					i = i + 1
 				end
 			end
 		end,
-		__len = function (self)
+		__len = function(self)
 			local mCount = 0
-			while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "value")] and extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "name")] do
+			while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "value")] and
+							extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "name")] do
 				mCount = mCount + 1
 			end
 			return mCount
 		end,
-		__ipairs = function (self)
-			local lambda = function (obj, idx)
-				if extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx+1), "name")] and extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")] then
+		__ipairs = function(self)
+			local lambda = function(obj, idx)
+				if extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "name")] and
+								extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")] then
 					return idx + 1, {
 						name = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "name")],
 						value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")]
@@ -132,7 +138,6 @@ parentLayout.undoContext = undo.contexts.tracks | undo.contexts.items | undo.con
 -- Track properties
 parentLayout:registerSublayout("track", "Tracks")
 
-
 -- Item properties
 parentLayout:registerSublayout("item", " Items")
 
@@ -171,15 +176,24 @@ end
 function presetsProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to choose desired preset created at the past.")
-	message { objectId = "Color", label = "Preset" }
+	message {
+		objectId = "Color",
+		label = "Preset"
+	}
 	if #self.states > 0 then
 		if self.getValue() then
-			message { value = self.states[self.getValue()].name }
+			message {
+				value = self.states[self.getValue()].name
+			}
 		else
-			message{ value = "Not selected" }
+			message {
+				value = "Not selected"
+			}
 		end
 	else
-		message { value = "empty" }
+		message {
+			value = "empty"
+		}
 	end
 	return message
 end
@@ -207,14 +221,16 @@ end
 presetsProperty.extendedProperties = initExtendedProperties("Preset context actions")
 
 presetsProperty.extendedProperties:registerProperty{
-	get = function (self, parent)
+	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Create new preset"
 		message:initType("Perform this property to create new preset based on current color value.")
 		return message
 	end,
-	set_perform = function (self, parent)
-		local retval, answer = reaper.GetUserInputs("Create new preset", 1, "Type a name for new preset:", "")
+	set_perform = function(self, parent)
+		local retval, answer = getUserInputs("Create new preset", {
+			caption = "New preset name:"
+		})
 		if retval then
 			if answer then
 				local exists = false
@@ -231,7 +247,8 @@ presetsProperty.extendedProperties:registerProperty{
 					})
 					setPresetIndex(#parent.states)
 				else
-					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer), "Creation error", showMessageBoxConsts.sets.ok)
+					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer), "Creation error",
+									showMessageBoxConsts.sets.ok)
 					return false
 				end
 			else
@@ -244,15 +261,18 @@ presetsProperty.extendedProperties:registerProperty{
 }
 if presetsProperty.states[getPresetIndex()] then
 	presetsProperty.extendedProperties:registerProperty{
-		get = function (self, parent)
+		get = function(self, parent)
 			local message = initOutputMessage()
 			message "Rename preset"
 			message:initType("Perform this property to rename currently selected preset.")
 			return message
 		end,
-		set_perform = function (self, parent)
+		set_perform = function(self, parent)
 			local preset = parent.states[parent.getValue()]
-			local retval, answer = reaper.GetUserInputs("Rename preset", 1, "Type new preset name:", preset.name)
+			local retval, answer = getUserInputs("Rename preset", {
+				caption = "New preset name:",
+				defValue = preset.name
+			})
 			if retval then
 				if answer then
 					preset.name = answer
@@ -266,34 +286,38 @@ if presetsProperty.states[getPresetIndex()] then
 		end
 	}
 	presetsProperty.extendedProperties:registerProperty{
-		get = function (self, parent)
+		get = function(self, parent)
 			local message = initOutputMessage()
 			message "Update this preset color"
 			message:initType("Perform this property to update the color of selected preset.")
 			return message
 		end,
-		set_perform = function (self, parent)
+		set_perform = function(self, parent)
 			local message = initOutputMessage()
 			local preset = parent.states[parent.getValue()]
 			preset.value = getColor()
 			parent.states[parent.getValue()] = preset
-			message{ label = parent:get():extract(2, false), value = "Updated" }
+			message {
+				label = parent:get():extract(2, false),
+				value = "Updated"
+			}
 			return true, message, true
 		end
 	}
 	presetsProperty.extendedProperties:registerProperty{
-		get = function (self, parent)
+		get = function(self, parent)
 			local message = initOutputMessage()
 			message "Delete selected preset"
 			message:initType("Perform this property to delete selected preset.")
 			return message
 		end,
-		set_perform = function (self, parent)
+		set_perform = function(self, parent)
 			local preset = parent.states[parent.getValue()]
-			if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name), "Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name),
+							"Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 				parent.states[parent.getValue()] = nil
-				if parent.getValue()-1 > 0 then
-					parent.setValue(parent.getValue()-1)
+				if parent.getValue() - 1 > 0 then
+					parent.setValue(parent.getValue() - 1)
 				else
 					parent.setValue(nil)
 				end
@@ -318,8 +342,9 @@ end
 
 function shadeProperty:get()
 	local message = initOutputMessage()
-	message:initType(string.format("Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color"
-		, #colors.colorList))
+	message:initType(string.format(
+					"Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color",
+					#colors.colorList))
 	if getColorIndex() then
 		message(string.format("Color %s", colors.colorList[self.getValue()].name))
 	else
@@ -384,7 +409,10 @@ function shadeProperty:set_adjust(direction)
 	self.setValue(state)
 	setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
 	-- Here is old method because we do not want to report the filter superfluously
-	message { label = "Color", value = colors.colorList[self.getValue()].name }
+	message {
+		label = "Color",
+		value = colors.colorList[self.getValue()].name
+	}
 	return message
 end
 
@@ -392,9 +420,11 @@ function shadeProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
 	local filter = getFilter() or ""
-	local retval, answer = reaper.GetUserInputs("Set filter", 1,
-		'Type a part of color name that Properties Ribbon should search.\nClear the edit field to clear the filter and explore all colors.'
-		, filter)
+	local retval, answer = getUserInputs("Set filter", {
+		caption "Filter query:",
+		defValue = filter
+	},
+					'Type a part of color name that Properties Ribbon should search. Clear the edit field to clear the filter and explore all colors.')
 	if retval == true then
 		setFilter(answer:lower())
 		local filter = getFilter()
@@ -419,7 +449,10 @@ function shadeProperty:set_perform()
 	self.setValue(state)
 	setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
 	-- Here is old method because we do not want to report the filter superfluously
-	message { label = "Color", value = colors.colorList[self.getValue()].name }
+	message {
+		label = "Color",
+		value = colors.colorList[self.getValue()].name
+	}
 	return message
 end
 
@@ -478,15 +511,21 @@ function rgbRProperty:set_adjust(direction)
 		end
 	end
 	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message { objectId = "Color", label = "Red intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))) }
+	message {
+		objectId = "Color",
+		label = "Red intensity",
+		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+	}
 	return message
 end
 
 function rgbRProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
-	local retval, answer = reaper.GetUserInputs("Red value input", 1, 'Type the red value intensity (0...255):', state)
+	local retval, answer = getUserInputs("Red value input", {
+		caption = 'Type the red value intensity (0...255):',
+		defValue = state
+	})
 	if retval == true then
 		if tonumber(answer) then
 			self.setValue(tonumber(answer))
@@ -495,8 +534,11 @@ function rgbRProperty:set_perform()
 		end
 	end
 	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message { objectId = "Color", label = "Red intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))) }
+	message {
+		objectId = "Color",
+		label = "Red intensity",
+		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+	}
 	return message
 end
 
@@ -526,7 +568,10 @@ rgbGProperty.set_adjust = rgbRProperty.set_adjust
 function rgbGProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
-	local retval, answer = reaper.GetUserInputs("Green value input", 1, 'Type the green value intensity (0...255):', state)
+	local retval, answer = getUserInputs("Green value input", {
+		caption = 'Type the green value intensity (0...255):',
+		defValue = state
+	})
 	if retval == true then
 		if tonumber(answer) then
 			self.setValue(tonumber(answer))
@@ -535,8 +580,11 @@ function rgbGProperty:set_perform()
 		end
 	end
 	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message { objectId = "Color", label = "Green intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))) }
+	message {
+		objectId = "Color",
+		label = "Green intensity",
+		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+	}
 	return message
 end
 
@@ -567,7 +615,10 @@ rgbBProperty.set_adjust = rgbRProperty.set_adjust
 function rgbBProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
-	local retval, answer = reaper.GetUserInputs("Blue value input", 1, 'Type the blue value intensity (0...255):', state)
+	local retval, answer = getUserInputs("Blue value input", {
+		caption = 'Type the blue value intensity (0...255):',
+		defValue = state
+	})
 	if retval == true then
 		if tonumber(answer) then
 			self.setValue(tonumber(answer))
@@ -576,8 +627,11 @@ function rgbBProperty:set_perform()
 		end
 	end
 	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message { objectId = "Color", label = "Blue intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor()))) }
+	message {
+		objectId = "Color",
+		label = "Blue intensity",
+		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+	}
 	return message
 end
 
@@ -668,9 +722,11 @@ end
 
 function applyColorProperty:get()
 	local message = initOutputMessage()
-	message:initType(string.format("Perform this property to apply composed color to %s.",
-		({ track = "last touched track", item = "first selected item", take = "active take of first selected item" })[
-		sublayout]))
+	message:initType(string.format("Perform this property to apply composed color to %s.", ({
+		track = "last touched track",
+		item = "first selected item",
+		take = "active take of first selected item"
+	})[sublayout]))
 	local gotState = self.states[sublayout]
 	if gotState then
 		message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), gotState))
@@ -689,7 +745,7 @@ function applyColorProperty:set_perform()
 		local result = self.setValue(getColor())
 		if result then
 			message(string.format("%s colorized to %s color.", self.states[sublayout],
-				colors:getName(reaper.ColorFromNative(getColor()))))
+							colors:getName(reaper.ColorFromNative(getColor()))))
 		else
 			message(string.format("Could not colorize any %s.", self.states[sublayout]))
 		end
@@ -767,9 +823,13 @@ end
 
 function grabColorProperty:get()
 	local message = initOutputMessage()
-	message:initType(string.format("Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances."
-		, ({ track = "last touched track", item = "first selected item", take = "active take of first selected item" })[
-		sublayout]))
+	message:initType(string.format(
+					"Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.",
+					({
+						track = "last touched track",
+						item = "first selected item",
+						take = "active take of first selected item"
+					})[sublayout]))
 	if self.getValue() then
 		message(string.format("Grab a color from %s", self.states[sublayout]))
 	else
@@ -784,11 +844,12 @@ function grabColorProperty:set_perform()
 	local message = initOutputMessage()
 	local state = self.getValue()
 	if not state then
-		return "This property is unavailable right now because no one element of this category has been neither touched nor selected."
+		return
+						"This property is unavailable right now because no one element of this category has been neither touched nor selected."
 	end
 	self.setValue(state)
 	message(string.format("The %s color has been grabbed from %s.", colors:getName(reaper.ColorFromNative(state)),
-		self.states[sublayout]))
+					self.states[sublayout]))
 	return message
 end
 

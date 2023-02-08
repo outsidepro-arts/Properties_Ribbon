@@ -318,8 +318,9 @@ itemVolumeProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		if istable(items) then
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for %u selected items", #items), 1,
-				prepareUserData.db.formatCaption, representation.db[parent.getValue(items[1])])
+			local retval, answer = getUserInputs(string.format("Volume for %u selected  items", #items),
+				{ caption = "New volume value:", defValue = representation.db[parent.getValue(items[1])] }
+			, prepareUserData.db.formatCaption)
 			if not retval then
 				return "Canceled"
 			end
@@ -332,9 +333,10 @@ itemVolumeProperty.extendedProperties:registerProperty {
 			end
 		else
 			local state = parent.getValue(items)
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for %s",
-				getItemID(items, true):gsub("^%w", string.lower)), 1, prepareUserData.db.formatCaption,
-				representation.db[parent.getValue(items)])
+			local retval, answer = getUserInputs(string.format("Volume for %s",
+				getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New volume value:", defValue = representation.db[parent.getValue(items)] },
+				prepareUserData.db.formatCaption)
 			if not retval then
 				return false
 			end
@@ -1673,7 +1675,9 @@ activeTakeProperty.extendedProperties:registerProperty {
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
 		if istable(items) then
-			local state, answer = reaper.GetUserInputs("Change name active takes of selected items", 1, 'Type new take name:', "")
+			local state, answer = getUserInputs("Change name active takes of selected items",
+				{ caption = "New take name:" }
+			)
 			if state == true then
 				for k = 1, #items do
 					self.setValue(items[k], answer .. " " .. k)
@@ -1682,8 +1686,9 @@ activeTakeProperty.extendedProperties:registerProperty {
 			end
 		else
 			local name = self.getValue(items)
-			local aState, answer = reaper.GetUserInputs(string.format("Change active take name for item %u", getItemNumber(items))
-				, 1, 'Type new item name:', name)
+			local aState, answer = getUserInputs(string.format("Change active take name for item %u", getItemNumber(items)),
+				{ caption = 'New item name:', defValue = name }
+			)
 			if aState == true then
 				self.setValue(items, answer)
 				message(string.format("The take %s renamed to %s", name, answer))
@@ -1817,8 +1822,10 @@ takeVolumeProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		if istable(items) then
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for active takes of %u selected items", #items), 1,
-				prepareUserData.db.formatCaption, representation.db[parent.getValue(items[1])])
+			local retval, answer = getUserInputs(string.format("Volume for active takes of %u selected items", #items),
+				{ caption = "New volume name:", defValue = representation.db[parent.getValue(items[1])] },
+				prepareUserData.db.formatCaption
+			)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -1831,9 +1838,10 @@ takeVolumeProperty.extendedProperties:registerProperty {
 			end
 		else
 			local state = parent.getValue(items)
-			local retval, answer = reaper.GetUserInputs(string.format("Volume for %s of %s",
-				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1,
-				prepareUserData.db.formatCaption, representation.db[parent.getValue(items)])
+			local retval, answer = getUserInputs(string.format("Volume for %s of %s",
+				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New volume value:", defValue = representation.db[parent.getValue(items)] },
+				prepareUserData.db.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -1956,8 +1964,9 @@ takePanProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		if istable(items) then
-			local retval, answer = reaper.GetUserInputs(string.format("Pan for active takes of %u selected items", #items), 1,
-				prepareUserData.pan.formatCaption, representation.pan[parent.getValue(items[1])])
+			local retval, answer = getUserInputs(string.format("Pan for active takes of %u selected items", #items),
+				{ caption = "New pan value:", defValue = representation.pan[parent.getValue(items[1])] },
+				prepareUserData.pan.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -1970,9 +1979,10 @@ takePanProperty.extendedProperties:registerProperty {
 			end
 		else
 			local state = parent.getValue(items)
-			local retval, answer = reaper.GetUserInputs(string.format("Pan for %s of %s",
-				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1,
-				prepareUserData.pan.formatCaption, representation.pan[state])
+			local retval, answer = getUserInputs(string.format("Pan for %s of %s",
+				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New pan value:", defValue = representation.pan[state] },
+				prepareUserData.pan.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -2261,8 +2271,9 @@ takePlayrateProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		if istable(items) then
-			local retval, answer = reaper.GetUserInputs(string.format("Playrate for active takes of %u selected items", #items), 1
-				, prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items[1])])
+			local retval, answer = getUserInputs(string.format("Playrate for active takes of %u selected items", #items),
+				{ caption = "New playrate value:", defValue = representation.playrate[parent.getValue(items[1])] },
+				prepareUserData.rate.formatCaption)
 			if not retval then return false end
 			for _, item in ipairs(items) do
 				local state = parent.getValue(item)
@@ -2274,9 +2285,10 @@ takePlayrateProperty.extendedProperties:registerProperty {
 			setUndoLabel(parent:get())
 			return true
 		else
-			local retval, answer = reaper.GetUserInputs(string.format("Play rate for %s of %s",
-				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1,
-				prepareUserData.rate.formatCaption, representation.playrate[parent.getValue(items)])
+			local retval, answer = getUserInputs(string.format("Play rate for %s of %s",
+				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New playrate value:", defValue = representation.playrate[parent.getValue(items)] },
+				prepareUserData.rate.formatCaption)
 			if retval then
 				local state = prepareUserData.rate.process(answer, parent.getValue(items))
 				if state then
@@ -2449,8 +2461,9 @@ takePitchProperty.extendedProperties:registerProperty {
 	end,
 	set_perform = function(self, parent)
 		if istable(items) then
-			local retval, answer = reaper.GetUserInputs(string.format("Pitch for active takes of %u selected items", #items), 1,
-				prepareUserData.pitch.formatCaption, representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", ""))
+			local retval, answer = getUserInputs(string.format("Pitch for active takes of %u selected items", #items),
+				{ caption = "New pitch value:", defValue = representation.pitch[self.getValue(items[1])]:gsub("Minus ", "-"):gsub(",", "") },
+				prepareUserData.pitch.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end
@@ -2463,9 +2476,10 @@ takePitchProperty.extendedProperties:registerProperty {
 			end
 		else
 			local state = parent.getValue(items)
-			local retval, answer = reaper.GetUserInputs(string.format("Pitch for %s of %s",
-				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)), 1,
-				prepareUserData.pitch.formatCaption, representation.pitch[state]:gsub("Minus ", "-"):gsub(",", ""))
+			local retval, answer = getUserInputs(string.format("Pitch for %s of %s",
+				getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New pitch value:", defValue = representation.pitch[state]:gsub("Minus ", "-"):gsub(",", "") },
+				prepareUserData.pitch.formatCaption)
 			if not retval then
 				return false, "Canceled"
 			end

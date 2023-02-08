@@ -365,7 +365,7 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function (self, parent)
 					local presetIndex, numberOfPresets = capi.GetPresetIndex(parent.fxIndex)
-					local retval, answer = reaper.GetUserInputs("Specify preset", 1, "Type a preset index:", presetIndex+1)
+					local retval, answer = getUserInputs("Specify preset", { caption = "Type a preset index:", defValue = presetIndex+1 })
 					if retval then
 						if tonumber(answer) then
 							if tonumber(answer) <= numberOfPresets and tonumber(answer) > 0 then
@@ -538,8 +538,8 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self)
 					local curFilter = getFilter(sid) or ""
-					local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
-						"Type either full parameter name or a part of (Lua patterns supported):", curFilter)
+					local retval, answer = getUserInputs("Filter parameters by", { caption = "Query:", defValue = curFilter },
+						"Type either full parameter name or a part of (Lua patterns supported):")
 					if retval then
 						if answer ~= "" then
 							setFilter(sid, answer)
@@ -621,8 +621,9 @@ if fxLayout.canProvide() then
 					end,
 					set_perform = function(self, parent)
 						local state = capi.GetParamNormalized(parent.fxIndex, parent.parmIndex)
-						local retval, answer = reaper.GetUserInputs("Set parameter value", 1, "Type raw parameter value:",
-							tostring(math.round(state, 5)))
+						local retval, answer = getUserInputs("Set parameter", { caption = "Raw parameter value:", defValue = tostring(math.round(state, 5)) },
+							"Type raw parameter value:"
+						)
 						if retval then
 							if tonumber(answer) then
 								setParmValue(parent.fxIndex, parent.parmIndex, tonumber(answer))
@@ -653,8 +654,10 @@ if fxLayout.canProvide() then
 						end
 						local retval, curValue = capi.GetFormattedParamValue(parent.fxIndex, parent.parmIndex, "")
 						if retval then
-							local retval, answer = reaper.GetUserInputs("Search for parameter value", 1,
-								"Type either a part of value string or full string:", curValue)
+							local retval, answer = getUserInputs("Search for parameter value",
+								{ caption = "Search query:", defValue = curValue },
+								"Type either a part of value string or full string:"
+							)
 							if retval then
 								if not extstate._layout._forever.searchProcessNotify then
 									reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value."
@@ -793,8 +796,10 @@ if fxLayout.canProvide() then
 					end,
 					set_perform = function(self, parent)
 						local _, fxParam = capi.GetParamName(parent.fxIndex, parent.parmIndex)
-						local retval, answer = reaper.GetUserInputs("Filter parameters by", 1,
-							"Type either full parameter name or a part of (Lua patterns supported):", fxParam)
+						local retval, answer = getUserInputs("Filter parameters by",
+							{ caption = "Filter query:", defValue = fxParam },
+							"Type either full parameter name or a part of (Lua patterns supported):"
+						)
 						if retval then
 							if answer ~= "" then
 								setFilter(sid, answer)
@@ -888,12 +893,13 @@ if fxLayout.canProvide() then
 					set_perform = function(self, parent)
 						local _, fxName = getPluginFilename(parent.fxIndex)
 						local _, parmName = capi.GetParamName(parent.fxIndex, parent.parmIndex, "")
-						local retval, answer = reaper.GetUserInputs("Add new exclude mask", 3, "FX plug-in filename mask:,Parameter mask:"
-							,
-							"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
-							.. string.format("%s,%s", fxName, parmName))
+						local retval, answer = getUserInputs("Add new exclude mask", {
+								{ caption = "FX plug-in filename mask:", defValue = fxName },
+								{ caption = "Parameter mask:", defValue = parmName }
+							}, "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
+						)
 						if retval then
-							local newFxMask, newParamMask = answer:match("^.+[,](.+)[,](.+)")
+							local newFxMask, newParamMask = table.unpack(answer)
 							if newFxMask == nil then
 								reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
 								return false
