@@ -816,7 +816,7 @@ end
 function fxParmstepProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local state = config.getinteger("fxParmStep", 4)
-	if (state + direction) > #self.states then
+	if (state + direction) > #fx_properties_macros.stepsList then
 		message("No more next property values.")
 	elseif (state + direction) < 1 then
 		message("No more previous property values.")
