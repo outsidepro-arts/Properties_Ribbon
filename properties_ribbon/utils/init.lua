@@ -189,14 +189,6 @@ function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatter
 	end
 end
 
--- The multibyte strings cannot be processed by the Lua String library correctly.
-function utils.exposeUTF8Chars(utfString)
-	local result = {}
-	for _, character in utf8.codes(utfString) do
-		table.insert(result, utf8.char(character))
-	end
-	return result
-end
 
 function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 	local truncatedString = stringShouldbeTruncated
@@ -204,7 +196,8 @@ function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 	-- But Lua provides us the raw UTF8 processing, so we will attempt to solve this trouble like that.
 	if utf8.len(stringShouldbeTruncated) > truncateLength then
 		truncatedString = nil
-		local strTable = utils.exposeUTF8Chars(stringShouldbeTruncated)
+		-- There is utility function which allows us to iterate the string by character. It also uses UTF8 method for saving the characters. So, we;re gonna steal the iteration object for our purposes!
+		local strTable = select(2, stringShouldbeTruncated:sequentchar())
 		local lastChunkLeft = 0
 		for i = truncateLength, 1, -1 do
 			local char = utf8.codepoint(strTable[i])
