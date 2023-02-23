@@ -28,7 +28,7 @@ local function getStringPluginsCount(where)
 			if tonumber(key) ~= 0 then
 				return string.format("%s", key)
 			else
-				return "no one"
+				return "no"
 			end
 		end
 	})
@@ -345,7 +345,7 @@ if reaper.NamedCommandLookup("_RS4e4bbd4cecce51a391e9f9b3b829c6d8144f237a") then
 					extstate["fx_properties.loadFX"] = nil
 					executeLayout { section = "properties", layout = "fx_properties" }
 				else
-					return "This action is unavailable right now because no one FX is set there."
+					return "This action is unavailable right now because no FX is set there."
 				end
 			end
 		}
@@ -381,7 +381,7 @@ if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTou
 				restorePreviousLayout()
 				setUndoLabel(self:get())
 			else
-				return "This action is unavailable right now because no one FX is set there."
+				return "This action is unavailable right now because no FX is set there."
 			end
 		end
 	}
@@ -414,7 +414,7 @@ function fxPropertiesForMasterTrack:set_perform()
 		extstate["fx_properties.loadFX"] = "master"
 		executeLayout { section = "properties", layout = "fx_properties" }
 	else
-		return "This action is unavailable right now because no one FX is set there."
+		return "This action is unavailable right now because no FX is set there."
 	end
 end
 
@@ -456,7 +456,7 @@ function osaraMasterFXParametersProperty:set_perform()
 		restorePreviousLayout()
 		setUndoLabel(self:get())
 	else
-		return "This action is unavailable right now because no one FX is set there."
+		return "This action is unavailable right now because no FX is set there."
 	end
 end
 
@@ -546,7 +546,7 @@ function fxPropertiesForMonitoring:set_perform()
 		extstate["fx_properties.loadFX"] = "monitoring"
 		executeLayout { section = "properties", layout = "fx_properties" }
 	else
-		return "This action is unavailable right now because no one FX is set there."
+		return "This action is unavailable right now because no FX is set there."
 	end
 end
 
