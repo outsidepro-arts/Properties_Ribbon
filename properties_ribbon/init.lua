@@ -16,7 +16,7 @@ script_section = "Properties_Ribbon_script"
 require "properties_ribbon.typescheck"
 
 -- Include the configuration provider
-config = require "properties_ribbon.config_provider"(script_section)
+config = require "properties_ribbon.providers.config_provider"(script_section)
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 utils = require "properties_ribbon.utils"
@@ -25,9 +25,9 @@ utils = require "properties_ribbon.utils"
 require "properties_ribbon.utils.string"
 
 -- including the colors module
-colors = require "properties_ribbon.colors_provider"
+colors = require "properties_ribbon.providers.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "properties_ribbon.wrappers.extstate"(script_section)
+extstate = require "properties_ribbon.providers.extstate_provider"(script_section)
 
 -- Including the humanbeing representations metamethods
 representation = require "properties_ribbon.representations.representations"
