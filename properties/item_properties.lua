@@ -893,7 +893,7 @@ function positionProperty:get()
 	local message = initOutputMessage()
 	if istable(items) then
 		message{ label = "Items position" }
-		message{ value = composeMultipleItemMessage(self.getValue, representation.defpos) }
+		message(composeMultipleItemMessage(self.getValue, representation.defpos))
 	else
 		message{ objectId = getItemID(items) }
 		message{ label = "Position" }
