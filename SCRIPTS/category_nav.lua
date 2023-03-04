@@ -3,7 +3,8 @@ Category navigation script for Properties Ribbon
 Copyright (C), Outsidepro Arts 2021-2022
 License: MIT license
 This script written for Properties Ribbon complex] and can be only runnen from this.
-]] --
+]]
+--
 useMacros("properties")
 
 -- The constant for request/set extended data
@@ -25,9 +26,9 @@ local categories = setmetatable({}, {
 	__newindex = function(self, idx, cat)
 		if cat then
 			extstate._layout._forever[utils.makeKeySequence(string.format("category%u", idx), "id")] = assert(cat.id,
-							"Expected table field 'id'")
+				"Expected table field 'id'")
 			extstate._layout._forever[utils.makeKeySequence(string.format("category%u", idx), "name")] = assert(cat.name,
-							"Expected table field 'name'")
+				"Expected table field 'name'")
 		else
 			local i = idx
 			while extstate._layout[utils.makeKeySequence(string.format("category%u", i), "name")] do
@@ -36,9 +37,9 @@ local categories = setmetatable({}, {
 					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "id")] = nil
 				elseif i > idx then
 					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i - 1), "name")] =
-									extstate._layout[utils.makeKeySequence(string.format("category%u", i), "name")]
+						extstate._layout[utils.makeKeySequence(string.format("category%u", i), "name")]
 					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i - 1), "id")] =
-									extstate._layout[utils.makeKeySequence(string.format("category%u", i), "id")]
+						extstate._layout[utils.makeKeySequence(string.format("category%u", i), "id")]
 					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "name")] = nil
 					extstate._layout._forever[utils.makeKeySequence(string.format("category%u", i), "id")] = nil
 				end
@@ -55,6 +56,22 @@ local categories = setmetatable({}, {
 	end
 })
 
+local function trackCanbeNavigated(track)
+	local function diveup(track, lastCheck)
+		local parentTrack = reaper.GetParentTrack(track)
+		if parentTrack then
+			if reaper.GetMediaTrackInfo_Value(parentTrack, "B_SHOWINTCP") == 1 then
+				return diveup(parentTrack, true)
+			else
+				return false
+			end
+		else
+			return lastCheck
+		end
+	end
+	return reaper.GetMediaTrackInfo_Value(track, "B_SHOWINTCP") == 0 and diveup(track) or true
+end
+
 local function navigateTracks(checkFunction, trackFrom, direction)
 	local startRange, endRange
 	if direction >= actions.set.increase.direction then
@@ -66,11 +83,22 @@ local function navigateTracks(checkFunction, trackFrom, direction)
 	end
 	for i = startRange, endRange, direction do
 		local track = reaper.GetTrack(0, i - 1)
-		if checkFunction(track) then
+		if trackCanbeNavigated(track) and checkFunction(track) then
 			reaper.SetOnlyTrackSelected(track)
 			return true
 		end
 	end
+end
+
+local function countSpecifiedTracks(func)
+	local result = 0
+	for i = 0, reaper.CountTracks(0) - 1 do
+		local track = reaper.GetTrack(0, i)
+		if trackCanbeNavigated(track) and func(track) then
+			result = result + 1
+		end
+	end
+	return result
 end
 
 local function checkExistingCategoryID(id)
@@ -97,7 +125,7 @@ local function categoryGet(self)
 	local message = initOutputMessage()
 	message(self.category.name)
 	message:initType(
-					"Adjust this property in appropriate direction to move the selection focus to a track which was beeing markqued as belonging for this category.")
+		"Adjust this property in appropriate direction to move the selection focus to a track which was beeing markqued as belonging for this category.")
 	return message
 end
 
@@ -124,7 +152,7 @@ local function categorySet_adjust(self, direction)
 		return message
 	else
 		return string.format("No %s track in category %s", ({
-			[-1] = "previous",
+			[ -1] = "previous",
 			[1] = "next"
 		})[direction], self.category.name)
 	end
@@ -132,7 +160,7 @@ end
 
 local categoryExtendedProperties = initExtendedProperties("Category extended interraction")
 
-categoryExtendedProperties:registerProperty{
+categoryExtendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		if istable(tracks) then
@@ -141,17 +169,17 @@ categoryExtendedProperties:registerProperty{
 			message(string.format("Assign %s to this category", track_properties_macros.getTrackID(tracks, true)))
 		end
 		message:initType(string.format(
-						"Perform this property to assign %s to this category. Please note: if %s already assigned to another category, %s will be re-assigned.",
-						({
-							[true] = "selected tracks",
-							[false] = "selected or last touched track"
-						})[istable(tracks)], ({
-							[true] = "these tracks",
-							[false] = "this track"
-						})[istable(tracks)], ({
-							[true] = "they",
-							[false] = "it"
-						})[istable(tracks)]))
+			"Perform this property to assign %s to this category. Please note: if %s already assigned to another category, %s will be re-assigned.",
+			({
+				[true] = "selected tracks",
+				[false] = "selected or last touched track"
+			})[istable(tracks)], ({
+			[true] = "these tracks",
+			[false] = "this track"
+		})[istable(tracks)], ({
+			[true] = "they",
+			[false] = "it"
+		})[istable(tracks)]))
 		return message
 	end,
 	set_perform = function(self, parent)
@@ -179,7 +207,7 @@ categoryExtendedProperties:registerProperty{
 		return false, message
 	end
 }
-categoryExtendedProperties:registerProperty{
+categoryExtendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		if istable(tracks) then
@@ -228,7 +256,7 @@ categoryExtendedProperties:registerProperty{
 		return false, message
 	end
 }
-categoryExtendedProperties:registerProperty{
+categoryExtendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Rename this category"
@@ -247,7 +275,8 @@ categoryExtendedProperties:registerProperty{
 				category.name = answer
 				categories[parent.id] = category
 			else
-				reaper.ShowMessageBox("The category name cannot be empty.", "Category rename error", showMessageBoxConsts.sets.ok)
+				reaper.ShowMessageBox("The category name cannot be empty.", "Category rename error",
+					showMessageBoxConsts.sets.ok)
 				return false
 			end
 		end
@@ -255,7 +284,7 @@ categoryExtendedProperties:registerProperty{
 	end
 }
 
-categoryExtendedProperties:registerProperty{
+categoryExtendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Delete this category"
@@ -264,7 +293,7 @@ categoryExtendedProperties:registerProperty{
 	end,
 	set_perform = function(self, parent)
 		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the category %s?", parent.category.name),
-						"Category deletion confirm", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+				"Category deletion confirm", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 			categories[parent.id] = nil
 			return true
 		end
@@ -311,7 +340,8 @@ function addNewCategoryProperty:set_perform()
 				name = answer
 			}
 		else
-			reaper.ShowMessageBox("The category name cannot be empty.", "Category creation error", showMessageBoxConsts.sets.ok)
+			reaper.ShowMessageBox("The category name cannot be empty.", "Category creation error",
+				showMessageBoxConsts.sets.ok)
 		end
 	end
 end
@@ -320,16 +350,20 @@ local function generateGetMethod(label)
 	return function(self)
 		local message = initOutputMessage()
 		message(label)
+		local tracksAmount = countSpecifiedTracks(self.checkFunction)
+		message((""):join("(",
+			tracksAmount == 0 and "no tracks" or
+			string.format("%s track%s", tracksAmount, tracksAmount ~= 1 and "s" or ""), ")"))
 		message:initType(string.format("Adjust this property to navigate throughby %s.", label:gsub("^.", string.lower)))
 		return message
 	end
 end
 
-local function generateSetMethod(func, fmess)
+local function generateSetMethod(fmess)
 	return function(self, direction)
 		local message = initOutputMessage()
 		local trackFrom = reaper.GetMediaTrackInfo_Value(reaper.GetLastTouchedTrack(), "IP_TRACKNUMBER")
-		if navigateTracks(func, trackFrom + direction, direction) then
+		if navigateTracks(self.checkFunction, trackFrom + direction, direction) then
 			message {
 				label = "Focus on",
 				value = representation.getFocusLikeOSARA(0)
@@ -337,7 +371,7 @@ local function generateSetMethod(func, fmess)
 			return message
 		else
 			return string.format(fmess, ({
-				[-1] = "previous",
+				[ -1] = "previous",
 				[1] = "next"
 			})[direction])
 		end
@@ -347,70 +381,63 @@ end
 local folderNavigator = {}
 catnavLayout.basic:registerProperty(folderNavigator)
 
-function folderNavigator:get()
-	local message = initOutputMessage()
-	message "Folders"
-	message:initType("Adjust this property to move by tracks which have folder state.")
-	return message
+function folderNavigator.checkFunction(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_FOLDERDEPTH") > 0
 end
 
-function folderNavigator:set_adjust(direction)
-	local curTrack = reaper.GetLastTouchedTrack()
-	local cmds = {
-		[1] = reaper.NamedCommandLookup("_SWS_SELNEARESTNEXTFOLDER"), -- SWS: Select nearest next folder
-		[-1] = reaper.NamedCommandLookup("_SWS_SELNEARESTPREVFOLDER") -- SWS: Select nearest previous folder
-	}
-	reaper.Main_OnCommand(cmds[direction], 0)
-	if curTrack ~= reaper.GetLastTouchedTrack() then
-		return
-	else
-		return string.format("No %s folder track.", ({
-			[1] = "next",
-			[-1] = "previous"
-		})[direction])
-	end
-end
+folderNavigator.get = generateGetMethod("Folders")
+folderNavigator.set_adjust = generateSetMethod("No %s folder")
 
 local mutedTracksNavigator = {}
 catnavLayout.basic:registerProperty(mutedTracksNavigator)
 
-mutedTracksNavigator.get = generateGetMethod("Muted tracks")
-mutedTracksNavigator.set_adjust = generateSetMethod(function(track)
+function mutedTracksNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "B_MUTE") == 1
-end, "No %s muted track")
+end
+
+mutedTracksNavigator.get = generateGetMethod("Muted tracks")
+mutedTracksNavigator.set_adjust = generateSetMethod("No %s muted track")
 
 local soloedTracksNavigator = {}
 catnavLayout.basic:registerProperty(soloedTracksNavigator)
 
-soloedTracksNavigator.get = generateGetMethod("Soloed tracks")
-soloedTracksNavigator.set_adjust = generateSetMethod(function(track)
+function soloedTracksNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") > 0
-end, "No %s soloed track")
+end
+
+soloedTracksNavigator.get = generateGetMethod("Soloed tracks")
+soloedTracksNavigator.set_adjust = generateSetMethod("No %s soloed track")
 
 local armedTrackNavigator = {}
 catnavLayout.basic:registerProperty(armedTrackNavigator)
 
-armedTrackNavigator.get = generateGetMethod("Armed tracks")
-armedTrackNavigator.set_adjust = generateSetMethod(function(track)
+function armedTrackNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "I_RECARM") ~= 0
-end, "No %s armed track")
+end
+
+armedTrackNavigator.get = generateGetMethod("Armed tracks")
+armedTrackNavigator.set_adjust = generateSetMethod("No %s armed track")
 
 local instrumentTracksNavigator = {}
 catnavLayout.basic:registerProperty(instrumentTracksNavigator)
 
-instrumentTracksNavigator.get = generateGetMethod("Tracks with instruments")
-instrumentTracksNavigator.set_adjust = generateSetMethod(function(track)
+function instrumentTracksNavigator.checkFunction(track)
 	return reaper.TrackFX_GetInstrument(track) > 0
-end, "No %s track with an instrument on")
+end
+
+instrumentTracksNavigator.get = generateGetMethod("Tracks with instruments")
+instrumentTracksNavigator.set_adjust = generateSetMethod("No %s track with an instrument on")
 
 local nonProcessedTracksNavigator = {}
 catnavLayout.basic:registerProperty(nonProcessedTracksNavigator)
 
-nonProcessedTracksNavigator.get = generateGetMethod("Tracks which are like as non-processed")
-nonProcessedTracksNavigator.set_adjust = generateSetMethod(function(track)
+function nonProcessedTracksNavigator.checkFunction(track)
 	return reaper.TrackFX_GetCount(track) == 0 and reaper.GetMediaTrackInfo_Value(track, "D_VOL") ==
-					       utils.decibelstonum(0.0) and reaper.GetMediaTrackInfo_Value(track, "D_PAN") == utils.percenttonum(0) and
-					       reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") == utils.percenttonum(100)
-end, "No %s track which looks like as non-processed")
+		utils.decibelstonum(0.0) and reaper.GetMediaTrackInfo_Value(track, "D_PAN") == utils.percenttonum(0) and
+		reaper.GetMediaTrackInfo_Value(track, "D_WIDTH") == utils.percenttonum(100)
+end
+
+nonProcessedTracksNavigator.get = generateGetMethod("Tracks which are like as non-processed")
+nonProcessedTracksNavigator.set_adjust = generateSetMethod("No %s track which looks like as non-processed")
 
 return catnavLayout
