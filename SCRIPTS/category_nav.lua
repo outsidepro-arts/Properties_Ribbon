@@ -152,7 +152,7 @@ local function categorySet_adjust(self, direction)
 		return message
 	else
 		return string.format("No %s track in category %s", ({
-			[ -1] = "previous",
+			[-1] = "previous",
 			[1] = "next"
 		})[direction], self.category.name)
 	end
@@ -174,12 +174,12 @@ categoryExtendedProperties:registerProperty {
 				[true] = "selected tracks",
 				[false] = "selected or last touched track"
 			})[istable(tracks)], ({
-			[true] = "these tracks",
-			[false] = "this track"
-		})[istable(tracks)], ({
-			[true] = "they",
-			[false] = "it"
-		})[istable(tracks)]))
+				[true] = "these tracks",
+				[false] = "this track"
+			})[istable(tracks)], ({
+				[true] = "they",
+				[false] = "it"
+			})[istable(tracks)]))
 		return message
 	end,
 	set_perform = function(self, parent)
@@ -371,7 +371,7 @@ local function generateSetMethod(fmess)
 			return message
 		else
 			return string.format(fmess, ({
-				[ -1] = "previous",
+				[-1] = "previous",
 				[1] = "next"
 			})[direction])
 		end
@@ -439,5 +439,22 @@ end
 
 nonProcessedTracksNavigator.get = generateGetMethod("Tracks which are like as non-processed")
 nonProcessedTracksNavigator.set_adjust = generateSetMethod("No %s track which looks like as non-processed")
+
+local soundTracksNavigator = {}
+catnavLayout.basic:registerProperty(soundTracksNavigator)
+
+function soundTracksNavigator.checkFunction(track)
+	if reaper.GetAllProjectPlayStates(0) == 1 then
+		for i = 1, 64 do
+			local meter = reaper.Track_GetPeakInfo(track, i)
+			if utils.numtodecibels(meter) > -100 then
+				return true
+			end
+		end
+	end
+end
+
+soundTracksNavigator.get = generateGetMethod("Currently sound")
+soundTracksNavigator.set_adjust = generateSetMethod("No %s track which is currently sound")
 
 return catnavLayout
