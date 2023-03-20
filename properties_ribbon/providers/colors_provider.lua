@@ -174,19 +174,6 @@ colors.colorList = {
 	{ name = "Dim Grey", r = 105, g = 105, b = 105 }
 }
 
-function colors:getName(r, g, b)
-	local mindiff = nil
-	local minColorName = nil
-	for _, color in ipairs(self.colorList) do
-		diff = math.abs(r - color.r) * 256 + math.abs(g - color.g) * 256 + math.abs(b - color.b) * 256
-		if mindiff == nil or diff < mindiff then
-			mindiff = diff
-			minColorName = color.name
-		end
-	end
-	return minColorName
-end
-
 function colors:getColorID(r, g, b)
 	local mindiff = nil
 	local minID = nil
@@ -198,6 +185,10 @@ function colors:getColorID(r, g, b)
 		end
 	end
 	return minID
+end
+
+function colors:getName(r, g, b)
+	return self.colorList[self:getColorID(r, g, b)].name
 end
 
 return colors
