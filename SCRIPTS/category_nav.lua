@@ -444,12 +444,10 @@ local soundTracksNavigator = {}
 catnavLayout.basic:registerProperty(soundTracksNavigator)
 
 function soundTracksNavigator.checkFunction(track)
-	if reaper.GetAllProjectPlayStates(0) == 1 then
-		for i = 1, 64 do
-			local meter = reaper.Track_GetPeakInfo(track, i)
-			if utils.numtodecibels(meter) > -100 then
-				return true
-			end
+	for i = 1, 64 do
+		local meter = reaper.Track_GetPeakInfo(track, i)
+		if utils.numtodecibels(meter) > -100 then
+			return true
 		end
 	end
 end
