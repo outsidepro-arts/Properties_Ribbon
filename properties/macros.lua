@@ -4,7 +4,8 @@ Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 
 ----------
-]] --
+]]
+--
 
 
 -- This file contains a macros for properties at this directory.
@@ -12,6 +13,11 @@ License: MIT License
 
 track_properties_macros = {}
 
+---@generic track userdata
+
+---# Gets all selected tracks or last touched track (depending on )multiSelectionSupport option) #
+---@param multiSelectionSupport boolean Defines the multi-selection support
+---@return track[]|track Either array of selected track or one track object (if there's one only)
 function track_properties_macros.getTracks(multiSelectionSupport)
 	local tracks = nil
 	if multiSelectionSupport == true then
@@ -33,6 +39,10 @@ function track_properties_macros.getTracks(multiSelectionSupport)
 	return tracks
 end
 
+---Composes the formatted track name and its state
+---@param track track
+---@param shouldSilentColor? boolean should this function omit the color value? (false by default)
+---@return string
 function track_properties_macros.getTrackID(track, shouldSilentColor)
 	shouldSilentColor = shouldSilentColor or false
 	local message = initOutputMessage()
@@ -99,7 +109,12 @@ function track_properties_macros.getTrackID(track, shouldSilentColor)
 end
 
 item_properties_macros = {}
+---@alias item userdata
+---@alias take userdata
 
+---Gets all selected items or first selected item (depending on )multiSelectionSupport option)
+---@param multiSelectionSupport  boolean defines the multi-selection support
+---@return item[] | item either array of selected items or one item object (if there's one only)
 function item_properties_macros.getItems(multiSelectionSupport)
 	local items = nil
 	if multiSelectionSupport == true then
@@ -118,14 +133,24 @@ function item_properties_macros.getItems(multiSelectionSupport)
 	return items
 end
 
+---retrieves the number of the selected item
+---@param item item
+---@return integer
 function item_properties_macros.getItemNumber(item)
 	return reaper.GetMediaItemInfo_Value(item, "IP_ITEMNUMBER") + 1
 end
 
+---retrieves the active take number of selected item
+---@param item item
+---@return integer
 function item_properties_macros.getTakeNumber(item)
 	return reaper.GetMediaItemInfo_Value(item, "I_CURTAKE") + 1
 end
 
+---Composes the formatted item name and its state
+---@param item item
+---@param shouldSilentColor? boolean should this function omit the color value? (false by default)
+---@return string
 function item_properties_macros.getItemID(item, shouldSilentColor)
 	shouldSilentColor = shouldSilentColor or false
 	local message = initOutputMessage()
@@ -143,6 +168,10 @@ function item_properties_macros.getItemID(item, shouldSilentColor)
 	return message:extract()
 end
 
+---Composes the formatted name of active take in selected item and its state
+---@param item item
+---@param shouldSilentColor? boolean should this function omit the color value? (false by default)
+---@return string
 function item_properties_macros.getTakeID(item, shouldSilentColor)
 	shouldSilentColor = shouldSilentColor or false
 	local message = initOutputMessage()
@@ -174,6 +203,9 @@ function item_properties_macros.getTakeID(item, shouldSilentColor)
 	return message:extract()
 end
 
+---Retrieves the item from selected items which currently positiones at the play cursor's position
+---@param items item[] | item the result from function getItems
+---@return item
 function item_properties_macros.getSelectedItemAtCursor(items)
 	if istable(items) then
 		for _, item in ipairs(items) do
@@ -196,12 +228,19 @@ function item_properties_macros.getSelectedItemAtCursor(items)
 	end
 end
 
+---Converts the relative position relating the given item to global REAPER position
+---@param item item
+---@param rel number Position in given item
+---@return number
 function item_properties_macros.pos_relativeToGlobal(item, rel)
 	local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"),
 		reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
 	return (itemPosition + rel) / takePlayrate
 end
 
+---Converts the global REAPER position to relative relating by given item
+---@param item item
+---@return number
 function item_properties_macros.pos_globalToRelative(item)
 	local itemPosition, takePlayrate = reaper.GetMediaItemInfo_Value(item, "D_POSITION"),
 		reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE")
@@ -209,7 +248,13 @@ function item_properties_macros.pos_globalToRelative(item)
 end
 
 envelope_properties_macros = {}
+---@alias envelope userdata
+---@alias envelope_point integer
 
+---Gets all selected envelope points
+---@param envelope envelope
+---@param multiSelectionSupport boolean defines the multi-selection support
+---@return envelope_point[] | envelope_point either array of selected envelope points or one envelope point object (if there's one only)
 function envelope_properties_macros.getPoints(envelope, multiSelectionSupport)
 	points = nil
 	if envelope then
@@ -238,6 +283,10 @@ function envelope_properties_macros.getPoints(envelope, multiSelectionSupport)
 	return points
 end
 
+---Composes the envelope point identification label
+---@param point envelope_point
+---@param shouldNotReturnPrefix? boolean should the prefix "point" be removed? (false by default)
+---@return string
 function envelope_properties_macros.getPointID(point, shouldNotReturnPrefix)
 	if point == 0 then
 		return "Initial point"
@@ -250,11 +299,23 @@ function envelope_properties_macros.getPointID(point, shouldNotReturnPrefix)
 	end
 end
 
+---composes the three-position setter property
+---@param obj any
+---@param minRootMax any
+---|"'min'" # the value which should be set when user decreases the setter
+---"'root'" # the value which should be set when user performs the setter
+---|"'max'" # the value which should be set when user increases the setter
+---@param setMessages string
+---"true" # the message when obj is a table
+---"false" # the message when obj is not a table
+---@param setValueFunc function
+---@return table
 function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc)
 	local t = {
 		get = function(self, parent)
 			local message = initOutputMessage()
-			message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.")
+			message:initType(
+				"Adjust and perform this three-state setter to set the needed value specified in parentheses.")
 			message("three-position setter")
 			message(string.format(" (%s - %s, ", actions.set.decrease.label, minRootMax.representation[minRootMax.min]))
 			message(string.format("%s - %s, ", actions.set.perform.label, minRootMax.representation[minRootMax.rootmean]))
@@ -263,8 +324,11 @@ function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc
 		end,
 		set_adjust = function(self, parent, direction)
 			local message = initOutputMessage()
-			vls = { [actions.set.decrease.direction] = minRootMax.min, [actions.set.increase.direction] = minRootMax.max }
-			message(string.format(setMessages[istable(obj)], minRootMax.representation[ vls[direction] ]))
+			local vls = {
+				[actions.set.decrease.direction] = minRootMax.min,
+				[actions.set.increase.direction] = minRootMax.max
+			}
+			message(string.format(setMessages[istable(obj)], minRootMax.representation[vls[direction]]))
 			if istable(obj) then
 				for _, o in ipairs(obj) do
 					setValueFunc(o, vls[direction])
@@ -293,6 +357,8 @@ end
 
 fx_properties_macros = {}
 
+---Initializes the contextual API instance
+---@return table When you're using the FX API methods which have the TrackFX_ or TakeFX_ prefix through this table, you don't have to call them with these prefixes. This metatable does it itself relating on REAPER cursor context.
 function fx_properties_macros.newContextualAPI()
 	local capi = setmetatable({
 		_context = 0,
@@ -331,7 +397,8 @@ function fx_properties_macros.newContextualAPI()
 							return reaper[key](self._contextObj[self._context], ...)
 						end
 					end
-					error(string.format("Contextual API wasn't found method %s", self._contextPrefix[self._context] .. key))
+					error(string.format("Contextual API wasn't found method %s",
+						self._contextPrefix[self._context] .. key))
 				end
 			end
 		end
@@ -344,7 +411,7 @@ fx_properties_macros.fxMaskList = setmetatable({}, {
 		if isnumber(idx) then
 			local fxMask = extstate[string.format("fx_properties.excludeMask%u.fx", idx)]
 			local parmMask = extstate[string.format("fx_properties.excludeMask%u.param", idx)]
-			return { ["fxMask"] = fxMask, ["paramMask"] = parmMask }
+			return { ["fxMask"] = fxMask,["paramMask"] = parmMask }
 		end
 		error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 	end,
@@ -363,9 +430,9 @@ fx_properties_macros.fxMaskList = setmetatable({}, {
 					extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
 				elseif i > idx then
 					extstate._forever[string.format("fx_properties.excludeMask%u.fx", i - 1)] = extstate._layout[
-						string.format("excludeMask%u.fx", i)]
+					string.format("excludeMask%u.fx", i)]
 					extstate._forever[string.format("fx_properties.excludeMask%u.param", i - 1)] = extstate._layout[
-						string.format("excludeMask%u.param", i)]
+					string.format("excludeMask%u.param", i)]
 					extstate._forever[string.format("fx_properties.excludeMask%u.fx", i)] = nil
 					extstate._forever[string.format("fx_properties.excludeMask%u.param", i)] = nil
 				end
@@ -385,21 +452,25 @@ fx_properties_macros.fxMaskList = setmetatable({}, {
 -- Steps list for adjusting (will be defined using configuration)
 fx_properties_macros.stepsList = {
 	{ label = "smallest", value = 0.000001 }, -- less smallest step causes the REAPER freezes
-	{ label = "small", value = 0.00001 },
-	{ label = "medium", value = 0.0001 },
-	{ label = "big", value = 0.001 },
-	{ label = "biggest", value = 0.01 },
-	{ label = "huge", value = 0.1 }
+	{ label = "small",    value = 0.00001 },
+	{ label = "medium",   value = 0.0001 },
+	{ label = "big",      value = 0.001 },
+	{ label = "biggest",  value = 0.01 },
+	{ label = "huge",     value = 0.1 }
 }
 
 
 markers_regions_selection_macros = {}
 
+---Is any time selection set?
+---@return boolean
 function markers_regions_selection_macros.isTimeSelectionSet()
 	local selectionStart, selectionEnd = reaper.GetSet_LoopTimeRange(false, false, 0, 0, false)
 	return (selectionStart ~= 0 or selectionEnd ~= 0)
 end
 
+---Is loop points set?
+---@return boolean
 function markers_regions_selection_macros.isLoopSet()
 	local loopStart, loopEnd = reaper.GetSet_LoopTimeRange(false, true, 0, 0, false)
 	return (loopStart ~= 0 or loopEnd ~= 0)
