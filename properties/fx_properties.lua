@@ -375,7 +375,7 @@ if fxLayout.canProvide() then
 									reaper.ShowMessageBox(string.format("Unable to set a preset with ID %u.", answer), "Preset specify error", showMessageBoxConsts.sets.ok)
 								end
 							else
-								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available presets range: from 1 to %u', answer, numberOfPresets), "Preset specify error", showMessageBoxConsts.sets.ok)
+								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available %s', answer, numberOfPresets > 1 and ("presets range: from 1 to %u"):format(numberOfPresets) or "only 1"), "Preset specify error", showMessageBoxConsts.sets.ok)
 							end
 						elseif utils.simpleSearch(answer, "default") then
 							if capi.SetPresetByIndex(parent.fxIndex, -1) then
