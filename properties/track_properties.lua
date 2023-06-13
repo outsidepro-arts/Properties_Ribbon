@@ -705,12 +705,26 @@ function muteProperty:set_perform()
 			ajustingValue = 0
 			message("Unmuting selected tracks.")
 		end
+		local nonactionable = {}
 		for k = 1, #tracks do
+			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE")
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_MUTE", ajustingValue)
+			if reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE") == state then
+				nonactionable[#nonactionable + 1] = getTrackID(tracks[k], true)
+			end
+		end
+		if #nonactionable > 0 then
+			message(string.format("%u tracks could not be %s: %s.", #nonactionable, self.states[ajustingValue], table.concat(nonactionable, ", ")))
 		end
 	else
-		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE"))
-		reaper.SetMediaTrackInfo_Value(tracks, "B_MUTE", state)
+		local state = reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE")
+		reaper.SetMediaTrackInfo_Value(tracks, "B_MUTE", nor(state))
+		if reaper.GetMediaTrackInfo_Value(tracks, "B_MUTE") == state then
+			message{
+				objectId = getTrackID(tracks),
+				value = ("Could not be %s."):format(state == 1 and "unmuted" or "muted")
+			}
+		end
 	end
 	message(self:get())
 	return message
