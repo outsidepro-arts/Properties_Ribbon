@@ -349,7 +349,7 @@ end
 local function generateGetMethod(label)
 	return function(self)
 		local message = initOutputMessage()
-		message(label)
+		message(label:gsub("%stracks$", ""))
 		local tracksAmount = countSpecifiedTracks(self.checkFunction)
 		message((""):join("(",
 			tracksAmount == 0 and "no tracks" or
@@ -395,7 +395,7 @@ function mutedTracksNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "B_MUTE") == 1
 end
 
-mutedTracksNavigator.get = generateGetMethod("Muted")
+mutedTracksNavigator.get = generateGetMethod("Muted tracks")
 mutedTracksNavigator.set_adjust = generateSetMethod("No %s muted track")
 
 local soloedTracksNavigator = {}
@@ -405,7 +405,7 @@ function soloedTracksNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") > 0
 end
 
-soloedTracksNavigator.get = generateGetMethod("Soloed")
+soloedTracksNavigator.get = generateGetMethod("Soloed tracks")
 soloedTracksNavigator.set_adjust = generateSetMethod("No %s soloed track")
 
 local armedTrackNavigator = {}
@@ -415,7 +415,7 @@ function armedTrackNavigator.checkFunction(track)
 	return reaper.GetMediaTrackInfo_Value(track, "I_RECARM") ~= 0
 end
 
-armedTrackNavigator.get = generateGetMethod("Armed")
+armedTrackNavigator.get = generateGetMethod("Armed tracks")
 armedTrackNavigator.set_adjust = generateSetMethod("No %s armed track")
 
 local instrumentTracksNavigator = {}
@@ -425,7 +425,7 @@ function instrumentTracksNavigator.checkFunction(track)
 	return reaper.TrackFX_GetInstrument(track) > 0
 end
 
-instrumentTracksNavigator.get = generateGetMethod("With instruments")
+instrumentTracksNavigator.get = generateGetMethod("Tracks With instruments")
 instrumentTracksNavigator.set_adjust = generateSetMethod("No %s track with an instrument on")
 
 local nonProcessedTracksNavigator = {}
