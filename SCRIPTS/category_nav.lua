@@ -120,15 +120,6 @@ function catnavLayout.canProvide()
 	return tracks ~= nil
 end
 
--- The category property get/set functions to form this in loop
-local function categoryGet(self)
-	local message = initOutputMessage()
-	message(self.category.name)
-	message:initType(
-		"Adjust this property in appropriate direction to move the selection focus to a track which was beeing markqued as belonging for this category.")
-	return message
-end
-
 -- Iteration function for checking track in a custom category
 local function customCategoryCheck(category)
 	return function(track)
@@ -139,6 +130,21 @@ local function customCategoryCheck(category)
 			end
 		end
 	end
+end
+
+-- The category property get/set functions to form this in loop
+local function categoryGet(self)
+	local message = initOutputMessage()
+	message(self.category.name)
+	message(
+		("(%u track%s assigned)")
+		:format(countSpecifiedTracks(customCategoryCheck(self.category)),
+			(countSpecifiedTracks(customCategoryCheck(self.category)) == 1 and "" or "s")
+		):gsub("%(0", "(no")
+	)
+	message:initType(
+		"Adjust this property in appropriate direction to move the selection focus to a track which was beeing markqued as belonging for this category.")
+	return message
 end
 
 local function categorySet_adjust(self, direction)
