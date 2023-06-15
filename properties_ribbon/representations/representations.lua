@@ -249,7 +249,11 @@ function representation.getFocusLikeOSARA(context)
 					if state == 0 or state == 1 then
 						if state == 1 then
 							local compactState = reaper.GetMediaTrackInfo_Value(track, "I_FOLDERCOMPACT")
+							local nested = reaper.GetParentTrack(track) ~= nil
 							table.insert(trackPrefix, compactStates[compactState])
+							if nested then
+								table.insert(trackPrefix, "nested")
+							end
 						end
 						table.insert(trackPrefix, states[state])
 					elseif state < 0 then
