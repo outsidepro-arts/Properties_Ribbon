@@ -186,7 +186,7 @@ representation.pos = {
 			local hours, minutes, seconds, fractions = string.match(data, "(%d*):(%d*):(%d*):(%d*)")
 			local form = {}
 			if tonumber(hours) > 0 then
-				form = table.insert(form, string.format("%u hours", hours))
+				table.insert(form, string.format("%u hours", hours))
 			end
 			if tonumber(minutes) > 0 then
 				table.insert(form, string.format("%u minutes", minutes))
