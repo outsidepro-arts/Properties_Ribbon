@@ -663,6 +663,11 @@ function getUserInputs(title, fields, instruction)
 	return retval, #answer > 1 and answer or answer[1] or nil
 end
 
+function interruptNextOSARAMessage()
+	-- It has possible since the OSARA commit b289b432a5f7aac799b4901bcb71cea4a2cc7513
+	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_MUTENEXTMESSAGE"), 0)
+end
+
 -- Main body
 
 -- Global variables initialization
