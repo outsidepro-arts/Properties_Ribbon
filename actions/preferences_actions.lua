@@ -88,7 +88,6 @@ parentLayout.reaperPrefs:registerProperty(composeSimpleDialogOpenProperty(40619)
 -- We will not check OSARA install status,cuz it's supposet should be installed there
 parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_CONFIG"),
 	"OSARA configuration"))
-parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_PEAKWATCHER")))
 parentLayout.osaraLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_OSARA_ABOUT"),
 	"About currently installed OSARA"))
 
