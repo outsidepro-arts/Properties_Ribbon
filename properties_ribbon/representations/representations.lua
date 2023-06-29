@@ -217,11 +217,11 @@ representation.defpos = setmetatable({}, {
 	end
 })
 
-function representation.getFocusLikeOSARA(context)
+function representation.getFocusLikeOSARA(context, opTrack)
 	context = context or reaper.GetCursorContext()
 	local contexts = {
 		[0] = function ()
-			local tracks = track_properties_macros.getTracks(config.getboolean("multiSelectionSupport", true))
+			local tracks = opTrack or track_properties_macros.getTracks(config.getboolean("multiSelectionSupport", true))
 			if not istable(tracks) then
 				tracks = {tracks}
 			end
