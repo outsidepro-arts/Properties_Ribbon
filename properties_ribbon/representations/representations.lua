@@ -329,7 +329,7 @@ function representation.getFocusLikeOSARA(context, opTrack)
 					end
 					table.insert(parts, table.concat(takePrefix, " "))
 				end
-				if reaper.TakeFX_GetCount(reaper.GetactiveTake(item)) > 0 then
+				if reaper.TakeFX_GetCount(reaper.GetActiveTake(item)) > 0 then
 					local fxForm = {}
 					for i = 0, reaper.TakeFX_GetCount(reaper.GetActiveTake(item))-1 do
 						local retval, fxName = reaper.TakeFX_GetFXName(reaper.GetactiveTake(item), i, "")
