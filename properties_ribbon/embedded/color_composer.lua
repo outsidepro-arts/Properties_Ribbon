@@ -421,7 +421,7 @@ function shadeProperty:set_perform()
 	local state = self.getValue()
 	local filter = getFilter() or ""
 	local retval, answer = getUserInputs("Set filter", {
-		caption "Filter query:",
+		caption = "Filter query:",
 		defValue = filter
 	},
 					'Type a part of color name that Properties Ribbon should search. Clear the edit field to clear the filter and explore all colors.')
