@@ -484,9 +484,10 @@ if numRegions > 0 then
 					if self.str ~= "" then
 						message { value = self.str }
 					end
+					message{value = string.format(" Length %s", representation.deflen[self.endPosition - self.position])}
+					message { value = string.format(", position %s", representation.defpos[self.position]) }
 					if allowMove then
 						reaper.GoToRegion(0, self.rIndex, true)
-						message { value = representation.defpos[self.position] }
 					end
 					return message
 				end,
