@@ -78,6 +78,9 @@ Please note: these format may be combined with eachother.
 
 function prepareUserData.pan.process(udata, curvalue)
 	udata = prepareUserData.basic(udata)
+	-- We have to get rid of the extra garbaged symbols
+	-- At the current time only one dash symbol interferes with life
+	udata = udata:gsub("%-", "")
 	if udata:match("^[c]") then
 		return 0
 	end
