@@ -4,11 +4,12 @@ Copyright (c) 2020-2022 outsidepro-arts & other contributors
 License: MIT License
 ]] --
 
-require "properties_ribbon.utils.conversion"
-require "properties_ribbon.utils.iters"
-require "properties_ribbon.utils.math"
-require "properties_ribbon.utils.string"
-require "properties_ribbon.utils.table"
+require "utils.conversion"
+require "utils.iters"
+require "utils.math"
+require "utils.string"
+require "utils.table"
+require "utils.debugger"
 
 -- Here are some functions which I have been grabbed from some sources and opensource projects. Some of was needed to be rewritten for LUA, but some of already being presented as is also.
 -- Unfortunately, not all functions written here I remembered where grabbed, because I wrote it at the start of complex coding and did not planned to git this..
@@ -111,34 +112,6 @@ function nor(state)
 		end
 	end
 	return state
-end
-
-function debug(...)
-local args = {}
-	-- Forcedly converting all arguments to string
-	for _, arg in ipairs{...} do
-		table.insert(args, tostring(arg))
-	end
-	reaper.ShowConsoleMsg(string.format("%s\n", table.concat(args, '\t')))
-	-- WIN32 functions are exist only in Windows
-	if utils.platform() == "Windows" then
-		-- ReaConsole does not takes the focus by itself, so we have to make it forcedly.
-		if select(2,
-			reaper.BR_Win32_GetWindowText(
-				reaper.BR_Win32_GetParent(
-					reaper.BR_Win32_GetFocus()
-				)
-			)
-		) ~= "ReaScript console output" then
-			local consoleWindow = reaper.BR_Win32_FindWindowEx(
-				reaper.BR_Win32_HwndToString(
-					reaper.BR_Win32_GetParent(
-						reaper.BR_Win32_GetMainHwnd()
-					)
-				), "0", "#32770", "ReaScript console output", true, true)
-			reaper.BR_Win32_SetFocus(consoleWindow)
-		end
-	end
 end
 
 function utils.simpleSearch(fullString, searchString, delimiter)

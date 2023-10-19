@@ -10,5 +10,5 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 require "properties_ribbon"
 
 if main_initLastLayout() then
-	main_reportLayout()
+	main_activateGotoMode()
 end

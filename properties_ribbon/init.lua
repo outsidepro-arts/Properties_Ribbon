@@ -3,38 +3,47 @@ This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]]
-   --
--- Define the script path constant
-script_path = select(2, reaper.get_action_context()):match('^.+[\\//]')
-
--- Patching the loader paths
-package.path = string.format("%s;%s%s", package.path, script_path, "?.lua")
+--
 
 -- The script section internal name
-script_section = "Properties_Ribbon_script"
+local script_section = "Properties_Ribbon_script"
+
+local script_path = nil
+
+-- We will reverse the package.path string because most likely the path pattern may be at the bottom of.
+for path in package.path:reverse():gmatch("([^;]+)") do
+	if reaper.file_exists(path:reverse():gsub("%?", "properties_ribbon")) then
+		script_path = path:reverse():match("^.+[//\\]"):gsub("%?", "properties_ribbon")
+		break
+	end
+end
+package.path = string.format("%s;%s//%s", package.path, script_path, "?.lua")
+package.path = string.format("%s;%s//%s", package.path, script_path, "?//init.lua")
+
 
 -- Including the types check simplifier
-require "properties_ribbon.typescheck"
+require "typescheck"
 
 -- Include the configuration provider
-config = require "properties_ribbon.providers.config_provider" (script_section)
+config = require "providers.config_provider" (script_section)
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
-utils = require "properties_ribbon.utils"
+utils = require "utils"
 
 -- Including the extended string utilities methods
-require "properties_ribbon.utils.string"
+require "utils.string"
 
 -- including the colors module
-colors = require "properties_ribbon.providers.colors_provider"
+colors = require "providers.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "properties_ribbon.providers.extstate_provider" (script_section)
+extstate = require "providers.extstate_provider" (script_section)
 
 -- Including the humanbeing representations metamethods
-representation = require "properties_ribbon.representations.representations"
+representation = require "representations.representations"
 
 -- The preparation of typed data by an user when sets the custom values using input dialogs
-prepareUserData = require "properties_ribbon.representations.preparation"
+prepareUserData = require "representations.preparation"
+
 
 -- Actions for set methods or some another cases
 actions = {
@@ -95,8 +104,7 @@ undo = {
 }
 
 -- REAPER hack to prevent useless undo points creation
-reaper.defer(function()
-end)
+reaper.defer(function() end)
 
 -- Little injections
 -- Make string type as outputable to OSARA directly
@@ -492,36 +500,33 @@ end
 -- optional forced (boolean): should the function return the contextual layout forcedly even if one of context has been set earlier. False or nil: only if one of contextual layouts is set, true - immediately.
 function proposeLayout(forced)
 	forced = forced or false
-	local context, contextLayout, curLayout = reaper.GetCursorContext(), {
-		section = "properties",
-		proposed = true
-	}, extstate.currentLayout
+	local context, contextLayout, curLayout = reaper.GetCursorContext(), "", extstate.currentLayout
 	-- Sometimes REAPER returns bizarre contexts...
 	if context == -1 then
 		context = extstate.lastKnownContext or context
 	end
 	if context == 0 then
 		if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
-			contextLayout.layout = "mastertrack_properties"
+			contextLayout = "Properties Ribbon - Master track properties"
 		else
 			if reaper.CountTracks(0) > 0 then
-				contextLayout.layout = "track_properties"
+				contextLayout = "Properties Ribbon - Track properties"
 			else
 				if (reaper.GetMasterTrackVisibility() & 1) == 1 then
-					contextLayout.layout = "mastertrack_properties"
+					contextLayout = "Properties Ribbon - Master track properties"
 				else
-					contextLayout.layout = "track_properties"
+					contextLayout = "Properties Ribbon - Track properties"
 				end
 			end
 		end
 	elseif context == 1 then
-		contextLayout.layout = "item_properties"
+		contextLayout = "Properties Ribbon - Item properties"
 	elseif context == 2 then
-		contextLayout.layout = "envelope_properties"
+		contextLayout = "Properties Ribbon - Envelope properties"
 	end
-	if forced or curLayout == "properties//mastertrack_properties" or curLayout == "properties//track_properties" or
-		curLayout == "properties//item_properties" or curLayout == "properties//envelope_properties" then
-		return contextLayout
+	if forced or curLayout == "masterTrackProperties" or curLayout == "trackProperties" or
+		curLayout == "itemAndTakeProperties" or curLayout == "envelopeProperties" then
+		return fixPath(contextLayout:join(".lua"))
 	end
 	return nil
 end
@@ -539,13 +544,12 @@ end
 function restorePreviousLayout()
 	if config.getboolean("allowLayoutsrestorePrev", true) == true then
 		if config.getboolean("automaticLayoutLoading", false) == true then
-			local plBuild = proposeLayout(true)
-			currentLayout = table.concat({ plBuild.section, plBuild.layout }, "//")
+			layoutFile = proposeLayout()
 			speakLayout = true
 			layoutHasReset = true
 		else
-			if extstate.previousLayout then
-				currentLayout = extstate.previousLayout
+			if extstate.previousLayoutFile then
+				layoutFile = extstate.previousLayoutFile
 				speakLayout = true
 				layoutHasReset = true
 			end
@@ -553,18 +557,59 @@ function restorePreviousLayout()
 	end
 end
 
+function fixPath(path)
+	path = assert(isstring(path) and path, ("The string is expected (got %s)"):format(type(path)))
+	if path:match("^%u:") then
+		return path
+	else
+		return select(1, script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1), path)
+	end
+end
+
 -- Immediately load specified layout
 -- May be used when you're need to load new layout from your layout directly
 -- Parameters:
--- -- newLayout (table): new layout structure which Properties Ribbon should switch to.
+-- -- newLayout (string): either absolute or relative path of new layout  which Properties Ribbon should switch to.
 -- Returns none
-function executeLayout(newLayout)
-	script_finish()
-	local loadResult = (script_init(newLayout, true) ~= nil)
-	if loadResult then
-		script_reportOrGotoProperty()
+function executeLayout(newLayoutFile)
+	main_finish()
+	local lt = nil
+	main_newLayout = function(newLayout)
+		local rememberCFG = config.getinteger("rememberSublayout", 3)
+		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
+			-- Let REAPER do not request the extstate superfluously
+			if extstate[newLayout.section .. "_sublayout"] ~= "" then
+				extstate[newLayout.section .. "_sublayout"] = nil
+			end
+		end
+		extstate.gotoMode = nil
+		extstate.isTwice = nil
+		speakLayout = true
+		layoutFile = fixPath(newLayoutFile):join(".lua")
+		currentLayout = newLayout.section
+		currentSublayout = extstate[currentLayout .. "_sublayout"]
+		lt = newLayout
 	end
-	return loadResult
+	dofile(fixPath(newLayoutFile):join(".lua"))
+	main_finish = function()
+		if lt.destroy then
+			lt.destroy()
+		end
+		extstate[lt.section] = lt.pIndex
+		extstate.currentLayout = lt.section
+		extstate.layoutFile = fixPath(newLayoutFile):join(".lua")
+		if layoutHasReset ~= true then
+			extstate[lt.section .. "_sublayout"] = currentSublayout or extstate[currentLayout .. "_sublayout"]
+		end
+		extstate.speakLayout = speakLayout
+		extstate.extProperty = nil
+		if reaper.GetCursorContext() ~= -1 then
+			extstate.lastKnownContext = reaper.GetCursorContext()
+		end
+	end
+	if prepareLayout(lt) then
+		main_reportOrGotoProperty()
+	end
 end
 
 function isHasSublayouts(lt)
@@ -603,9 +648,9 @@ function openPath(path)
 	end
 end
 
-function useMacros(propertiesDir)
-	if reaper.file_exists(script_path:joinsep("//", propertiesDir, "macros.lua")) then
-		dofile(script_path:joinsep("//", propertiesDir, "macros.lua"))
+function useMacros(macrosName)
+	if reaper.file_exists(script_path:joinsep("//", "macros", macrosName:join(".lua"))) then
+		dofile(script_path:joinsep("//", "macros", macrosName:join(".lua")))
 		return true
 	end
 	return false
@@ -670,109 +715,93 @@ end
 
 -- Main body
 
+-- We have to notify you about ReaScript task control window and instructions for.
+if not extstate.reascriptTasksAvoid then
+	reaper.ShowMessageBox(
+		[[Since Properties Ribbon tries to avoid of useless undo points creation, it does some non-trivial things under the hood. Thus when you'll try to execute any Properties Ribbon action extra-fast (for example, you may push adjust action and not release it long time), you may get a window which called "ReaScript task control" where REAPER asks you what would you want to do with newly runnen script while previous defer action isn't finished yet.
+You have to allow REAPER only create new instance and not finish previous task. To do this, firstly check the checkbox with label "Remember my answer for this script" then press "New instance" button. After this answer, the window will never open anymore.]],
+		"Properties Ribbon warning", showMessageBoxConsts.sets.ok)
+	extstate._forever.reascriptTasksAvoid = true
+end
+
 -- Global variables initialization
 layout = {}
-currentLayout = nil
-currentSublayout = nil
-SpeakLayout = false
-g_undoState = nil
-currentExtProperty = nil
-layoutHasReset = false
-layoutSaid = false
+local maybeLayout = nil
+local layoutFile = extstate.layoutFile
+currentLayout = extstate.currentLayout
+currentSublayout = currentLayout and extstate[currentLayout .. "_sublayout"]
+local SpeakLayout = false
+local g_undoState = nil
+local currentExtProperty = extstate.extProperty
+local layoutHasReset = false
+local layoutSaid = false
 
--- The main initialization function
--- shouldSpeakLayout (boolean, optional): option which defines should Properties ribbon say new layout. If it is omited, scripts will decides should report it by itself basing on the previous layout.
-function script_init(newLayout, shouldSpeakLayout)
-	-- Checking the speech output method existing
-	if not reaper.APIExists("osara_outputMessage") then
-		if reaper.ShowMessageBox(
-				'Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?',
-				"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
-			openPath("https://osara.reaperaccessibility.com/snapshots/")
-		end
-		return nil
-	end
-	if not reaper.APIExists("CF_GetSWSVersion") == true then
-		if reaper.ShowMessageBox(
-				'Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?',
-				"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
-			openPath("https://sws-extension.org/")
-		end
-		return nil
-	end
-	-- We have to notify you about ReaScript task control window and instructions for.
-	if not extstate.reascriptTasksAvoid then
-		reaper.ShowMessageBox(
-			[[Since Properties Ribbon tries to avoid of useless undo points creation, it does some non-trivial things under the hood. Thus when you'll try to execute any Properties Ribbon action extra-fast (for example, you may push adjust action and not release it long time), you may get a window which called "ReaScript task control" where REAPER asks you what would you want to do with newly runnen script while previous defer action isn't finished yet.
-You have to allow REAPER only create new instance and not finish previous task. To do this, firstly check the checkbox with label "Remember my answer for this script" then press "New instance" button. After this answer, the window will never open anymore.]],
-			"Properties Ribbon warning", showMessageBoxConsts.sets.ok)
-		extstate._forever.reascriptTasksAvoid = true
-	end
-	currentExtProperty = extstate.extProperty
-	local rememberCFG = config.getinteger("rememberSublayout", 3)
-	if newLayout and newLayout ~= extstate.currentLayout then
-		if extstate.gotoMode then
-			extstate.gotoMode = nil
-		end
-		newLayout = newLayout.section .. "//" .. newLayout.layout or nil
-		if currentExtProperty and newLayout ~= extstate.currentLayout then
-			currentExtProperty = nil
-		end
-		if extstate.isTwice and newLayout ~= extstate.currentLayout then
-			extstate.isTwice = nil
-		end
-	end
-	if newLayout ~= nil then
-		currentLayout = newLayout
-		if config.getboolean("allowLayoutsrestorePrev", true) == true and newLayout ~= extstate.currentLayout then
-			extstate.previousLayout = extstate.currentLayout
-		end
-		if shouldSpeakLayout == nil then
-			if extstate.currentLayout ~= newLayout then
-				speakLayout = true
-			else
-				speakLayout = extstate.speakLayout
-			end
-		else
-			speakLayout = shouldSpeakLayout
-		end
-		if (rememberCFG ~= 1 and rememberCFG ~= 3) and extstate.currentLayout ~= currentLayout then
-			-- Let REAPER do not request the extstate superfluously
-			if extstate[newLayout .. "_sublayout"] ~= "" then
-				extstate[newLayout .. "_sublayout"] = nil
-			end
-		end
-	else
-		currentLayout = extstate.currentLayout
-		if shouldSpeakLayout ~= nil then
-			speakLayout = shouldSpeakLayout
-		else
-			speakLayout = extstate.speakLayout
-		end
-	end
-	if currentLayout == nil or currentLayout == "" then
-		("Switch one action group first."):output()
-		return nil
-	end
-	-- Some layouts has executes the linear code... Woops...
-	currentSublayout = extstate[currentLayout .. "_sublayout"]
-	useMacros(currentLayout:match('^(.+)//'))
-	layout = dofile(script_path:joinsep("//", currentLayout:join(".lua")))
+function prepareLayout(newLayout)
+	layout = isLayout(newLayout) and newLayout
 	if layout == nil then
 		reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout),
 			"Properties ribbon error", showMessageBoxConsts.sets.ok)
-		return nil
+		return false
+	end
+	if layout.init then
+		layout.init()
 	end
 	if isHasSublayouts(layout) then
 		local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
 		layout = layout[sublayout]
 		currentSublayout = sublayout
 	end
-	layout.pIndex = extstate[layout.section] or 1
-	return (layout)
+	layout.pIndex = layout.pIndex or extstate[layout.section] or 1
+	return layout ~= nil
 end
 
-function script_switchSublayout(action)
+function main_newLayout(lt)
+	extstate.gotoMode = nil
+	extstate.isTwice = nil
+	speakLayout = true
+	local rememberCFG = config.getinteger("rememberSublayout", 3)
+	currentLayout = lt.section
+	currentSublayout = extstate[currentLayout .. "_sublayout"]
+	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
+		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
+	end
+	if config.getboolean("allowLayoutsrestorePrev", true) == true then
+		extstate.previousLayoutFile= extstate.layoutFile
+	end
+	currentLayout = lt.section
+	layoutFile = select(2, reaper.get_action_context())
+	local rememberCFG = config.getinteger("rememberSublayout", 3)
+	if rememberCFG ~= 1 and rememberCFG ~= 2 then
+		layout.pIndex = 1
+	end
+	if prepareLayout(lt) then
+		main_reportOrGotoProperty()
+	end
+end
+
+function main_initLastLayout()
+	if config.getboolean("automaticLayoutLoading", false) == true then
+		local proposedLayout = proposeLayout()
+		if proposedLayout and proposedLayout ~= layoutFile then
+			speakLayout = true
+			layoutFile = proposedLayout
+		end
+	end
+	if layoutFile == nil or layoutFile == "" then
+		("Switch one action group first."):output()
+		return
+	end
+	local lt = nil
+	main_newLayout = function(newLayout)
+		lt = newLayout
+	end
+	dofile(layoutFile)
+	if lt then
+		return prepareLayout(lt)
+	end
+end
+
+function main_switchSublayout(action)
 	if extstate.gotoMode then
 		("Goto mode deactivated. "):output()
 		extstate.gotoMode = nil
@@ -780,7 +809,7 @@ function script_switchSublayout(action)
 	if layout.canProvide() ~= true then
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		script_finish()
+		main_finish()
 		return
 	end
 	if isSublayout(layout) then
@@ -789,34 +818,35 @@ function script_switchSublayout(action)
 		end
 		if action == actions.sublayout_next then
 			if layout.nextSubLayout then
-				extstate[currentLayout .. "_sublayout"] = layout.nextSubLayout
+				currentSublayout = layout.nextSubLayout
 			else
 				("No next category."):output()
-				script_finish()
+				main_finish()
 				return
 			end
 		elseif action == actions.sublayout_prev then
 			if layout.previousSubLayout then
-				extstate[currentLayout .. "_sublayout"] = layout.previousSubLayout
+				currentSublayout = layout.previousSubLayout
 			else
 				("No previous category."):output()
-				script_finish()
+				main_finish()
 				return
 			end
 		end
-		if not script_init(nil, true) then
+		if not main_initLastLayout() then
 			restorePreviousLayout()
-			script_finish()
+			main_finish()
 			return
 		end
-		script_reportOrGotoProperty(nil, nil, false)
+		speakLayout = true
+		main_reportOrGotoProperty(nil, nil, false)
 	else
 		(("The %s layout has no category. "):format(layout.name)):output()
 	end
-	script_finish()
+	main_finish()
 end
 
-function script_nextProperty()
+function main_nextProperty()
 	local message = initOutputMessage()
 	if extstate.gotoMode then
 		message("Goto mode deactivated. ")
@@ -854,7 +884,7 @@ function script_nextProperty()
 				[false] = layoutLevel.subname
 			})[currentExtProperty ~= nil])):output()
 			restorePreviousLayout()
-			script_finish()
+			main_finish()
 			return
 		end
 		if pIndex + 1 <= #layoutLevel.properties then
@@ -865,7 +895,7 @@ function script_nextProperty()
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		script_finish()
+		main_finish()
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -933,10 +963,10 @@ function script_nextProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	script_finish()
+	main_finish()
 end
 
-function script_previousProperty()
+function main_previousProperty()
 	local message = initOutputMessage()
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if extstate.gotoMode then
@@ -971,7 +1001,7 @@ function script_previousProperty()
 		if #layoutLevel.properties < 1 then
 			(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 			restorePreviousLayout()
-			script_finish()
+			main_finish()
 			return
 		end
 		if pIndex - 1 > 0 then
@@ -982,7 +1012,7 @@ function script_previousProperty()
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		script_finish()
+		main_finish()
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -1050,11 +1080,11 @@ function script_previousProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	script_finish()
+	main_finish()
 end
 
-function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
-									 shouldNotResetExtProperty)
+function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
+								   shouldNotResetExtProperty)
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 	local gotoMode = extstate.gotoMode
@@ -1106,7 +1136,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 			local definedName = layoutLevel.subname or layoutLevel.name
 			string.format("The ribbon of %s is empty.", definedName):output()
 			restorePreviousLayout()
-			script_finish()
+			main_finish()
 			return
 		end
 		if propertyNum then
@@ -1127,21 +1157,21 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 				message(string.format("No property with number %s in ", propertyNum))
 				if currentExtProperty then
 					message(string.format("%s extended properties on ",
-					layout.properties[layout.pIndex].extendedProperties.name))
+						layout.properties[layout.pIndex].extendedProperties.name))
 				end
 				if isSublayout(layout) then
 					message(string.format(" %s category of ", layout.subname))
 				end
 				message(string.format("%s layout.", layout.name))
 				message:output()
-				script_finish()
+				main_finish()
 				return
 			end
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		script_finish()
+		main_finish()
 		return
 	end
 	local pIndex
@@ -1224,7 +1254,7 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 		config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and
 		extstate.isTwice == pIndex
 	if isTwice then
-		script_ajustProperty(actions.set.perform)
+		main_ajustProperty(actions.set.perform)
 	else
 		message:output(({
 			[true] = 0,
@@ -1235,13 +1265,13 @@ function script_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, s
 			extstate.isTwice = pIndex
 		end
 	end
-	script_finish()
+	main_finish()
 end
 
-function script_ajustProperty(action)
+function main_ajustProperty(action)
 	local gotoMode = extstate.gotoMode
 	if gotoMode and action == actions.set.perform then
-		script_reportOrGotoProperty()
+		main_reportOrGotoProperty()
 		return
 	end
 	if layout.canProvide() == true then
@@ -1250,7 +1280,7 @@ function script_ajustProperty(action)
 			if layout.properties[layout.pIndex].extendedProperties and action == actions.set.perform then
 				currentExtProperty = 1
 				speakLayout = true
-				script_reportOrGotoProperty(nil, nil, nil, true)
+				main_reportOrGotoProperty(nil, nil, nil, true)
 				return
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
@@ -1265,12 +1295,12 @@ function script_ajustProperty(action)
 						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
 					else
 						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout
-						.undoContext)
+							.undoContext)
 					end
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				script_finish()
+				main_finish()
 				return
 			end
 		elseif currentExtProperty then
@@ -1289,12 +1319,12 @@ function script_ajustProperty(action)
 						reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
 					else
 						reaper.Undo_EndBlock(g_undoState or layout.properties[layout.pIndex]:get():extract(0, false),
-						layout.undoContext)
+							layout.undoContext)
 					end
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				script_finish()
+				main_finish()
 				return
 			end
 			msg = nil
@@ -1323,22 +1353,22 @@ function script_ajustProperty(action)
 						msg:output()
 					end
 				end
-				script_finish()
+				main_finish()
 				return
 			end
 		end
 		if not msg then
-			script_finish()
+			main_finish()
 			return
 		end
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 	end
-	script_finish()
+	main_finish()
 end
 
-function script_reportLayout()
+function main_reportLayout()
 	if layout.canProvide() then
 		local message = initOutputMessage()
 		if isSublayout(layout) then
@@ -1375,7 +1405,7 @@ function script_reportLayout()
 	end
 end
 
-function script_activateGotoMode()
+function main_activateGotoMode()
 	local mode = extstate.gotoMode
 	if mode == nil then
 		("Goto mode activated."):output()
@@ -1386,10 +1416,14 @@ function script_activateGotoMode()
 	end
 end
 
-function script_finish()
+function main_finish()
 	if layout then
+		if layout.destroy then
+			layout.destroy()
+		end
 		extstate[layout.section] = layout.pIndex
 		extstate.currentLayout = currentLayout
+		extstate.layoutFile = layoutFile
 		if layoutHasReset ~= true then
 			extstate[currentLayout .. "_sublayout"] = currentSublayout or extstate[currentLayout .. "_sublayout"]
 		end

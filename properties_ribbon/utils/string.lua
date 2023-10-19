@@ -1,5 +1,5 @@
 function string.split(str, delimiter, mode)
-	require "properties_ribbon.utils.conversion"
+	require "utils.conversion"
 	str = tostring(str)
 	delimiter = tostring(delimiter)
 	delimiter = delimiter or "%s"

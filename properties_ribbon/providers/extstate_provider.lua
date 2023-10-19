@@ -60,17 +60,17 @@ function extstate._forever.__newindex(self, key, value)
 end
 
 function extstate._layout.__index(self, key)
-	return extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)]
+	return extstate[string.format("%s.%s", currentLayout, key)]
 end
 
 function extstate._layout.__newindex(self, key, value)
-	extstate[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
+	extstate[string.format("%s.%s", currentLayout, key)] = value
 end
 
 extstate._layout._forever.__index = extstate._layout
 
 function extstate._layout._forever.__newindex(self, key, value)
-	extstate._forever[string.format("%s.%s", currentLayout:match("^.+[//](.+)"), key)] = value
+	extstate._forever[string.format("%s.%s", currentLayout, key)] = value
 end
 
 function extstate._sublayout.__index(self, key)
