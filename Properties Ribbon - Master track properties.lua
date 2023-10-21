@@ -12,7 +12,8 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]] --
+]]
+   --
 
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
 
@@ -177,8 +178,8 @@ panProperty.extendedProperties:registerProperty {
 	set_perform = function(self, parent)
 		local state = reaper.GetMediaTrackInfo_Value(master, "D_PAN")
 		local retval, answer = getUserInputs("Pan for master track",
-		{ caption = "New pan value:", defValue = representation.pan[state] },
-		prepareUserData.pan.formatCaption)
+			{ caption = "New pan value:", defValue = representation.pan[state] },
+			prepareUserData.pan.formatCaption)
 		if not retval then
 			return false, "Canceled"
 		end
@@ -231,7 +232,9 @@ widthProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	{
 		representation = setmetatable({},
 			{ __index = function(self, key) return string.format("%s%%", utils.numtopercent(key)) end }),
-		min = -1, rootmean = 0, max = 1
+		min = -1,
+		rootmean = 0,
+		max = 1
 	},
 	tpMessages,
 	function(obj, state)
@@ -332,8 +335,10 @@ function masterFXProperty:get()
 	message { objectId = "Master", label = "FX" }
 	local fxCount = reaper.TrackFX_GetCount(master)
 	if fxCount > 0 then
-		message({ value = string.format("%s (%u FX in master chain)",
-			({ [0] = "active", [1] = "bypassed" })[reaper.GetToggleCommandState(16)], fxCount) })
+		message({
+			value = string.format("%s (%u FX in master chain)",
+				({ [0] = "active", [1] = "bypassed" })[reaper.GetToggleCommandState(16)], fxCount)
+		})
 	else
 		message { value = "empty" }
 		message:addType(" This property  is unavailable now because the master track FX chain is empty.", 1)
@@ -378,7 +383,8 @@ local playrateProperty = {}
 parentLayout.playbackLayout:registerProperty(playrateProperty)
 function playrateProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.")
+	message:initType(
+	"Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.")
 	local state = reaper.Master_GetPlayRate(0)
 	message { objectId = "Master", label = "Play rate", value = representation.playrate[state] }
 	return message
@@ -411,7 +417,8 @@ local pitchPreserveProperty = {}
 parentLayout.playbackLayout:registerProperty(pitchPreserveProperty)
 function pitchPreserveProperty:get()
 	local message = initOutputMessage()
-	message:initType("Toggle this property to switch the preserving pitch of items in the project when playrate changes.",
+	message:initType(
+		"Toggle this property to switch the preserving pitch of items in the project when playrate changes.",
 		"Toggleable")
 	message { objectId = "Master", label = "Pitch when playrate changes",
 		value = ({ [0] = "not preserved", [1] = "preserved" })[reaper.GetToggleCommandState(40671)] }
@@ -434,7 +441,7 @@ function tempoProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set new master tempo.")
 	local state = reaper.Master_GetTempo()
-	message { objectId = "Master", label = "Tempo", value = string.format("%s BPM", math.round(state, 3)) }
+	message { objectId = "Master", label = "Tempo", value = representation.tempo[state] }
 	return message
 end
 
@@ -456,28 +463,29 @@ function tempoProperty:set_adjust(direction)
 end
 
 tempoProperty.extendedProperties = initExtendedProperties("Tempo extended interraction")
-tempoProperty.extendedProperties:registerProperty{
-	get = function (self, parent)
+tempoProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
 		local message = initOutputMessage()
-		message"Tap tempo"
-		message:initType("Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
+		message "Tap tempo"
+		message:initType(
+		"Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
 		return message
 	end,
-	set_perform = function (self, parent)
+	set_perform = function(self, parent)
 		reaper.Main_OnCommand(1134, 0)
 		-- OSARA provides the state value for tempo
 		return false
 	end
 }
 
-tempoProperty.extendedProperties:registerProperty{
-	get = function (self, parent)
+tempoProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
 		local message = initOutputMessage()
-		message"Type custom tempo"
+		message "Type custom tempo"
 		message:initType("Perform this property to type new custom project tempo.")
 		return message
 	end,
-	set_perform = function (self, parent)
+	set_perform = function(self, parent)
 		local retval, answer = getUserInputs("Specify project tempo",
 			{ caption = "New tempo value:", defValue = parent:get():extract(2, false) },
 			prepareUserData.tempo.formatCaption)
@@ -516,8 +524,9 @@ end
 
 function tcpVisibilityProperty:get()
 	local message = initOutputMessage()
-	message:initType("Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu."
-		, "toggleable")
+	message:initType(
+	"Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu."
+	, "toggleable")
 	message { objectId = "Master", label = "Control panel", value = self.states[self.getValue()] }
 	return message
 end

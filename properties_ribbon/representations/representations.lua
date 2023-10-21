@@ -3,7 +3,7 @@ This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2022 outsidepro-arts
 License: MIT License
 ]]
-   --
+--
 
 
 -- Proposed humanbeing representations
@@ -121,6 +121,14 @@ representation.playrate = setmetatable({
 	end
 })
 
+representation.tempo = setmetatable({}, {
+	__index = function(self, tempo)
+		local tempoLeft, tempoRight = string.format("%.3f", tempo):match("^(%d*)%.(%d*)")
+		return table.concat({ tempoLeft, tonumber(tempoRight) > 0 and tempoRight or nil }, " "):join(" BPM")
+	end
+}
+)
+
 representation.pos = {
 	[0] = setmetatable({}, {
 		__index = function(self, pos)
@@ -232,7 +240,7 @@ representation.defpos = setmetatable({}, {
 		elseif reaper.GetToggleCommandState(40370) == 1 then
 			tfDefinition = 5
 		end
-		return representation.pos[tfDefinition][pos](function (pos, mode)
+		return representation.pos[tfDefinition][pos](function(pos, mode)
 			return reaper.format_timestr_pos(pos, "", mode)
 		end)
 	end
@@ -252,7 +260,7 @@ representation.deflen = setmetatable({}, {
 		elseif reaper.GetToggleCommandState(40370) == 1 then
 			tfDefinition = 5
 		end
-		return representation.pos[tfDefinition][len](function (len, mode)
+		return representation.pos[tfDefinition][len](function(len, mode)
 			return reaper.format_timestr_len(len, "", 0.0, mode)
 		end)
 	end

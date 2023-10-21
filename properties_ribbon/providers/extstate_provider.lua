@@ -96,7 +96,7 @@ setmetatable(extstate._sublayout._forever, extstate._sublayout._forever)
 
 -- Initialize the config provider module
 ---@param section (string): the section where config provider will search al requested keys. Usualy it is first param in reaper.GetExtState/reaper.SetExtState
----@return the namespace of this module already initialized and ready to work.
+---@return table @ the namespace of this module already initialized and ready to work.
 local function init(section)
 	extstate._section = section
 	return extstate

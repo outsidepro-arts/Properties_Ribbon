@@ -18,6 +18,15 @@ contextualActions = {
 	}
 }
 
+definedAction = contextualActions[0][2]
+
+if reaper.GetCursorContext() == 2 or reaper.CountTracks(0) > 0 then
+	definedAction = contextualActions[reaper.GetCursorContext()]
+	[(reaper.GetCursorContext() == 0 and reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0)) and 2 or 1]
+else
+	reaper.SetOnlyTrackSelected(reaper.GetMasterTrack(0), true)
+	reaper.SetCursorContext(0)
+end
+
 reaper.Main_OnCommand(
-	reaper.NamedCommandLookup(contextualActions[reaper.GetCursorContext()]
-		[(reaper.GetCursorContext() == 0 and reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0)) and 2 or 1]), 0)
+	reaper.NamedCommandLookup(definedAction), 0)
