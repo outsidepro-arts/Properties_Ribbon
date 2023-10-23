@@ -747,9 +747,10 @@ function prepareLayout(newLayout)
 		layout.init()
 	end
 	if isHasSublayouts(layout) then
-		local sublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
-		layout = layout[sublayout]
-		currentSublayout = sublayout
+		currentSublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
+		layout = assert(layout[currentSublayout],
+			"Broken sublayout has detected: " ..
+			string.format("sublayout %s is apsent in %s", currentSublayout, layout.section))
 	end
 	layout.pIndex = layout.pIndex or extstate[layout.section] or 1
 	return layout ~= nil
@@ -766,9 +767,8 @@ function main_newLayout(lt)
 		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
 	end
 	if config.getboolean("allowLayoutsrestorePrev", true) == true then
-		extstate.previousLayoutFile= extstate.layoutFile
+		extstate.previousLayoutFile = extstate.layoutFile
 	end
-	currentLayout = lt.section
 	layoutFile = select(2, reaper.get_action_context())
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if rememberCFG ~= 1 and rememberCFG ~= 2 then
@@ -780,8 +780,9 @@ function main_newLayout(lt)
 end
 
 function main_initLastLayout()
+	local proposedLayout 
 	if config.getboolean("automaticLayoutLoading", false) == true then
-		local proposedLayout = proposeLayout()
+		proposedLayout = proposeLayout()
 		if proposedLayout and proposedLayout ~= layoutFile then
 			speakLayout = true
 			layoutFile = proposedLayout
@@ -797,6 +798,10 @@ function main_initLastLayout()
 	end
 	dofile(layoutFile)
 	if lt then
+		if proposedLayout then
+			currentLayout = lt.section
+			currentSublayout = extstate[lt.section .. "_sublayout"]
+		end
 		return prepareLayout(lt)
 	end
 end
