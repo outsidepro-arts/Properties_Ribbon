@@ -18,7 +18,7 @@ contextualActions = {
 	}
 }
 
-definedAction = contextualActions[0][2]
+definedAction = contextualActions[0][(reaper.GetMasterTrackVisibility() & 1) == 1 and 2 or 1]
 
 if reaper.GetCursorContext() == 2 or reaper.CountTracks(0) > 0 then
 	definedAction = contextualActions[reaper.GetCursorContext()]
