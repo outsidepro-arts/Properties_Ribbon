@@ -19,7 +19,6 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 
 require "properties_ribbon"
 
-
 local contexts = {
 	[0] = "Current track",
 	[1] = "Selected item take",
@@ -221,7 +220,7 @@ if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTou
 		getValue = contextualFXChain.getValue,
 		take_checkState = function()
 			-- REAPER doesn't provide any way to neither check the all FX bypass state nor set this, so we have to check the bypass state per each FX in. For set state we are using the SWS action.
-			useMacros("properties")
+			useMacros("item_properties")
 			local state, item = 1, item_properties_macros.getItems(false)
 			local fxCount, bypassedFXCount = reaper.TakeFX_GetCount(reaper.GetActiveTake(item)), 0
 			for i = 0, fxCount - 1 do
