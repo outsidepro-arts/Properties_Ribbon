@@ -824,6 +824,7 @@ function main_switchSublayout(action)
 		if action == actions.sublayout_next then
 			if layout.nextSubLayout then
 				currentSublayout = layout.nextSubLayout
+				main_finish()
 			else
 				("No next category."):output()
 				main_finish()
@@ -832,6 +833,7 @@ function main_switchSublayout(action)
 		elseif action == actions.sublayout_prev then
 			if layout.previousSubLayout then
 				currentSublayout = layout.previousSubLayout
+				main_finish()
 			else
 				("No previous category."):output()
 				main_finish()
