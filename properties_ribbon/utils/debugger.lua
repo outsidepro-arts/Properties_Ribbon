@@ -32,12 +32,12 @@ function debugger.output(...)
 	msgToConsole(string.format("%s\n", table.concat(args, '\t')))
 end
 
-function debugger.inspectTableKeys(t)
+function debugger.inspectTable(t)
 	debugger.output("{")
 	for key, value in pairs(t) do
 		debugger.output(key, type(value), not (istable(value) or isfunction(value)) and tostring(value) or nil)
 		if istable(value) then
-			debugger.inspectTableKeys(value)
+			debugger.inspectTable(value)
 		end
 	end
 	debugger.output("}")
