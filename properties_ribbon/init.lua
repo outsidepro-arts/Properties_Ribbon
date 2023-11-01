@@ -779,9 +779,9 @@ function main_newLayout(lt)
 	end
 end
 
-function main_initLastLayout()
-	local proposedLayout 
-	if config.getboolean("automaticLayoutLoading", false) == true then
+function main_initLastLayout(shouldOmitAutomaticLayoutLoading)
+	local proposedLayout
+	if config.getboolean("automaticLayoutLoading", false) == true and shouldOmitAutomaticLayoutLoading ~= true then
 		proposedLayout = proposeLayout()
 		if proposedLayout and proposedLayout ~= layoutFile then
 			speakLayout = true
