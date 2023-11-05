@@ -786,6 +786,8 @@ function main_initLastLayout(shouldOmitAutomaticLayoutLoading)
 		if proposedLayout and proposedLayout ~= layoutFile then
 			speakLayout = true
 			layoutFile = proposedLayout
+			extstate.gotoMode = nil
+			currentExtProperty = nil
 		end
 	end
 	if layoutFile == nil or layoutFile == "" then
