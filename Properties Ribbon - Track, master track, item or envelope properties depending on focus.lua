@@ -5,6 +5,9 @@ License: MIT License
 ]]
 --
 
+-- REAPER hack to prevent useless undo points creation
+reaper.defer(function() end)
+
 contextualActions = {
 	[0] = {
 		"_RS281e717ec90e00117f1fabe94e66cab67483b46a",
