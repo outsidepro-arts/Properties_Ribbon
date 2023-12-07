@@ -574,7 +574,7 @@ end
 function executeLayout(newLayoutFile)
 	finishScript()
 	local lt = nil
-	PropertiesRibbon.newLayout = function(newLayout)
+	PropertiesRibbon.presentLayout = function(newLayout)
 		local rememberCFG = config.getinteger("rememberSublayout", 3)
 		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
 			-- Let REAPER do not request the extstate superfluously
@@ -758,7 +758,7 @@ function prepareLayout(newLayout)
 	return layout ~= nil
 end
 
-function PropertiesRibbon.newLayout(lt)
+function PropertiesRibbon.presentLayout(lt)
 	extstate.gotoMode = nil
 	extstate.isTwice = nil
 	speakLayout = true
@@ -797,7 +797,7 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 		return
 	end
 	local lt = nil
-	PropertiesRibbon.newLayout = function(newLayout)
+	PropertiesRibbon.presentLayout = function(newLayout)
 		lt = newLayout
 	end
 	dofile(layoutFile)

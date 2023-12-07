@@ -29,4 +29,4 @@ projectLayout:registerProperty(composeSimpleProperty(40015))
 projectLayout:registerProperty(composeSimpleProperty(40017))
 projectLayout:registerProperty(composeSimpleProperty(40098))
 
-PropertiesRibbon.newLayout(projectLayout)
+PropertiesRibbon.presentLayout(projectLayout)

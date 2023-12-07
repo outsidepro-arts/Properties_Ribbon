@@ -3015,4 +3015,4 @@ end
 
 parentLayout.defaultSublayout = "itemLayout"
 
-PropertiesRibbon.newLayout(parentLayout)
+PropertiesRibbon.presentLayout(parentLayout)

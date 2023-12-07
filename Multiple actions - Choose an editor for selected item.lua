@@ -64,4 +64,4 @@ nil,
 
 
 
-PropertiesRibbon.newLayout(parentLayout)
+PropertiesRibbon.presentLayout(parentLayout)

@@ -862,4 +862,4 @@ end
 
 parentLayout.defaultSublayout = sublayout
 
-PropertiesRibbon.newLayout(parentLayout)
+PropertiesRibbon.presentLayout(parentLayout)

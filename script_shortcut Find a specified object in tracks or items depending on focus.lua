@@ -316,4 +316,4 @@ end
 searchbyPluginsAction.set_adjust = searchinAction.set_adjust
 searchbyPluginsAction.extendedProperties = searchinAction.extendedProperties
 
-PropertiesRibbon.newLayout(searchLayout)
+PropertiesRibbon.presentLayout(searchLayout)

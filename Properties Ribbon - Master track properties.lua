@@ -664,4 +664,4 @@ function osaraParamsProperty:set_perform()
 	end
 end
 
-PropertiesRibbon.newLayout(parentLayout)
+PropertiesRibbon.presentLayout(parentLayout)

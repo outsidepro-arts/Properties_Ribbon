@@ -819,4 +819,4 @@ end
 
 envelopePointsLayout:registerProperty(addEnvelopePointProperty)
 
-PropertiesRibbon.newLayout(envelopePointsLayout)
+PropertiesRibbon.presentLayout(envelopePointsLayout)

@@ -347,4 +347,4 @@ parentLayout.windows:registerProperty(
 
 parentLayout.defaultSublayout = "areas"
 
-PropertiesRibbon.newLayout(parentLayout)
+PropertiesRibbon.presentLayout(parentLayout)
