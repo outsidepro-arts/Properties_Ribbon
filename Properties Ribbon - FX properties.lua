@@ -1139,4 +1139,4 @@ end
 -- After all rendering cases you have to store current object to next rendering will be fast
 extstate._layout.lastObjectId = getCurrentObjectId()
 
-main_newLayout(fxLayout)
+PropertiesRibbon.newLayout(fxLayout)

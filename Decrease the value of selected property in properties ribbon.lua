@@ -9,6 +9,6 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 
 require "properties_ribbon"
 
-if main_initLastLayout(true) then
-	main_ajustProperty(actions.set.decrease)
+if PropertiesRibbon.initLastLayout(true) then
+	PropertiesRibbon.ajustProperty(actions.set.decrease)
 end

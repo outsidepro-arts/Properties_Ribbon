@@ -46,8 +46,8 @@ local function getPresets()
 	local presets = setmetatable({}, {
 		__index = function(self, idx)
 			if isnumber(idx) then
-				local name, value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")],
-								extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")]
+				local name, value = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "name")],
+								extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "value")]
 				if name and value then
 					return {
 						name = name,
@@ -58,23 +58,23 @@ local function getPresets()
 		end,
 		__newindex = function(self, idx, preset)
 			if preset then
-				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "name")] = assert(
+				extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "name")] = assert(
 								preset.name, "Expected table field 'name'")
-				extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", idx), "value")] = assert(
+				extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "value")] = assert(
 								preset.value, "Expected table field 'value'")
 			else
 				local i = idx
-				while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] do
+				while extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] do
 					if i == idx then
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")] = nil
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] = nil
 					elseif i > idx then
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "name")] =
-										extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")]
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "name")] = nil
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i - 1), "value")] =
-										extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")]
-						extstate._layout._forever[utils.makeKeySequence(sublayout, string.format("preset%u", i), "value")] = nil
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i - 1), "name")] =
+										extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")]
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")] = nil
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i - 1), "value")] =
+										extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")]
+						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] = nil
 					end
 					i = i + 1
 				end
@@ -82,19 +82,19 @@ local function getPresets()
 		end,
 		__len = function(self)
 			local mCount = 0
-			while extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "value")] and
-							extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", mCount + 1), "name")] do
+			while extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", mCount + 1), "value")] and
+							extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", mCount + 1), "name")] do
 				mCount = mCount + 1
 			end
 			return mCount
 		end,
 		__ipairs = function(self)
 			local lambda = function(obj, idx)
-				if extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "name")] and
-								extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")] then
+				if extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "name")] and
+								extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "value")] then
 					return idx + 1, {
-						name = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "name")],
-						value = extstate._layout[utils.makeKeySequence(sublayout, string.format("preset%u", idx + 1), "value")]
+						name = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "name")],
+						value = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "value")]
 					}
 				end
 			end
@@ -862,4 +862,4 @@ end
 
 parentLayout.defaultSublayout = sublayout
 
-main_newLayout(parentLayout)
+PropertiesRibbon.newLayout(parentLayout)

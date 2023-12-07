@@ -64,4 +64,4 @@ nil,
 
 
 
-main_newLayout(parentLayout)
+PropertiesRibbon.newLayout(parentLayout)

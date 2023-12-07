@@ -976,4 +976,4 @@ else
 	formTakeMarkersProperties(items)
 end
 
-main_newLayout(parentLayout)
+PropertiesRibbon.newLayout(parentLayout)

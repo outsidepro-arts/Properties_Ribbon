@@ -557,4 +557,4 @@ end
 fxActionsLayout.monitoringLayout:registerProperty(osaraMasterFXParametersProperty)
 
 
-main_newLayout(fxActionsLayout )
+PropertiesRibbon.newLayout(fxActionsLayout )

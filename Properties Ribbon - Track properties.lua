@@ -2073,4 +2073,4 @@ end
 
 parentLayout.defaultSublayout = "playbackLayout"
 
-main_newLayout(parentLayout)
+PropertiesRibbon.newLayout(parentLayout)

@@ -477,4 +477,4 @@ end
 soundTracksNavigator.get = generateGetMethod("Currently sound")
 soundTracksNavigator.set_adjust = generateSetMethod("No %s track which is currently sound")
 
-main_newLayout(catnavLayout)
+PropertiesRibbon.newLayout(catnavLayout)

@@ -126,4 +126,4 @@ parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.N
 	"About currently installed SWS extension"))
 parentLayout.swsLayout:registerProperty(composeSimpleDialogOpenProperty(reaper.NamedCommandLookup("_BR_VERSION_CHECK")))
 
-main_newLayout(parentLayout)
+PropertiesRibbon.newLayout(parentLayout)

@@ -34,4 +34,4 @@ insertionLayout:registerProperty(composeSimpleProperty(40702))
 insertionLayout:registerProperty(composeSimpleProperty(46000))
 insertionLayout:registerProperty(composeSimpleProperty(41067))
 
-main_newLayout(insertionLayout)
+PropertiesRibbon.newLayout(insertionLayout)

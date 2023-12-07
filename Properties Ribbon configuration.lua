@@ -1317,4 +1317,4 @@ function tempoStepProperty:set_perform()
 	end
 end
 
-main_newLayout(configLayout)
+PropertiesRibbon.newLayout(configLayout)

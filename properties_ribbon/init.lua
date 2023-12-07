@@ -572,9 +572,9 @@ end
 -- -- newLayout (string): either absolute or relative path of new layout  which Properties Ribbon should switch to.
 -- Returns none
 function executeLayout(newLayoutFile)
-	main_finish()
+	finishScript()
 	local lt = nil
-	main_newLayout = function(newLayout)
+	PropertiesRibbon.newLayout = function(newLayout)
 		local rememberCFG = config.getinteger("rememberSublayout", 3)
 		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
 			-- Let REAPER do not request the extstate superfluously
@@ -591,7 +591,7 @@ function executeLayout(newLayoutFile)
 		lt = newLayout
 	end
 	dofile(fixPath(newLayoutFile):join(".lua"))
-	main_finish = function()
+	finishScript = function()
 		if lt.destroy then
 			lt.destroy()
 		end
@@ -608,7 +608,7 @@ function executeLayout(newLayoutFile)
 		end
 	end
 	if prepareLayout(lt) then
-		main_reportOrGotoProperty()
+		PropertiesRibbon.reportOrGotoProperty()
 	end
 end
 
@@ -724,6 +724,8 @@ You have to allow REAPER only create new instance and not finish previous task. 
 	extstate._forever.reascriptTasksAvoid = true
 end
 
+-- Module namespace
+PropertiesRibbon = {}
 -- Global variables initialization
 layout = {}
 local maybeLayout = nil
@@ -756,7 +758,7 @@ function prepareLayout(newLayout)
 	return layout ~= nil
 end
 
-function main_newLayout(lt)
+function PropertiesRibbon.newLayout(lt)
 	extstate.gotoMode = nil
 	extstate.isTwice = nil
 	speakLayout = true
@@ -775,11 +777,11 @@ function main_newLayout(lt)
 		layout.pIndex = 1
 	end
 	if prepareLayout(lt) then
-		main_reportOrGotoProperty()
+		PropertiesRibbon.reportOrGotoProperty()
 	end
 end
 
-function main_initLastLayout(shouldOmitAutomaticLayoutLoading)
+function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 	local proposedLayout
 	if config.getboolean("automaticLayoutLoading", false) == true and shouldOmitAutomaticLayoutLoading ~= true then
 		proposedLayout = proposeLayout()
@@ -795,7 +797,7 @@ function main_initLastLayout(shouldOmitAutomaticLayoutLoading)
 		return
 	end
 	local lt = nil
-	main_newLayout = function(newLayout)
+	PropertiesRibbon.newLayout = function(newLayout)
 		lt = newLayout
 	end
 	dofile(layoutFile)
@@ -808,7 +810,7 @@ function main_initLastLayout(shouldOmitAutomaticLayoutLoading)
 	end
 end
 
-function main_switchSublayout(action)
+function PropertiesRibbon.switchSublayout(action)
 	if extstate.gotoMode then
 		("Goto mode deactivated. "):output()
 		extstate.gotoMode = nil
@@ -816,7 +818,7 @@ function main_switchSublayout(action)
 	if layout.canProvide() ~= true then
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		main_finish()
+		finishScript()
 		return
 	end
 	if isSublayout(layout) then
@@ -826,36 +828,36 @@ function main_switchSublayout(action)
 		if action == actions.sublayout_next then
 			if layout.nextSubLayout then
 				currentSublayout = layout.nextSubLayout
-				main_finish()
+				finishScript()
 			else
 				("No next category."):output()
-				main_finish()
+				finishScript()
 				return
 			end
 		elseif action == actions.sublayout_prev then
 			if layout.previousSubLayout then
 				currentSublayout = layout.previousSubLayout
-				main_finish()
+				finishScript()
 			else
 				("No previous category."):output()
-				main_finish()
+				finishScript()
 				return
 			end
 		end
-		if not main_initLastLayout() then
+		if not PropertiesRibbon.initLastLayout() then
 			restorePreviousLayout()
-			main_finish()
+			finishScript()
 			return
 		end
 		speakLayout = true
-		main_reportOrGotoProperty(nil, nil, false)
+		PropertiesRibbon.reportOrGotoProperty(nil, nil, false)
 	else
 		(("The %s layout has no category. "):format(layout.name)):output()
 	end
-	main_finish()
+	finishScript()
 end
 
-function main_nextProperty()
+function PropertiesRibbon.nextProperty()
 	local message = initOutputMessage()
 	if extstate.gotoMode then
 		message("Goto mode deactivated. ")
@@ -893,7 +895,7 @@ function main_nextProperty()
 				[false] = layoutLevel.subname
 			})[currentExtProperty ~= nil])):output()
 			restorePreviousLayout()
-			main_finish()
+			finishScript()
 			return
 		end
 		if pIndex + 1 <= #layoutLevel.properties then
@@ -904,7 +906,7 @@ function main_nextProperty()
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		main_finish()
+		finishScript()
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -972,10 +974,10 @@ function main_nextProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	main_finish()
+	finishScript()
 end
 
-function main_previousProperty()
+function PropertiesRibbon.previousProperty()
 	local message = initOutputMessage()
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if extstate.gotoMode then
@@ -1010,7 +1012,7 @@ function main_previousProperty()
 		if #layoutLevel.properties < 1 then
 			(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 			restorePreviousLayout()
-			main_finish()
+			finishScript()
 			return
 		end
 		if pIndex - 1 > 0 then
@@ -1021,7 +1023,7 @@ function main_previousProperty()
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		main_finish()
+		finishScript()
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -1089,10 +1091,10 @@ function main_previousProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	main_finish()
+	finishScript()
 end
 
-function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
+function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
 								   shouldNotResetExtProperty)
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
@@ -1145,7 +1147,7 @@ function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, sho
 			local definedName = layoutLevel.subname or layoutLevel.name
 			string.format("The ribbon of %s is empty.", definedName):output()
 			restorePreviousLayout()
-			main_finish()
+			finishScript()
 			return
 		end
 		if propertyNum then
@@ -1173,14 +1175,14 @@ function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, sho
 				end
 				message(string.format("%s layout.", layout.name))
 				message:output()
-				main_finish()
+				finishScript()
 				return
 			end
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
 		restorePreviousLayout()
-		main_finish()
+		finishScript()
 		return
 	end
 	local pIndex
@@ -1263,7 +1265,7 @@ function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, sho
 		config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and
 		extstate.isTwice == pIndex
 	if isTwice then
-		main_ajustProperty(actions.set.perform)
+		PropertiesRibbon.ajustProperty(actions.set.perform)
 	else
 		message:output(({
 			[true] = 0,
@@ -1274,13 +1276,13 @@ function main_reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, sho
 			extstate.isTwice = pIndex
 		end
 	end
-	main_finish()
+	finishScript()
 end
 
-function main_ajustProperty(action)
+function PropertiesRibbon.ajustProperty(action)
 	local gotoMode = extstate.gotoMode
 	if gotoMode and action == actions.set.perform then
-		main_reportOrGotoProperty()
+		PropertiesRibbon.reportOrGotoProperty()
 		return
 	end
 	if layout.canProvide() == true then
@@ -1289,7 +1291,7 @@ function main_ajustProperty(action)
 			if layout.properties[layout.pIndex].extendedProperties and action == actions.set.perform then
 				currentExtProperty = 1
 				speakLayout = true
-				main_reportOrGotoProperty(nil, nil, nil, true)
+				PropertiesRibbon.reportOrGotoProperty(nil, nil, nil, true)
 				return
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
@@ -1309,7 +1311,7 @@ function main_ajustProperty(action)
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				main_finish()
+				finishScript()
 				return
 			end
 		elseif currentExtProperty then
@@ -1333,7 +1335,7 @@ function main_ajustProperty(action)
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				main_finish()
+				finishScript()
 				return
 			end
 			msg = nil
@@ -1362,22 +1364,22 @@ function main_ajustProperty(action)
 						msg:output()
 					end
 				end
-				main_finish()
+				finishScript()
 				return
 			end
 		end
 		if not msg then
-			main_finish()
+			finishScript()
 			return
 		end
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 	end
-	main_finish()
+	finishScript()
 end
 
-function main_reportLayout()
+function PropertiesRibbon.reportLayout()
 	if layout.canProvide() then
 		local message = initOutputMessage()
 		if isSublayout(layout) then
@@ -1414,7 +1416,7 @@ function main_reportLayout()
 	end
 end
 
-function main_activateGotoMode()
+function PropertiesRibbon.activateGotoMode()
 	local mode = extstate.gotoMode
 	if mode == nil then
 		("Goto mode activated."):output()
@@ -1425,7 +1427,8 @@ function main_activateGotoMode()
 	end
 end
 
-function main_finish()
+-- Actualy, this function should be local, but some functions call this from unusual scopes
+function finishScript()
 	if layout then
 		if layout.destroy then
 			layout.destroy()
