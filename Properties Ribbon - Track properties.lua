@@ -1864,6 +1864,63 @@ function performanceAnticipativeFXProperty:set_perform()
 	return message
 end
 
+-- Posibility to marque tracks for solo defeat property
+local soloDefeatProperty = {}
+parentLayout.visualLayout:registerProperty(soloDefeatProperty)
+soloDefeatProperty.states = { [0] = "not defeated", [1] = "defeated" }
+
+function soloDefeatProperty:get()
+	local message = initOutputMessage()
+	message:initType("Toggle this property to switch the solo defeat state of selected track.", "Toggleable")
+	if multiSelectionSupport == true then
+		message:addType(" If the group of tracks has been selected, the defeat state will be set to oposite value depending of moreness tracks with the same value.", 1)
+		end
+	message{ label = "Solo" }
+	if istable(tracks) then
+		message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "B_SOLO_DEFEAT") end
+			, self.states))
+	else
+		local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SOLO_DEFEAT")
+		message{ objectId = getTrackID(tracks), value = self.states[state] }
+	end
+	return message
+end
+
+function soloDefeatProperty:set_perform()
+	local message = initOutputMessage()
+	if istable(tracks) then
+		local defeatedTracks, notDefeatTracks = 0, 0
+		for k = 1, #tracks do
+			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
+			if state == 1 then
+				notDefeatTracks = notDefeatTracks + 1
+			else
+				defeatTracks = defeatTracks + 1
+			end
+		end
+		local ajustingValue
+		if defeatTracks > notDefeatTracks then
+			ajustingValue = 1
+			message("Switching off the solo defeat state for selected tracks.")
+		elseif defeatTracks < notDefeatTracks then
+			ajustingValue = 0
+			message("Switching on the solo defeat state for selected tracks.")
+		else
+			ajustingValue = 0
+			message("Switching on the solo defeat state for selected tracks.")
+		end
+		for k = 1, #tracks do
+			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
+			reaper.SetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT", ajustingValue)
+		end
+	else
+		local state = reaper.GetMediaTrackInfo_Value(tracks, "B_SOLO_DEFEAT")
+		reaper.SetMediaTrackInfo_Value(tracks, "B_SOLO_DEFEAT", state ~ 1)
+	end
+	message(self:get())
+	return message
+end
+
 -- Visibility in Mixer panel
 local mixerVisibilityProperty = {}
 parentLayout.visualLayout:registerProperty(mixerVisibilityProperty)
