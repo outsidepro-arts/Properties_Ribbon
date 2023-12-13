@@ -238,7 +238,17 @@ function folderStateProperty:get()
 				message:addType(", toggleable", 2)
 			end
 		elseif state < 0 then
-			message { value = string.format(self.states[2], select(2, reaper.GetTrackName(reaper.GetParentTrack(tracks), ""))) }
+			-- We have to search the track which this end of folder closes
+			local isParentTrack = tracks
+			local diver = -1
+			while diver >= state do
+				isParentTrack = reaper.GetParentTrack(isParentTrack)
+				if not isParentTrack then
+					break
+				end
+				diver = diver - 1
+			end
+			message { value = string.format(self.states[2], select(2, reaper.GetTrackName(isParentTrack, ""))) }
 		end
 	end
 	return message
