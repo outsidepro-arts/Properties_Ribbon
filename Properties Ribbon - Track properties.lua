@@ -240,13 +240,11 @@ function folderStateProperty:get()
 		elseif state < 0 then
 			-- We have to search the track which this end of folder closes
 			local isParentTrack = tracks
-			local diver = -1
-			while diver >= state do
+			for _ = -1, state, -1 do
 				isParentTrack = reaper.GetParentTrack(isParentTrack)
 				if not isParentTrack then
 					break
 				end
-				diver = diver - 1
 			end
 			message { value = string.format(self.states[2], select(2, reaper.GetTrackName(isParentTrack, ""))) }
 		end
