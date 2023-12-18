@@ -75,8 +75,8 @@ local function searchItems(options, itemFrom, direction)
 	for i = startRange, endRange, direction do
 		local item = reaper.GetMediaItem(0, i)
 		local take = reaper.GetActiveTake(item)
-		local _, takeName = reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", "", false)
-		if takeName then
+		local retval, takeName = reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", "", false)
+		if retval then
 			if utils.extendedSearch(takeName, options.query, options.caseSensetive, options.usePatterns) then
 				reaper.SelectAllMediaItems(0, false)
 				local newCursorPos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
