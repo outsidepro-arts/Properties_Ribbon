@@ -1074,7 +1074,7 @@ function fadeinShapeProperty:set_adjust(direction)
 		local state
 		if allIdentical then
 			state = self.getValue(items[1])
-			if state + ajustingValue < #self.states and state + ajustingValue >= 0 then
+			if state + ajustingValue <= #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
 			else
 				message(string.format("No more %s property values.", ({ [1] = "next",[-1] = "previous" })[direction]))
