@@ -355,6 +355,7 @@ function representation.getFocusLikeOSARA(context, opTrack)
 			return table.concat(msgCalculator, '.\n')
 		end,
 		[1] = function()
+			useMacros("item_properties")
 			local items = item_properties_macros.getItems(config.getboolean("multiSelectionSupport", true))
 			if not istable(items) then
 				items = { items }
