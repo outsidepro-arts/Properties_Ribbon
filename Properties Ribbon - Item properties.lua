@@ -20,6 +20,7 @@ require "properties_ribbon"
 
 useMacros("item_properties")
 useMacros("tools")
+useMacros("actions")
 
 -- Reading the some config which will be used everyhere
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
@@ -179,7 +180,7 @@ and try to complement any getState message with short type label. I mean what th
 -- Lock item methods
 local lockProperty = {}
 parentLayout.itemLayout:registerProperty(lockProperty)
-lockProperty.states = { [0] = "Unlocked",[1] = "locked" }
+lockProperty.states = { [0] = "Unlocked", [1] = "locked" }
 
 function lockProperty.getValue(item)
 	return reaper.GetMediaItemInfo_Value(item, "C_LOCK")
@@ -367,7 +368,7 @@ itemVolumeProperty.extendedProperties:registerProperty {
 -- mute methods
 local muteItemProperty = {}
 parentLayout.itemLayout:registerProperty(muteItemProperty)
-muteItemProperty.states = { [0] = "not muted",[1] = "muted" }
+muteItemProperty.states = { [0] = "not muted", [1] = "muted" }
 
 function muteItemProperty:get()
 	local message = initOutputMessage()
@@ -426,7 +427,7 @@ end
 -- Loop source methods
 local loopSourceProperty = {}
 parentLayout.itemLayout:registerProperty(loopSourceProperty)
-loopSourceProperty.states = { [0] = "not looped",[1] = "looped" }
+loopSourceProperty.states = { [0] = "not looped", [1] = "looped" }
 
 function loopSourceProperty:get()
 	local message = initOutputMessage()
@@ -484,7 +485,7 @@ end
 -- All takes play methods
 local itemAllTakesPlayProperty = {}
 parentLayout.itemLayout:registerProperty(itemAllTakesPlayProperty)
-itemAllTakesPlayProperty.states = { [0] = "not playing",[1] = "playing" }
+itemAllTakesPlayProperty.states = { [0] = "not playing", [1] = "playing" }
 
 function itemAllTakesPlayProperty:get()
 	local message = initOutputMessage()
@@ -601,7 +602,7 @@ function timebaseProperty:set_adjust(direction)
 			if state + ajustingValue < #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
 			else
-				message(string.format("No more %s property values.", ({ [1] = "next",[-1] = "previous" })[direction]))
+				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous" })[direction]))
 			end
 		else
 			state = -1
@@ -628,7 +629,7 @@ end
 -- Auto-stretch methods
 local autoStretchProperty = {}
 parentLayout.itemLayout:registerProperty(autoStretchProperty)
-autoStretchProperty.states = { [0] = "disabled",[1] = "enabled" }
+autoStretchProperty.states = { [0] = "disabled", [1] = "enabled" }
 
 function autoStretchProperty:get()
 	local message = initOutputMessage()
@@ -944,6 +945,45 @@ function positionProperty:set_adjust(direction)
 	return
 end
 
+positionProperty.extendedProperties = initExtendedProperties("Position extended interraction")
+
+
+positionProperty.extendedProperties:registerProperty{
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message:initType("Perform this property to move selected items to edit cursor position so that left edge will be positioned here..")
+		message("Move to edit cursor by left edge")
+		return message
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		reaper.Main_OnCommand(41205, 1)
+		message("Moved to new position")
+		return true, message, true
+	end
+}
+
+
+positionProperty.extendedProperties:registerProperty{
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message:initType("Perform this property to move selected items to edit cursor position so that right edge will be positioned here..")
+		message("Move to edit cursor by right edge")
+		return message
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		for _, item in ipairs(istable(items) and items or { items }) do
+			---@todo These computations still need to be checked because sometimes they're useless and give strange results 
+			local takePlayrate, itemLength = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"),
+			reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+			reaper.SetMediaItemInfo_Value(item, "D_POSITION", reaper.GetCursorPosition() - itemLength)
+		end
+		message("Moved to new position")
+		return true, message, true
+	end
+}
+
 -- Right item edge
 local rightEdgeProperty = {}
 parentLayout.positionAndLength:registerProperty(rightEdgeProperty)
@@ -1077,7 +1117,7 @@ function fadeinShapeProperty:set_adjust(direction)
 			if state + ajustingValue <= #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
 			else
-				message(string.format("No more %s property values.", ({ [1] = "next",[-1] = "previous" })[direction]))
+				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous" })[direction]))
 			end
 		else
 			state = 1
@@ -2054,7 +2094,7 @@ takePanProperty.extendedProperties:registerProperty {
 -- Take phase methods
 local takePhaseProperty = {}
 parentLayout.takeLayout:registerProperty(takePhaseProperty)
-takePhaseProperty.states = { [0] = "normal",[1] = "inverted" }
+takePhaseProperty.states = { [0] = "normal", [1] = "inverted" }
 
 -- Cockos made the phase inversion via negative volume value.
 function takePhaseProperty.getValue(item)
@@ -2363,7 +2403,7 @@ takePlayrateProperty.extendedProperties:registerProperty {
 -- Preserve pitch when playrate changes methods
 local preserveTakePitchProperty = {}
 parentLayout.takeLayout:registerProperty(preserveTakePitchProperty)
-preserveTakePitchProperty.states = { [0] = "not preserved",[1] = "preserved" }
+preserveTakePitchProperty.states = { [0] = "not preserved", [1] = "preserved" }
 
 function preserveTakePitchProperty.getValue(item)
 	return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "B_PPITCH")
