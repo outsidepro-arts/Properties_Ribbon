@@ -338,10 +338,20 @@ function initOutputMessage()
 			end
 		end,
 		__len = function(self)
+			local lengthCounter = 0
 			if self.msg then
-				return self.msg:len()
+				lengthCounter = lengthCounter + self.msg:len()
 			end
-			return 0
+			if self.objectId then
+				lengthCounter = lengthCounter + self.objectId:len()
+			end
+			if self.label then
+				lengthCounter = lengthCounter + self.label:len()
+			end
+			if self.value then
+				lengthCounter = lengthCounter + self.value:len()
+			end
+			return lengthCounter
 		end
 	})
 	return mt
