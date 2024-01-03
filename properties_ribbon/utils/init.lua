@@ -1,6 +1,6 @@
 --[[
 This file is part of script complex Properties Ribbon
-Copyright (c) 2020-2022 outsidepro-arts & other contributors
+Copyright (c) 2020-2024 outsidepro-arts & other contributors
 License: MIT License
 ]] --
 

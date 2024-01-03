@@ -1,6 +1,6 @@
 --[[
 REAPER Extstate metatable
-Copyright (c) 2020-2022 outsidepro-arts
+Copyright (c) 2020-2024 outsidepro-arts
 License: MIT License
 Allows to interract with ReaScript Extstate functions such as reaper.GetExtState, reaper.SetExtState and reaper.DeleteExtState like with usual table.
 The metatable has two specific fields:
