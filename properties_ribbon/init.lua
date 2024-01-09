@@ -440,8 +440,12 @@ function initLayout(str)
 				return rawget(self, #self)
 			end
 		}),
-		registerProperty = function(self, property)
-			return table.insert(self.properties, property)
+		registerProperty = function(self, property, performableOnce)
+			if performableOnce == true then
+				property.performableOnce = performableOnce
+			end
+			table.insert(self.properties, property)
+			return property
 		end,
 		canProvide = function()
 			return true
@@ -588,8 +592,8 @@ function executeLayout(newLayoutFile)
 		local rememberCFG = config.getinteger("rememberSublayout", 3)
 		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
 			-- Let REAPER do not request the extstate superfluously
-			if extstate[newLayout.section .. "_sublayout"] ~= "" then
-				extstate[newLayout.section .. "_sublayout"] = nil
+			if extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] ~= "" then
+				extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = nil
 			end
 		end
 		extstate.gotoMode = nil
@@ -597,7 +601,7 @@ function executeLayout(newLayoutFile)
 		speakLayout = true
 		layoutFile = fixPath(newLayoutFile):join(".lua")
 		currentLayout = newLayout.section
-		currentSublayout = extstate[currentLayout .. "_sublayout"]
+		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 		lt = newLayout
 	end
 	dofile(fixPath(newLayoutFile):join(".lua"))
@@ -609,7 +613,8 @@ function executeLayout(newLayoutFile)
 		extstate.currentLayout = lt.section
 		extstate.layoutFile = fixPath(newLayoutFile):join(".lua")
 		if layoutHasReset ~= true then
-			extstate[lt.section .. "_sublayout"] = currentSublayout or extstate[currentLayout .. "_sublayout"]
+			extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = currentSublayout or
+				extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 		end
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = nil
@@ -741,7 +746,7 @@ layout = {}
 local maybeLayout = nil
 local layoutFile = extstate.layoutFile
 currentLayout = extstate.currentLayout
-currentSublayout = currentLayout and extstate[currentLayout .. "_sublayout"]
+currentSublayout = currentLayout and extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 local SpeakLayout = false
 local g_undoState = nil
 local currentExtProperty = extstate.extProperty
@@ -774,11 +779,11 @@ function PropertiesRibbon.presentLayout(lt)
 	speakLayout = true
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	currentLayout = lt.section
-	currentSublayout = extstate[currentLayout .. "_sublayout"]
+	currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
 		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
 	end
-	if config.getboolean("allowLayoutsrestorePrev", true) == true then
+	if config.getboolean("allowLayoutsrestorePrev", true) == true and layoutFile ~= extstate then
 		extstate.previousLayoutFile = extstate.layoutFile
 	end
 	layoutFile = select(2, reaper.get_action_context())
@@ -808,14 +813,15 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 	end
 	local lt = nil
 	PropertiesRibbon.presentLayout = function(newLayout)
+		if config.getboolean("allowLayoutsrestorePrev", true) == true and layoutFile ~= extstate.layoutFile then
+			extstate.previousLayoutFile = extstate.layoutFile
+		end
 		lt = newLayout
 	end
 	dofile(layoutFile)
 	if lt then
-		if proposedLayout then
 			currentLayout = lt.section
-			currentSublayout = extstate[lt.section .. "_sublayout"]
-		end
+			currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 		return prepareLayout(lt)
 	end
 end
@@ -827,8 +833,7 @@ function PropertiesRibbon.switchSublayout(action)
 	end
 	if layout.canProvide() ~= true then
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		restorePreviousLayout()
-		finishScript()
+		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
 	if isSublayout(layout) then
@@ -855,8 +860,7 @@ function PropertiesRibbon.switchSublayout(action)
 			end
 		end
 		if not PropertiesRibbon.initLastLayout() then
-			restorePreviousLayout()
-			finishScript()
+			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		speakLayout = true
@@ -904,8 +908,7 @@ function PropertiesRibbon.nextProperty()
 				[true] = layoutLevel.name,
 				[false] = layoutLevel.subname
 			})[currentExtProperty ~= nil])):output()
-			restorePreviousLayout()
-			finishScript()
+			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		if pIndex + 1 <= #layoutLevel.properties then
@@ -915,8 +918,7 @@ function PropertiesRibbon.nextProperty()
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		restorePreviousLayout()
-		finishScript()
+		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -935,6 +937,11 @@ function PropertiesRibbon.nextProperty()
 				end
 				result:addType(string.format("%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+					result:addType(
+						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						1)
+				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -952,6 +959,9 @@ function PropertiesRibbon.nextProperty()
 					result:addType("P", 2)
 				end
 				result:addType("erformable", 2)
+				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+					result:addType(" once", 2)
+				end
 			end
 		end
 		if layoutLevel.properties[pIndex].extendedProperties then
@@ -1021,8 +1031,7 @@ function PropertiesRibbon.previousProperty()
 	if layout.canProvide() == true then
 		if #layoutLevel.properties < 1 then
 			(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
-			restorePreviousLayout()
-			finishScript()
+			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		if pIndex - 1 > 0 then
@@ -1032,8 +1041,7 @@ function PropertiesRibbon.previousProperty()
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		restorePreviousLayout()
-		finishScript()
+		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -1052,6 +1060,11 @@ function PropertiesRibbon.previousProperty()
 				end
 				result:addType(string.format("%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+					result:addType(
+						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						1)
+				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -1069,6 +1082,9 @@ function PropertiesRibbon.previousProperty()
 					result:addType("P", 2)
 				end
 				result:addType("erformable", 2)
+				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+					result:addType(" once", 2)
+				end
 			end
 		end
 		if layoutLevel.properties[pIndex].extendedProperties then
@@ -1105,7 +1121,7 @@ function PropertiesRibbon.previousProperty()
 end
 
 function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
-								   shouldNotResetExtProperty)
+											   shouldNotResetExtProperty)
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 	local gotoMode = extstate.gotoMode
@@ -1156,8 +1172,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		if #layoutLevel.properties < 1 then
 			local definedName = layoutLevel.subname or layoutLevel.name
 			string.format("The ribbon of %s is empty.", definedName):output()
-			restorePreviousLayout()
-			finishScript()
+			finishScript(true)
 			return
 		end
 		if propertyNum then
@@ -1191,8 +1206,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		restorePreviousLayout()
-		finishScript()
+		finishScript(true)
 		return
 	end
 	local pIndex
@@ -1215,6 +1229,11 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 				end
 				result:addType(string.format("%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
+				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+					result:addType(
+						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						1)
+				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
@@ -1232,6 +1251,9 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 					result:addType("P", 2)
 				end
 				result:addType("erformable", 2)
+			end
+			if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
+				result:addType(" once", 2)
 			end
 		end
 		if layoutLevel.properties[pIndex].extendedProperties then
@@ -1282,7 +1304,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			[false] = 1
 		})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 		if config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform and currentSublayout ==
-			extstate[currentLayout .. "_sublayout"] and propertyNumPassed then
+			extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] and propertyNumPassed then
 			extstate.isTwice = pIndex
 		end
 	end
@@ -1290,6 +1312,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 end
 
 function PropertiesRibbon.ajustProperty(action)
+	local oncePerformRequested = false
 	local gotoMode = extstate.gotoMode
 	if gotoMode and action == actions.set.perform then
 		PropertiesRibbon.reportOrGotoProperty()
@@ -1306,9 +1329,10 @@ function PropertiesRibbon.ajustProperty(action)
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
 				beginUndoBlock()
-				msg = layout.properties[layout.pIndex][string.format("set_%s", action.value)](
+				msg, opt_once = layout.properties[layout.pIndex][string.format("set_%s", action.value)](
 					layout.properties[layout.pIndex],
 					action.direction)
+					opt_once = layout.properties[layout.pIndex].performableOnce and opt_once
 				if layout.undoContext then
 					if msg then
 						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
@@ -1318,6 +1342,9 @@ function PropertiesRibbon.ajustProperty(action)
 						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout
 							.undoContext)
 					end
+				end
+				if opt_once == true then
+					oncePerformRequested = config.getboolean("allowLayoutsrestorePrev", true)
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
@@ -1379,14 +1406,14 @@ function PropertiesRibbon.ajustProperty(action)
 			end
 		end
 		if not msg then
-			finishScript()
+			finishScript(oncePerformRequested)
 			return
 		end
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 	end
-	finishScript()
+	finishScript(oncePerformRequested)
 end
 
 function PropertiesRibbon.reportLayout()
@@ -1438,17 +1465,19 @@ function PropertiesRibbon.activateGotoMode()
 end
 
 -- Actualy, this function should be local, but some functions call this from unusual scopes
-function finishScript()
+function finishScript(shouldRestorePrev)
 	if layout then
 		if layout.destroy then
 			layout.destroy()
 		end
+		if shouldRestorePrev then
+			extstate.layoutFile = extstate.previousLayoutFile or fixPath(proposeLayout())
+		else
+			extstate.layoutFile = layoutFile
+		end
 		extstate[layout.section] = layout.pIndex
 		extstate.currentLayout = currentLayout
-		extstate.layoutFile = layoutFile
-		if layoutHasReset ~= true then
-			extstate[currentLayout .. "_sublayout"] = currentSublayout or extstate[currentLayout .. "_sublayout"]
-		end
+		extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = currentSublayout
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = currentExtProperty
 		if reaper.GetCursorContext() ~= -1 then
