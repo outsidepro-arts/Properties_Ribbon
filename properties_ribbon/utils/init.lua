@@ -95,7 +95,7 @@ end
 
 function utils.removeSpaces(str)
 	str = tostring(str)
-	local preproc = str:gsub("%s.", string.upper):gsub("%s", ""):gsub("%W", "_")
+	local preproc = str:gsub("%s.", string.upper):gsub("%s", ""):gsub(":", ""):gsub("%W", "_")
 	return preproc:gsub("^.", string.lower)
 end
 
