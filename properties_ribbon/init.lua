@@ -763,6 +763,7 @@ function PropertiesRibbon.presentLayout(lt)
 	speakLayout = true
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	currentLayout = lt.section
+	layoutFile = select(2, reaper.get_action_context())
 	currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
 		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
@@ -770,7 +771,6 @@ function PropertiesRibbon.presentLayout(lt)
 	if config.getboolean("allowLayoutsrestorePrev", true) == true and layoutFile ~= extstate then
 		extstate.previousLayoutFile = extstate.layoutFile
 	end
-	layoutFile = select(2, reaper.get_action_context())
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if rememberCFG ~= 1 and rememberCFG ~= 2 then
 		layout.pIndex = 1
