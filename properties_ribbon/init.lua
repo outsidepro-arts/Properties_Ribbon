@@ -555,22 +555,6 @@ function setUndoLabel(label)
 	end
 end
 
-function restorePreviousLayout()
-	if config.getboolean("allowLayoutsrestorePrev", true) == true then
-		if config.getboolean("automaticLayoutLoading", false) == true then
-			layoutFile = proposeLayout()
-			speakLayout = true
-			layoutHasReset = true
-		else
-			if extstate.previousLayoutFile then
-				layoutFile = extstate.previousLayoutFile
-				speakLayout = true
-				layoutHasReset = true
-			end
-		end
-	end
-end
-
 function fixPath(path)
 	path = assert(isstring(path) and path, ("The string is expected (got %s)"):format(type(path)))
 	if path:match("^%u:") then
