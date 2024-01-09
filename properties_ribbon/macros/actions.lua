@@ -20,7 +20,7 @@ function composeSimpleProperty(
 		local usual = {
 			get = function(self)
 				local message = initOutputMessage()
-				message:initType("Perform this property to execute the specified action.", "Performable")
+				message:initType()
 				if msg then
 					message(msg)
 				else
@@ -43,16 +43,10 @@ function composeSimpleProperty(
 						message(premsg)
 					end
 				end
-				if config.getboolean("allowLayoutsrestorePrev", true) == true then
-					message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed."
-						, 1)
-					message:addType(", onetime", 2)
-				end
 				return message
 			end,
 			set_perform = function(self)
 				local message = initOutputMessage()
-				restorePreviousLayout()
 				local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
 				if istable(cmd) then
 					for _, command in ipairs(cmd) do
@@ -79,8 +73,9 @@ function composeSimpleProperty(
 					message(string.format("%u items removed", oldItemsCount - newItemsCount))
 				end
 				if #message > 0 then
-					return message
+					return message, true
 				end
+				return nil, true
 			end
 		}
 		return usual
@@ -96,11 +91,6 @@ function composeSimpleProperty(
 			get = function(self)
 				local message = initOutputMessage()
 				message:initType("Perform this property to open the specified window.", "Performable")
-				if config.getboolean("allowLayoutsrestorePrev", true) == true then
-					message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed."
-						, 1)
-					message:addType(", onetime", 2)
-				end
 				if msg then
 					message(msg)
 				else
@@ -112,9 +102,8 @@ function composeSimpleProperty(
 			end,
 			set_perform = function(self, action)
 				reaper.Main_OnCommand(cmd, 1)
-				restorePreviousLayout()
 				setUndoLabel(self:get())
-				return
+				return nil, true
 			end
 		}
 		return usual
@@ -133,11 +122,6 @@ function composeSimpleProperty(
 			get = getFunction or function(self)
 				local message = initOutputMessage()
 				message:initType(types[1], types[2])
-				if shouldBeOnetime and config.getboolean("allowLayoutsrestorePrev", true) == true then
-					message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed."
-						, 1)
-					message:addType(", onetime", 2)
-				end
 				if msg then
 					message(string.format(msg, states[self.getValue()]))
 				else
@@ -153,17 +137,13 @@ function composeSimpleProperty(
 				local state = nor(self.getValue())
 				self.setValue(state)
 				message(self:get())
-				if shouldBeOnetime then
-					restorePreviousLayout()
-				end
-				return message
+				return message, true
 			end
 		}
 		return usual
 	end
 	
-	function composeExtendedProperty(cmd, msg, types, getFunction, setFunction, shouldBeOnetime)
-		shouldBeOnetime = shouldBeOnetime or true
+	function composeExtendedProperty(cmd, msg, types, getFunction, setFunction)
 		local usual = {
 			["msg"] = msg,
 			get = getFunction or function(self)
@@ -176,11 +156,6 @@ function composeSimpleProperty(
 				end
 				local message = initOutputMessage()
 				message:initType(types[1], types[2])
-				if shouldBeOnetime and config.getboolean("allowLayoutsrestorePrev", true) == true then
-					message:addType(" Please note that this action is onetime, i.e., after action here, the current layout will be closed."
-						, 1)
-					message:addType(", onetime", 2)
-				end
 				if msg then
 					message(msg)
 				else
@@ -198,10 +173,7 @@ function composeSimpleProperty(
 				else
 					reaper.Main_OnCommand(cmd, 0)
 				end
-				if shouldBeOnetime then
-					restorePreviousLayout()
-				end
-				return
+				return nil, true
 			end
 		}
 		return usual

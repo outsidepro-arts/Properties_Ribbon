@@ -27,11 +27,11 @@ reaper.SetCursorContext(0)
 local insertionLayout = initLayout("Track insertion actions")
 insertionLayout.undoContext = undo.contexts.tracks
 
-insertionLayout:registerProperty(composeSimpleProperty(40701))
-insertionLayout:registerProperty(composeSimpleProperty(40001))
-insertionLayout:registerProperty(composeSimpleProperty({ 40001, 40696 }, "Insert new track with specified name"))
-insertionLayout:registerProperty(composeSimpleProperty(40702))
-insertionLayout:registerProperty(composeSimpleProperty(46000))
-insertionLayout:registerProperty(composeSimpleProperty(41067))
+insertionLayout:registerProperty(composeSimpleProperty(40701), true)
+insertionLayout:registerProperty(composeSimpleProperty(40001), true)
+insertionLayout:registerProperty(composeSimpleProperty({ 40001, 40696 }, "Insert new track with specified name"), true)
+insertionLayout:registerProperty(composeSimpleProperty(40702), true)
+insertionLayout:registerProperty(composeSimpleProperty(46000), true)
+insertionLayout:registerProperty(composeSimpleProperty(41067), true)
 
 PropertiesRibbon.presentLayout(insertionLayout)

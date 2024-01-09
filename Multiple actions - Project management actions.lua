@@ -24,9 +24,9 @@ useMacros("actions")
 local projectLayout = initLayout("Project management actions")
 projectLayout.undoContext = undo.contexts.project
 
-projectLayout:registerProperty(composeSimpleProperty(40021))
-projectLayout:registerProperty(composeSimpleProperty(40015))
-projectLayout:registerProperty(composeSimpleProperty(40017))
-projectLayout:registerProperty(composeSimpleProperty(40098))
+projectLayout:registerProperty(composeSimpleProperty(40021), true)
+projectLayout:registerProperty(composeSimpleProperty(40015), true)
+projectLayout:registerProperty(composeSimpleProperty(40017), true)
+projectLayout:registerProperty(composeSimpleProperty(40098), true)
 
 PropertiesRibbon.presentLayout(projectLayout)

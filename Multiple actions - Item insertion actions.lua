@@ -37,9 +37,9 @@ function insertionLayout.canProvide()
 	return false
 end
 
-insertionLayout:registerProperty(composeSimpleProperty(40214))
-insertionLayout:registerProperty(composeSimpleProperty(40142))
-insertionLayout:registerProperty(composeSimpleProperty(41748))
-insertionLayout:registerProperty(composeSimpleProperty(42069))
+insertionLayout:registerProperty(composeSimpleProperty(40214), true)
+insertionLayout:registerProperty(composeSimpleProperty(40142), true)
+insertionLayout:registerProperty(composeSimpleProperty(41748), true)
+insertionLayout:registerProperty(composeSimpleProperty(42069), true)
 
 PropertiesRibbon.presentLayout(insertionLayout)
