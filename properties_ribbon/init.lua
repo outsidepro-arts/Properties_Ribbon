@@ -728,10 +728,16 @@ PropertiesRibbon = {}
 -- Global variables initialization
 layout = {}
 local maybeLayout = nil
-local layoutFile = extstate.layoutFile
+local layoutFile
+if config.getboolean("allowLayoutsrestorePrev", true) and extstate.oncePerformSuccess then
+	layoutFile = extstate.previousLayoutFile or fixPath(proposeLayout(true))
+	extstate.oncePerformSuccess = false
+else
+	layoutFile = extstate.layoutFile
+end
 currentLayout = extstate.currentLayout
 currentSublayout = currentLayout and extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-local SpeakLayout = false
+local SpeakLayout = extstate.speakLayout
 local g_undoState = nil
 local currentExtProperty = extstate.extProperty
 local layoutHasReset = false
@@ -768,9 +774,6 @@ function PropertiesRibbon.presentLayout(lt)
 	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
 		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
 	end
-	if config.getboolean("allowLayoutsrestorePrev", true) == true and layoutFile ~= extstate then
-		extstate.previousLayoutFile = extstate.layoutFile
-	end
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if rememberCFG ~= 1 and rememberCFG ~= 2 then
 		layout.pIndex = 1
@@ -797,15 +800,12 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 	end
 	local lt = nil
 	PropertiesRibbon.presentLayout = function(newLayout)
-		if config.getboolean("allowLayoutsrestorePrev", true) == true and layoutFile ~= extstate.layoutFile then
-			extstate.previousLayoutFile = extstate.layoutFile
-		end
 		lt = newLayout
 	end
 	dofile(layoutFile)
 	if lt then
-			currentLayout = lt.section
-			currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
+		currentLayout = lt.section
+		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 		return prepareLayout(lt)
 	end
 end
@@ -1316,7 +1316,7 @@ function PropertiesRibbon.ajustProperty(action)
 				msg, opt_once = layout.properties[layout.pIndex][string.format("set_%s", action.value)](
 					layout.properties[layout.pIndex],
 					action.direction)
-					opt_once = layout.properties[layout.pIndex].performableOnce and opt_once
+				opt_once = layout.properties[layout.pIndex].performableOnce and opt_once
 				if layout.undoContext then
 					if msg then
 						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
@@ -1327,8 +1327,9 @@ function PropertiesRibbon.ajustProperty(action)
 							.undoContext)
 					end
 				end
-				if opt_once == true then
-					oncePerformRequested = config.getboolean("allowLayoutsrestorePrev", true)
+				if config.getboolean("allowLayoutsrestorePrev", true) and opt_once == true then
+					extstate.oncePerformSuccess = true
+					speakLayout = true
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
@@ -1449,19 +1450,20 @@ function PropertiesRibbon.activateGotoMode()
 end
 
 -- Actualy, this function should be local, but some functions call this from unusual scopes
-function finishScript(shouldRestorePrev)
+function finishScript()
 	if layout then
 		if layout.destroy then
 			layout.destroy()
 		end
-		if shouldRestorePrev then
-			extstate.layoutFile = extstate.previousLayoutFile or fixPath(proposeLayout())
-		else
-			extstate.layoutFile = layoutFile
-		end
+		extstate.layoutFile = layoutFile
 		extstate[layout.section] = layout.pIndex
 		extstate.currentLayout = currentLayout
 		extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = currentSublayout
+		if config.getboolean("allowLayoutsrestorePrev", true) then
+			if layoutFile ~= extstate.layoutFile then
+				extstate.previousLayoutFile = layoutFile
+			end
+		end
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = currentExtProperty
 		if reaper.GetCursorContext() ~= -1 then
