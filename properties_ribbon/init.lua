@@ -754,7 +754,7 @@ function prepareLayout(newLayout)
 		layout.init()
 	end
 	if isHasSublayouts(layout) then
-		currentSublayout = currentSublayout or layout.defaultSublayout or findDefaultSublayout(layout)
+		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or findDefaultSublayout(layout)
 		layout = assert(layout[currentSublayout],
 			"Broken sublayout has detected: " ..
 			string.format("sublayout %s is apsent in %s", currentSublayout, layout.section))
