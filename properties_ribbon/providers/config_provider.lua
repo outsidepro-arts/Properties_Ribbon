@@ -63,7 +63,7 @@ function config.setinteger(key, value)
 end
 
 function config.setstring(key, value)
-	reaper.SetExtState(config.section, "cfg_" .. key, tostring(value), true)
+	reaper.SetExtState(config.section, "cfg_" .. key, value and tostring(value) or "", true)
 end
 
 -- Initialize the config provider module
