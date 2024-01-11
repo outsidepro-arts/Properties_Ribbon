@@ -254,7 +254,7 @@ function initOutputMessage()
 				table.insert(message, ({
 					[true] = tostring(self.label):lower(),
 					[false] = tostring(self.label)
-				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)])
+				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)]:join(config.getstring("lvDivider", "")))
 			end
 			if self.value then
 				table.insert(message, tostring(string.gsub(self.value, "%s$", "")))

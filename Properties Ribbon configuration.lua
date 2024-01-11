@@ -11,7 +11,8 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]] --
+]]
+--
 
 
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
@@ -42,7 +43,8 @@ No any recomendation more.
 Although, no, just one thing:
 Try to allow the user to perform actions on both one element and a selected group..
 and try to complement any getState message with short type label. I mean what the "ajust" method will perform.
-]] --
+]]
+--
 
 -- type level methods
 local typeLevelProperty = {}
@@ -57,7 +59,7 @@ function typeLevelProperty:get()
 	local message = initOutputMessage()
 	local typeLevel = config.getinteger("typeLevel", 1)
 	message:initType(
-					"Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.")
+		"Adjust this property to set the desired type prompts level. The type prompts are reports after value message and descripts the appointment of this value.")
 	message {
 		label = "Types prompts level",
 		value = self.states[typeLevel]
@@ -91,7 +93,7 @@ reportPosProperty.states = {
 function reportPosProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.")
+		"Adjust this property to choose the status of the position reporting when you're navigating through the properties in a ribbon or when you're choose a category in a layout.")
 	local state = config.getinteger("reportPos", 3)
 	message {
 		label = "Reporting navigation position",
@@ -126,7 +128,7 @@ resetSublayoutProperty.states = {
 function resetSublayoutProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.")
+		"Adjust this property to set the position remembering when you are loading a properties layout which was been loaded earlier.")
 	local state = config.getinteger("rememberSublayout", 3)
 	message {
 		label = "Remember position in layouts when loading",
@@ -156,7 +158,7 @@ configLayout.stepAdjustment:registerProperty(dbStepProperty)
 function dbStepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.")
+		"Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with decibels values like as volume and etc. Perform this property to input needed custom step value manualy.")
 	local state = config.getinteger("dbStep", 0.1)
 	message {
 		label = "Decibel step adjustment",
@@ -238,7 +240,7 @@ configLayout.stepAdjustment:registerProperty(maxDbProperty)
 function maxDbProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.")
+		"Adjust this property to set proposed maximum decibels value  when these properties will be cancel to increase to either more or less than current value Perform this property to input needed custom value manualy.")
 	local state = config.getinteger("maxDBValue", 12.0)
 	message {
 		label = "Maximum decibels value",
@@ -304,7 +306,7 @@ configLayout.stepAdjustment:registerProperty(percentagestepProperty)
 function percentagestepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.")
+		"Adjust this property to set proposed step to either more or less than current value of percentage step which used by properties with percentage values like as pan, width and etc. Perform this property to input needed custom step value manualy.")
 	local state = config.getinteger("percentStep", 1)
 	message {
 		label = "Percent step adjustment",
@@ -382,7 +384,7 @@ configLayout.stepAdjustment:registerProperty(timeStepProperty)
 function timeStepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.")
+		"Adjust this property to set proposed time step to either more or less than current value of time step which used by properties with time values like as fade in and out lengths and etc. Perform this property to input needed custom step value manualy.")
 	local state = config.getinteger("timeStep", 0.001)
 	message {
 		label = "Time step adjustment",
@@ -433,10 +435,10 @@ function timeStepProperty:set_perform()
 	local state = config.getinteger("timeStep", 0.001)
 	local ajustingValue
 	local result, answer = getUserInputs("Time step input", {
-		caption = "Time step value:",
-		defValue = state
-	},
-					'Type the needed step which every property with time value will change per one adjustment in decimal format but no more three digits after decimal separator (0.1, 1.25, 3.201 and etc).')
+			caption = "Time step value:",
+			defValue = state
+		},
+		'Type the needed step which every property with time value will change per one adjustment in decimal format but no more three digits after decimal separator (0.1, 1.25, 3.201 and etc).')
 	if result == true then
 		ajustingValue = tonumber(answer)
 	else
@@ -463,7 +465,7 @@ playrateStepProperty.states = {
 function playrateStepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.")
+		"Adjust this property to set the desired step to one of values for step which used by properties with play rate values like as take playrate and etc.")
 	local state = config.getinteger("rateStep", 1)
 	message {
 		label = "Play rate step adjustment",
@@ -494,7 +496,7 @@ configLayout.stepAdjustment:registerProperty(pitchStepProperty)
 function pitchStepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.")
+		"Adjust this property to set proposed pitch step to either more or less than current value of step which used by properties with pitch values like as take pitch and etc. Perform this property to input needed custom step value manualy.")
 	local state = math.round(config.getinteger("pitchStep", 1.00), 2)
 	message {
 		label = "Pitch step adjustment",
@@ -569,7 +571,7 @@ configLayout.stepAdjustment:registerProperty(pitchBouncesProperty)
 function pitchBouncesProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to set the desired value either more or less than the pitch properties will not adjust. Perform this property to type the custom pitch bounces value manualy.")
+		"Adjust this property to set the desired value either more or less than the pitch properties will not adjust. Perform this property to type the custom pitch bounces value manualy.")
 	local state = config.getinteger("pitchBounces", 24.0)
 	message {
 		label = "Pitch bounces",
@@ -634,8 +636,8 @@ configLayout.main:registerProperty(multiSelectionSupportProperty)
 function multiSelectionSupportProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.",
-					"Toggleable")
+		"Toggle this property to switch the multi-selection support. When multi-selection support is on, if you select a few tracks or items, Properties Ribbon processes all of them. When this option switched off, the track properties processes last touched track instead of selected track, and item processes  last selected item instead of all.",
+		"Toggleable")
 	local state = config.getboolean("multiSelectionSupport", true)
 	message {
 		label = "Multi-selection support",
@@ -662,8 +664,8 @@ configLayout.main:registerProperty(reportNameProperty)
 function reportNameProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to switch the reporting element ID information in properties values which this option are supported.",
-					"Toggleable")
+		"Toggle this property to switch the reporting element ID information in properties values which this option are supported.",
+		"Toggleable")
 	local state = config.getboolean("reportName", false)
 	message {
 		label = "Report element's",
@@ -685,12 +687,12 @@ end
 -- Truncate the identification namesby specified symbols length
 local truncateIdByProperty = {}
 configLayout.main:registerProperty(truncateIdByProperty)
-truncateIdByProperty.states = {5, 10, 25, 50}
+truncateIdByProperty.states = { 5, 10, 25, 50 }
 
 function truncateIdByProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to specify the length for name should be truncated when the report names identification configuration is enabled. Perform this property to specify the custom value for.")
+		"Adjust this property to specify the length for name should be truncated when the report names identification configuration is enabled. Perform this property to specify the custom value for.")
 	local depend = config.getboolean("reportName", false)
 	if depend == false then
 		message:addType(" This property is unavailable right now because the report name configuration isn't set.", 1)
@@ -763,9 +765,10 @@ function truncateIdByProperty:set_perform()
 		local state = config.getinteger("truncateIdBy", 0)
 		local getValue = self:get()
 		local retval, answer = getUserInputs("Truncate value", {
-			caption = "Amount of symbols:",
-			defValue = getValue:extract(2, false):gsub("By ", "")
-		}, 'Type the needed length value the name identification should be truncated. Type \"Off\" to disable the truncation.')
+				caption = "Amount of symbols:",
+				defValue = getValue:extract(2, false):gsub("By ", "")
+			},
+			'Type the needed length value the name identification should be truncated. Type \"Off\" to disable the truncation.')
 		if not retval then
 			return
 		end
@@ -777,7 +780,7 @@ function truncateIdByProperty:set_perform()
 				config.setinteger("truncateIdBy", 0)
 			else
 				reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error",
-								showMessageBoxConsts.sets.ok)
+					showMessageBoxConsts.sets.ok)
 			end
 		end
 		message(self:get())
@@ -793,8 +796,8 @@ configLayout.main:registerProperty(autoProposeLayoutProperty)
 function autoProposeLayoutProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.",
-					"Toggleable")
+		"Toggle this property to set the automatic propose a contextual layout when any navigation script is performed. Please note, that this option is not working when you're adjusting, toggling or performing any selected property, so you can modify any selected property until you select any another one.",
+		"Toggleable")
 	message {
 		label = "Contextual layout when navigating",
 		value = ({
@@ -819,8 +822,8 @@ configLayout.main:registerProperty(allowRestorePreviousProperty)
 function allowRestorePreviousProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.",
-					"Toggleable")
+		"Toggle this property to set the permission to restore previous layout either by some properties or another cases which will be try to do this.",
+		"Toggleable")
 	message {
 		label = "Allow for some properties to restore previous layout",
 		value = ({
@@ -845,8 +848,8 @@ configLayout.main:registerProperty(allowMoveCursorProperty)
 function allowMoveCursorProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to define can some properties be move the play or edit cursor when you're just navigating them",
-					"Toggleable")
+		"Toggle this property to define can some properties be move the play or edit cursor when you're just navigating them",
+		"Toggleable")
 	message {
 		label = "Allow some properties to move play cursor when you're just navigating them",
 		value = ({
@@ -871,8 +874,8 @@ configLayout.main:registerProperty(clearFileExtsProperty)
 function clearFileExtsProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to decide the Properties Ribbon scripts should try to detect the file extensions in names and remove them.",
-					"Toggleable")
+		"Toggle this property to decide the Properties Ribbon scripts should try to detect the file extensions in names and remove them.",
+		"Toggleable")
 	local state = config.getboolean("clearFileExts", true)
 	message {
 		label = "Clear the extensions of filenames when it found somewhere",
@@ -898,8 +901,8 @@ configLayout.main:registerProperty(percentageNavigation)
 function percentageNavigation:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to switch the percentage navigation type off or on. When percentage navigation is on, the actions which sets the property by digits will orient by percentage ratio instead of choosing   a property by digists strictly when properties amount more than ten.",
-					"Toggleable")
+		"Toggle this property to switch the percentage navigation type off or on. When percentage navigation is on, the actions which sets the property by digits will orient by percentage ratio instead of choosing   a property by digists strictly when properties amount more than ten.",
+		"Toggleable")
 	local state = config.getboolean("percentagePropertyNavigation", false)
 	message {
 		label = "Percentage navigation",
@@ -924,7 +927,7 @@ configLayout.stepAdjustment:registerProperty(fxParmstepProperty)
 function fxParmstepProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.")
+		"Adjust this property to choose needed default step value for FX parameters the adjusting process will search next or previous parameter value. Please note that you also may set the step value for every parameter independently, then this configuration will be omited for.")
 	local state = config.getinteger("fxParmStep", 4)
 	message {
 		label = "FX parameters step adjustment",
@@ -955,8 +958,8 @@ configLayout.fxPropertiesConfig:registerProperty(fxUseNearestParmValueProperty)
 function fxUseNearestParmValueProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Toggle this property to switch the configuration which that FX properties will be search nearest parameter value automatically.",
-					"Toggleable")
+		"Toggle this property to switch the configuration which that FX properties will be search nearest parameter value automatically.",
+		"Toggleable")
 	local state = config.getboolean("fx_useFindNearestParmValue", true)
 	message {
 		label = "Automatic searching nearest parameter value when adjusting",
@@ -986,7 +989,7 @@ reportParmIndexProperty.states = {
 function reportParmIndexProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-					"Adjust this property to choose the report method of the parameter identification prefix when navigating.")
+		"Adjust this property to choose the report method of the parameter identification prefix when navigating.")
 	local state = config.getinteger("reportParmId", 2)
 	message {
 		label = "Parameter identification when navigating",
@@ -1011,7 +1014,7 @@ end
 
 local reportRealParmValueProperty = {}
 configLayout.fxPropertiesConfig:registerProperty(reportRealParmValueProperty)
-reportRealParmValueProperty.states = {"incremental as it rendered", "real"}
+reportRealParmValueProperty.states = { "incremental as it rendered", "real" }
 
 function reportRealParmValueProperty:get()
 	local message = initOutputMessage()
@@ -1054,7 +1057,7 @@ for i = 1, #fxMaskList do
 	end
 
 	excludeElementProperty.extendedProperties = initExtendedProperties("Context actions")
-	excludeElementProperty.states = {excludeElementProperty.extendedProperties:registerProperty{
+	excludeElementProperty.states = { excludeElementProperty.extendedProperties:registerProperty {
 		-- The methods written below get second parameter but Lua allows s to omit this if it's not needed.
 		get = function()
 			local message = initOutputMessage()
@@ -1063,22 +1066,24 @@ for i = 1, #fxMaskList do
 			return message
 		end,
 		set_perform = function(self)
-			local retval, answer = getUserInputs("Edit exclude mask", {{
-				caption = "FX plug-in filename mask:",
-				defValue = fxExcludeElem.fxMask
-			}, {
-				caption = "Parameter mask:",
-				defValue = fxExcludeElem.paramMask
-			}},
-							"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.")
+			local retval, answer = getUserInputs("Edit exclude mask", { {
+					caption = "FX plug-in filename mask:",
+					defValue = fxExcludeElem.fxMask
+				}, {
+					caption = "Parameter mask:",
+					defValue = fxExcludeElem.paramMask
+				} },
+				"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.")
 			if retval then
 				local newFxMask, newParamMask = table.unpack(answer)
 				if newFxMask == nil then
-					reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+					reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error",
+						showMessageBoxConsts.sets.ok)
 					return false
 				end
 				if newParamMask == nil then
-					reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+					reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error",
+						showMessageBoxConsts.sets.ok)
 					return false
 				end
 				fxMaskList[i] = {
@@ -1089,7 +1094,7 @@ for i = 1, #fxMaskList do
 			end
 			return false
 		end
-	}, excludeElementProperty.extendedProperties:registerProperty{
+	}, excludeElementProperty.extendedProperties:registerProperty {
 		get = function()
 			local message = initOutputMessage()
 			message:initType("Perform this property to delete this exclude mask.")
@@ -1098,14 +1103,14 @@ for i = 1, #fxMaskList do
 		end,
 		set_perform = function(self)
 			if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s',
-							fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) ==
-							showMessageBoxConsts.button.yes then
+					fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) ==
+				showMessageBoxConsts.button.yes then
 				fxMaskList[i] = nil
 				return true, ""
 			end
 			return false
 		end
-	}}
+	} }
 end
 
 local addExcludeMaskProperty = {}
@@ -1119,11 +1124,12 @@ function addExcludeMaskProperty:get()
 end
 
 function addExcludeMaskProperty:set_perform()
-	local retval, answer = getUserInputs("Add new exclude mask", {{
-		caption = "FX plug-in filename mask:"
-	}, {
-		caption = "Parameter mask:"
-	}}, "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.")
+	local retval, answer = getUserInputs("Add new exclude mask", { {
+			caption = "FX plug-in filename mask:"
+		}, {
+			caption = "Parameter mask:"
+		} },
+		"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.")
 	if retval then
 		local newFxMask, newParamMask = table.unpack(answer)
 		if newFxMask == nil then
@@ -1131,7 +1137,8 @@ function addExcludeMaskProperty:set_perform()
 			return
 		end
 		if newParamMask == nil then
-			reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+			reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets
+				.ok)
 			return
 		end
 		fxMaskList[#fxMaskList + 1] = {
@@ -1195,7 +1202,7 @@ end
 function disableIdentificationProperty:set_perform()
 	local message = initOutputMessage()
 	config.setboolean("objectsIdentificationWhenNavigating",
-					nor(config.getboolean("objectsIdentificationWhenNavigating", true)))
+		nor(config.getboolean("objectsIdentificationWhenNavigating", true)))
 	message(self:get())
 	return message
 end
@@ -1214,7 +1221,7 @@ function twicePressPerformProperty:get()
 		})[state]
 	}
 	message:initType(
-					"Toggle this property to allow properties ribbon perform a property straightaway when you're navigating twice or more times onto.")
+		"Toggle this property to allow properties ribbon perform a property straightaway when you're navigating twice or more times onto.")
 	return message
 end
 
@@ -1240,7 +1247,7 @@ function selectFXProperty:get()
 		value = self.states[state]
 	}
 	message:initType(
-					"Toggle this property the ability FX properties attempt to select an FX which you're working on. Please note that not all of FX can be selected. SWS is used for this operation, but SWS does not support the take FX chains, track input FX chains and monitoring FX chains.")
+		"Toggle this property the ability FX properties attempt to select an FX which you're working on. Please note that not all of FX can be selected. SWS is used for this operation, but SWS does not support the take FX chains, track input FX chains and monitoring FX chains.")
 	return message
 end
 
@@ -1262,7 +1269,7 @@ function tempoStepProperty:get()
 		value = string.format("%s BPM", math.round(state, 3))
 	}
 	message:initType(
-					"Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with tempo values. Perform this property to input needed custom step value manualy.")
+		"Adjust this property to set proposed step to either more or less than current value of every step adjustment which works with tempo values. Perform this property to input needed custom step value manualy.")
 	return message
 end
 
@@ -1306,14 +1313,80 @@ function tempoStepProperty:set_perform()
 			config.setinteger("tempoStep", ajustingValue)
 		elseif ajustingValue >= 200 then
 			if reaper.ShowMessageBox(
-							"Are you sure you want to set the step value more than 200 BPM per one adjustment? Are you seriously? 😦",
-							"Just one question", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+					"Are you sure you want to set the step value more than 200 BPM per one adjustment? Are you seriously? 😦",
+					"Just one question", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 				config.setinteger("tempoStep", ajustingValue)
 			end
 		elseif ajustingValue < 0.001 then
 			reaper.ShowMessageBox("Set the tempo step as less than zero is pointless.", "Tempo step value specify error",
-							showMessageBoxConsts.sets.ok)
+				showMessageBoxConsts.sets.ok)
 		end
+	end
+end
+
+-- The label and value divider setting
+local lvDivider = configLayout.main:registerProperty {}
+lvDivider.states = {
+	{ char = nil, label = "off" },
+	{ char = ":", label = "colon" },
+	{ char = ".", label = "dot" },
+	{ char = ",", label = "coma" }
+}
+
+function lvDivider.getValue(char)
+	for index, charObj in ipairs(lvDivider.states) do
+		if char == charObj.char then
+			return index
+		end
+	end
+end
+
+function lvDivider:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Adjust this property to choose a pre-defined character for label and value dividing. Perform this property to type needed character manualy.")
+	local state = config.getstring("lvDivider")
+	message { label = "Divide the property label and value", }
+	if state then
+		local charIndex = self.getValue(state)
+		if charIndex then
+			message { value = string.format("by %s character", self.states[charIndex].label) }
+		else
+			message { value = string.format("by %s", state) }
+		end
+	else
+		message { value = "off" }
+	end
+	return message
+end
+
+function lvDivider:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = self.getValue(config.getstring("lvDivider"))
+	if state then
+		if (state + direction) > #self.states then
+			message("No more next property values. ")
+		elseif (state + direction) < 1 then
+			message("No more previous property values. ")
+		else
+			config.setstring("lvDivider", self.states[state + direction].char)
+		end
+	else
+		config.setstring("lvDivider", self.states[1].char)
+	end
+	message(self:get())
+	return message
+end
+
+function lvDivider:set_perform()
+	local retval, answer = getUserInputs("Specify the label and value divider", {
+		caption = "Type a new character:",
+		defValue = config.getstring("lvDivider")
+	})
+	if retval then
+		config.setstring("lvDivider", answer)
+	else
+		return "Canceled."
 	end
 end
 
