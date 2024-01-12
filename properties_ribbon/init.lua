@@ -750,9 +750,6 @@ function prepareLayout(newLayout)
 			"Properties ribbon error", showMessageBoxConsts.sets.ok)
 		return false
 	end
-	if layout.init then
-		layout.init()
-	end
 	if isHasSublayouts(layout) then
 		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or findDefaultSublayout(layout)
 		layout = assert(layout[currentSublayout],
@@ -760,6 +757,9 @@ function prepareLayout(newLayout)
 			string.format("sublayout %s is apsent in %s", currentSublayout, layout.section))
 	end
 	layout.pIndex = layout.pIndex or extstate[layout.section] or 1
+	if layout.init then
+		layout.init()
+	end
 	return layout ~= nil
 end
 
