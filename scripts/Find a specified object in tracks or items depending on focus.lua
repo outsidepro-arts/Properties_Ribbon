@@ -5,7 +5,12 @@ License: MIT license
 This script written for Properties Ribbon complex] and can be only runnen from this.
 ]] --
 
-package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
+-- We have to fix the Properties Ribbon searching path. Currently it places on a up level directory
+do
+	local uplevelPath = select(2, reaper.get_action_context()):match('^.+[\\//]')
+	uplevelPath = uplevelPath:match("(.+)([//\\])(.+)$")
+	package.path = uplevelPath .. "//?//init.lua"
+end
 
 require "properties_ribbon"
 
