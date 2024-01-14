@@ -16,8 +16,9 @@ function table.deepcopy(o, seen)
 	setmetatable(no, table.deepcopy(getmetatable(o), seen))
 
 	for k, v in next, o, nil do
-		k = (type(k) == 'table') and k:deepcopy(seen) or k
-		v = (type(v) == 'table') and v:deepcopy(seen) or v
+		k = (type(k) == 'table') and table.deepcopy(k, seen) or k
+		v = (type(v) == 'table') and table.deepcopy(v, seen) or v
+	
 		no[k] = v
 	end
 	return no
