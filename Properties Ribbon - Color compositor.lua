@@ -11,129 +11,47 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]] --
+]]
+--
 
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
 
 require "properties_ribbon"
 
--- Some needfull configs
-local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
-
--- This layout needs the properties macros
-useMacros("track_properties")
-useMacros("item_properties")
-useMacros("markers_regions_selection_macros")
-
--- This layout should define current context
-local sublayout = nil
-if currentSublayout then
-	sublayout = currentSublayout
-else
-	local context = reaper.GetCursorContext()
-	if context == 0 then
-		sublayout = "track"
-	elseif context == 1 then
-		sublayout = "item"
-	else
-		sublayout = "track"
-	end
-end
+useMacros "color_presets"
 
 -- This layout should have the self-providing service methods
 
-local function getPresets()
-	local presets = setmetatable({}, {
-		__index = function(self, idx)
-			if isnumber(idx) then
-				local name, value = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "name")],
-								extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "value")]
-				if name and value then
-					return {
-						name = name,
-						value = value
-					}
-				end
-			end
-		end,
-		__newindex = function(self, idx, preset)
-			if preset then
-				extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "name")] = assert(
-								preset.name, "Expected table field 'name'")
-				extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx), "value")] = assert(
-								preset.value, "Expected table field 'value'")
-			else
-				local i = idx
-				while extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] do
-					if i == idx then
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")] = nil
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] = nil
-					elseif i > idx then
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i - 1), "name")] =
-										extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")]
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "name")] = nil
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i - 1), "value")] =
-										extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")]
-						extstate._forever[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", i), "value")] = nil
-					end
-					i = i + 1
-				end
-			end
-		end,
-		__len = function(self)
-			local mCount = 0
-			while extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", mCount + 1), "value")] and
-							extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", mCount + 1), "name")] do
-				mCount = mCount + 1
-			end
-			return mCount
-		end,
-		__ipairs = function(self)
-			local lambda = function(obj, idx)
-				if extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "name")] and
-								extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "value")] then
-					return idx + 1, {
-						name = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "name")],
-						value = extstate[utils.makeKeySequence("colorcomposer", sublayout, string.format("preset%u", idx + 1), "value")]
-					}
-				end
-			end
-			return self, lambda, 1
-		end
-	})
-	return presets
+local function getColorIndex(section)
+	return extstate._layout[utils.makeKeySequence(section, "colorIndex")]
 end
 
-local function getColorIndex()
-	return extstate._layout[utils.makeKeySequence(sublayout, "colorIndex")]
+local function getPresetIndex(section)
+	return extstate._layout[utils.makeKeySequence(section, "presetIndex")]
 end
 
-local function getPresetIndex()
-	return extstate._layout[utils.makeKeySequence(sublayout, "presetIndex")]
+local function setColorIndex(section, value)
+	extstate._layout[utils.makeKeySequence(section, "colorIndex")] = value
 end
 
-local function setColorIndex(value)
-	extstate._layout[utils.makeKeySequence(sublayout, "colorIndex")] = value
+local function setPresetIndex(section, value)
+	extstate._layout[utils.makeKeySequence(section, "presetIndex")] = value
 end
 
-local function setPresetIndex(value)
-	extstate._layout[utils.makeKeySequence(sublayout, "presetIndex")] = value
+local function getFilter(section)
+	return extstate._layout[utils.makeKeySequence(section, "colorFilter")]
 end
 
-local function getFilter()
-	return extstate._layout[utils.makeKeySequence(sublayout, "colorFilter")]
+local function getColor(section)
+	return extstate._layout[utils.makeKeySequence(section, "curValue")] or reaper.ColorToNative(0, 0, 0)
 end
 
-local function getColor()
-	return extstate._layout[utils.makeKeySequence(sublayout, "curValue")] or reaper.ColorToNative(0, 0, 0)
+local function setFilter(section, filter)
+	extstate._layout[utils.makeKeySequence(section, "colorFilter")] = filter
 end
 
-local function setFilter(filter)
-	extstate._layout[utils.makeKeySequence(sublayout, "colorFilter")] = filter
-end
-
-local function setColor(color)
-	extstate._layout[utils.makeKeySequence(sublayout, "curValue")] = color
+local function setColor(section, color)
+	extstate._layout[utils.makeKeySequence(section, "curValue")] = color
 end
 
 -- global pseudoclass initialization
@@ -161,36 +79,36 @@ parentLayout:registerSublayout("region", "Regions")
 -- Here a special case, so we will not  use the native layout's methods as is
 local function registerProperty(property)
 	for curClass, _ in pairs(parentLayout) do
-		if istable(parentLayout[curClass]) then
-			parentLayout[curClass]:registerProperty(property)
+		if isSublayout(parentLayout[curClass]) then
+			local newProperty = parentLayout[curClass]:registerProperty(table.deepcopy(property))
+			newProperty.objName = curClass
 		end
 	end
 end
 
 -- presets methods
 local presetsProperty = {}
-registerProperty(presetsProperty)
-presetsProperty.states = getPresets()
 
-function presetsProperty.getValue()
-	return getPresetIndex()
+function presetsProperty:getValue()
+	return getPresetIndex(self.objName)
 end
 
-function presetsProperty.setValue(value)
-	setPresetIndex(value)
+function presetsProperty:setValue(value)
+	setPresetIndex(self.objName, value)
 end
 
 function presetsProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to choose desired preset created at the past.")
+	local presets = colorPresets.init(self.objName)
 	message {
 		objectId = "Color",
 		label = "Preset"
 	}
-	if #self.states > 0 then
-		if self.getValue() then
+	if #presets > 0 then
+		if self:getValue() then
 			message {
-				value = self.states[self.getValue()].name
+				value = presets[self:getValue()].name
 			}
 		else
 			message {
@@ -207,19 +125,20 @@ end
 
 function presetsProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = self.getValue() or 1
-	if (state + direction) > #self.states then
+	local presets = colorPresets.init(self.objName)
+	local state = self:getValue() or 1
+	if (state + direction) > #presets then
 		message("No more next property values. ")
 	elseif (state + direction) <= 0 then
 		message("No more previous property values. ")
 	else
 		state = state + direction
 	end
-	self.setValue(state)
-	state = self.getValue()
-	if #self.states > 0 then
-		setColor(self.states[state].value)
-		setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+	self:setValue(state)
+	state = self:getValue()
+	if #presets > 0 then
+		setColor(self.objName, presets[state].value)
+		setColorIndex(self.objName, colors:getColorID(reaper.ColorFromNative(getColor(self.objName))))
 	end
 	message(self:get())
 	return message
@@ -227,7 +146,7 @@ end
 
 presetsProperty.extendedProperties = initExtendedProperties("Preset context actions")
 
-presetsProperty.extendedProperties:registerProperty{
+presetsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Create new preset"
@@ -235,139 +154,167 @@ presetsProperty.extendedProperties:registerProperty{
 		return message
 	end,
 	set_perform = function(self, parent)
+		local presets = colorPresets.init(parent.objName)
 		local retval, answer = getUserInputs("Create new preset", {
 			caption = "New preset name:"
 		})
 		if retval then
 			if answer then
 				local exists = false
-				for _, preset in ipairs(parent.states) do
+				for _, preset in ipairs(presets) do
 					if preset.name == answer then
 						exists = true
 						break
 					end
 				end
 				if not exists then
-					table.insert(parent.states, {
+					table.insert(presets, {
 						name = answer,
-						value = getColor()
+						value = getColor(parent.objName)
 					})
-					setPresetIndex(#parent.states)
+					setPresetIndex(parent.objName, #presets)
 				else
-					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer), "Creation error",
-									showMessageBoxConsts.sets.ok)
+					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer),
+						"Creation error",
+						showMessageBoxConsts.sets.ok)
 					return false
 				end
 			else
-				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
+				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error",
+					showMessageBoxConsts.sets.ok)
 				return false
 			end
 		end
 		return true
 	end
 }
-if presetsProperty.states[getPresetIndex()] then
-	presetsProperty.extendedProperties:registerProperty{
-		get = function(self, parent)
-			local message = initOutputMessage()
-			message "Rename preset"
-			message:initType("Perform this property to rename currently selected preset.")
-			return message
-		end,
-		set_perform = function(self, parent)
-			local preset = parent.states[parent.getValue()]
-			local retval, answer = getUserInputs("Rename preset", {
-				caption = "New preset name:",
-				defValue = preset.name
-			})
-			if retval then
-				if answer then
-					preset.name = answer
-					parent.states[parent.getValue()] = preset
-				else
-					reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error", showMessageBoxConsts.sets.ok)
-					return false
-				end
+presetsProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Rename preset"
+		message:initType("Perform this property to rename currently selected preset.")
+		if #colorPresets.init(parent.objName) == 0 and not getPresetIndex(parent.objName) then
+			message:addType(" This property is currently unavailable because no preset selected.", 1)
+			message:changeType("Unavailable", 2)
+		end
+		return message
+	end,
+	set_perform = function(self, parent)
+		local presets = colorPresets.init(parent.objName)
+		if #presets == 0 and not getPresetIndex(parent.objName) then
+			return false, "Select a preset first"
+		end
+		local preset = presets[parent:getValue()]
+		local retval, answer = getUserInputs("Rename preset", {
+			caption = "New preset name:",
+			defValue = preset.name
+		})
+		if retval then
+			if answer then
+				preset.name = answer
+				presets[parent:getValue()] = preset
+			else
+				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error",
+					showMessageBoxConsts.sets.ok)
+				return false
+			end
+		end
+		return true
+	end
+}
+presetsProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Update this preset color"
+		message:initType("Perform this property to update the color of selected preset.")
+		if #colorPresets.init(parent.objName) == 0 and not getPresetIndex(parent.objName) then
+			message:addType(" This property is currently unavailable because no preset selected.", 1)
+			message:changeType("Unavailable", 2)
+		end
+		return message
+	end,
+	set_perform = function(self, parent)
+		local presets = colorPresets.init(parent.objName)
+		if #presets == 0 and not getPresetIndex(parent.objName) then
+			return false, "Select a preset first"
+		end
+		local message = initOutputMessage()
+		local preset = presets[parent:getValue()]
+		preset.value = getColor(parent.objName)
+		presets[parent:getValue()] = preset
+		message {
+			label = parent:get():extract(2, false),
+			value = "Updated"
+		}
+		return true, message, true
+	end
+}
+presetsProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Delete selected preset"
+		message:initType("Perform this property to delete selected preset.")
+		if #colorPresets.init(parent.objName) == 0 and not getPresetIndex(parent.objName) then
+			message:addType(" This property is currently unavailable because no preset selected.", 1)
+			message:changeType("Unavailable", 2)
+		end
+		return message
+	end,
+	set_perform = function(self, parent)
+		local presets = colorPresets.init(parent.objName)
+		if #presets == 0 and not getPresetIndex(parent.objName) then
+			return false, "Select a preset first"
+		end
+		local preset = presets[parent:getValue()]
+		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name),
+				"Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			presets[parent:getValue()] = nil
+			if parent:getValue() - 1 > 0 then
+				parent:setValue(parent:getValue() - 1)
+			else
+				parent:setValue(nil)
 			end
 			return true
 		end
-	}
-	presetsProperty.extendedProperties:registerProperty{
-		get = function(self, parent)
-			local message = initOutputMessage()
-			message "Update this preset color"
-			message:initType("Perform this property to update the color of selected preset.")
-			return message
-		end,
-		set_perform = function(self, parent)
-			local message = initOutputMessage()
-			local preset = parent.states[parent.getValue()]
-			preset.value = getColor()
-			parent.states[parent.getValue()] = preset
-			message {
-				label = parent:get():extract(2, false),
-				value = "Updated"
-			}
-			return true, message, true
-		end
-	}
-	presetsProperty.extendedProperties:registerProperty{
-		get = function(self, parent)
-			local message = initOutputMessage()
-			message "Delete selected preset"
-			message:initType("Perform this property to delete selected preset.")
-			return message
-		end,
-		set_perform = function(self, parent)
-			local preset = parent.states[parent.getValue()]
-			if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name),
-							"Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
-				parent.states[parent.getValue()] = nil
-				if parent.getValue() - 1 > 0 then
-					parent.setValue(parent.getValue() - 1)
-				else
-					parent.setValue(nil)
-				end
-				return true
-			end
-			return false
-		end
-	}
-end
+		return false
+	end
+}
+registerProperty(presetsProperty)
 
 -- Color shade methods
 local shadeProperty = {}
-registerProperty(shadeProperty)
 
-function shadeProperty.getValue()
-	return getColorIndex()
+function shadeProperty:getValue()
+	return getColorIndex(self.objName)
 end
 
-function shadeProperty.setValue(value)
-	setColorIndex(value)
+function shadeProperty:setValue(value)
+	setColorIndex(self.objName, value)
 end
 
 function shadeProperty:get()
 	local message = initOutputMessage()
 	message:initType(string.format(
-					"Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color",
-					#colors.colorList))
-	if getColorIndex() then
-		message(string.format("Color %s", colors.colorList[self.getValue()].name))
+		"Adjust this property to choose desired color from list of %u values. Perform this property to set the filter for quick search needed color",
+		#colors.colorList))
+	message { label = "Color" }
+	local state = self:getValue()
+	if state and state > 0 then
+		message { value = colors.colorList[self:getValue()].name }
 	else
-		message("Color not selected")
+		message { value = "Not selected" }
 	end
-	local filter = getFilter()
+	local filter = getFilter(self.objName)
 	if filter then
-		message(string.format(", filter set to %s", filter))
+		message { value = string.format(", filter set to %s", filter) }
 	end
 	return message
 end
 
 function shadeProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = self.getValue() or 0
-	local filter = getFilter()
+	local state = self:getValue() or 0
+	local filter = getFilter(self.objName)
 	if direction == actions.set.increase.direction then
 		if filter then
 			local somethingFound = false
@@ -413,28 +360,28 @@ function shadeProperty:set_adjust(direction)
 			end
 		end
 	end
-	self.setValue(state)
-	setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
+	self:setValue(state)
+	local c = colors.colorList[state]
+	setColor(self.objName,
+		reaper.ColorToNative(c.r, c.g, c.b))
 	-- Here is old method because we do not want to report the filter superfluously
-	message {
-		label = "Color",
-		value = colors.colorList[self.getValue()].name
-	}
+	message(self:get())
+	message.value = colors.colorList[self:getValue()].name
 	return message
 end
 
 function shadeProperty:set_perform()
 	local message = initOutputMessage()
-	local state = self.getValue()
-	local filter = getFilter() or ""
+	local state = self:getValue()
+	local filter = getFilter(self.objName)
 	local retval, answer = getUserInputs("Set filter", {
-		caption = "Filter query:",
-		defValue = filter
-	},
-					'Type a part of color name that Properties Ribbon should search. Clear the edit field to clear the filter and explore all colors.')
+			caption = "Filter query:",
+			defValue = filter
+		},
+		'Type a part of color name that Properties Ribbon should search. Clear the edit field to clear the filter and explore all colors.')
 	if retval == true then
-		setFilter(answer:lower())
-		local filter = getFilter()
+		setFilter(self.objName, answer:lower())
+		local filter = getFilter(self.objName)
 		if filter then
 			local somethingFound = false
 			for k, v in ipairs(colors.colorList) do
@@ -453,47 +400,48 @@ function shadeProperty:set_perform()
 	else
 		return "Canceled."
 	end
-	self.setValue(state)
-	setColor(reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
-	-- Here is old method because we do not want to report the filter superfluously
-	message {
-		label = "Color",
-		value = colors.colorList[self.getValue()].name
-	}
+	self:setValue(state)
+	setColor(self.objName,
+		reaper.ColorToNative(colors.colorList[state].r, colors.colorList[state].g, colors.colorList[state].b))
+	message(self:get())
+	message.value = colors.colorList[self:getValue()].name
 	return message
 end
 
+registerProperty(shadeProperty)
+
 -- The R value methods
 local rgbRProperty = {}
-registerProperty(rgbRProperty)
 
-function rgbRProperty.getValue()
-	local r = reaper.ColorFromNative(getColor())
-	return r
+function rgbRProperty:getValue()
+	return select(1, reaper.ColorFromNative(getColor(self.objName)))
 end
 
-function rgbRProperty.setValue(value)
-	local r, g, b = reaper.ColorFromNative(getColor())
-	r = value
-	setColor(reaper.ColorToNative(r, g, b))
+function rgbRProperty:setValue(value)
+	local r, g, b = reaper.ColorFromNative(getColor(self.objName))
+	setColor(self.objName, reaper.ColorToNative(value, g, b))
 end
 
 function rgbRProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to find nearest  red shade intensity value which belongs to different color.")
-	message(string.format("Color red intensity %u", self.getValue()))
+	message {
+		objectId = "Color",
+		label = "Red intensity",
+		value = self:getValue()
+	}
 	return message
 end
 
 function rgbRProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state = self.getValue()
+	local state = self:getValue()
 	if direction == actions.set.increase.direction then
 		if state + 1 <= 255 then
-			local oldName = colors:getName(reaper.ColorFromNative(getColor()))
+			local oldName = colors:getName(reaper.ColorFromNative(getColor(self.objName)))
 			for i = (state + 1), 255 do
-				self.setValue(i)
-				local newName = colors:getName(reaper.ColorFromNative(getColor()))
+				self:setValue(i)
+				local newName = colors:getName(reaper.ColorFromNative(getColor(self.objName)))
 				if oldName ~= newName then
 					break
 				end
@@ -503,11 +451,11 @@ function rgbRProperty:set_adjust(direction)
 		end
 	elseif direction == actions.set.decrease.direction then
 		if state - 1 >= 0 then
-			local oldName = colors:getName(reaper.ColorFromNative(getColor()))
+			local oldName = colors:getName(reaper.ColorFromNative(getColor(self.objName)))
 			for i = (state - 1), 0, -1 do
 				if i >= 0 then
-					self.setValue(i)
-					local newName = colors:getName(reaper.ColorFromNative(getColor()))
+					self:setValue(i)
+					local newName = colors:getName(reaper.ColorFromNative(getColor(self.objName)))
 					if oldName ~= newName then
 						break
 					end
@@ -517,140 +465,103 @@ function rgbRProperty:set_adjust(direction)
 			message("No more previous property values. ")
 		end
 	end
-	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+	setColorIndex(self.objName, colors:getColorID(reaper.ColorFromNative(getColor(self.objName))))
 	message {
 		objectId = "Color",
 		label = "Red intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+		value = string.format("%u, closest color is %s", self:getValue(), colors:getName(reaper.ColorFromNative(getColor(self.objName))))
 	}
 	return message
 end
 
 function rgbRProperty:set_perform()
 	local message = initOutputMessage()
-	local state = self.getValue()
-	local retval, answer = getUserInputs("Red value input", {
-		caption = 'Type the red value intensity (0...255):',
+	local label = self:get().label
+	local state = self:getValue()
+	local retval, answer = getUserInputs(string.format("%s input", label), {
+		caption = string.format('Type the %s (0...255):', label),
 		defValue = state
 	})
 	if retval == true then
 		if tonumber(answer) then
-			self.setValue(tonumber(answer))
+			self:setValue(tonumber(answer))
 		else
-			message("The provided red color value is not a number value. ")
+			message(("The provided %s value is not a number value. "):format(label))
 		end
 	end
-	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message {
-		objectId = "Color",
-		label = "Red intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
-	}
+	setColorIndex(self.objName, colors:getColorID(reaper.ColorFromNative(getColor(self.objName))))
+	message(self:get())
+	message { value = string.format(", closest color is %s", colors:getName(reaper.ColorFromNative(getColor(self.objName)))) }
 	return message
 end
 
+registerProperty(rgbRProperty)
+
 -- The g methods
 local rgbGProperty = {}
-registerProperty(rgbGProperty)
 
-function rgbGProperty.getValue()
-	local _, g = reaper.ColorFromNative(getColor())
-	return g
+function rgbGProperty:getValue()
+	return select(2, reaper.ColorFromNative(getColor(self.objName)))
 end
 
-function rgbGProperty.setValue(value)
-	local r, g, b = reaper.ColorFromNative(getColor())
-	g = value
-	setColor(reaper.ColorToNative(r, g, b))
+function rgbGProperty:setValue(value)
+	local r, g, b = reaper.ColorFromNative(getColor(self.objName))
+	setColor(self.objName, reaper.ColorToNative(r, value, b))
 end
 
 function rgbGProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
-	message(string.format("Color green intensity %u", self.getValue()))
+	message:initType(
+		"Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
+	message {
+		objectId = "Color",
+		label = "Green intensity",
+		value = self:getValue()
+	}
 	return message
 end
 
 rgbGProperty.set_adjust = rgbRProperty.set_adjust
-function rgbGProperty:set_perform()
-	local message = initOutputMessage()
-	local state = self.getValue()
-	local retval, answer = getUserInputs("Green value input", {
-		caption = 'Type the green value intensity (0...255):',
-		defValue = state
-	})
-	if retval == true then
-		if tonumber(answer) then
-			self.setValue(tonumber(answer))
-		else
-			message("The provided green value is not a number value. ")
-		end
-	end
-	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
-	message {
-		objectId = "Color",
-		label = "Green intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
-	}
-	return message
-end
+rgbGProperty.set_perform = rgbRProperty.set_perform
+
+registerProperty(rgbGProperty)
 
 -- The B methods
 local rgbBProperty = {}
-registerProperty(rgbBProperty)
 
-function rgbBProperty.getValue()
-	local _, _, b = reaper.ColorFromNative(getColor())
-	return b
+function rgbBProperty:getValue()
+	return select(3, reaper.ColorFromNative(getColor(self.objName)))
 end
 
-function rgbBProperty.setValue(value)
-	local r, g, b = reaper.ColorFromNative(getColor())
-	b = value
-	setColor(reaper.ColorToNative(r, g, b))
+function rgbBProperty:setValue(value)
+	local r, g, b = reaper.ColorFromNative(getColor(self.objName))
+	setColor(self.objName, reaper.ColorToNative(r, g, value))
 end
 
 function rgbBProperty:get()
 	local message = initOutputMessage()
-	message:initType("Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
-	message(string.format("Color blue intensity %u", self.getValue()))
-	return message
-end
-
-rgbBProperty.set_adjust = rgbRProperty.set_adjust
-
-function rgbBProperty:set_perform()
-	local message = initOutputMessage()
-	local state = self.getValue()
-	local retval, answer = getUserInputs("Blue value input", {
-		caption = 'Type the blue value intensity (0...255):',
-		defValue = state
-	})
-	if retval == true then
-		if tonumber(answer) then
-			self.setValue(tonumber(answer))
-		else
-			message("The provided blue value is not a number value. ")
-		end
-	end
-	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+	message:initType(
+		"Adjust this property to find nearest  blue shade intensity value which belongs to different color.")
 	message {
-		objectId = "Color",
-		label = "Blue intensity",
-		value = string.format("%u, closest color is %s", self.getValue(), colors:getName(reaper.ColorFromNative(getColor())))
+		objectId = "Color", label = "Blue intensity", value = self:getValue()
 	}
 	return message
 end
 
+rgbBProperty.set_adjust = rgbRProperty.set_adjust
+rgbBProperty.set_perform = rgbRProperty.set_perform
+
+registerProperty(rgbBProperty)
+
 -- Apply the cosen color methods
 local applyColorProperty = {}
-registerProperty(applyColorProperty)
 applyColorProperty.states = setmetatable({
 	["marker"] = "marker near cursor",
 	["region"] = "region near cursor"
 }, {
 	__index = function(self, key)
 		if key == "track" then
+			useMacros "track_properties"
 			local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 			if istable(tracks) then
 				return string.format("%u selected tracks", #tracks)
@@ -658,6 +569,7 @@ applyColorProperty.states = setmetatable({
 				return track_properties_macros.getTrackID(tracks, true)
 			end
 		elseif key == "item" then
+			useMacros "item_properties"
 			local items = item_properties_macros.getItems(multiSelectionSupport)
 			if istable(items) then
 				return string.format("%u selected items", #items)
@@ -665,6 +577,7 @@ applyColorProperty.states = setmetatable({
 				return item_properties_macros.getItemID(items, true)
 			end
 		elseif key == "take" then
+			useMacros "item_properties"
 			local items = item_properties_macros.getItems(multiSelectionSupport)
 			if istable(items) then
 				return string.format("%u active takes in selected items", #items)
@@ -675,8 +588,8 @@ applyColorProperty.states = setmetatable({
 	end
 })
 
-function applyColorProperty.setValue(value)
-	if sublayout == "track" then
+applyColorProperty.setValue = {
+	track = function(value)
 		local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 		if istable(tracks) then
 			for _, track in ipairs(tracks) do
@@ -687,7 +600,8 @@ function applyColorProperty.setValue(value)
 			reaper.SetTrackColor(tracks, value)
 			return true
 		end
-	elseif sublayout == "item" then
+	end,
+	item = function(value)
 		local items = item_properties_macros.getItems(multiSelectionSupport)
 		if istable(items) then
 			for _, item in ipairs(items) do
@@ -698,7 +612,8 @@ function applyColorProperty.setValue(value)
 			reaper.SetMediaItemInfo_Value(items, "I_CUSTOMCOLOR", value | 0x100000)
 			return true
 		end
-	elseif sublayout == "take" then
+	end,
+	take = function(value)
 		local items = item_properties_macros.getItems(multiSelectionSupport)
 		if istable(items) then
 			for _, item in ipairs(items) do
@@ -709,14 +624,16 @@ function applyColorProperty.setValue(value)
 			reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(items), "I_CUSTOMCOLOR", value | 0x100000)
 			return true
 		end
-	elseif sublayout == "marker" then
+	end,
+	marker = function(value)
 		local markeridx, _ = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 		if markeridx then
 			local retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, markeridx)
 			reaper.SetProjectMarker4(0, markrgnindexnumber, false, pos, 0, name, value | 0x1000000, 0)
 			return true
 		end
-	elseif sublayout == "region" then
+	end,
+	region = function(value)
 		local _, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 		if regionidx then
 			local retval, isrgn, pos, rgnend, name, markrgnindexnumber, color = reaper.EnumProjectMarkers3(0, regionidx)
@@ -724,8 +641,8 @@ function applyColorProperty.setValue(value)
 			return true
 		end
 	end
-	return false
-end
+}
+
 
 function applyColorProperty:get()
 	local message = initOutputMessage()
@@ -733,87 +650,76 @@ function applyColorProperty:get()
 		track = "last touched track",
 		item = "first selected item",
 		take = "active take of first selected item"
-	})[sublayout]))
-	local gotState = self.states[sublayout]
+	})[self.objName]))
+	local gotState = self.states[self.objName]
+	message(string.format("Apply %s color", colors:getName(reaper.ColorFromNative(getColor(self.objName)))))
 	if gotState then
-		message(string.format("Apply %s color to %s", colors:getName(reaper.ColorFromNative(getColor())), gotState))
+		message(string.format(" to %s", gotState))
 	else
 		message:addType(" This property is unavailable right now because no one object is selected.", 1)
 		message:changeType("Unavailable", 2)
-		message(string.format("Apply the %s color", colors:getName(reaper.ColorFromNative(getColor()))))
 	end
 	return message
 end
 
 function applyColorProperty:set_perform()
-	local gotState = self.states[sublayout]
+	local gotState = self.states[self.objName]
 	if gotState then
 		local message = initOutputMessage()
-		local result = self.setValue(getColor())
+		local result = self.setValue[self.objName](getColor(self.objName))
 		if result then
-			message(string.format("%s colorized to %s color.", self.states[sublayout],
-							colors:getName(reaper.ColorFromNative(getColor()))))
+			message(string.format("%s colorized to %s color.", self.states[self.objName],
+				colors:getName(reaper.ColorFromNative(getColor(self.objName)))))
 		else
-			message(string.format("Could not colorize any %s.", self.states[sublayout]))
+			message(string.format("Could not colorize any %s.", self.states[self.objName]))
 		end
 		return message
 	end
 	return "This properti is unavailable right now cuz no one object is selected."
 end
 
+registerProperty(applyColorProperty)
+
 -- Grabbing a color from an elements methods
 local grabColorProperty = {}
-registerProperty(grabColorProperty)
-grabColorProperty.states = setmetatable({
-	["marker"] = "marker near cursor",
-	["region"] = "region near cursor"
-}, {
-	__index = function(self, key)
-		if key == "track" then
-			local track = track_properties_macros.getTracks(false)
-			if track then
-				return track_properties_macros.getTrackID(track)
-			end
-		elseif key == "item" then
-			local item = item_properties_macros.getItems(false)
-			if item then
-				return item_properties_macros.getItemID(item, true)
-			end
-		elseif key == "take" then
-			local item = item_properties_macros.getItems(false)
-			if item then
-				return item_properties_macros.getTakeID(item, true)
-			end
-		end
-	end
-})
+grabColorProperty.states = applyColorProperty.states
 
-function grabColorProperty.getValue()
-	if sublayout == "track" then
+grabColorProperty.getValue = {
+	track  = function()
+		useMacros "track_properties"
 		local track = track_properties_macros.getTracks(false)
 		if track then
 			return reaper.GetMediaTrackInfo_Value(track, "I_CUSTOMCOLOR")
 		end
 		return nil
-	elseif sublayout == "item" then
+	end,
+	item   = function()
+		useMacros "item_properties"
 		local item = item_properties_macros.getItems(false)
 		if item then
 			return reaper.GetMediaItemInfo_Value(item, "I_CUSTOMCOLOR")
 		end
 		return nil
-	elseif sublayout == "take" then
+	end,
+	take   = function()
+		useMacros "item_properties"
 		local item = item_properties_macros.getItems(false)
 		if item then
 			return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_CUSTOMCOLOR")
 		end
 		return nil
-	elseif sublayout == "marker" then
+	end,
+	marker = function()
+		useMacros "markers_regions_selection_macros"
 		local markeridx, _ = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 		if markeridx then
 			local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, markeridx)
 			return color
 		end
-	elseif sublayout == "region" then
+		return nil
+	end,
+	region = function()
+		useMacros "markers_regions_selection_macros"
 		local _, regionidx = reaper.GetLastMarkerAndCurRegion(0, reaper.GetCursorPosition())
 		if regionidx then
 			local _, _, _, _, _, _, color = reaper.EnumProjectMarkers3(0, regionidx)
@@ -821,45 +727,45 @@ function grabColorProperty.getValue()
 		end
 		return nil
 	end
-end
+}
 
-function grabColorProperty.setValue(value)
-	setColor(value)
-	setColorIndex(colors:getColorID(reaper.ColorFromNative(getColor())))
+function grabColorProperty:setValue(value)
+	setColor(self.objName, value)
+	setColorIndex(self.objName, colors:getColorID(reaper.ColorFromNative(getColor(self.objName))))
 end
 
 function grabColorProperty:get()
 	local message = initOutputMessage()
 	message:initType(string.format(
-					"Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.",
-					({
-						track = "last touched track",
-						item = "first selected item",
-						take = "active take of first selected item"
-					})[sublayout]))
-	if self.getValue() then
-		message(string.format("Grab a color from %s", self.states[sublayout]))
+		"Perform this property to grab a color from %s. This color will be coppied to this category of color composition layout for following performances.",
+		({
+			track = "last touched track",
+			item = "first selected item",
+			take = "active take of first selected item"
+		})[self.objName]))
+	message("Grab a color")
+	if self.getValue[self.objName]() then
+		message(string.format(" from %s", self.states[self.objName]))
 	else
 		message:addType(" This property unavailable right now because no one element has been selected.", 1)
 		message:changeType("unavailable", 2)
-		message("Grab a color")
 	end
 	return message
 end
 
 function grabColorProperty:set_perform()
 	local message = initOutputMessage()
-	local state = self.getValue()
+	local state = self.getValue[self.objName]()
 	if not state then
 		return
-						"This property is unavailable right now because no one element of this category has been neither touched nor selected."
+		"This property is unavailable right now because no one element of this category has been neither touched nor selected."
 	end
-	self.setValue(state)
+	self:setValue(state)
 	message(string.format("The %s color has been grabbed from %s.", colors:getName(reaper.ColorFromNative(state)),
-					self.states[sublayout]))
+		self.states[self.objName]))
 	return message
 end
 
-parentLayout.defaultSublayout = sublayout
+registerProperty(grabColorProperty)
 
 PropertiesRibbon.presentLayout(parentLayout)
