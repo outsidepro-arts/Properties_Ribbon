@@ -208,6 +208,16 @@ parentLayout.options:registerProperty(
 	)
 )
 
+-- Automatic selected track arming
+parentLayout.options:registerProperty(
+	composeExtendedSwitcherProperty(
+		usualOptStates,
+		40740,
+		nil,
+		{ "Toggle this property to switch the automatic selected track arming", "Toggleable" }
+	)
+)
+
 -- Ripple switching
 local rippleSwitcherProperty = {}
 parentLayout.options:registerProperty(rippleSwitcherProperty)
