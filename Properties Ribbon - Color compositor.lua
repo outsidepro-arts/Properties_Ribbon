@@ -649,7 +649,9 @@ function applyColorProperty:get()
 	message:initType(string.format("Perform this property to apply composed color to %s.", ({
 		track = "last touched track",
 		item = "first selected item",
-		take = "active take of first selected item"
+		take = "active take of first selected item",
+		marker = "marker near play or edit cursor",
+		region = "region near play or edit cursor"
 	})[self.objName]))
 	local gotState = self.states[self.objName]
 	message(string.format("Apply %s color", colors:getName(reaper.ColorFromNative(getColor(self.objName)))))
@@ -741,7 +743,9 @@ function grabColorProperty:get()
 		({
 			track = "last touched track",
 			item = "first selected item",
-			take = "active take of first selected item"
+			take = "active take of first selected item",
+			marker = "marker near play or edit cursor",
+			region = "region near play or edit cursor"
 		})[self.objName]))
 	message("Grab a color")
 	if self.getValue[self.objName]() then
