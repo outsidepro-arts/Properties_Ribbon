@@ -45,9 +45,9 @@ function parentLayout.init()
 	-- Extended check
 	local currentAndPreviousEqual
 	if extstate.currentLayout then
-		currentAndPreviousEqual = currentSublayout == extstate[extstate.currentLayout .. "_sublayout"]
+		currentAndPreviousEqual = currentSublayout == extstate[utils.removeSpaces(extstate.layoutFile) .. ".sublayout"]
 	end
-	allowMove = allowMove == true and currentAndPreviousEqual == true and currentExtProperty == nil
+	allowMove = allowMove == true and currentAndPreviousEqual == true and extstate.extProperty == nil
 end
 
 -- This layout is available always because here creating markers/regions property is.
