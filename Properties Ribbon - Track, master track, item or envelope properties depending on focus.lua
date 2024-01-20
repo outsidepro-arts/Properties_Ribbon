@@ -8,7 +8,7 @@ License: MIT License
 -- REAPER hack to prevent useless undo points creation
 reaper.defer(function() end)
 
-contextualActions = {
+contextualActions = setmetatable({
 	[0] = {
 		"_RS281e717ec90e00117f1fabe94e66cab67483b46a",
 		"_RS4c1bcc02859b102d0c590b483d8a454ffb12bcd1"
@@ -19,7 +19,11 @@ contextualActions = {
 	[2] = {
 		"_RSf75f25d3f38202cfab9a2ebc54a87c7bb04c1916"
 	}
-}
+}, {
+	__index = function(self)
+		return self[0]
+	end
+})
 
 definedAction = contextualActions[0][(reaper.GetMasterTrackVisibility() & 1) == 1 and 2 or 1]
 
