@@ -15,23 +15,23 @@ After this preambula, let me begin.
 
 -- It's just another vision of Properties Ribbon can be applied on
 
-package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
+-- We have to fix the Properties Ribbon searching path. Currently it places on a up level directory
+do
+	local uplevelPath = select(2, reaper.get_action_context()):match('^.+[\\//]')
+	uplevelPath = uplevelPath:match("(.+)([//\\])(.+)$")
+	package.path = uplevelPath .. "//?//init.lua"
+end
 
 require "properties_ribbon"
 
 useMacros("actions")
 
--- Set the cursor context forced
--- For what? REAPER should set the some actions to track context that user can perform them
-reaper.SetCursorContext(0)
-local insertionLayout = PropertiesRibbon.initLayout("Track insertion actions")
-insertionLayout.undoContext = undo.contexts.tracks
+local projectLayout = PropertiesRibbon.initLayout("Project management actions")
+projectLayout.undoContext = undo.contexts.project
 
-insertionLayout:registerProperty(composeSimpleProperty(40701), true)
-insertionLayout:registerProperty(composeSimpleProperty(40001), true)
-insertionLayout:registerProperty(composeSimpleProperty({ 40001, 40696 }, "Insert new track with specified name"), true)
-insertionLayout:registerProperty(composeSimpleProperty(40702), true)
-insertionLayout:registerProperty(composeSimpleProperty(46000), true)
-insertionLayout:registerProperty(composeSimpleProperty(41067), true)
+projectLayout:registerProperty(composeSimpleProperty(40021), true)
+projectLayout:registerProperty(composeSimpleProperty(40015), true)
+projectLayout:registerProperty(composeSimpleProperty(40017), true)
+projectLayout:registerProperty(composeSimpleProperty(40098), true)
 
-PropertiesRibbon.presentLayout(insertionLayout)
+PropertiesRibbon.presentLayout(projectLayout)
