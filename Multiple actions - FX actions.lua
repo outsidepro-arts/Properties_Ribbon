@@ -68,7 +68,7 @@ local function setCurrentBypassAction(action)
 	extstate._sublayout.currentBypassAction = action
 end
 
-local fxActionsLayout = initLayout("FX actions")
+local fxActionsLayout = PropertiesRibbon.initLayout("FX actions")
 fxActionsLayout:registerSublayout("contextLayout", contexts[context])
 if reaper.GetMasterTrackVisibility() & 1 == 1 then
 	fxActionsLayout:registerSublayout("masterTrackLayout", "Master track")
@@ -347,7 +347,7 @@ if reaper.NamedCommandLookup("_RS4e4bbd4cecce51a391e9f9b3b829c6d8144f237a") then
 				local chainCount, inputCount = self.getValue()
 				if chainCount > 0 or (inputCount and inputCount > 0) then
 					extstate["fx_properties.loadFX"] = nil
-					executeLayout("Properties Ribbon - FX properties")
+					PropertiesRibbon.executeLayout("Properties Ribbon - FX properties")
 				else
 					return "This action is unavailable right now because no FX is set there."
 				end
@@ -419,7 +419,7 @@ function fxPropertiesForMasterTrack:set_perform()
 	local chainCount = self.getValue()
 	if chainCount > 0 then
 		extstate["fx_properties.loadFX"] = "master"
-		executeLayout("Properties Ribbon - FX properties")
+		PropertiesRibbon.executeLayout("Properties Ribbon - FX properties")
 	else
 		return "This action is unavailable right now because no FX is set there."
 	end
@@ -542,7 +542,7 @@ function fxPropertiesForMonitoring:set_perform()
 	local _, monitoringCount = self.getValue()
 	if monitoringCount > 0 then
 		extstate["fx_properties.loadFX"] = "monitoring"
-		executeLayout("Properties Ribbon - FX properties")
+		PropertiesRibbon.executeLayout("Properties Ribbon - FX properties")
 	else
 		return "This action is unavailable right now because no FX is set there."
 	end

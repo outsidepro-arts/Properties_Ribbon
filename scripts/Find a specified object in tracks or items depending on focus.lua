@@ -126,7 +126,7 @@ end
 
 local context = reaper.GetCursorContext()
 
-local searchLayout = initLayout(({
+local searchLayout = PropertiesRibbon.initLayout(({
 	[0] = "Search in tracks",
 	[1] = "Search in items"
 })[context])
@@ -209,7 +209,7 @@ function searchinAction:set_adjust(direction)
 	return message
 end
 
-searchinAction.extendedProperties = initExtendedProperties("Search setting up")
+searchinAction.extendedProperties = PropertiesRibbon.initExtendedProperties("Search setting up")
 searchinAction.extendedProperties:registerProperty{
 	get = function(self, parent)
 		local message = initOutputMessage()

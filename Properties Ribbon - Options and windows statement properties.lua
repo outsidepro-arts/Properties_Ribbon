@@ -22,7 +22,7 @@ require "properties_ribbon"
 useMacros("actions")
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("State management")
+local parentLayout = PropertiesRibbon.initLayout("State management")
 
 parentLayout.undoContext = undo.contexts.any
 

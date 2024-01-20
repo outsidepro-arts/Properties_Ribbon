@@ -22,7 +22,7 @@ require "properties_ribbon"
 useMacros("fx_properties")
 
 -- global pseudoclass initialization
-local configLayout = initLayout("Properties Ribbon configuration")
+local configLayout = PropertiesRibbon.initLayout("Properties Ribbon configuration")
 
 -- sub-layouts
 -- Main sub-layout
@@ -1056,7 +1056,7 @@ for i = 1, #fxMaskList do
 		return message
 	end
 
-	excludeElementProperty.extendedProperties = initExtendedProperties("Context actions")
+	excludeElementProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Context actions")
 	excludeElementProperty.states = { excludeElementProperty.extendedProperties:registerProperty {
 		-- The methods written below get second parameter but Lua allows s to omit this if it's not needed.
 		get = function()

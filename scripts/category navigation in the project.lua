@@ -131,7 +131,7 @@ local function checkExistingCategoryID(id)
 	return false
 end
 
-local catnavLayout = initLayout("Track navigation by category")
+local catnavLayout = PropertiesRibbon.initLayout("Track navigation by category")
 
 
 catnavLayout:registerSublayout("basic", "Basic")
@@ -185,7 +185,7 @@ local function categorySet_adjust(self, direction)
 	end
 end
 
-local categoryExtendedProperties = initExtendedProperties("Category extended interraction")
+local categoryExtendedProperties = PropertiesRibbon.initExtendedProperties("Category extended interraction")
 
 categoryExtendedProperties:registerProperty {
 	get = function(self, parent)

@@ -34,7 +34,7 @@ local function getMarkersComposedColor()
 end
 
 -- Main class initialization
-local parentLayout = initLayout("Markers and regions management")
+local parentLayout = PropertiesRibbon.initLayout("Markers and regions management")
 
 parentLayout.undoContext = undo.contexts.project
 
@@ -64,7 +64,7 @@ function markersActionsProperty:get()
 	return message
 end
 
-markersActionsProperty.extendedProperties = initExtendedProperties(markersActionsProperty:get():extract(nil, false))
+markersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(markersActionsProperty:get():extract(nil, false))
 
 markersActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -151,7 +151,7 @@ markersActionsProperty.extendedProperties:registerProperty {
 	end
 }
 
-markerActions = initExtendedProperties("Marker actions")
+markerActions = PropertiesRibbon.initExtendedProperties("Marker actions")
 
 if allowMoveConfig == false then
 	markerActions:registerProperty {
@@ -249,7 +249,7 @@ function regionsActionsProperty:get()
 	return message
 end
 
-regionsActionsProperty.extendedProperties = initExtendedProperties(regionsActionsProperty:get():extract(nil, false))
+regionsActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(regionsActionsProperty:get():extract(nil, false))
 
 regionsActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -362,7 +362,7 @@ regionsActionsProperty.extendedProperties:registerProperty {
 		end
 	end
 }
-local regionActions = initExtendedProperties("Region actions")
+local regionActions = PropertiesRibbon.initExtendedProperties("Region actions")
 
 if allowMoveConfig == false then
 	regionActions:registerProperty {
@@ -543,7 +543,7 @@ function stretchMarkerActions:get()
 	return message
 end
 
-stretchMarkerActions = initExtendedProperties("Stretch marker actions")
+stretchMarkerActions = PropertiesRibbon.initExtendedProperties("Stretch marker actions")
 
 if allowMoveConfig == false then
 	stretchMarkerActions:registerProperty {
@@ -672,7 +672,7 @@ end
 -- Take markers
 parentLayout:registerSublayout("takeMarkersLayout", "Take markers")
 -- Take markers pre-defined actions
-local takeMarkerActions = initExtendedProperties("Take marker actions")
+local takeMarkerActions = PropertiesRibbon.initExtendedProperties("Take marker actions")
 if allowMoveConfig == false then
 	takeMarkerActions:registerProperty {
 		get = function(self, parent)
@@ -802,7 +802,7 @@ function stretchMarkersActionsProperty:get()
 end
 
 if canWorkWithItems() then
-	stretchMarkersActionsProperty.extendedProperties = initExtendedProperties(stretchMarkersActionsProperty:get()
+	stretchMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(stretchMarkersActionsProperty:get()
 	:extract(nil
 	, false))
 	stretchMarkersActionsProperty.extendedProperties:registerProperty {
@@ -918,7 +918,7 @@ function takeMarkersActionsProperty:get()
 end
 
 if canWorkWithItems() then
-	takeMarkersActionsProperty.extendedProperties = initExtendedProperties(takeMarkersActionsProperty:get():extract(nil,
+	takeMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(takeMarkersActionsProperty:get():extract(nil,
 		false))
 
 	takeMarkersActionsProperty.extendedProperties:registerProperty {

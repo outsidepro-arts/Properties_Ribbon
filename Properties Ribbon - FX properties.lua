@@ -22,7 +22,7 @@ useMacros("fx_properties")
 useMacros("track_properties")
 useMacros("item_properties")
 
-local fxLayout = initLayout("FX properties")
+local fxLayout = PropertiesRibbon.initLayout("FX properties")
 
 fxLayout.undoContext = undo.contexts.fx
 
@@ -340,7 +340,7 @@ if fxLayout.canProvide() then
 			fxName = fxName .. ({ [false] = "", [true] = " (offline)" })[capi.GetOffline(i + fxInaccuracy)]
 			fxLayout:registerSublayout(sid, fxPrefix .. fxName)
 			local firstExtendedFXProperties = {}
-			firstExtendedFXProperties = initExtendedProperties("FX operations")
+			firstExtendedFXProperties = PropertiesRibbon.initExtendedProperties("FX operations")
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
@@ -585,7 +585,7 @@ if fxLayout.canProvide() then
 			end
 			for k = 0, fxParmsCount - 1 do
 				local extendedFXProperties = {}
-				extendedFXProperties = initExtendedProperties(string.format("%s parameter actions", select(2, capi.GetParamName(i+fxInaccuracy, k))))
+				extendedFXProperties = PropertiesRibbon.initExtendedProperties(string.format("%s parameter actions", select(2, capi.GetParamName(i+fxInaccuracy, k))))
 
 				-- Here is non-standart case, so we will write our three-position setter
 				extendedFXProperties:registerProperty {
@@ -1119,7 +1119,7 @@ if fxLayout.canProvide() then
 	end
 
 	if fxLayout[currentSublayout] == nil then
-		currentSublayout = findDefaultSublayout(fxLayout)
+		currentSublayout = PropertiesRibbon.findDefaultSublayout(fxLayout)
 	end
 
 	-- Here is main jumping focus fix code

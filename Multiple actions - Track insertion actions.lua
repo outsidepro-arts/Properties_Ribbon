@@ -24,7 +24,7 @@ useMacros("actions")
 -- Set the cursor context forced
 -- For what? REAPER should set the some actions to track context that user can perform them
 reaper.SetCursorContext(0)
-local insertionLayout = initLayout("Track insertion actions")
+local insertionLayout = PropertiesRibbon.initLayout("Track insertion actions")
 insertionLayout.undoContext = undo.contexts.tracks
 
 insertionLayout:registerProperty(composeSimpleProperty(40701), true)

@@ -21,7 +21,7 @@ require "properties_ribbon"
 
 useMacros("actions")
 
-local projectLayout = initLayout("Project management actions")
+local projectLayout = PropertiesRibbon.initLayout("Project management actions")
 projectLayout.undoContext = undo.contexts.project
 
 projectLayout:registerProperty(composeSimpleProperty(40021), true)

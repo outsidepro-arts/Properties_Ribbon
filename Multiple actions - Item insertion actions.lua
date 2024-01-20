@@ -25,7 +25,7 @@ useMacros("actions")
 -- For what? REAPER should set the some actions to track context that user can perform them
 reaper.SetCursorContext(1)
 
-local insertionLayout = initLayout("Item insertion actions")
+local insertionLayout = PropertiesRibbon.initLayout("Item insertion actions")
 
 insertionLayout.undoContext = undo.contexts.items
 

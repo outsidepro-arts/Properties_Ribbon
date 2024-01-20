@@ -140,7 +140,7 @@ do
 	end
 end
 
-local envelopePointsLayout = initLayout(string.format("%s envelope points properties%s", name, fxName))
+local envelopePointsLayout = PropertiesRibbon.initLayout(string.format("%s envelope points properties%s", name, fxName))
 
 envelopePointsLayout.undoContext = undo.contexts.any
 

@@ -21,7 +21,7 @@ require "properties_ribbon"
 useMacros("track_properties")
 useMacros("tools")
 
-local parentLayout = initLayout("Track properties")
+local parentLayout = PropertiesRibbon.initLayout("Track properties")
 
 -- Define the tracks undo context
 parentLayout.undoContext = undo.contexts.tracks
@@ -375,7 +375,7 @@ function volumeProperty:set_adjust(direction)
 	return message
 end
 
-volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+volumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Volume extended interraction")
 
 volumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	tracks,
@@ -501,7 +501,7 @@ function panProperty:set_adjust(direction)
 	return message
 end
 
-panProperty.extendedProperties = initExtendedProperties("Pan extended interraction")
+panProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pan extended interraction")
 
 panProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	tracks,
@@ -624,7 +624,7 @@ function widthProperty:set_adjust(direction)
 	return message
 end
 
-widthProperty.extendedProperties = initExtendedProperties("Width extended interraction")
+widthProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Width extended interraction")
 
 widthProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	tracks,

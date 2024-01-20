@@ -55,7 +55,7 @@ local function setColor(section, color)
 end
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Color composer")
+local parentLayout = PropertiesRibbon.initLayout("Color composer")
 
 parentLayout.undoContext = undo.contexts.tracks | undo.contexts.items | undo.contexts.project
 
@@ -144,7 +144,7 @@ function presetsProperty:set_adjust(direction)
 	return message
 end
 
-presetsProperty.extendedProperties = initExtendedProperties("Preset context actions")
+presetsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Preset context actions")
 
 presetsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)

@@ -28,7 +28,7 @@ local tpMessages = {
 }
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Master track properties")
+local parentLayout = PropertiesRibbon.initLayout("Master track properties")
 
 parentLayout.undoContext = undo.contexts.tracks
 
@@ -77,7 +77,7 @@ function volumeProperty:set_adjust(direction)
 	return message
 end
 
-volumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+volumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Volume extended interraction")
 volumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	master,
 	{
@@ -152,7 +152,7 @@ function panProperty:set_adjust(direction)
 	return message
 end
 
-panProperty.extendedProperties = initExtendedProperties("Pan extended interraction")
+panProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pan extended interraction")
 
 panProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	master,
@@ -226,7 +226,7 @@ function widthProperty:set_adjust(direction)
 	return message
 end
 
-widthProperty.extendedProperties = initExtendedProperties("Width extended interraction")
+widthProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Width extended interraction")
 widthProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	master,
 	{
@@ -462,7 +462,7 @@ function tempoProperty:set_adjust(direction)
 	return message
 end
 
-tempoProperty.extendedProperties = initExtendedProperties("Tempo extended interraction")
+tempoProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Tempo extended interraction")
 tempoProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()

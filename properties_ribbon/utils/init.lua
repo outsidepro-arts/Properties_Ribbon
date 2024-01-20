@@ -233,4 +233,26 @@ function utils.platform()
 	return platform
 end
 
+function openPath(path)
+	-- We have to define the operating system to choose needed terminal command.
+	local startCmd = nil
+	if utils.platform() == "Windows" then
+		startCmd = "start"
+	else -- We are on another platform, that assumes Unix systems (REAPER builds only for two OS) which implies that's MacOS
+		startCmd = "open"
+	end
+	if startCmd then
+		os.execute(string.format("%s %s", startCmd, path))
+	end
+end
+
+function fixPath(path)
+	path = assert(isstring(path) and path, ("The string is expected (got %s)"):format(type(path)))
+	if path:match("^%u:") then
+		return path
+	else
+		return select(1, PropertiesRibbon.script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1), path)
+	end
+end
+
 return utils

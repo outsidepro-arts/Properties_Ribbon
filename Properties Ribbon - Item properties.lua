@@ -120,7 +120,7 @@ local pos_globalToRelative = item_properties_macros.pos_globalToRelative
 
 
 -- global pseudoclass initialization
-local parentLayout = initLayout("Item and take properties")
+local parentLayout = PropertiesRibbon.initLayout("Item and take properties")
 
 parentLayout.undoContext = undo.contexts.items
 
@@ -305,7 +305,7 @@ function itemVolumeProperty:set_adjust(direction)
 	return message
 end
 
-itemVolumeProperty.extendedProperties = initExtendedProperties("Volume extended interraction")
+itemVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Volume extended interraction")
 
 itemVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
@@ -881,7 +881,7 @@ if type(items) ~= "table" then
 		return message
 	end
 
-	leftEdgeProperty.extendedProperties = initExtendedProperties("Left edge extended interraction")
+	leftEdgeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Left edge extended interraction")
 
 	leftEdgeProperty.extendedProperties:registerProperty {
 		get = function(self, parent)
@@ -945,7 +945,7 @@ function positionProperty:set_adjust(direction)
 	return
 end
 
-positionProperty.extendedProperties = initExtendedProperties("Position extended interraction")
+positionProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Position extended interraction")
 
 
 positionProperty.extendedProperties:registerProperty{
@@ -1020,7 +1020,7 @@ if type(items) ~= "table" then
 		return message
 	end
 
-	rightEdgeProperty.extendedProperties = initExtendedProperties("Right edge extended interraction")
+	rightEdgeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Right edge extended interraction")
 
 	rightEdgeProperty.extendedProperties:registerProperty {
 		get = function(self, parent)
@@ -1199,7 +1199,7 @@ function fadeinLenProperty:set_adjust(direction)
 	return message
 end
 
-fadeinLenProperty.extendedProperties = initExtendedProperties("Fade length extended interraction")
+fadeinLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Fade length extended interraction")
 fadeinLenProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
@@ -1417,7 +1417,7 @@ function fadeoutLenProperty:get()
 end
 
 fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeoutLenProperty.extendedProperties = initExtendedProperties(fadeinLenProperty.extendedProperties.name)
+fadeoutLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(fadeinLenProperty.extendedProperties.name)
 -- We have to make a hack: copy all extended properties from fade-in length but without first property
 -- Remember that really, extended properties start from 2 but not from 1: 1 is return back
 -- We will not use the iterators factory cuz the changed metatable will make the infinite cycle there
@@ -1519,7 +1519,7 @@ function fadeinAutoLenProperty:get()
 end
 
 fadeinAutoLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeinAutoLenProperty.extendedProperties = initExtendedProperties("Automatic fade length extended interraction")
+fadeinAutoLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Automatic fade length extended interraction")
 
 fadeinAutoLenProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -1732,7 +1732,7 @@ function activeTakeProperty:set_adjust(direction)
 	return message
 end
 
-activeTakeProperty.extendedProperties = initExtendedProperties("Active take extended interraction")
+activeTakeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Active take extended interraction")
 activeTakeProperty.extendedProperties:registerProperty {
 	getValue = function(item)
 		return ({ reaper.GetSetMediaItemTakeInfo_String(reaper.GetActiveTake(item), "P_NAME", "", false) })[2]
@@ -1889,7 +1889,7 @@ function takeVolumeProperty:get()
 end
 
 takeVolumeProperty.set_adjust = itemVolumeProperty.set_adjust
-takeVolumeProperty.extendedProperties = initExtendedProperties(itemVolumeProperty.extendedProperties.name)
+takeVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(itemVolumeProperty.extendedProperties.name)
 takeVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
 	{
@@ -2032,7 +2032,7 @@ function takePanProperty:set_adjust(direction)
 	return message
 end
 
-takePanProperty.extendedProperties = initExtendedProperties("Pan exttended interraction")
+takePanProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pan exttended interraction")
 takePanProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
 	{
@@ -2342,7 +2342,7 @@ function takePlayrateProperty:set_adjust(direction)
 	return message
 end
 
-takePlayrateProperty.extendedProperties = initExtendedProperties("Take play rate extended interraction")
+takePlayrateProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Take play rate extended interraction")
 takePlayrateProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
@@ -2540,7 +2540,7 @@ function takePitchProperty:set_adjust(direction)
 	return message
 end
 
-takePitchProperty.extendedProperties = initExtendedProperties("Pitch extended interraction")
+takePitchProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pitch extended interraction")
 takePitchProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
 	{
@@ -2741,7 +2741,7 @@ function takePitchShifterProperty:set_adjust(direction)
 	return message
 end
 
-takePitchShifterProperty.extendedProperties = initExtendedProperties("Pitch shifter extended properties")
+takePitchShifterProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pitch shifter extended properties")
 
 takePitchShifterProperty.extendedProperties:registerProperty {
 	get = function(self, parent)

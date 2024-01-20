@@ -5,27 +5,30 @@ License: MIT License
 ]]
 --
 
--- The script section internal name
-local script_section = "Properties_Ribbon_script"
+-- Module namespace
+PropertiesRibbon = {}
 
-local script_path = nil
+-- The script section internal name
+PropertiesRibbon.script_section = "Properties_Ribbon_script"
+
+PropertiesRibbon.script_path = nil
 
 -- We will reverse the package.path string because most likely the path pattern may be at the bottom of.
 for path in package.path:reverse():gmatch("([^;]+)") do
 	if reaper.file_exists(path:reverse():gsub("%?", "properties_ribbon")) then
-		script_path = path:reverse():match("^.+[//\\]"):gsub("%?", "properties_ribbon")
+		PropertiesRibbon.script_path = path:reverse():match("^.+[//\\]"):gsub("%?", "properties_ribbon")
 		break
 	end
 end
-package.path = string.format("%s;%s//%s", package.path, script_path, "?.lua")
-package.path = string.format("%s;%s//%s", package.path, script_path, "?//init.lua")
+package.path = string.format("%s;%s//%s", package.path, PropertiesRibbon.script_path, "?.lua")
+package.path = string.format("%s;%s//%s", package.path, PropertiesRibbon.script_path, "?//init.lua")
 
 
 -- Including the types check simplifier
 require "typescheck"
 
 -- Include the configuration provider
-config = require "providers.config_provider" (script_section)
+config = require "providers.config_provider" (PropertiesRibbon.script_section)
 
 -- include the functions for converting the specified Reaper values and artisanal functions which either not apsent in the LUA or which work non correctly.
 utils = require "utils"
@@ -36,7 +39,7 @@ require "utils.string"
 -- including the colors module
 colors = require "providers.colors_provider"
 -- Making the get and set internal ExtState more easier
-extstate = require "providers.extstate_provider" (script_section)
+extstate = require "providers.extstate_provider" (PropertiesRibbon.script_section)
 
 -- Including the humanbeing representations metamethods
 representation = require "representations.representations"
@@ -105,6 +108,32 @@ undo = {
 
 -- REAPER hack to prevent useless undo points creation
 reaper.defer(function() end)
+
+-- Checking the speech output method existing
+if not reaper.APIExists("osara_outputMessage") then
+	if reaper.ShowMessageBox(
+			'Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?',
+			"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		openPath("https://osara.reaperaccessibility.com/snapshots/")
+	end
+	return
+end
+
+if not swsIsNotRequired then
+	goto skipSWSCheck
+end
+
+if reaper.APIExists("CF_GetSWSVersion") == true then
+	if reaper.ShowMessageBox(
+			'Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?',
+			"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		openPath("https://sws-extension.org/")
+	end
+	return
+end
+
+::skipSWSCheck::
+
 
 -- Little injections
 -- Make string type as outputable to OSARA directly
@@ -254,7 +283,8 @@ function initOutputMessage()
 				table.insert(message, ({
 					[true] = tostring(self.label):lower(),
 					[false] = tostring(self.label)
-				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)]:join(config.getstring("lvDivider", "")))
+				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)]:join(config.getstring("lvDivider",
+					"")))
 			end
 			if self.value then
 				table.insert(message, tostring(string.gsub(self.value, "%s$", "")))
@@ -359,7 +389,7 @@ end
 
 -- The layout initialization
 -- The input parameter "str" waits the new class message
-function initLayout(str)
+function PropertiesRibbon.initLayout(str)
 	local t = setmetatable({
 		name = str,
 		section = string.format(utils.removeSpaces(str), ""),
@@ -456,7 +486,7 @@ function initLayout(str)
 	return t
 end
 
-function initExtendedProperties(str)
+function PropertiesRibbon.initExtendedProperties(str)
 	local t = {
 		name = str,
 		properties = setmetatable({ {
@@ -485,7 +515,7 @@ end
 
 -- }
 
-function composeSubLayout(shouldReportParentLayout)
+function PropertiesRibbon.composeSubLayout(shouldReportParentLayout)
 	local message = initOutputMessage()
 	if shouldReportParentLayout == nil then
 		shouldReportParentLayout = true
@@ -512,7 +542,7 @@ end
 -- Propose an existing Properties Ribbon layout by current REAPER build-in context
 -- parameters:
 -- optional forced (boolean): should the function return the contextual layout forcedly even if one of context has been set earlier. False or nil: only if one of contextual layouts is set, true - immediately.
-function proposeLayout(forced)
+function PropertiesRibbon.proposeLayout(forced)
 	forced = forced or false
 	local context, contextLayout, curLayout = reaper.GetCursorContext(), "", extstate.currentLayout
 	-- Sometimes REAPER returns bizarre contexts...
@@ -555,21 +585,12 @@ function setUndoLabel(label)
 	end
 end
 
-function fixPath(path)
-	path = assert(isstring(path) and path, ("The string is expected (got %s)"):format(type(path)))
-	if path:match("^%u:") then
-		return path
-	else
-		return select(1, script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1), path)
-	end
-end
-
 -- Immediately load specified layout
 -- May be used when you're need to load new layout from your layout directly
 -- Parameters:
 -- -- newLayout (string): either absolute or relative path of new layout  which Properties Ribbon should switch to.
 -- Returns none
-function executeLayout(newLayoutFile)
+function PropertiesRibbon.executeLayout(newLayoutFile)
 	finishScript()
 	local lt = nil
 	PropertiesRibbon.presentLayout = function(newLayout)
@@ -611,7 +632,7 @@ function executeLayout(newLayoutFile)
 	end
 end
 
-function isHasSublayouts(lt)
+function PropertiesRibbon.isHasSublayouts(lt)
 	if not lt.properties then
 		for _, field in pairs(lt) do
 			if isSublayout(field) then
@@ -622,7 +643,7 @@ function isHasSublayouts(lt)
 	return false
 end
 
-function findDefaultSublayout(lt)
+function PropertiesRibbon.findDefaultSublayout(lt)
 	for fieldName, field in pairs(lt) do
 		if isSublayout(field) then
 			if field.slIndex == 1 then
@@ -634,22 +655,10 @@ end
 
 -- Open a path to defined system
 -- path (string): the physical or web-address
-function openPath(path)
-	-- We have to define the operating system to choose needed terminal command.
-	local startCmd = nil
-	if utils.platform() == "Windows" then
-		startCmd = "start"
-	else -- We are on another platform, that assumes Unix systems (REAPER builds only for two OS) which implies that's MacOS
-		startCmd = "open"
-	end
-	if startCmd then
-		os.execute(string.format("%s %s", startCmd, path))
-	end
-end
 
 function useMacros(macrosName)
-	if reaper.file_exists(script_path:joinsep("//", "macros", macrosName:join(".lua"))) then
-		dofile(script_path:joinsep("//", "macros", macrosName:join(".lua")))
+	if reaper.file_exists(PropertiesRibbon.script_path:joinsep("//", "macros", macrosName:join(".lua"))) then
+		dofile(PropertiesRibbon.script_path:joinsep("//", "macros", macrosName:join(".lua")))
 		return true
 	end
 	return false
@@ -658,15 +667,6 @@ end
 function beginUndoBlock()
 	if layout.undoContext then
 		reaper.Undo_BeginBlock()
-	end
-end
-
-function getEmbeddedProperties(name)
-	if reaper.file_exists(script_path:joinsep("//", "properties_ribbon", "embedded", name:join(".lua"))) then
-		return {
-			section = "properties_ribbon//embedded",
-			layout = name
-		}
 	end
 end
 
@@ -723,14 +723,12 @@ You have to allow REAPER only create new instance and not finish previous task. 
 	extstate._forever.reascriptTasksAvoid = true
 end
 
--- Module namespace
-PropertiesRibbon = {}
 -- Global variables initialization
 layout = {}
 local maybeLayout = nil
 local layoutFile
 if config.getboolean("allowLayoutsrestorePrev", true) and extstate.oncePerformSuccess then
-	layoutFile = extstate.previousLayoutFile or fixPath(proposeLayout(true))
+	layoutFile = extstate.previousLayoutFile or fixPath(PropertiesRibbon.proposeLayout(true))
 	extstate.oncePerformSuccess = false
 else
 	layoutFile = extstate.layoutFile
@@ -750,8 +748,9 @@ function prepareLayout(newLayout)
 			"Properties ribbon error", showMessageBoxConsts.sets.ok)
 		return false
 	end
-	if isHasSublayouts(layout) then
-		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or findDefaultSublayout(layout)
+	if PropertiesRibbon.isHasSublayouts(layout) then
+		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or
+		PropertiesRibbon.findDefaultSublayout(layout)
 		layout = assert(layout[currentSublayout],
 			"Broken sublayout has detected: " ..
 			string.format("sublayout %s is apsent in %s", currentSublayout, layout.section))
@@ -772,7 +771,7 @@ function PropertiesRibbon.presentLayout(lt)
 	layoutFile = select(2, reaper.get_action_context())
 	currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
-		currentSublayout = layout.defaultSublayout or findDefaultSublayout(layout)
+		currentSublayout = layout.defaultSublayout or PropertiesRibbon.findDefaultSublayout(layout)
 	end
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if rememberCFG ~= 1 and rememberCFG ~= 2 then
@@ -786,7 +785,7 @@ end
 function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 	local proposedLayout
 	if config.getboolean("automaticLayoutLoading", false) == true and shouldOmitAutomaticLayoutLoading ~= true then
-		proposedLayout = proposeLayout()
+		proposedLayout = PropertiesRibbon.proposeLayout()
 		if proposedLayout and proposedLayout ~= layoutFile then
 			speakLayout = true
 			layoutFile = proposedLayout
@@ -869,7 +868,7 @@ function PropertiesRibbon.nextProperty()
 		if currentExtProperty then
 			message(layout.properties[layout.pIndex].extendedProperties.name .. ". ")
 		else
-			message(composeSubLayout())
+			message(PropertiesRibbon.composeSubLayout())
 		end
 		if rememberCFG ~= 2 and rememberCFG ~= 3 then
 			layout.pIndex = 0
@@ -999,7 +998,7 @@ function PropertiesRibbon.previousProperty()
 		if currentExtProperty then
 			message(layout.properties[layout.pIndex].extendedProperties.name .. ". ")
 		else
-			message(composeSubLayout())
+			message(PropertiesRibbon.composeSubLayout())
 		end
 		if rememberCFG ~= 2 and rememberCFG ~= 3 then
 			pIndex = 2
@@ -1133,12 +1132,12 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		if currentExtProperty then
 			if not shouldNotResetExtProperty then
 				currentExtProperty = nil
-				message(composeSubLayout(shouldReportParentLayout))
+				message(PropertiesRibbon.composeSubLayout(shouldReportParentLayout))
 			else
 				message(layout.properties[layout.pIndex].extendedProperties.name .. ". ")
 			end
 		else
-			message(composeSubLayout(shouldReportParentLayout))
+			message(PropertiesRibbon.composeSubLayout(shouldReportParentLayout))
 		end
 		if (rememberCFG ~= 2 and rememberCFG ~= 3) and not propertyNum and not currentExtProperty then
 			layout.pIndex = 1

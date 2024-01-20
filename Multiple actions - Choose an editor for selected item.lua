@@ -21,7 +21,7 @@ require "properties_ribbon"
 
 useMacros("actions")
 
-local parentLayout = initLayout("Editor selection")
+local parentLayout = PropertiesRibbon.initLayout("Editor selection")
 parentLayout.undoContext = undo.contexts.items
 
 function parentLayout.canProvide()

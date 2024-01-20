@@ -22,7 +22,7 @@ require "properties_ribbon"
 
 useMacros("actions")
 
-local parentLayout = initLayout("preferences actions")
+local parentLayout = PropertiesRibbon.initLayout("preferences actions")
 
 parentLayout:registerSublayout("propertiesRibbonPrefs", "Properties ribbon")
 parentLayout:registerSublayout("reaperPrefs", "REAPER")
@@ -45,7 +45,7 @@ function prConfigProperty:get()
 end
 
 function prConfigProperty:set_perform()
-	executeLayout("Properties Ribbon configuration")
+	PropertiesRibbon.executeLayout("Properties Ribbon configuration")
 end
 
 -- The repository page of Properties Ribbon on Github
