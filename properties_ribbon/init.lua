@@ -710,7 +710,7 @@ function getUserInputs(title, fields, instruction)
 	return retval, #answer > 1 and answer or answer[1] or nil
 end
 
----Message box wrapper to simplify the coding 
+---Message box wrapper to simplify the coding
 ---@param title string @ Title of the message
 ---@param message string @ Message
 ---@param buttons string? @ Button set which contaions in showMessageBoxConsts.sets.
@@ -762,7 +762,7 @@ function prepareLayout(newLayout)
 	end
 	if PropertiesRibbon.isHasSublayouts(layout) then
 		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or
-		PropertiesRibbon.findDefaultSublayout(layout)
+			PropertiesRibbon.findDefaultSublayout(layout)
 		layout = assert(layout[currentSublayout],
 			"Broken sublayout has detected: " ..
 			string.format("sublayout %s is apsent in %s", currentSublayout, layout.section))
@@ -804,6 +804,30 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 			extstate.gotoMode = nil
 			currentExtProperty = nil
 		end
+	end
+	if layoutFile == nil or layoutFile == "" then
+		("Switch one action group first."):output()
+		return
+	end
+	local lt = nil
+	PropertiesRibbon.presentLayout = function(newLayout)
+		lt = newLayout
+	end
+	dofile(layoutFile)
+	if lt then
+		currentLayout = lt.section
+		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
+		return prepareLayout(lt)
+	end
+end
+
+function PropertiesRibbon.initProposedLayout()
+	local proposedLayout = PropertiesRibbon.proposeLayout(true)
+	if proposedLayout then
+		speakLayout = true
+		layoutFile = proposedLayout
+		extstate.gotoMode = nil
+		currentExtProperty = nil
 	end
 	if layoutFile == nil or layoutFile == "" then
 		("Switch one action group first."):output()

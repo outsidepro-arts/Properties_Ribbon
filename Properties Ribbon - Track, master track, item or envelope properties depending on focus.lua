@@ -10,4 +10,6 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 require "properties_ribbon"
 
 
-dofile(PropertiesRibbon.proposeLayout(true))
+if PropertiesRibbon.initProposedLayout() then
+	PropertiesRibbon.reportOrGotoProperty()
+end
