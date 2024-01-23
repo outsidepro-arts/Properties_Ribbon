@@ -643,6 +643,9 @@ function PropertiesRibbon.isHasSublayouts(lt)
 	return false
 end
 
+---Define the default sub-layout in given layout
+---@param lt layout
+---@return string
 function PropertiesRibbon.findDefaultSublayout(lt)
 	for fieldName, field in pairs(lt) do
 		if isSublayout(field) then
@@ -653,9 +656,9 @@ function PropertiesRibbon.findDefaultSublayout(lt)
 	end
 end
 
--- Open a path to defined system
--- path (string): the physical or web-address
-
+---Load specified macros
+---@param macrosName string
+---@return boolean
 function useMacros(macrosName)
 	if reaper.file_exists(PropertiesRibbon.script_path:joinsep("//", "macros", macrosName:join(".lua"))) then
 		dofile(PropertiesRibbon.script_path:joinsep("//", "macros", macrosName:join(".lua")))
@@ -707,7 +710,11 @@ function getUserInputs(title, fields, instruction)
 	return retval, #answer > 1 and answer or answer[1] or nil
 end
 
--- Message box wrapper to simplify the coding
+---Message box wrapper to simplify the coding 
+---@param title string @ Title of the message
+---@param message string @ Message
+---@param buttons string? @ Button set which contaions in showMessageBoxConsts.sets.
+---@return number @ Button index returned from reaper.ShowMessageBox.
 function msgBox(title, message, buttons)
 	return reaper.ShowMessageBox(message, title, showMessageBoxConsts.sets[buttons or "ok"])
 end
