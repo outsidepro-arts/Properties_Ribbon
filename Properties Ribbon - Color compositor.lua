@@ -174,14 +174,11 @@ presetsProperty.extendedProperties:registerProperty {
 					})
 					setPresetIndex(parent.objName, #presets)
 				else
-					reaper.ShowMessageBox(string.format("The preset with name\"%s\" already exists.", answer),
-						"Creation error",
-						showMessageBoxConsts.sets.ok)
+					msgBox("Creation error", string.format("The preset with name\"%s\" already exists.", answer))
 					return false
 				end
 			else
-				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error",
-					showMessageBoxConsts.sets.ok)
+				msgBox("Preset creation error", "The preset name cannot be empty.")
 				return false
 			end
 		end
@@ -214,8 +211,7 @@ presetsProperty.extendedProperties:registerProperty {
 				preset.name = answer
 				presets[parent:getValue()] = preset
 			else
-				reaper.ShowMessageBox("The preset name cannot be empty.", "Preset creation error",
-					showMessageBoxConsts.sets.ok)
+				msgBox("Preset creation error", "The preset name cannot be empty.")
 				return false
 			end
 		end
@@ -266,8 +262,7 @@ presetsProperty.extendedProperties:registerProperty {
 			return false, "Select a preset first"
 		end
 		local preset = presets[parent:getValue()]
-		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the preset \"%s\"?", preset.name),
-				"Confirm preset deletion", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		if msgBox("Confirm preset deletion", string.format("Are you sure you want to delete the preset \"%s\"?", preset.name), "yesno") == showMessageBoxConsts.button.yes then
 			presets[parent:getValue()] = nil
 			if parent:getValue() - 1 > 0 then
 				parent:setValue(parent:getValue() - 1)

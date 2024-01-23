@@ -4,7 +4,8 @@ Copyright (c) 2020-2024 outsidepro-arts
 License: MIT License
 
 ----------
-]] --
+]]
+   --
 
 
 prepareUserData = {}
@@ -29,7 +30,8 @@ Type the humanbeeing volume value. The following formats are supported:
 >5 (means relative value i.e. the current volume value will be increased by this value)
 inf (will set the infinite negative value means silence)
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 -- The methods like method below prepares the appropriate humanbeeing user typed data to REAPER's  values.
 -- Parameters:
@@ -58,8 +60,7 @@ function prepareUserData.db.process(udata, curvalue)
 			return utils.decibelstonum(udata)
 		end
 	end
-	reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error",
-		showMessageBoxConsts.sets.ok)
+	msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
 end
 
 -- The macro for prepare the values with pan values.
@@ -74,7 +75,8 @@ Type the humanbeeing pan value. The following formats are supported:
 center (will set a pan value to center)
 c (like in previous case))
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 function prepareUserData.pan.process(udata, curvalue)
 	udata = prepareUserData.basic(udata)
@@ -103,14 +105,14 @@ function prepareUserData.pan.process(udata, curvalue)
 		return nil
 	else
 		if udata:find("[lr]") == nil then
-			reaper.ShowMessageBox('The pan direction is not set. You have to set the pan direction like \"left\" or \"right\" or \"l\" or \"r\".'
-				, "Converting error", showMessageBoxConsts.sets.ok)
+			msgBox("Converting error",
+				'The pan direction is not set. You have to set the pan direction like \"left\" or \"right\" or \"l\" or \"r\".')
 			return nil
 		end
 		if udata:match("^[<>]?%d+[%%]?%s?[lr]") then
 			converted = udata:match("^[-<>]?(%d+)")
 			if converted == nil then
-				reaper.ShowMessageBox("Cannot extract  any digits value.", "converting error", showMessageBoxConsts.sets.ok)
+				msgBox("converting error", "Cannot extract  any digits value.")
 				return nil
 			end
 			converted = utils.percenttonum(converted)
@@ -125,8 +127,7 @@ function prepareUserData.pan.process(udata, curvalue)
 			return math.round(converted, 3)
 		end
 	end
-	reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error",
-		showMessageBoxConsts.sets.ok)
+	msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
 end
 
 -- The macro for prepare the values with percentage values.
@@ -138,7 +139,8 @@ Type the humanbeeing percentage value. The following formats are supported:
 <30% (means relative value i.e. the current percent value will be decreased by this value)
 >5 (means relative value i.e. the current percent value will be increased by this value)
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 function prepareUserData.percent.process(udata, curvalue)
 	udata = prepareUserData.basic(udata)
@@ -165,8 +167,7 @@ function prepareUserData.percent.process(udata, curvalue)
 		end
 		return udata
 	end
-	reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error",
-		showMessageBoxConsts.sets.ok)
+	msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
 end
 
 prepareUserData.rate = {
@@ -178,14 +179,17 @@ Type the humanbeeing playrate value. The following formats are supported:
 >0 2 (means relative value i.e. the current rate value will be increased by this value)
 original [or orig or o] (will set a playrate value to original pitch)
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 function prepareUserData.rate.process(udata, curvalue)
 	local relative = string.match(udata, "^[<>]")
 	udata = string.gsub(udata, "^(%d*)(%D)(%d*)", "%1.%3")
 	udata = string.match(udata, "^[<>]?%d*%.?%d*")
-	if not udata then reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.",
-		"Preparation error", showMessageBoxConsts.sets.ok) return end
+	if not udata then
+		msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
+		return
+	end
 	if relative then
 		if relative == "<" then
 			udata = -udata
@@ -206,7 +210,8 @@ Type the humanbeeing pitch value. The following formats are supported:
 >5 (means relative value i.e. the current pitch value will be increased by this value)
 original [or orig or o] (will set a pitch value to original pitch)
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 function prepareUserData.pitch.process(udata, curvalue)
 	udata = prepareUserData.basic(udata)
@@ -243,8 +248,7 @@ function prepareUserData.pitch.process(udata, curvalue)
 			return tonumber(converted)
 		end
 	end
-	reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.", "Preparation error",
-		showMessageBoxConsts.sets.ok)
+	msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
 end
 
 prepareUserData.tempo = {
@@ -255,16 +259,19 @@ Type the humanbeeing tempo value. The following formats are supported:
 <5bpm (means relative value i.e. the current tempo value will be decreased by this value)
 >0 400 (means relative value i.e. the current tempo value will be increased by this value)
 Please note: these format may be combined with eachother.
-]] }
+]]
+}
 
 function prepareUserData.tempo.process(udata, curvalue)
 	local relative = string.match(udata, "^[<>]")
 	udata = udata:gsub("[<>]", "")
 	udata = string.gsub(udata, "^(%d*)(%D)(%d*)", "%1.%3")
 	udata = string.match(udata, "^%d*%.?%d*")
-	if not udata then reaper.ShowMessageBox("Couldn't convert the specified value to appropriated data.",
-		"Preparation error", showMessageBoxConsts.sets.ok) return end
-		udata = tonumber(udata)
+	if not udata then
+		msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
+		return
+	end
+	udata = tonumber(udata)
 	if relative then
 		if relative == "<" then
 			udata = -udata

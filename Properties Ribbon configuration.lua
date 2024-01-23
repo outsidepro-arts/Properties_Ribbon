@@ -779,8 +779,7 @@ function truncateIdByProperty:set_perform()
 			if answer:find("off") then
 				config.setinteger("truncateIdBy", 0)
 			else
-				reaper.ShowMessageBox("Couldn't extract any expected value.", "Properties Ribbon error",
-					showMessageBoxConsts.sets.ok)
+				msgBox("Properties Ribbon error", "Couldn't extract any expected value.")
 			end
 		end
 		message(self:get())
@@ -1077,13 +1076,11 @@ for i = 1, #fxMaskList do
 			if retval then
 				local newFxMask, newParamMask = table.unpack(answer)
 				if newFxMask == nil then
-					reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error",
-						showMessageBoxConsts.sets.ok)
+					msgBox("Edit mask error", "The FX mask should be filled.")
 					return false
 				end
 				if newParamMask == nil then
-					reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error",
-						showMessageBoxConsts.sets.ok)
+					msgBox("Edit mask error", "The parameter mask should be filled.")
 					return false
 				end
 				fxMaskList[i] = {
@@ -1102,8 +1099,8 @@ for i = 1, #fxMaskList do
 			return message
 		end,
 		set_perform = function(self)
-			if reaper.ShowMessageBox(string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s',
-					fxExcludeElem.fxMask, fxExcludeElem.paramMask), "Delete mask", showMessageBoxConsts.sets.yesno) ==
+			if msgBox("Delete mask", string.format('Are you sure want to delete this mask?\nFX mask: %s\nParameter mask: %s',
+					fxExcludeElem.fxMask, fxExcludeElem.paramMask), "yesno") ==
 				showMessageBoxConsts.button.yes then
 				fxMaskList[i] = nil
 				return true, ""
@@ -1133,12 +1130,11 @@ function addExcludeMaskProperty:set_perform()
 	if retval then
 		local newFxMask, newParamMask = table.unpack(answer)
 		if newFxMask == nil then
-			reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+			msgBox("Edit mask error", "The FX mask should be filled.")
 			return
 		end
 		if newParamMask == nil then
-			reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets
-				.ok)
+			msgBox("Edit mask error", "The parameter mask should be filled.")
 			return
 		end
 		fxMaskList[#fxMaskList + 1] = {
@@ -1312,14 +1308,12 @@ function tempoStepProperty:set_perform()
 		if ajustingValue < 200 and ajustingValue > 0.001 then
 			config.setinteger("tempoStep", ajustingValue)
 		elseif ajustingValue >= 200 then
-			if reaper.ShowMessageBox(
-					"Are you sure you want to set the step value more than 200 BPM per one adjustment? Are you seriously? 😦",
-					"Just one question", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			if msgBox("Just one question",
+					"Are you sure you want to set the step value more than 200 BPM per one adjustment? Are you seriously? 😦", "yesno") == showMessageBoxConsts.button.yes then
 				config.setinteger("tempoStep", ajustingValue)
 			end
 		elseif ajustingValue < 0.001 then
-			reaper.ShowMessageBox("Set the tempo step as less than zero is pointless.", "Tempo step value specify error",
-				showMessageBoxConsts.sets.ok)
+			msgBox("Tempo step value specify error", "Set the tempo step as less than zero is pointless.")
 		end
 	end
 end

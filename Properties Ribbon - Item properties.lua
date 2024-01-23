@@ -132,9 +132,8 @@ function parentLayout.canProvide()
 	for i = 0, itemsCount - 1 do
 		if reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)) == nil then
 			if not extstate._layout.emptyLanesNotify then
-				reaper.ShowMessageBox(
-					"Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout."
-					, "Empty lane", showMessageBoxConsts.sets.ok)
+				msgBox("Empty lane",
+					"Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout.")
 				extstate._layout.emptyLanesNotify = true
 			end
 			isEmptyLanes = true
@@ -176,7 +175,7 @@ and try to complement any getState message with short type label. I mean what th
 ]]
 --
 
-local osaraParamsProperty = parentLayout.managementLayout:registerProperty{}
+local osaraParamsProperty = parentLayout.managementLayout:registerProperty {}
 
 function osaraParamsProperty:get()
 	local message = initOutputMessage()
@@ -987,10 +986,11 @@ end
 positionProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Position extended interraction")
 
 
-positionProperty.extendedProperties:registerProperty{
+positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
-		message:initType("Perform this property to move selected items to edit cursor position so that left edge will be positioned here..")
+		message:initType(
+		"Perform this property to move selected items to edit cursor position so that left edge will be positioned here..")
 		message("Move to edit cursor by left edge")
 		return message
 	end,
@@ -1003,19 +1003,20 @@ positionProperty.extendedProperties:registerProperty{
 }
 
 
-positionProperty.extendedProperties:registerProperty{
+positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
-		message:initType("Perform this property to move selected items to edit cursor position so that right edge will be positioned here..")
+		message:initType(
+		"Perform this property to move selected items to edit cursor position so that right edge will be positioned here..")
 		message("Move to edit cursor by right edge")
 		return message
 	end,
 	set_perform = function(self, parent)
 		local message = initOutputMessage()
 		for _, item in ipairs(istable(items) and items or { items }) do
-			---@todo These computations still need to be checked because sometimes they're useless and give strange results 
+			---@todo These computations still need to be checked because sometimes they're useless and give strange results
 			local takePlayrate, itemLength = reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "D_PLAYRATE"),
-			reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+				reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
 			reaper.SetMediaItemInfo_Value(item, "D_POSITION", reaper.GetCursorPosition() - itemLength)
 		end
 		message("Moved to new position")
@@ -1456,7 +1457,8 @@ function fadeoutLenProperty:get()
 end
 
 fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeoutLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(fadeinLenProperty.extendedProperties.name)
+fadeoutLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(fadeinLenProperty.extendedProperties
+.name)
 -- We have to make a hack: copy all extended properties from fade-in length but without first property
 -- Remember that really, extended properties start from 2 but not from 1: 1 is return back
 -- We will not use the iterators factory cuz the changed metatable will make the infinite cycle there
@@ -1558,7 +1560,8 @@ function fadeinAutoLenProperty:get()
 end
 
 fadeinAutoLenProperty.set_adjust = fadeinLenProperty.set_adjust
-fadeinAutoLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Automatic fade length extended interraction")
+fadeinAutoLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+"Automatic fade length extended interraction")
 
 fadeinAutoLenProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -1928,7 +1931,8 @@ function takeVolumeProperty:get()
 end
 
 takeVolumeProperty.set_adjust = itemVolumeProperty.set_adjust
-takeVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(itemVolumeProperty.extendedProperties.name)
+takeVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(itemVolumeProperty.extendedProperties
+.name)
 takeVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
 	{
@@ -2780,7 +2784,8 @@ function takePitchShifterProperty:set_adjust(direction)
 	return message
 end
 
-takePitchShifterProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pitch shifter extended properties")
+takePitchShifterProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+"Pitch shifter extended properties")
 
 takePitchShifterProperty.extendedProperties:registerProperty {
 	get = function(self, parent)

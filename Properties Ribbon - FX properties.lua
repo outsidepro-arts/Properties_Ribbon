@@ -11,7 +11,8 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 2. When i'm speaking "Method" i mean a function attached to a field or submetatable field.
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
-]] --
+]]
+--
 
 -- This is the alternative of OSARA FX parameters, but more flexible. I wrote this layout because the proposed by OSARA is not satisfied me by a few reasons.
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
@@ -44,9 +45,9 @@ local stepsList = fx_properties_macros.stepsList
 
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {
-	{ name = "M%u%w+[.].+", delay = 6 },
-	{ name = "Pulsar", delay = 2 },
-	{ name = "Replika", delay = 5 },
+	{ name = "M%u%w+[.].+",    delay = 6 },
+	{ name = "Pulsar",         delay = 2 },
+	{ name = "Replika",        delay = 5 },
 	{ name = "SynthMasterOne", delay = 10 }
 }
 
@@ -89,11 +90,13 @@ local function getPluginFilename(fxId)
 	if not pluginsFilenames[fxId] then
 		pluginsFilenames[fxId] = {}
 		if context == 0 then
-			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0],
+			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.BR_TrackFX_GetFXModuleName(
+				capi._contextObj[0],
 				fxId)
 		elseif context == 1 then
-			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(reaper.GetMediaItemTake_Item(capi
-				._contextObj[1]), fxId)
+			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(
+				reaper.GetMediaItemTake_Item(capi
+					._contextObj[1]), fxId)
 		end
 	end
 	return pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str
@@ -344,14 +347,15 @@ if fxLayout.canProvide() then
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
-					message:initType(string.format("Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward). Perform this property to set a preset by its ID."
+					message:initType(string.format(
+						"Adjust this property to switch the presets for this FX  if one (%s - forward, %s - backward). Perform this property to set a preset by its ID."
 						, actions.set.increase.label, actions.set.decrease.label))
 					message { label = "Preset" }
 					local retval, presetname = capi.GetPreset(parent.fxIndex)
 					if retval then
 						message { value = presetname }
 					else
-						message{value = "unavailable"}
+						message { value = "unavailable" }
 					end
 					return message
 				end,
@@ -363,41 +367,48 @@ if fxLayout.canProvide() then
 					elseif presetIndex + direction >= numberOfPresets then
 						message("No more next property values.")
 					else
-						if not capi.SetPresetByIndex(parent.fxIndex, presetIndex+direction) then
+						if not capi.SetPresetByIndex(parent.fxIndex, presetIndex + direction) then
 							return false, "Could not switch the presets"
 						end
 					end
 					message(self:get(parent))
 					return false, message
 				end,
-				set_perform = function (self, parent)
+				set_perform = function(self, parent)
 					local presetIndex, numberOfPresets = capi.GetPresetIndex(parent.fxIndex)
-					local retval, answer = getUserInputs("Specify preset", { caption = "Type a preset index:", defValue = presetIndex+1 })
+					local retval, answer = getUserInputs("Specify preset",
+						{ caption = "Type a preset index:", defValue = presetIndex + 1 })
 					if retval then
 						if tonumber(answer) then
 							if tonumber(answer) <= numberOfPresets and tonumber(answer) > 0 then
 								if capi.SetPresetByIndex(parent.fxIndex, answer - 1) then
 									return true
 								else
-									reaper.ShowMessageBox(string.format("Unable to set a preset with ID %u.", answer), "Preset specify error", showMessageBoxConsts.sets.ok)
+									msgBox("Preset specify error",
+										string.format("Unable to set a preset with ID %u.", answer))
 								end
 							else
-								reaper.ShowMessageBox(string.format('You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available %s', answer, numberOfPresets > 1 and ("presets range: from 1 to %u"):format(numberOfPresets) or "only 1"), "Preset specify error", showMessageBoxConsts.sets.ok)
+								msgBox("Preset specify error",
+									string.format(
+										'You\'re attempting to set a preset which does not exists in.\nYou specified preset: %s, available %s',
+										answer,
+										numberOfPresets > 1 and ("presets range: from 1 to %u"):format(numberOfPresets) or
+										"only 1"))
 							end
 						elseif utils.simpleSearch(answer, "default") then
 							if capi.SetPresetByIndex(parent.fxIndex, -1) then
 								return true
 							else
-								reaper.ShowMessageBox("Unable to set default preset in this FX.", "Preset specify error", showMessageBoxConsts.sets.ok)
+								msgBox("Preset specify error", "Unable to set default preset in this FX.")
 							end
 						elseif utils.simpleSearch(answer, "factory") then
 							if capi.SetPresetByIndex(parent.fxIndex, -2) then
 								return true
 							else
-								reaper.ShowMessageBox("Unable to set the factory preset.", "Preset specify error", showMessageBoxConsts.sets.ok)
+								msgBox("Preset specify error", "Unable to set the factory preset.")
 							end
 						else
-							reaper.ShowMessageBox("Please enter a valid preset ID", "Preset specify error", showMessageBoxConsts.sets.ok)
+							msgBox("Preset specify error", "Please enter a valid preset ID")
 						end
 					end
 					return false
@@ -411,11 +422,15 @@ if fxLayout.canProvide() then
 				message "Open FX chain with this FX"
 				message:initType("Perform this property to open the FX chain where this FX will be selected.")
 				if fxInaccuracy ~= 0 or context ~= 0 then
-					message:addType(string.format(" This property currently unavailable because you're on %s chain., This FX chain is not supported.", fxPrefix:gsub("^u", string.lower)), 1)
+					message:addType(
+						string.format(
+							" This property currently unavailable because you're on %s chain., This FX chain is not supported.",
+							fxPrefix:gsub("^u", string.lower)), 1)
 					message:addType("Unavailable", 2)
 				end
 				return message
 			end
+
 			-- Unfortunately we can only select FX in a track and only with main chains (no input FX chain or monitoring FX).
 			if fxInaccuracy == 0 and context == 0 then
 				function fxChainOpenEP:set_perform(parent)
@@ -453,7 +468,8 @@ if fxLayout.canProvide() then
 			firstExtendedFXProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
-					message:initType("Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.")
+					message:initType(
+						"Perform this property to start the drag and drop process. Short instruction how to use it: start the drag process by performing this property. Then, navigate to needed FX category, go to FX extended properties and finish the drag and drop process by performing this property again. At any time this property will signal you that started the drag and drop process or not. If you want to cancel the drag and drop process after you start the process, just drop dragged FX on itself.")
 					if extstate._layout.fxDrag then
 						if extstate._layout.fxDrag == parent.fxIndex then
 							message("Cancel drag")
@@ -514,16 +530,17 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self, parent)
 					local fxName = getFormattedFXName(parent.fxIndex)
-					if reaper.ShowMessageBox(string.format('Are you sure you want to delete the FX \"%s\" from %s?',
-						fxName,
-						fxPrefix:gsub("^%u", string.lower)
-						:gsub("%s$", "")),
-						"Delete FX", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+					if msgBox("Delete FX", string.format('Are you sure you want to delete the FX \"%s\" from %s?',
+							fxName,
+							fxPrefix:gsub("^%u", string.lower)
+							:gsub("%s$", "")), "yesno") == showMessageBoxConsts.button.yes then
 						if capi.Delete(parent.fxIndex) then
 							-- Is this FX not dragged?
-							if extstate._layout.fxDrag then if extstate._layout.fxDrag == parent.fxIndex then
+							if extstate._layout.fxDrag then
+								if extstate._layout.fxDrag == parent.fxIndex then
 									extstate._layout.fxDrag = nil
-							end end
+								end
+							end
 							return true, string.format("%s has been deleted.", fxName)
 						else
 							return false, string.format("%s cannot be deleted.", fxName)
@@ -533,10 +550,11 @@ if fxLayout.canProvide() then
 					end
 				end
 			}
-			fxLayout[sid]:registerProperty{
+			fxLayout[sid]:registerProperty {
 				get = function(self)
 					local message = initOutputMessage()
-					message:initType("Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
+					message:initType(
+						"Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
 					message("Filter parameters")
 					if getFilter(sid) then
 						message(string.format(" (currently is set to %s", getFilter(sid)))
@@ -545,7 +563,8 @@ if fxLayout.canProvide() then
 				end,
 				set_perform = function(self)
 					local curFilter = getFilter(sid) or ""
-					local retval, answer = getUserInputs("Filter parameters by", { caption = "Query:", defValue = curFilter },
+					local retval, answer = getUserInputs("Filter parameters by",
+						{ caption = "Query:", defValue = curFilter },
 						"Type either full parameter name or a part of (Lua patterns supported):")
 					if retval then
 						if answer ~= "" then
@@ -585,13 +604,15 @@ if fxLayout.canProvide() then
 			end
 			for k = 0, fxParmsCount - 1 do
 				local extendedFXProperties = {}
-				extendedFXProperties = PropertiesRibbon.initExtendedProperties(string.format("%s parameter actions", select(2, capi.GetParamName(i+fxInaccuracy, k))))
+				extendedFXProperties = PropertiesRibbon.initExtendedProperties(string.format("%s parameter actions",
+					select(2, capi.GetParamName(i + fxInaccuracy, k))))
 
 				-- Here is non-standart case, so we will write our three-position setter
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Adjust and perform this three-state setter to set the needed value specified in parentheses.")
+						message:initType(
+							"Adjust and perform this three-state setter to set the needed value specified in parentheses.")
 						message("three-position setter")
 						message(string.format(" (%s - %s, ", actions.set.decrease.label, "minimal parameter value"))
 						message(string.format("%s - %s, ", actions.set.perform.label, "root-mean parameter value"))
@@ -628,7 +649,8 @@ if fxLayout.canProvide() then
 					end,
 					set_perform = function(self, parent)
 						local state = capi.GetParamNormalized(parent.fxIndex, parent.parmIndex)
-						local retval, answer = getUserInputs("Set parameter", { caption = "Raw parameter value:", defValue = tostring(math.round(state, 5)) },
+						local retval, answer = getUserInputs("Set parameter",
+							{ caption = "Raw parameter value:", defValue = tostring(math.round(state, 5)) },
 							"Type raw parameter value:"
 						)
 						if retval then
@@ -636,7 +658,7 @@ if fxLayout.canProvide() then
 								setParmValue(parent.fxIndex, parent.parmIndex, tonumber(answer))
 								endParmEdit(parent.fxIndex, parent.parmIndex)
 							else
-								reaper.ShowMessageBox("Seems it is not a raw data.", "Raw data error", showMessageBoxConsts.sets.ok)
+								msgBox("Raw data error", "Seems it is not a raw data.")
 								return false
 							end
 						end
@@ -656,8 +678,9 @@ if fxLayout.canProvide() then
 					end,
 					set_perform = function(self, parent)
 						if checkKnownAssyncPlugin(parent.fxIndex) then
-							if reaper.ShowMessageBox("This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to continue start the search process?"
-								, "Caution", showMessageBoxConsts.sets.yesno) ~= showMessageBoxConsts.button.yes then return true end
+							if msgBox("Caution", "This FX known as assynchronously working. It means that search process may work extra slow and REAPER may crash due no-response. Are you really sure that you want to continue start the search process?", "yesno") ~= showMessageBoxConsts.button.yes then
+								return true
+							end
 						end
 						local retval, curValue = capi.GetFormattedParamValue(parent.fxIndex, parent.parmIndex, "")
 						if retval then
@@ -667,8 +690,8 @@ if fxLayout.canProvide() then
 							)
 							if retval then
 								if not extstate._layout._forever.searchProcessNotify then
-									reaper.ShowMessageBox("REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value."
-										, "Note before searching process starts", showMessageBoxConsts.sets.ok)
+									msgBox("Note before searching process starts",
+										"REAPER has no any method to get quick list of all values in FX parameters, so search method works using simple brute force with set the step by default of all values in VST scale range on selected parameter. It means that search process may be take long time of. While the search process is active, you will think that REAPER is overloaded, got a freeze and your system may report that REAPER no responses. That's not true. The search process works in main stream, therefore it might be seem like that. Please wait for search process been finished. If no one value found, Properties Ribbon will restore the value was been set earlier, so you will not lost the your unique value.")
 									extstate._layout._forever.searchProcessNotify = true
 								end
 								local searchMode = 0
@@ -680,18 +703,20 @@ if fxLayout.canProvide() then
 									answer = answer:sub(2)
 								end
 								local state, minState, maxState = capi.GetParam(parent.fxIndex, parent.parmIndex)
-								local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(parent.fxIndex, parent.parmIndex)
+								local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(parent.fxIndex,
+									parent.parmIndex)
 								local searchState = nil
 								if searchMode > 0 then
 									searchState = state
 								else
 									searchState = minState
 								end
-								local ajustingValue = stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].value
+								local ajustingValue = stepsList
+									[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].value
 								if retvalStep and defStep > 0.0 then
 									if isToggle then
-										reaper.ShowMessageBox("This parameter is toggle. It means it has only two states, therefore here is no point to search something."
-											, "Searching in toggle parameter", showMessageBoxConsts.sets.ok)
+										msgBox("Searching in toggle parameter",
+											"This parameter is toggle. It means it has only two states, therefore here is no point to search something.")
 										return true
 									end
 									ajustingValue = defStep
@@ -719,45 +744,50 @@ if fxLayout.canProvide() then
 									end
 									stringForm = stringForm ..
 										" with %s adjusting step. If you're sure that this value exists in this parameter, you may set less adjusting step value for this parameter and run the search process again."
-									reaper.ShowMessageBox(string.format(stringForm, answer,
-										stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].label), "No results",
-										showMessageBoxConsts.sets.ok)
+									msgBox("No results", string.format(stringForm, answer,
+										stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].label))
 									setParmValue(parent.fxIndex, parent.parmIndex, state)
 									endParmEdit(parent.fxIndex, parent.parmIndex)
 									return true
 								end
 							end
 						else
-							return false, "This setting is currently cannot be performed because here's no string  value."
+							return false,
+								"This setting is currently cannot be performed because here's no string  value."
 						end
 						return true
 					end
 				}
 
-				extendedFXProperties:registerProperty{
-					get = function (self, parent)
+				extendedFXProperties:registerProperty {
+					get = function(self, parent)
 						local message = initOutputMessage()
 						message:initType()
 						if getTheBestValue(parent.fxIndex, parent.parmIndex) then
 							message "Revert the best value of this parameter"
-							message:addType("Perform this property to revert the previously committed  best value back into this parameter.", 1)
+							message:addType(
+								"Perform this property to revert the previously committed  best value back into this parameter.",
+								1)
 						else
 							message "Commit current parameter value as the best value"
-							message:addType("Perform this property to commit current parameter value as the best value. When a best parameter committed, you always may revert it back when you're not satisfied any   adjustment results.", 1)
+							message:addType(
+								"Perform this property to commit current parameter value as the best value. When a best parameter committed, you always may revert it back when you're not satisfied any   adjustment results.",
+								1)
 						end
 						return message
 					end,
-					set_perform = function (self, parent)
+					set_perform = function(self, parent)
 						local message = initOutputMessage()
 						local state = getTheBestValue(parent.fxIndex, parent.parmIndex)
 						if state then
 							setParmValue(parent.fxIndex, parent.parmIndex, state)
 							endParmEdit(parent.fxIndex, parent.parmIndex)
 							setTheBestValue(parent.fxIndex, parent.parmIndex, nil)
-							message{ label = "The best parameter value", value = "Reverted" }
+							message { label = "The best parameter value", value = "Reverted" }
 						else
-							setTheBestValue(parent.fxIndex, parent.parmIndex, math.round(capi.GetParam(parent.fxIndex, parent.parmIndex), 4))
-							message{ label = "The best parameter value is ", value = string.format("Committed as %s", getStringParmValue(parent.fxIndex, parent.parmIndex)) }
+							setTheBestValue(parent.fxIndex, parent.parmIndex,
+								math.round(capi.GetParam(parent.fxIndex, parent.parmIndex), 4))
+							message { label = "The best parameter value is ", value = string.format("Committed as %s", getStringParmValue(parent.fxIndex, parent.parmIndex)) }
 						end
 						return true, message, true
 					end
@@ -766,7 +796,8 @@ if fxLayout.canProvide() then
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Perform this property to create an envelope with this parameter on an object where this plugin set.")
+						message:initType(
+							"Perform this property to create an envelope with this parameter on an object where this plugin set.")
 						message("Create envelope with this parameter")
 						return message
 					end,
@@ -778,17 +809,22 @@ if fxLayout.canProvide() then
 							createEnvelope = reaper.TakeFX_GetEnvelope
 						end
 						local fxParmName = ({ capi.GetParamName(parent.fxIndex, parent.parmIndex, "") })[2]
-						local newEnvelope = createEnvelope(capi._contextObj[context], parent.fxIndex, parent.parmIndex, true)
+						local newEnvelope = createEnvelope(capi._contextObj[context], parent.fxIndex, parent.parmIndex,
+							true)
 						if newEnvelope then
 							local name
 							if context == 0 then
-								name = track_properties_macros.getTrackID(reaper.GetEnvelopeInfo_Value(newEnvelope, "P_TRACK"), true)
+								name = track_properties_macros.getTrackID(
+									reaper.GetEnvelopeInfo_Value(newEnvelope, "P_TRACK"), true)
 							elseif context == 1 then
-								name = item_properties_macros.getTakeID(reaper.GetEnvelopeInfo_Value(newEnvelope, "P_ITEM"), true)
+								name = item_properties_macros.getTakeID(
+									reaper.GetEnvelopeInfo_Value(newEnvelope, "P_ITEM"), true)
 							end
 							setUndoLabel(parent:get(true))
 							-- We have to leave the setting mode, and get method resets this when called without any parameters.
-							return true, string.format("The envelope for %s created on %s. ", fxParmName, name:lower()) .. parent:get()
+							return true,
+								string.format("The envelope for %s created on %s. ", fxParmName, name:lower()) ..
+								parent:get()
 						else
 							return false, "This parameter cannot be added to envelopes. "
 						end
@@ -797,7 +833,8 @@ if fxLayout.canProvide() then
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Perform this property to specify the new filter based on this parameter name. When you use this property, the new filer query input will be opened where the name of this parameter will be filled.")
+						message:initType(
+							"Perform this property to specify the new filter based on this parameter name. When you use this property, the new filer query input will be opened where the name of this parameter will be filled.")
 						message("Compose filter based on this parameter")
 						return message
 					end,
@@ -811,8 +848,8 @@ if fxLayout.canProvide() then
 							if answer ~= "" then
 								setFilter(sid, answer)
 							else
-								reaper.ShowMessageBox("You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere."
-									, "Set filter error", showMessageBoxConsts.sets.ok)
+								msgBox("Set filter error",
+									"You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere.")
 								return false
 							end
 						end
@@ -822,7 +859,8 @@ if fxLayout.canProvide() then
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Adjust this property to choose the needed step for this parameter. Perform this property to reset the parameter step to default configured step.")
+						message:initType(
+							"Adjust this property to choose the needed step for this parameter. Perform this property to reset the parameter step to default configured step.")
 						message { label = "Set adjusting step for this parameter" }
 						message { value = stepsList[getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex))].label }
 						if getStep(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
@@ -853,10 +891,11 @@ if fxLayout.canProvide() then
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Adjust this property to switch the configuration for searching for nearest value for this parameter only. Perform this property to reset this parameter to default value by Properties Ribbon configuration.")
+						message:initType(
+							"Adjust this property to switch the configuration for searching for nearest value for this parameter only. Perform this property to reset this parameter to default value by Properties Ribbon configuration.")
 						message { label = "Use find nearest parameter value method for this parameter" }
 						message { value = ({ [false] = "disabled", [true] = "enabled" })[
-							getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex))] }
+						getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex))] }
 						if getFindNearestConfig(makeUniqueKey(parent.fxIndex, parent.parmIndex), true) == nil then
 							message { value = " (by default)" }
 						end
@@ -893,7 +932,8 @@ if fxLayout.canProvide() then
 				extendedFXProperties:registerProperty {
 					get = function(self, parent)
 						local message = initOutputMessage()
-						message:initType("Perform this property to create new exclude mask based on this FX and its parameter data.")
+						message:initType(
+							"Perform this property to create new exclude mask based on this FX and its parameter data.")
 						message("Add exclude mask based on this parameter")
 						return message
 					end,
@@ -902,17 +942,18 @@ if fxLayout.canProvide() then
 						local _, parmName = capi.GetParamName(parent.fxIndex, parent.parmIndex, "")
 						local retval, answer = getUserInputs("Add new exclude mask", {
 								{ caption = "FX plug-in filename mask:", defValue = fxName },
-								{ caption = "Parameter mask:", defValue = parmName }
-							}, "Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
+								{ caption = "Parameter mask:",           defValue = parmName }
+							},
+							"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
 						)
 						if retval then
 							local newFxMask, newParamMask = table.unpack(answer)
 							if newFxMask == nil then
-								reaper.ShowMessageBox("The FX mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+								msgBox("Edit mask error", "The FX mask should be filled.")
 								return false
 							end
 							if newParamMask == nil then
-								reaper.ShowMessageBox("The parameter mask should be filled.", "Edit mask error", showMessageBoxConsts.sets.ok)
+								msgBox("Edit mask error", "The parameter mask should be filled.")
 								return false
 							end
 							fxMaskList[#fxMaskList + 1] = {
@@ -968,11 +1009,15 @@ if fxLayout.canProvide() then
 								end
 							end
 						end
-						message({ label = ({ capi.GetParamName(self.fxIndex, self.parmIndex) })[2],
-							value = getStringParmValue(self.fxIndex, self.parmIndex) })
-						if getTheBestValue(self.fxIndex, self.parmIndex) then if getTheBestValue(self.fxIndex, self.parmIndex) ~= math.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
-								message{ value = " (is not the best value)" }
-						end end
+						message({
+							label = ({ capi.GetParamName(self.fxIndex, self.parmIndex) })[2],
+							value = getStringParmValue(self.fxIndex, self.parmIndex)
+						})
+						if getTheBestValue(self.fxIndex, self.parmIndex) then
+							if getTheBestValue(self.fxIndex, self.parmIndex) ~= math.round(capi.GetParam(self.fxIndex, self.parmIndex), 4) then
+								message { value = " (is not the best value)" }
+							end
+						end
 						-- Select current FX in FX chain because we can't make this by another way
 						selectFXInChain(self.fxIndex)
 						return message
@@ -986,11 +1031,13 @@ if fxLayout.canProvide() then
 							local stepDefinition = getStep(makeUniqueKey(self.fxIndex, self.parmIndex))
 							local ajustingValue = stepsList[stepDefinition].value
 							local state, minState, maxState = capi.GetParam(self.fxIndex, self.parmIndex)
-							local retvalStep, defStep, smallStep, largeStep, isToggle = capi.GetParameterStepSizes(self.fxIndex,
+							local retvalStep, defStep, smallStep, largeStep, isToggle = capi.GetParameterStepSizes(
+								self.fxIndex,
 								self.parmIndex)
 							local deltaExists = 0
 							do
-								local retval, parmName = capi.GetParamName(self.fxIndex, capi.GetNumParams(self.fxIndex) - 1)
+								local retval, parmName = capi.GetParamName(self.fxIndex,
+									capi.GetNumParams(self.fxIndex) - 1)
 								if retval then
 									if parmName == "Delta" then
 										deltaExists = 1
@@ -1026,7 +1073,8 @@ if fxLayout.canProvide() then
 											while state <= maxState do
 												state = state + ajustingValue
 												setParmValue(self.fxIndex, self.parmIndex, state)
-												local wfxValue, wretval = getStringParmValue(self.fxIndex, self.parmIndex)
+												local wfxValue, wretval = getStringParmValue(self.fxIndex, self
+													.parmIndex)
 												if fxValue ~= wfxValue then
 													endParmEdit(self.fxIndex, self.parmIndex)
 													break
@@ -1077,7 +1125,8 @@ if fxLayout.canProvide() then
 											while state >= minState do
 												state = state - ajustingValue
 												setParmValue(self.fxIndex, self.parmIndex, state)
-												local wfxValue, wretval = getStringParmValue(self.fxIndex, self.parmIndex)
+												local wfxValue, wretval = getStringParmValue(self.fxIndex, self
+													.parmIndex)
 												if wretval then
 													if fxValue ~= wfxValue then
 														endParmEdit(self.fxIndex, self.parmIndex)
@@ -1127,10 +1176,12 @@ if fxLayout.canProvide() then
 	if realParmID then
 		for i = 1, #fxLayout[currentSublayout].properties do
 			local v = fxLayout[currentSublayout].properties[i]
-			if v.parmIndex then if v.parmIndex == realParmID then
+			if v.parmIndex then
+				if v.parmIndex == realParmID then
 					extstate[fxLayout[currentSublayout].section] = i
 					extstate._layout.lastRealParmID = nil
-			end end
+				end
+			end
 		end
 	end
 end

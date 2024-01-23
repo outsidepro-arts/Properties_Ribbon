@@ -12,7 +12,7 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]
-   --
+--
 
 -- It's just another vision of Properties Ribbon can be applied on
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
@@ -64,7 +64,8 @@ function markersActionsProperty:get()
 	return message
 end
 
-markersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(markersActionsProperty:get():extract(nil, false))
+markersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(markersActionsProperty:get():extract(
+	nil, false))
 
 markersActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -99,14 +100,13 @@ markersActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType(
-		"Perform this property to renumber all marker in project timeline. Please note: the standart REAPER action used here, so all regions will be renumbered aswell.")
+			"Perform this property to renumber all marker in project timeline. Please note: the standart REAPER action used here, so all regions will be renumbered aswell.")
 		message("Renumber all markers in timeline order")
 		return message
 	end,
 	set_perform = function(self, parent)
 		if numMarkers > 0 then
-			if reaper.ShowMessageBox("Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?"
-				, "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			if msgBox("Please note", "Since the main action for renumbering is used, all regions will be renumbered aswell. Would you like to continue?", "yesno") == showMessageBoxConsts.button.yes then
 				reaper.Main_OnCommand(40898, 0)
 				return true, "All markers were renumbered."
 			else
@@ -249,7 +249,8 @@ function regionsActionsProperty:get()
 	return message
 end
 
-regionsActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(regionsActionsProperty:get():extract(nil, false))
+regionsActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(regionsActionsProperty:get():extract(
+	nil, false))
 
 regionsActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -323,14 +324,13 @@ regionsActionsProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType(
-		"Perform this property to renumber all regions in project timeline. Please note: the standart REAPER action used here, so all markers will be renumbered aswell.")
+			"Perform this property to renumber all regions in project timeline. Please note: the standart REAPER action used here, so all markers will be renumbered aswell.")
 		message("Renumber all markers and regions in timeline order")
 		return message
 	end,
 	set_perform = function(self, parent)
 		if numRegions > 0 then
-			if reaper.ShowMessageBox("Since the main action for renumbering is used, all markers will be renumbered aswell. Would you like to continue?"
-				, "Please note", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			if msgBox("Please note", "Since the main action for renumbering is used, all markers will be renumbered aswell. Would you like to continue?", "yesno") == showMessageBoxConsts.button.yes then
 				reaper.Main_OnCommand(40898, 0)
 				return true, "All markers and regions were renumbered."
 			else
@@ -369,7 +369,7 @@ if allowMoveConfig == false then
 		get = function(self, parent)
 			local message = initOutputMessage()
 			message:initType(
-			"Perform this property to smooth seek to the region position after currently region finishes playing..")
+				"Perform this property to smooth seek to the region position after currently region finishes playing..")
 			message("Smooth seek to the region")
 			return message
 		end,
@@ -386,7 +386,7 @@ regionActions:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType(
-		"Perform this property to move the play or edit cursor to the timestamp when this region starts.")
+			"Perform this property to move the play or edit cursor to the timestamp when this region starts.")
 		message("Immediately jump to start of this region")
 		return message
 	end,
@@ -497,7 +497,7 @@ if numRegions > 0 then
 						message { value = self.str }
 					end
 					message { value = string.format(" Length %s", representation.deflen
-					[self.endPosition - self.position]) }
+						[self.endPosition - self.position]) }
 					message { value = string.format(", position %s", representation.defpos[self.position]) }
 					if allowMove then
 						reaper.GoToRegion(0, self.rIndex, true)
@@ -519,9 +519,8 @@ function canWorkWithItems()
 	for i = 0, itemsCount - 1 do
 		if reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, i)) == nil then
 			if not extstate._layout.emptyLanesNotify then
-				reaper.ShowMessageBox(
-				"Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout."
-				, "Empty lane", showMessageBoxConsts.sets.ok)
+				msgBox("Empty lane",
+					"Seems you trying to interract with take, which is empty lane. Properties Ribbon does not supports the empty lanes, because there are no possibility to interract with, but processing of cases with takes more time of developing. You may switch off the empty lanes selection to not catch this message again or switch this item take manualy before load this layout.")
 				extstate._layout.emptyLanesNotify = true
 			end
 			isEmptyLanes = true
@@ -628,8 +627,8 @@ local function formStretchMarkerProperties(item)
 		stretchMarker.item = item
 		stretchMarker.idx = i
 		stretchMarker.retval, stretchMarker.pos, stretchMarker.srcpos = reaper.GetTakeStretchMarker(
-		reaper.GetActiveTake(item)
-		, i)
+			reaper.GetActiveTake(item)
+			, i)
 		if stretchMarker.retval ~= -1 then
 			parentLayout.stretchMarkersLayout:registerProperty({
 				marker = stretchMarker,
@@ -657,7 +656,7 @@ local function formStretchMarkerProperties(item)
 						item_properties_macros.getTakeID(self.marker.item)) }
 					if allowMove then
 						reaper.SetEditCurPos(
-						item_properties_macros.pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
+							item_properties_macros.pos_relativeToGlobal(self.marker.item, self.marker.pos), true, true)
 						message { value = representation.defpos[
 						item_properties_macros.pos_relativeToGlobal(self.marker.item, self.marker.pos)] }
 					end
@@ -802,9 +801,10 @@ function stretchMarkersActionsProperty:get()
 end
 
 if canWorkWithItems() then
-	stretchMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(stretchMarkersActionsProperty:get()
-	:extract(nil
-	, false))
+	stretchMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+		stretchMarkersActionsProperty:get()
+		:extract(nil
+		, false))
 	stretchMarkersActionsProperty.extendedProperties:registerProperty {
 		get = function(self, parent)
 			local message = initOutputMessage()
@@ -858,7 +858,7 @@ if canWorkWithItems() then
 		get = function(self, parent)
 			local message = initOutputMessage()
 			message:initType(
-			"Perform this property to add a stretch marker at the play or edit cursor and edit it right now")
+				"Perform this property to add a stretch marker at the play or edit cursor and edit it right now")
 			message("Add stretch marker at cursor and edit")
 			return message
 		end,
@@ -918,8 +918,9 @@ function takeMarkersActionsProperty:get()
 end
 
 if canWorkWithItems() then
-	takeMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(takeMarkersActionsProperty:get():extract(nil,
-		false))
+	takeMarkersActionsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(takeMarkersActionsProperty
+		:get():extract(nil,
+			false))
 
 	takeMarkersActionsProperty.extendedProperties:registerProperty {
 		get = function(self, parentLayout)
@@ -944,7 +945,7 @@ if canWorkWithItems() then
 		get = function(self, parent)
 			local message = initOutputMessage()
 			message:initType(
-			"Perform this property to create a take marker at play or edit cursor position and edit it.")
+				"Perform this property to create a take marker at play or edit cursor position and edit it.")
 			message("Create take marker at current position and edit it")
 			return message
 		end,

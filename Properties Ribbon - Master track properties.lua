@@ -13,7 +13,7 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]
-   --
+--
 
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
 
@@ -75,7 +75,7 @@ function osaraParamsProperty:set_perform()
 end
 
 -- volume methods
-local volumeProperty = parentLayout.playbackLayout:registerProperty{}
+local volumeProperty = parentLayout.playbackLayout:registerProperty {}
 
 function volumeProperty:get()
 	local message = initOutputMessage()
@@ -148,7 +148,7 @@ volumeProperty.extendedProperties:registerProperty {
 }
 
 -- pan methods
-local panProperty = parentLayout.playbackLayout:registerProperty{}
+local panProperty = parentLayout.playbackLayout:registerProperty {}
 
 function panProperty:get()
 	local message = initOutputMessage()
@@ -222,7 +222,7 @@ panProperty.extendedProperties:registerProperty {
 }
 
 -- Width methods
-local widthProperty = parentLayout.playbackLayout:registerProperty{}
+local widthProperty = parentLayout.playbackLayout:registerProperty {}
 
 function widthProperty:get()
 	local message = initOutputMessage()
@@ -295,7 +295,7 @@ widthProperty.extendedProperties:registerProperty {
 }
 
 -- Mute methods
-local muteProperty = parentLayout.playbackLayout:registerProperty{}
+local muteProperty = parentLayout.playbackLayout:registerProperty {}
 
 function muteProperty:get()
 	local message = initOutputMessage()
@@ -326,7 +326,7 @@ function muteProperty:set_perform()
 end
 
 -- Solo methods
-local soloProperty = parentLayout.playbackLayout:registerProperty{}
+local soloProperty = parentLayout.playbackLayout:registerProperty {}
 
 function soloProperty:get()
 	local message = initOutputMessage()
@@ -355,7 +355,7 @@ function soloProperty:set_perform()
 end
 
 -- FX bypass methods
-local masterFXProperty = parentLayout.playbackLayout:registerProperty{}
+local masterFXProperty = parentLayout.playbackLayout:registerProperty {}
 
 function masterFXProperty:get()
 	local message = initOutputMessage()
@@ -389,7 +389,7 @@ end
 
 -- Mono/stereo methods
 -- This methods is very easy
-local monoProperty = parentLayout.playbackLayout:registerProperty{}
+local monoProperty = parentLayout.playbackLayout:registerProperty {}
 
 function monoProperty:get()
 	local message = initOutputMessage()
@@ -407,12 +407,12 @@ end
 
 -- Play rate methods
 -- It's so easy because there are no deep control. Hmm, either i haven't found this.
-local playrateProperty = parentLayout.playbackLayout:registerProperty{}
+local playrateProperty = parentLayout.playbackLayout:registerProperty {}
 
 function playrateProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-	"Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.")
+		"Adjust this property to set the desired master playrate. Perform this property to reset the master playrate to 1 X which means original rate.")
 	local state = reaper.Master_GetPlayRate(0)
 	message { objectId = "Master", label = "Play rate", value = representation.playrate[state] }
 	return message
@@ -441,7 +441,7 @@ end
 
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
-local pitchPreserveProperty = parentLayout.playbackLayout:registerProperty{}
+local pitchPreserveProperty = parentLayout.playbackLayout:registerProperty {}
 
 function pitchPreserveProperty:get()
 	local message = initOutputMessage()
@@ -463,7 +463,7 @@ end
 
 -- Master tempo methods
 -- Seems, Cockos allows to rest of for programmers 🤣
-local tempoProperty = parentLayout.playbackLayout:registerProperty{}
+local tempoProperty = parentLayout.playbackLayout:registerProperty {}
 function tempoProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set new master tempo.")
@@ -495,7 +495,7 @@ tempoProperty.extendedProperties:registerProperty {
 		local message = initOutputMessage()
 		message "Tap tempo"
 		message:initType(
-		"Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
+			"Perform this property with needed period to tap tempo manualy. Please note: when you'll perform this property, you will hear no any message.")
 		return message
 	end,
 	set_perform = function(self, parent)
@@ -531,7 +531,7 @@ tempoProperty.extendedProperties:registerProperty {
 
 -- Master visibility methods
 -- TCP visibility
-local tcpVisibilityProperty = parentLayout.managementLayout:registerProperty{
+local tcpVisibilityProperty = parentLayout.managementLayout:registerProperty {
 	states = { [false] = "not visible", [true] = "visible" }
 }
 
@@ -553,8 +553,8 @@ end
 function tcpVisibilityProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-	"Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu."
-	, "toggleable")
+		"Toggle this property to set the master track control panel visibility. Please note: when you'll hide the master track control panel, the master track will defines as switched off and tracks focus shouldn't not set to. To get it back activate the master track in View menu."
+		, "toggleable")
 	message { objectId = "Master", label = "Control panel", value = self.states[self.getValue()] }
 	return message
 end
@@ -563,8 +563,7 @@ function tcpVisibilityProperty:set_perform()
 	local message = initOutputMessage()
 	local state = nor(self.getValue())
 	if state == false then
-		if reaper.ShowMessageBox("You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon."
-			, "Caution", showMessageBoxConsts.sets.okcancel) == showMessageBoxConsts.button.ok then
+		if msgBox("Caution", "You are going to hide the control panel of master track in arange view. It means that master track will be switched off and Properties Ribbon will not be able to get the access to untill you will not switch it back. To switch it on back, please either look at View REAPER menu or activate the status layout in the Properties Ribbon.", "okcancel") == showMessageBoxConsts.button.ok then
 			self.setValue(state)
 		end
 	end
@@ -573,7 +572,7 @@ function tcpVisibilityProperty:set_perform()
 end
 
 -- MCP visibility
-local mcpVisibilityProperty = parentLayout.managementLayout:registerProperty{
+local mcpVisibilityProperty = parentLayout.managementLayout:registerProperty {
 	states = tcpVisibilityProperty.states
 }
 
@@ -608,7 +607,7 @@ function mcpVisibilityProperty:set_perform()
 end
 
 -- Master track position in mixer panel
-local masterTrackMixerPosProperty = parentLayout.managementLayout:registerProperty{}
+local masterTrackMixerPosProperty = parentLayout.managementLayout:registerProperty {}
 masterTrackMixerPosProperty.states = {
 	"docked window",
 	"separated window",
@@ -660,7 +659,6 @@ function masterTrackMixerPosProperty:set_adjust(direction)
 	message(self:get())
 	return message
 end
-
 
 parentLayout.defaultSublayout = "playbackLayout"
 

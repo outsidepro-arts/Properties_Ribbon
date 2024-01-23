@@ -2,7 +2,8 @@
 This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2024 outsidepro-arts
 License: MIT License
-]] --
+]]
+--
 
 package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//init.lua"
 
@@ -152,7 +153,8 @@ local addEnvelopePointProperty = {}
 
 function addEnvelopePointProperty:get()
 	local message = initOutputMessage()
-	message:initType("Perform this property to add new envelope point at current play or edit cursor position for selected envelope.")
+	message:initType(
+		"Perform this property to add new envelope point at current play or edit cursor position for selected envelope.")
 	message(string.format("Add new %s envelope point at cursor", name))
 	return message
 end
@@ -179,16 +181,19 @@ if points ~= nil then
 		if envelopeType == 5 then
 			message:initType("Toggle this property to switch the state of envelope point value. ", "Toggleable")
 			if multiSelectionSupport == true then
-				message:addType(" If the group of points has been selected, the  state will be set to oposite value depending of moreness envelope points with the same value."
+				message:addType(
+					" If the group of points has been selected, the  state will be set to oposite value depending of moreness envelope points with the same value."
 					, 1)
 			end
 		else
 			message:initType("Adjust this property to set the desired envelope point value. ")
 			if multiSelectionSupport == true then
-				message:addType(" If the group of points has been selected, the relative of previous value will be applied for each point of."
+				message:addType(
+					" If the group of points has been selected, the relative of previous value will be applied for each point of."
 					, 1)
 			end
-			message:addType(" Perform this property to set the raw point value for example coppied from FX parameters.", 1)
+			message:addType(" Perform this property to set the raw point value for example coppied from FX parameters.",
+				1)
 		end
 		message({ label = "Value" })
 		if istable(points) then
@@ -515,8 +520,7 @@ if points ~= nil then
 						self.setValue(points, answer)
 					end
 				else
-					reaper.ShowMessageBox("Couldn't convert any specified value.", "Properties Ribbon error",
-						showMessageBoxConsts.sets.ok)
+					msgBox("Properties Ribbon error", "Couldn't convert any specified value.")
 					return
 				end
 			else
@@ -555,7 +559,7 @@ if points ~= nil then
 		if multiSelectionSupport == true then
 			message:addType((
 				' If the group of points has been selected, the value will enumerate up if selected points have the same value. If one of points has different value, all points will set to "%s" first, then will enumerate up this.'
-				):format(self.states[0]), 1)
+			):format(self.states[0]), 1)
 		end
 		message:addType(" Perform this property to set the default point shape set in REAPER preferences.", 1)
 		message({ label = "shape" })
@@ -662,13 +666,16 @@ if points ~= nil then
 		message:initType(string.format("Adjust this property to set the desired curvature of %s tension.",
 			shapeProperty.states[5]))
 		if multiSelectionSupport == true then
-			message:addType(" If the group of points has been selected, the relative of previous value will be applied for each point of."
+			message:addType(
+				" If the group of points has been selected, the relative of previous value will be applied for each point of."
 				, 1)
 		end
 		message:addType(string.format(" Perform this property to reset the points to %s.", self.states[0]), 1)
 		if multiSelectionSupport == true then
-			message:addType(string.format(" Please note: if one of selected points has not %s tension, it will be skipped while adjusting or performing!"
-				, shapeProperty.states[5]), 1)
+			message:addType(
+				string.format(
+					" Please note: if one of selected points has not %s tension, it will be skipped while adjusting or performing!"
+					, shapeProperty.states[5]), 1)
 		end
 		message({ label = "Bezier tension" })
 		if istable(points) then
@@ -676,7 +683,8 @@ if points ~= nil then
 		else
 			message({ objectId = getPointID(points), value = self.states[self.getValue(points)] })
 			if shapeProperty.getValue(points) ~= 5 then
-				message:changeType(string.format("This property is unavailable right now because the point you're viewing is not %s."
+				message:changeType(
+					string.format("This property is unavailable right now because the point you're viewing is not %s."
 					, shapeProperty.states[5]), 1)
 				message:changeType("Unavailable", 2)
 			end
@@ -748,7 +756,6 @@ if points ~= nil then
 		message(self:get())
 		return message
 	end
-
 end
 
 
@@ -758,9 +765,11 @@ if points ~= nil then
 
 	function gotoPositionProperty:get()
 		local message = initOutputMessage()
-		message:initType("Perform this property to move the play or edit cursor to timeline position where this point has positioned.")
+		message:initType(
+			"Perform this property to move the play or edit cursor to timeline position where this point has positioned.")
 		if multiSelectionSupport then
-			message:addType(" If the group of points has been selected, the cursor will set to first selected point position.", 1)
+			message:addType(
+				" If the group of points has been selected, the cursor will set to first selected point position.", 1)
 		end
 		if istable(points) then
 			message(string.format("Go to %s position", getPointID(points[1])))
@@ -785,7 +794,6 @@ if points ~= nil then
 		end
 		return message
 	end
-
 end
 
 if points ~= nil then

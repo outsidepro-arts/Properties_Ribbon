@@ -2,7 +2,8 @@
 This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2024 outsidepro-arts
 License: MIT License
-]] --
+]]
+--
 
 
 -- We have to fix the Properties Ribbon searching path. Currently it places on a up level directory
@@ -47,7 +48,8 @@ categories = setmetatable({
 		if cat then
 			extstate._forever[utils.makeKeySequence(self.id, string.format("category%u", idx), "id")] = assert(cat.id,
 				"Expected table field 'id'")
-			extstate._forever[utils.makeKeySequence(self.id, string.format("category%u", idx), "name")] = assert(cat.name,
+			extstate._forever[utils.makeKeySequence(self.id, string.format("category%u", idx), "name")] = assert(
+				cat.name,
 				"Expected table field 'name'")
 		else
 			local i = idx
@@ -302,8 +304,7 @@ categoryExtendedProperties:registerProperty {
 				category.name = answer
 				categories[parent.id] = category
 			else
-				reaper.ShowMessageBox("The category name cannot be empty.", "Category rename error",
-					showMessageBoxConsts.sets.ok)
+				msgBox("Category rename error", "The category name cannot be empty.")
 				return false
 			end
 		end
@@ -319,8 +320,7 @@ categoryExtendedProperties:registerProperty {
 		return message
 	end,
 	set_perform = function(self, parent)
-		if reaper.ShowMessageBox(string.format("Are you sure you want to delete the category %s?", parent.category.name),
-				"Category deletion confirm", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+		if msgBox("Category deletion confirm", string.format("Are you sure you want to delete the category %s?", parent.category.name), "yesno") == showMessageBoxConsts.button.yes then
 			categories[parent.id] = nil
 			return true
 		end
@@ -367,8 +367,7 @@ function addNewCategoryProperty:set_perform()
 				name = answer
 			}
 		else
-			reaper.ShowMessageBox("The category name cannot be empty.", "Category creation error",
-				showMessageBoxConsts.sets.ok)
+			msgBox("Category creation error", "The category name cannot be empty.")
 		end
 	end
 end
