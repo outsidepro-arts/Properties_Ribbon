@@ -28,8 +28,8 @@ parentLayout.undoContext = undo.contexts.tracks
 
 
 -- sublayouts
---visual properties
-parentLayout:registerSublayout("visualLayout", "Visualisation")
+--Track management properties
+parentLayout:registerSublayout("managementLayout", "Management")
 
 -- Playback properties
 parentLayout:registerSublayout("playbackLayout", "Playback")
@@ -122,7 +122,7 @@ and try to complement any get message with short type label. I mean what the "aj
 
 -- Track name methods
 local trackNameProperty = {}
-parentLayout.visualLayout:registerProperty(trackNameProperty)
+parentLayout.managementLayout:registerProperty(trackNameProperty)
 
 function trackNameProperty:get()
 	local message = initOutputMessage()
@@ -176,7 +176,7 @@ function trackNameProperty:set_perform()
 end
 
 local folderStateProperty = {}
-parentLayout.visualLayout:registerProperty(folderStateProperty)
+parentLayout.managementLayout:registerProperty(folderStateProperty)
 folderStateProperty.states = {
 	[0] = "track",
 	[1] = "folder",
@@ -313,6 +313,98 @@ function folderStateProperty:set_perform()
 	end
 	message(self:get())
 	return message
+end
+
+local osaraParamsProperty = {}
+parentLayout.managementLayout:registerProperty(osaraParamsProperty)
+
+function osaraParamsProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to view the OSARA parameters window for last touched track.")
+	-- This property will obey the last touched track cuz the OSARA action works with that only.
+	if istable(tracks) then
+		message { objectId = "Last touched " }
+	end
+	message { label = "OSARA parameters" }
+	if reaper.GetLastTouchedTrack() then
+		message { objectId = getTrackID(reaper.GetLastTouchedTrack()) }
+	else
+		message { label = " (unavailable)" }
+	end
+	return message
+end
+
+function osaraParamsProperty:set_perform()
+	if reaper.GetLastTouchedTrack() then
+		reaper.SetCursorContext(0, nil)
+		reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+		return
+	end
+	return "This property is unavailable right now because no track touched."
+end
+
+local routingViewProperty = {}
+parentLayout.managementLayout:registerProperty(routingViewProperty)
+
+function routingViewProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to view the routing and input/output options for last touched track")
+	local track = reaper.GetLastTouchedTrack()
+	if track then
+		message { objectId = getTrackID(track) }
+	else
+		message { value = "(unavailable)" }
+	end
+	message { label = "Routing and inputs or outputs" }
+	return message
+end
+
+function routingViewProperty:set_perform()
+	if reaper.GetLastTouchedTrack() then
+		reaper.Main_OnCommand(40293, 0)
+	end
+end
+
+local contextMenusProperty = {}
+parentLayout.managementLayout:registerProperty(contextMenusProperty)
+contextMenusProperty.states = {
+	[1] = { label = "Main", cmd = "_OSARA_CONTEXTMENU2" },
+	[2] = { label = "Recording", cmd = "_OSARA_CONTEXTMENU1" },
+	[3] = { label = "Routing", cmd = "_OSARA_CONTEXTMENU3" }
+}
+
+function contextMenusProperty:get()
+	local message = initOutputMessage()
+	local state = extstate._layout.contextMenuSelector or 1
+	local track = reaper.GetLastTouchedTrack()
+	message { value = string.format("%s context menu", self.states[state].label) }
+	message:initType("Adjust this property to choose the needed context menu. Perform this property to pop selected up.")
+	if track then
+		message { objectId = getTrackID(track) }
+	else
+		message:addType(" This property is unavailable right now because no track has touched.", 1)
+		message:changeType("Unavailable", 2)
+	end
+	return message
+end
+
+function contextMenusProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = extstate._layout.contextMenuSelector or 1
+	if self.states[state + direction] then
+		extstate._layout.contextMenuSelector = state + direction
+	else
+		message(string.format("No %s property values.", (direction == 1) and "next" or "previous"))
+	end
+	message(self:get())
+	return message
+end
+
+if reaper.GetLastTouchedTrack() then
+	function contextMenusProperty:set_perform()
+		local state = extstate._layout.contextMenuSelector or 1
+		reaper.Main_OnCommand(reaper.NamedCommandLookup(self.states[state].cmd), 0)
+	end
 end
 
 local volumeProperty = {}
@@ -1922,7 +2014,7 @@ end
 
 -- Posibility to marque tracks for solo defeat property
 local soloDefeatProperty = {}
-parentLayout.visualLayout:registerProperty(soloDefeatProperty)
+parentLayout.managementLayout:registerProperty(soloDefeatProperty)
 soloDefeatProperty.states = { [0] = "not defeated", [1] = "defeated" }
 
 function soloDefeatProperty:get()
@@ -1982,7 +2074,7 @@ end
 
 -- Visibility in Mixer panel
 local mixerVisibilityProperty = {}
-parentLayout.visualLayout:registerProperty(mixerVisibilityProperty)
+parentLayout.managementLayout:registerProperty(mixerVisibilityProperty)
 mixerVisibilityProperty.states = { [0] = "hidden", [1] = "visible" }
 
 function mixerVisibilityProperty:get()
@@ -2041,7 +2133,7 @@ end
 
 -- Visibility in TCP
 local tcpVisibilityProperty = {}
-parentLayout.visualLayout:registerProperty(tcpVisibilityProperty)
+parentLayout.managementLayout:registerProperty(tcpVisibilityProperty)
 tcpVisibilityProperty.states = mixerVisibilityProperty.states
 
 function tcpVisibilityProperty:get()
@@ -2097,98 +2189,6 @@ function tcpVisibilityProperty:set_perform()
 	end
 	message(self:get())
 	return message
-end
-
-local osaraParamsProperty = {}
-parentLayout.visualLayout:registerProperty(osaraParamsProperty)
-
-function osaraParamsProperty:get()
-	local message = initOutputMessage()
-	message:initType("Perform this property to view the OSARA parameters window for last touched track.")
-	-- This property will obey the last touched track cuz the OSARA action works with that only.
-	if istable(tracks) then
-		message { objectId = "Last touched " }
-	end
-	message { label = "OSARA parameters" }
-	if reaper.GetLastTouchedTrack() then
-		message { objectId = getTrackID(reaper.GetLastTouchedTrack()) }
-	else
-		message { label = " (unavailable)" }
-	end
-	return message
-end
-
-function osaraParamsProperty:set_perform()
-	if reaper.GetLastTouchedTrack() then
-		reaper.SetCursorContext(0, nil)
-		reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
-		return
-	end
-	return "This property is unavailable right now because no track touched."
-end
-
-local routingViewProperty = {}
-parentLayout.visualLayout:registerProperty(routingViewProperty)
-
-function routingViewProperty:get()
-	local message = initOutputMessage()
-	message:initType("Perform this property to view the routing and input/output options for last touched track")
-	local track = reaper.GetLastTouchedTrack()
-	if track then
-		message { objectId = getTrackID(track) }
-	else
-		message { value = "(unavailable)" }
-	end
-	message { label = "Routing and inputs or outputs" }
-	return message
-end
-
-function routingViewProperty:set_perform()
-	if reaper.GetLastTouchedTrack() then
-		reaper.Main_OnCommand(40293, 0)
-	end
-end
-
-local contextMenusProperty = {}
-parentLayout.visualLayout:registerProperty(contextMenusProperty)
-contextMenusProperty.states = {
-	[1] = { label = "Main", cmd = "_OSARA_CONTEXTMENU2" },
-	[2] = { label = "Recording", cmd = "_OSARA_CONTEXTMENU1" },
-	[3] = { label = "Routing", cmd = "_OSARA_CONTEXTMENU3" }
-}
-
-function contextMenusProperty:get()
-	local message = initOutputMessage()
-	local state = extstate._layout.contextMenuSelector or 1
-	local track = reaper.GetLastTouchedTrack()
-	message { value = string.format("%s context menu", self.states[state].label) }
-	message:initType("Adjust this property to choose the needed context menu. Perform this property to pop selected up.")
-	if track then
-		message { objectId = getTrackID(track) }
-	else
-		message:addType(" This property is unavailable right now because no track has touched.", 1)
-		message:changeType("Unavailable", 2)
-	end
-	return message
-end
-
-function contextMenusProperty:set_adjust(direction)
-	local message = initOutputMessage()
-	local state = extstate._layout.contextMenuSelector or 1
-	if self.states[state + direction] then
-		extstate._layout.contextMenuSelector = state + direction
-	else
-		message(string.format("No %s property values.", (direction == 1) and "next" or "previous"))
-	end
-	message(self:get())
-	return message
-end
-
-if reaper.GetLastTouchedTrack() then
-	function contextMenusProperty:set_perform()
-		local state = extstate._layout.contextMenuSelector or 1
-		reaper.Main_OnCommand(reaper.NamedCommandLookup(self.states[state].cmd), 0)
-	end
 end
 
 parentLayout.defaultSublayout = "playbackLayout"

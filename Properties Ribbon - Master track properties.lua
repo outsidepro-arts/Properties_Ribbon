@@ -41,13 +41,42 @@ function parentLayout.canProvide()
 	end
 end
 
+parentLayout:registerSublayout("managementLayout", "Management")
 parentLayout:registerSublayout("playbackLayout", "Playback")
-parentLayout:registerSublayout("visualLayout", "Visualization")
 
+local osaraParamsProperty = {}
+parentLayout.managementLayout:registerProperty(osaraParamsProperty)
+
+function osaraParamsProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to view the OSARA parameters window for master track.")
+	message { objectId = "Master ", label = "OSARA parameters" }
+	return message
+end
+
+function osaraParamsProperty:set_perform()
+	-- Ensure the master track has been touched
+	local lastSelection = {}
+	if reaper.GetLastTouchedTrack() ~= master then
+		local selectedTracksCount = reaper.CountSelectedTracks(0)
+		for i = 0, selectedTracksCount - 1 do
+			table.insert(lastSelection, reaper.GetSelectedTrack(0, i))
+		end
+		reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 1)
+	end
+	reaper.SetCursorContext(0, nil)
+	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+	if #lastSelection > 0 then
+		for _, track in ipairs(lastSelection) do
+			reaper.SetTrackSelected(track, true)
+		end
+		reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 0)
+	end
+end
 
 -- volume methods
-local volumeProperty = {}
-parentLayout.playbackLayout:registerProperty(volumeProperty)
+local volumeProperty = parentLayout.playbackLayout:registerProperty{}
+
 function volumeProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set the desired volume value for master track.")
@@ -119,8 +148,7 @@ volumeProperty.extendedProperties:registerProperty {
 }
 
 -- pan methods
-local panProperty = {}
-parentLayout.playbackLayout:registerProperty(panProperty)
+local panProperty = parentLayout.playbackLayout:registerProperty{}
 
 function panProperty:get()
 	local message = initOutputMessage()
@@ -194,8 +222,8 @@ panProperty.extendedProperties:registerProperty {
 }
 
 -- Width methods
-local widthProperty = {}
-parentLayout.playbackLayout:registerProperty(widthProperty)
+local widthProperty = parentLayout.playbackLayout:registerProperty{}
+
 function widthProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set the desired width value for master track.")
@@ -267,8 +295,8 @@ widthProperty.extendedProperties:registerProperty {
 }
 
 -- Mute methods
-local muteProperty = {}
-parentLayout.playbackLayout:registerProperty(muteProperty)
+local muteProperty = parentLayout.playbackLayout:registerProperty{}
+
 function muteProperty:get()
 	local message = initOutputMessage()
 	message:initType("Toggle this property to mute or unmute master track.", "Toggleable")
@@ -298,8 +326,8 @@ function muteProperty:set_perform()
 end
 
 -- Solo methods
-local soloProperty = {}
-parentLayout.playbackLayout:registerProperty(soloProperty)
+local soloProperty = parentLayout.playbackLayout:registerProperty{}
+
 function soloProperty:get()
 	local message = initOutputMessage()
 	message:initType("Toggle this property to solo or unsolo master track.", "Toggleable")
@@ -327,8 +355,8 @@ function soloProperty:set_perform()
 end
 
 -- FX bypass methods
-local masterFXProperty = {}
-parentLayout.playbackLayout:registerProperty(masterFXProperty)
+local masterFXProperty = parentLayout.playbackLayout:registerProperty{}
+
 function masterFXProperty:get()
 	local message = initOutputMessage()
 	message:initType("Toggle this property to switch the FX activity of master track.", "Toggleable")
@@ -361,8 +389,8 @@ end
 
 -- Mono/stereo methods
 -- This methods is very easy
-local monoProperty = {}
-parentLayout.playbackLayout:registerProperty(monoProperty)
+local monoProperty = parentLayout.playbackLayout:registerProperty{}
+
 function monoProperty:get()
 	local message = initOutputMessage()
 	message:initType("Toggle this property to switch the master track to mono or stereo.", "Toggleable")
@@ -379,8 +407,8 @@ end
 
 -- Play rate methods
 -- It's so easy because there are no deep control. Hmm, either i haven't found this.
-local playrateProperty = {}
-parentLayout.playbackLayout:registerProperty(playrateProperty)
+local playrateProperty = parentLayout.playbackLayout:registerProperty{}
+
 function playrateProperty:get()
 	local message = initOutputMessage()
 	message:initType(
@@ -413,8 +441,8 @@ end
 
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
-local pitchPreserveProperty = {}
-parentLayout.playbackLayout:registerProperty(pitchPreserveProperty)
+local pitchPreserveProperty = parentLayout.playbackLayout:registerProperty{}
+
 function pitchPreserveProperty:get()
 	local message = initOutputMessage()
 	message:initType(
@@ -435,8 +463,7 @@ end
 
 -- Master tempo methods
 -- Seems, Cockos allows to rest of for programmers 🤣
-local tempoProperty = {}
-parentLayout.playbackLayout:registerProperty(tempoProperty)
+local tempoProperty = parentLayout.playbackLayout:registerProperty{}
 function tempoProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set new master tempo.")
@@ -504,9 +531,10 @@ tempoProperty.extendedProperties:registerProperty {
 
 -- Master visibility methods
 -- TCP visibility
-local tcpVisibilityProperty = {}
-parentLayout.visualLayout:registerProperty(tcpVisibilityProperty)
-tcpVisibilityProperty.states = { [false] = "not visible", [true] = "visible" }
+local tcpVisibilityProperty = parentLayout.managementLayout:registerProperty{
+	states = { [false] = "not visible", [true] = "visible" }
+}
+
 function tcpVisibilityProperty.getValue()
 	local state = reaper.GetMasterTrackVisibility() & 1
 	return (state ~= 0)
@@ -545,9 +573,9 @@ function tcpVisibilityProperty:set_perform()
 end
 
 -- MCP visibility
-local mcpVisibilityProperty = {}
-parentLayout.visualLayout:registerProperty(mcpVisibilityProperty)
-mcpVisibilityProperty.states = tcpVisibilityProperty.states
+local mcpVisibilityProperty = parentLayout.managementLayout:registerProperty{
+	states = tcpVisibilityProperty.states
+}
 
 function mcpVisibilityProperty.getValue()
 	local state = reaper.GetMasterTrackVisibility() & 2
@@ -580,8 +608,7 @@ function mcpVisibilityProperty:set_perform()
 end
 
 -- Master track position in mixer panel
-local masterTrackMixerPosProperty = {}
-parentLayout.visualLayout:registerProperty(masterTrackMixerPosProperty)
+local masterTrackMixerPosProperty = parentLayout.managementLayout:registerProperty{}
 masterTrackMixerPosProperty.states = {
 	"docked window",
 	"separated window",
@@ -634,34 +661,7 @@ function masterTrackMixerPosProperty:set_adjust(direction)
 	return message
 end
 
-local osaraParamsProperty = {}
-parentLayout.visualLayout:registerProperty(osaraParamsProperty)
 
-function osaraParamsProperty:get()
-	local message = initOutputMessage()
-	message:initType("Perform this property to view the OSARA parameters window for master track.")
-	message { objectId = "Master ", label = "OSARA parameters" }
-	return message
-end
-
-function osaraParamsProperty:set_perform()
-	-- Ensure the master track h    as touched
-	local lastSelection = {}
-	if reaper.GetLastTouchedTrack() ~= master then
-		local selectedTracksCount = reaper.CountSelectedTracks(0)
-		for i = 0, selectedTracksCount - 1 do
-			table.insert(lastSelection, reaper.GetSelectedTrack(0, i))
-		end
-		reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 1)
-	end
-	reaper.SetCursorContext(0, nil)
-	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
-	if #lastSelection > 0 then
-		for _, track in ipairs(lastSelection) do
-			reaper.SetTrackSelected(track, true)
-		end
-		reaper.SetMediaTrackInfo_Value(master, "I_SELECTED", 0)
-	end
-end
+parentLayout.defaultSublayout = "playbackLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)

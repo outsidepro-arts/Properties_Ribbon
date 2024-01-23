@@ -146,7 +146,7 @@ end
 
 -- sublayouts
 --visual properties
-parentLayout:registerSublayout("visualLayout", "Visualization")
+parentLayout:registerSublayout("managementLayout", "Management")
 
 --Item properties
 parentLayout:registerSublayout("itemLayout", "Item")
@@ -175,6 +175,45 @@ Try to allow the user to perform actions on both one element and a selected grou
 and try to complement any getState message with short type label. I mean what the "ajust" method will perform.
 ]]
 --
+
+local osaraParamsProperty = parentLayout.managementLayout:registerProperty{}
+
+function osaraParamsProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to view the OSARA parameters window for selected item.")
+	-- This property will obey the one selected item cuz the OSARA action works with that only.
+	if multiSelectionSupport == true then
+		message:addType(" If the group of items selected, OSARA parameters will show for first selected item.", 1)
+	end
+	message { label = "OSARA parameters" }
+	local item = istable(items) and items[1] or items
+	message { objectId = getItemID(item) }
+	return message
+end
+
+function osaraParamsProperty:set_perform()
+	reaper.SetCursorContext(1, nil)
+	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
+end
+
+local itemPropertiesProperty = {}
+parentLayout.managementLayout:registerProperty(itemPropertiesProperty)
+
+function itemPropertiesProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to open the item properties window.")
+	if istable(items) then
+		message { objectId = "Selected items" }
+	else
+		message { objectId = getItemID(items) }
+	end
+	message { label = "Properties" }
+	return message
+end
+
+function itemPropertiesProperty:set_perform()
+	reaper.Main_OnCommand(40009, 0)
+end
 
 -- Item source property
 -- Lock item methods
@@ -767,7 +806,7 @@ end
 -- For now, this property has been registered in visual layout section. Really, it influences on all items in the same group: all controls will be grouped and when an user changes any control slider, all other items changes the value too.
 -- Are you Sure? But i'm not. 🤣
 local groupingProperty = {}
-parentLayout.visualLayout:registerProperty(groupingProperty)
+parentLayout.managementLayout:registerProperty(groupingProperty)
 groupingProperty.states = setmetatable({
 	[0] = "not in a group"
 }, {
@@ -3006,51 +3045,6 @@ function takePitchShifterModeProperty:set_adjust(direction)
 	end
 	message(self:get())
 	return message
-end
-
-local itemPropertiesProperty = {}
-parentLayout.visualLayout:registerProperty(itemPropertiesProperty)
-
-function itemPropertiesProperty:get()
-	local message = initOutputMessage()
-	message:initType("Perform this property to open the item properties window.")
-	if istable(items) then
-		message { objectId = "Selected items" }
-	else
-		message { objectId = getItemID(items) }
-	end
-	message { label = "Properties" }
-	return message
-end
-
-function itemPropertiesProperty:set_perform()
-	reaper.Main_OnCommand(40009, 0)
-end
-
-local osaraParamsProperty = {}
-parentLayout.visualLayout:registerProperty(osaraParamsProperty)
-
-function osaraParamsProperty:get()
-	local message = initOutputMessage()
-	message:initType("Perform this property to view the OSARA parameters window for selected item.")
-	-- This property will obey the one selected item cuz the OSARA action works with that only.
-	if multiSelectionSupport == true then
-		message:addType(" If the group of items selected, OSARA parameters will show for first selected item.", 1)
-	end
-	message { label = "OSARA parameters" }
-	local item = nil
-	if istable(items) then
-		item = items[1]
-	else
-		item = items
-	end
-	message { objectId = getItemID(item) }
-	return message
-end
-
-function osaraParamsProperty:set_perform()
-	reaper.SetCursorContext(1, nil)
-	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_PARAMS"), 0)
 end
 
 parentLayout.defaultSublayout = "itemLayout"
