@@ -637,8 +637,8 @@ function timebaseProperty:set_adjust(direction)
 		local state
 		if allIdentical then
 			state = self.getValue(items[1])
-			if state + ajustingValue < #self.states and state + ajustingValue >= 0 then
-				state = state + ajustingValue
+			if state + direction < #self.states and state + direction >= -1 then
+				state = state + direction
 			else
 				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous" })[direction]))
 			end
