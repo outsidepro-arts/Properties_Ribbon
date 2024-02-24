@@ -90,9 +90,12 @@ local function getPluginFilename(fxId)
 	if not pluginsFilenames[fxId] then
 		pluginsFilenames[fxId] = {}
 		if context == 0 then
-			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.BR_TrackFX_GetFXModuleName(
-				capi._contextObj[0],
-				fxId)
+			local retval, str = reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
+			-- SWS does not knows some FX chains, so we have to get at least something
+			if not retval then
+				retval, str = reaper.TrackFX_GetFXName(capi._contextObj[0], fxId)
+			end
+			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = retval, str
 		elseif context == 1 then
 			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(
 				reaper.GetMediaItemTake_Item(capi
