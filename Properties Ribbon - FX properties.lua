@@ -623,6 +623,8 @@ if fxLayout.canProvide() then
 						return message
 					end,
 					set_adjust = function(self, parent, direction)
+						-- We have to fix jumping focus
+						extstate._layout.lastRealParmID = parent.parmIndex
 						local message = initOutputMessage()
 						local _, minState, maxState = capi.GetParam(parent.fxIndex, parent.parmIndex)
 						vls = { [actions.set.decrease.direction] = minState, [actions.set.increase.direction] = maxState }
@@ -632,6 +634,8 @@ if fxLayout.canProvide() then
 						return true, message
 					end,
 					set_perform = function(self, parent)
+						-- We have to fix jumping focus
+						extstate._layout.lastRealParmID = parent.parmIndex
 						local message = initOutputMessage()
 						local state, minState, maxState = capi.GetParam(parent.fxIndex, parent.parmIndex)
 						local maybeState = maxState / 2
