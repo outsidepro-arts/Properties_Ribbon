@@ -331,7 +331,7 @@ if fxLayout.canProvide() then
 					fxPrefix = "Instrument "
 				else
 					if fxInaccuracy == 0x1000000 then
-						if contextPrompt:find("Master") then
+						if contextPrompt and contextPrompt:find("Master") then
 							fxPrefix = "Monitoring "
 						else
 							fxPrefix = fxPrefix .. "input "
@@ -557,7 +557,7 @@ if fxLayout.canProvide() then
 				get = function(self)
 					local message = initOutputMessage()
 					message:initType(
-						"Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there.")
+						"Perform this property to set the filter for filtering the FX parameters list. If you want to remove a filter, set the empty string there. Adjust this property to increase or decrease found number and digits in query to they are matched with existing parameters.")
 					message("Filter parameters")
 					if getFilter(sid) then
 						message(string.format(" (currently is set to %s", getFilter(sid)))
@@ -577,6 +577,34 @@ if fxLayout.canProvide() then
 						end
 					end
 					return
+				end,
+				set_adjust = function(self, direction)
+					local curFilter = getFilter(sid)
+					if not curFilter or curFilter == "" then
+						return "No query is set"
+					end
+					if not curFilter:find("%d") then
+						return "The query contains no digits data"
+					end
+					local params = {}
+					for k = 0, capi.GetNumParams(i + fxInaccuracy) - 1 do
+						table.insert(params, select(2, capi.GetParamName(i + fxInaccuracy, k)))
+					end
+					for num in curFilter:gmatch("%d+") do
+						for _, param in ipairs(params) do
+							local startPos, endPos = curFilter:find(num)
+							local maybeFilter = curFilter:sub(1, startPos - 1) ..
+							num + direction .. curFilter:sub(endPos + 1)
+							if utils.simpleSearch(param, maybeFilter) then
+								setFilter(sid, maybeFilter)
+								local message = initOutputMessage()
+								message { label = "Current filter", value = maybeFilter }
+								return message
+							end
+						end
+					end
+					return string.format("No any digits %s matched with parameters.",
+						({ [-1] = "decreasion", [1] = "increasion" })[direction])
 				end
 			}
 			if not getFilter(sid) then
@@ -702,12 +730,12 @@ if fxLayout.canProvide() then
 									extstate._layout._forever.searchProcessNotify = true
 								end
 								local searchMode = 0
-								if answer:match("^.") == "<" then
+								if tostring(answer):match("^.") == "<" then
 									searchMode = 1
-									answer = answer:sub(2)
-								elseif answer:match("^.") == ">" then
+									answer = tostring(answer):sub(2)
+								elseif tostring(answer):match("^.") == ">" then
 									searchMode = 2
-									answer = answer:sub(2)
+									answer = tostring(answer):sub(2)
 								end
 								local state, minState, maxState = capi.GetParam(parent.fxIndex, parent.parmIndex)
 								local retvalStep, defStep, _, _, isToggle = capi.GetParameterStepSizes(parent.fxIndex,
@@ -815,7 +843,8 @@ if fxLayout.canProvide() then
 						elseif context == 1 then
 							createEnvelope = reaper.TakeFX_GetEnvelope
 						end
-						local fxParmName = ({ capi.GetParamName(parent.fxIndex, parent.parmIndex, "") })[2]
+						local fxParmName = select(2, capi.GetParamName(parent.fxIndex, parent.parmIndex, ""))
+						---@diagnostic disable-next-line: need-check-nil
 						local newEnvelope = createEnvelope(capi._contextObj[context], parent.fxIndex, parent.parmIndex,
 							true)
 						if newEnvelope then
@@ -954,6 +983,7 @@ if fxLayout.canProvide() then
 							"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
 						)
 						if retval then
+							---@diagnostic disable-next-line: param-type-mismatch
 							local newFxMask, newParamMask = table.unpack(answer)
 							if newFxMask == nil then
 								msgBox("Edit mask error", "The FX mask should be filled.")
