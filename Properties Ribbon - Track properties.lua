@@ -854,8 +854,7 @@ function muteProperty:set_perform()
 	return message
 end
 
-local soloProperty = {}
-parentLayout.playbackLayout:registerProperty(soloProperty)
+local soloProperty = parentLayout.playbackLayout:registerProperty {}
 soloProperty.states = {
 	[0] = "not soloed",
 	[1] = "soloed",
@@ -864,29 +863,48 @@ soloProperty.states = {
 	[6] = "safe soloed in place"
 }
 
+function soloProperty.getValue(obj)
+	return reaper.GetMediaTrackInfo_Value(obj, "I_SOLO")
+end
+
+function soloProperty.setValue(obj, value)
+	reaper.SetMediaTrackInfo_Value(obj, "I_SOLO", value)
+end
+
 function soloProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-		"Toggle this property to solo or unsolo selected track using default configuration of solo-in-place set in REAPER preferences."
-		, "Toggleable, adjustable")
-	if multiSelectionSupport == true then
-		message:addType(
-			" If the group of tracks has been selected, the solo state will be set to oposite value depending of moreness tracks with the same value."
-			, 1)
-	end
-	message:addType(" Adjust this property to choose needed solo mode for selected tracks.", 1)
+		"Adjust this property to choose needed solo mode for selected tracks. "
+		, "Adjustable, toggleable")
 	if multiSelectionSupport == true then
 		message:addType(
 			string.format(
 				' If the group of tracks has been selected, the value will enumerate only if selected tracks have the same value. Otherwise, the solo state will be set to "%s", then will enumerate this.'
 				, self.states[0]), 1)
 	end
+	message:addType(" Toggle this property to solo or unsolo selected track ", 1)
+	if config.getboolean("obeyConfigSolo", true) then
+		message:addType("using default configuration of solo-in-place set in REAPER preferences", 1)
+	else
+		message:addType("by selected mode via adjusting", 1)
+	end
+	if config.getboolean("exclusiveSolo", false) then
+		message:addType(" exclusively, i.e. only selected track will be soloed", 1)
+	end
+	message:addType(".", 1)
+	if multiSelectionSupport == true then
+		message:addType(
+			" If the group of tracks has been selected, the solo state will be set to oposite value depending of moreness tracks with the same value."
+			, 1)
+		if config.getboolean("exclusiveSolo", false) then
+			message:addType(" The exclusive mode also applies for group of selected tracks.", 1)
+		end
+	end
 	if istable(tracks) then
 		message({ label = "Solo" })
-		message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_SOLO") end,
-			self.states))
+		message(composeMultipleTrackMessage(self.getValue, self.states))
 	else
-		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
+		local state = self.getValue(tracks)
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
 	end
 	return message
@@ -894,16 +912,23 @@ end
 
 function soloProperty:set_perform()
 	local message = initOutputMessage()
-	local retval, soloInConfig = reaper.get_config_var_string("soloip")
-	if retval then
-		soloInConfig = tonumber(soloInConfig) + 1
+	local soloMode
+	if config.getboolean("obeyConfigSolo", true) then
+		local retval, soloInConfig = reaper.get_config_var_string("soloip")
+		if retval then
+			soloMode = tonumber(soloInConfig) + 1
+		else
+			soloMode = 1
+		end
 	else
-		soloInConfig = 1
+		soloMode = extstate.lastSoloMode or 1
 	end
+	local isExclusiveSolo = config.getboolean("exclusiveSolo", false)
+	local checkedTrackslist = {}
 	if istable(tracks) then
 		local soloedTracks, notSoloedTracks = 0, 0
 		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_SOLO")
+			local state = self.getValue(tracks[k])
 			if state > 0 then
 				soloedTracks = soloedTracks + 1
 			else
@@ -915,25 +940,51 @@ function soloProperty:set_perform()
 			ajustingValue = 0
 			message("Unsoloing selected tracks.")
 		elseif soloedTracks < notSoloedTracks then
-			ajustingValue = soloInConfig
+			ajustingValue = soloMode
 			message("Soloing selected tracks.")
+			if isExclusiveSolo then
+				for i = 0, reaper.CountTracks(0) - 1 do
+					local track = reaper.GetTrack(0, i)
+					if not table.containsv(istable(tracks) and tracks or { tracks }, track) then
+						if self.getValue(track) ~= 0 then
+							table.insert(checkedTrackslist, track)
+						end
+					end
+				end
+			end
 		else
 			ajustingValue = 0
 			message("Unsoloing selected tracks.")
 		end
 		for k = 1, #tracks do
-			reaper.SetMediaTrackInfo_Value(tracks[k], "I_SOLO", ajustingValue)
+			self.setValue(tracks[k], ajustingValue)
 		end
 	else
-		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
+		local state = self.getValue(tracks)
 		if state > 0 then
 			state = 0
 		else
-			state = soloInConfig
+			state = soloMode
+			if isExclusiveSolo then
+				for i = 0, reaper.CountTracks(0) - 1 do
+					local track = reaper.GetTrack(0, i)
+					if not table.containsv(istable(tracks) and tracks or { tracks }, track) then
+						if self.getValue(track) ~= 0 then
+							table.insert(checkedTrackslist, track)
+						end
+					end
+				end
+			end
 		end
-		reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state)
+		self.setValue(tracks, state)
 	end
 	message(self:get())
+	if isExclusiveSolo and #checkedTrackslist > 0 then
+		message { value = " exclusive" }
+		for _, track in ipairs(checkedTrackslist) do
+			self.setValue(track, 0)
+		end
+	end
 	return message
 end
 
@@ -942,9 +993,9 @@ function soloProperty:set_adjust(direction)
 	if istable(tracks) then
 		local allIsSame = true
 		for idx, track in ipairs(tracks) do
-			local state = reaper.GetMediaTrackInfo_Value(track, "I_SOLO")
+			local state = self.getValue(track)
 			if idx > 1 then
-				local prevstate = reaper.GetMediaTrackInfo_Value(tracks[idx - 1], "I_SOLO")
+				local prevstate = self.getValue(tracks[idx - 1])
 				if state ~= prevstate then
 					allIsSame = false
 					break
@@ -953,7 +1004,7 @@ function soloProperty:set_adjust(direction)
 		end
 		local state = nil
 		if allIsSame == true then
-			state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_SOLO")
+			state = self.getValue(tracks[1])
 			if (state + direction) >= 0 and (state + direction) <= #self.states then
 				state = state + direction
 			end
@@ -962,10 +1013,13 @@ function soloProperty:set_adjust(direction)
 		end
 		message(string.format("Set all selected tracks solo to %s.", self.states[state]))
 		for _, track in ipairs(tracks) do
-			reaper.SetMediaTrackInfo_Value(track, "I_SOLO", state)
+			self.setValue(track, state)
+		end
+		if state ~= 0 then
+			extstate.lastSoloMode = state
 		end
 	else
-		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_SOLO")
+		local state = self.getValue(tracks)
 		if state + direction > #self.states then
 			message "No more next property values. "
 		elseif state + direction < 0 then
@@ -973,7 +1027,10 @@ function soloProperty:set_adjust(direction)
 		else
 			state = state + direction
 		end
-		reaper.SetMediaTrackInfo_Value(tracks, "I_SOLO", state)
+		self.setValue(tracks, state)
+		if state ~= 0 then
+			extstate.lastSoloMode = state
+		end
 	end
 	message(self:get())
 	return message

@@ -29,6 +29,9 @@ local configLayout = PropertiesRibbon.initLayout("Properties Ribbon configuratio
 configLayout:registerSublayout("main", "General")
 configLayout:registerSublayout("stepAdjustment", "Step adjustment")
 
+-- Some specific layout configurations
+configLayout:registerSublayout("trackProperties", "Track properties")
+
 --[[
 Before the properties list fill get started, let describe this subclass methods:
 Method get: gets no one parameter, returns a message string which will be reported in the navigating scripts.
@@ -1382,6 +1385,59 @@ function lvDivider:set_perform()
 	else
 		return "Canceled."
 	end
+end
+
+local obeyConfigSolo = configLayout.trackProperties:registerProperty{}
+obeyConfigSolo.states = {
+	[true] = "enabled",
+	[false] = "disabled"
+}
+
+function obeyConfigSolo:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Toggle this property if you  want to set up the solo track property has applies the solo using default configuration of solo-in-place set in REAPER preferences instead of last selected mode when adjusted.",
+		"Toggleable"
+	)
+	local state = config.getboolean("obeyConfigSolo", true)
+	message {
+		label = "use default configuration of solo-in-place set in REAPER preferences when solo property toggles",
+		value = self.states[state]
+	}
+	return message
+end
+
+function obeyConfigSolo:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("obeyConfigSolo", true)
+	config.setboolean("obeyConfigSolo", nor(state))
+	message(self:get())
+	return message
+end
+
+local exclusiveSolo = configLayout.trackProperties:registerProperty{}
+exclusiveSolo.states = obeyConfigSolo.states
+
+function exclusiveSolo:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Toggle this property to apply the solo mode exclusively when solo property toggles. The solo exclusive means that only selected tracks will soloed, but other tracks will be unsoloed forcedly.",
+		"Toggleable"
+	)
+	local state = config.getboolean("exclusiveSolo", false)
+	message {
+		label = "Use exclusive solo when solo property toggles",
+		value = self.states[state]
+	}
+	return message
+end
+
+function exclusiveSolo:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("exclusiveSolo", false)
+	config.setboolean("exclusiveSolo", nor(state))
+	message(self:get())
+	return message
 end
 
 PropertiesRibbon.presentLayout(configLayout)
