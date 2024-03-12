@@ -23,3 +23,24 @@ function table.deepcopy(o, seen)
 	end
 	return no
 end
+
+---Check contains the given table specified key in
+---@param t table @ The table where function should check
+---@param key any @ The key which should be checked
+---@return boolean @ If the given table contains this key returns true. Otherwise, returns false.,
+function table.containsk(t, key)
+	return t[key] and true or false
+end
+
+---Check contains the given table specified value in
+---@param t table @ The table where function should checked
+---@param value any @ The value which should be checked
+---@return any @ If the given table contains this value returns its key. Otherwise, returns nil.
+function table.containsv(t, value)
+	for k, v in pairs(t) do
+		if v == value then
+			return k
+		end
+	end
+	return nil
+end
