@@ -981,9 +981,11 @@ function soloProperty:set_perform()
 	message(self:get())
 	if isExclusiveSolo and #checkedTrackslist > 0 then
 		message { value = " exclusive" }
+		reaper.PreventUIRefresh(1)
 		for _, track in ipairs(checkedTrackslist) do
 			self.setValue(track, 0)
 		end
+		reaper.PreventUIRefresh(-1)
 	end
 	return message
 end
@@ -2097,20 +2099,20 @@ end
 function soloDefeatProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local defeatedTracks, notDefeatTracks = 0, 0
+		local defeatedTracks, notDefeatedTracks = 0, 0
 		for k = 1, #tracks do
 			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
 			if state == 1 then
-				notDefeatTracks = notDefeatTracks + 1
+				notDefeatedTracks = notDefeatedTracks + 1
 			else
-				defeatTracks = defeatTracks + 1
+				defeatedTracks = defeatedTracks + 1
 			end
 		end
 		local ajustingValue
-		if defeatTracks > notDefeatTracks then
+		if defeatedTracks > notDefeatedTracks then
 			ajustingValue = 1
 			message("Switching off the solo defeat state for selected tracks.")
-		elseif defeatTracks < notDefeatTracks then
+		elseif defeatedTracks < notDefeatedTracks then
 			ajustingValue = 0
 			message("Switching on the solo defeat state for selected tracks.")
 		else
