@@ -2111,13 +2111,13 @@ function soloDefeatProperty:set_perform()
 		local ajustingValue
 		if defeatedTracks > notDefeatedTracks then
 			ajustingValue = 1
-			message("Switching off the solo defeat state for selected tracks.")
+			message("Switching on the solo defeat state for selected tracks.")
 		elseif defeatedTracks < notDefeatedTracks then
 			ajustingValue = 0
-			message("Switching on the solo defeat state for selected tracks.")
+			message("Switching off the solo defeat state for selected tracks.")
 		else
 			ajustingValue = 0
-			message("Switching on the solo defeat state for selected tracks.")
+			message("Switching off the solo defeat state for selected tracks.")
 		end
 		for k = 1, #tracks do
 			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
