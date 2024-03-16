@@ -1038,22 +1038,35 @@ function soloProperty:set_adjust(direction)
 	return message
 end
 
-local recarmProperty = {}
-parentLayout.recordingLayout:registerProperty(recarmProperty)
+local recarmProperty = parentLayout.recordingLayout:registerProperty {}
 recarmProperty.states = { [0] = "not armed", [1] = "armed" }
+
+function recarmProperty.getValue(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_RECARM")
+end
+
+function recarmProperty.setValue(track, state)
+	reaper.SetMediaTrackInfo_Value(track, "I_RECARM", state)
+end
 
 function recarmProperty:get()
 	local message = initOutputMessage()
-	message:initType("Toggle this property to arm or disarm selected track for record.", "Toggleable")
+	message:initType("Toggle this property to arm or disarm selected track for record", "Toggleable")
+	if config.getboolean("exclusiveArm", false) then
+		message:addType(" exclusively, i.e. only selected track will be soloed", 1)
+	end
+	message:addType(".", 1)
 	if multiSelectionSupport == true then
 		message:addType(
 			" If the group of tracks has been selected, the record state will be set to oposite value depending of moreness tracks with the same value."
 			, 1)
+		if config.getboolean("exclusiveSolo", false) then
+			message:addType(" The exclusive mode also applies for group of selected tracks.", 1)
+		end
 	end
 	if istable(tracks) then
 		message({ label = "Arm" })
-		message(composeMultipleTrackMessage(function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECARM") end,
-			self.states))
+		message(composeMultipleTrackMessage(self.getValue, self.states))
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM")
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
@@ -1063,10 +1076,12 @@ end
 
 function recarmProperty:set_perform()
 	local message = initOutputMessage()
+	local isExclusiveArm = config.getboolean("exclusiveArm", false)
+	local checkedTrackslist = {}
 	if istable(tracks) then
 		local armedTracks, notArmedTracks = 0, 0
 		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECARM")
+			local state = self.getValue(tracks[k])
 			if state == 1 then
 				armedTracks = armedTracks + 1
 			else
@@ -1080,18 +1095,46 @@ function recarmProperty:set_perform()
 		elseif armedTracks < notArmedTracks then
 			ajustingValue = 1
 			message("Arming selected tracks.")
+			if isExclusiveArm then
+				for i = 0, reaper.CountTracks(0) - 1 do
+					local track = reaper.GetTrack(0, i)
+					if not table.containsv(istable(tracks) and tracks or { tracks }, track) then
+						if self.getValue(track) ~= 0 then
+							table.insert(checkedTrackslist, track)
+						end
+					end
+				end
+			end
 		else
 			ajustingValue = 0
 			message("Unarming selected tracks.")
 		end
 		for k = 1, #tracks do
-			reaper.SetMediaTrackInfo_Value(tracks[k], "I_RECARM", ajustingValue)
+			self.setValue(tracks[k], ajustingValue)
 		end
 	else
-		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "I_RECARM"))
-		reaper.SetMediaTrackInfo_Value(tracks, "I_RECARM", state)
+		local state = nor(self.getValue(tracks))
+		self.setValue(tracks, state)
+		if state ~= 0 and isExclusiveArm then
+			for i = 0, reaper.CountTracks(0) - 1 do
+				local track = reaper.GetTrack(0, i)
+				if not table.containsv(istable(tracks) and tracks or { tracks }, track) then
+					if self.getValue(track) ~= 0 then
+						table.insert(checkedTrackslist, track)
+					end
+				end
+			end
+		end
 	end
 	message(self:get())
+	if isExclusiveArm and #checkedTrackslist > 0 then
+		message { value = " exclusive" }
+		reaper.PreventUIRefresh(1)
+		for _, track in ipairs(checkedTrackslist) do
+			self.setValue(track, 0)
+		end
+		reaper.PreventUIRefresh(-1)
+	end
 	return message
 end
 

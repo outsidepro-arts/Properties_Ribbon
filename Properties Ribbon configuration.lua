@@ -1440,4 +1440,32 @@ function exclusiveSolo:set_perform()
 	return message
 end
 
+local exclusiveArm = configLayout.trackProperties:registerProperty{}
+exclusiveArm.states = {
+	[true] = "enabled",
+	[false] = "disabled"
+}
+
+function exclusiveArm:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Toggle this property to apply the arm mode exclusively when arm property toggles. The arm exclusive means that only selected tracks will armed, but other tracks will be unarm forcedly.",
+		"Toggleable"
+	)
+	local state = config.getboolean("exclusiveArm", false)
+	message {
+		label = "Use exclusive arm when arm property toggles",
+		value = self.states[state]
+	}
+	return message
+end
+
+function exclusiveArm:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("exclusiveArm", false)
+	config.setboolean("exclusiveArm", nor(state))
+	message(self:get())
+	return message
+end
+
 PropertiesRibbon.presentLayout(configLayout)
