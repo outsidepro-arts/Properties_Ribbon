@@ -571,7 +571,14 @@ if fxLayout.canProvide() then
 						"Type either full parameter name or a part of (Lua patterns supported):")
 					if retval then
 						if answer ~= "" then
-							setFilter(sid, answer)
+							for k = 0, capi.GetNumParams(i + fxInaccuracy) - 1 do
+								local paramName = select(2, capi.GetParamName(i + fxInaccuracy, k))
+								if utils.simpleSearch(paramName, answer) then
+									setFilter(sid, answer)
+									return
+								end
+							end
+							msgBox("No parameters found", ("Here's no parameter which could be filtered by query %s."):format(answer))
 						else
 							setFilter(sid, nil)
 						end
