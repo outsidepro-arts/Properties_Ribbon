@@ -573,7 +573,7 @@ if fxLayout.canProvide() then
 						if answer ~= "" then
 							for k = 0, capi.GetNumParams(i + fxInaccuracy) - 1 do
 								local paramName = select(2, capi.GetParamName(i + fxInaccuracy, k))
-								if utils.simpleSearch(paramName, answer) then
+								if utils.simpleSearch(paramName, answer, ";") then
 									setFilter(sid, answer)
 									return
 								end
