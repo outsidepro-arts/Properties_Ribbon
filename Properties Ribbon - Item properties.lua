@@ -2134,6 +2134,87 @@ takePanProperty.extendedProperties:registerProperty {
 	end
 }
 
+if multiSelectionSupport then
+	takePanProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message:initType(
+				"Perform this property to set the sequential pan values for active takes of selected items."
+			)
+			if not istable(items) then
+				message:addType(
+					"This property is currently unavailable because you need to select at least two items.",
+					1)
+				message:changeType("unavailable", 2)
+			end
+			message "Set sequential pan values"
+			if istable(items) then
+				message(string.format(" for active takes of %u selected items", #items))
+			end
+			return message
+		end,
+		set_perform = function(self, parent)
+			if istable(items) then
+				local retval, answer = getUserInputs(string.format("Sequential Pan for takes of %u selected items", #items),
+					{
+						{
+							caption = "Pan value without direction:",
+							defValue = representation.pan[parent.getValue(items[1])]:match(
+								"%d*"
+							)
+						},
+						{
+							caption = "Directions pattern:",
+							defValue = "LR"
+						}
+					},
+					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will bel aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right.)."
+				)
+				if not retval then
+					return false, "Canceled"
+				end
+				local panValue = answer[1]
+				if panValue == "" then
+					msgBox("Error", "the pan value cannot be empty.")
+					return
+				end
+				if not tonumber(panValue) then
+					msgBox("Error", "the pan value must be a number.")
+					return
+				end
+				if not answer[2] then
+					msgBox("Error", "the direction pattern cannot be empty.")
+					return
+				end
+				if not answer[2]:lower():find("l") or not answer[2]:lower():find("r") then
+					msgBox("Error", "the direction pattern must contain at least one \"L\" and one \"R\".")
+					return
+				end
+				local dirs = {}
+				for char in answer[2]:lower():gmatch("[lr]") do
+					table.insert(dirs, char)
+				end
+				local dirField = 1
+				for _, item in ipairs(items) do
+					local curPanValue = utils.percenttonum(panValue)
+					if dirs[dirField] == "l" then
+						curPanValue = -curPanValue
+					end
+					parent.setValue(item, curPanValue)
+					if dirField < #dirs then
+						dirField = dirField + 1
+					else
+						dirField = 1
+					end
+				end
+				setUndoLabel(parent:get())
+				return true
+			end
+			return false, "You need to select at least two items to perform this action."
+		end
+	}
+end
+
 -- Take phase methods
 local takePhaseProperty = {}
 parentLayout.takeLayout:registerProperty(takePhaseProperty)
