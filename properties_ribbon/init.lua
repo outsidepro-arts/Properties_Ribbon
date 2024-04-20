@@ -656,6 +656,12 @@ function PropertiesRibbon.findDefaultSublayout(lt)
 	end
 end
 
+---Reset current property focused index
+---@param resetTo? number @ Ability to specify which property should be focused. If omited, the focus will be reset to 1.
+function PropertiesRibbon.resetPropertyFocus(resetTo)
+	layout.pIndex = resetTo or 1
+end
+
 ---Load specified macros
 ---@param macrosName string
 ---@return boolean
