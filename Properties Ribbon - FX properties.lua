@@ -578,7 +578,8 @@ if fxLayout.canProvide() then
 									return
 								end
 							end
-							msgBox("No parameters found", ("Here's no parameter which could be filtered by query %s."):format(answer))
+							msgBox("No parameters found",
+								("Here's no parameter which could be filtered by query %s."):format(answer))
 						else
 							setFilter(sid, nil)
 						end
@@ -601,7 +602,7 @@ if fxLayout.canProvide() then
 						for _, param in ipairs(params) do
 							local startPos, endPos = curFilter:find(num)
 							local maybeFilter = curFilter:sub(1, startPos - 1) ..
-							num + direction .. curFilter:sub(endPos + 1)
+								num + direction .. curFilter:sub(endPos + 1)
 							if utils.simpleSearch(param, maybeFilter) then
 								setFilter(sid, maybeFilter)
 								local message = initOutputMessage()
@@ -889,7 +890,16 @@ if fxLayout.canProvide() then
 						)
 						if retval then
 							if answer ~= "" then
-								setFilter(sid, answer)
+								for k = 0, capi.GetNumParams(i + fxInaccuracy) - 1 do
+									local paramName = select(2, capi.GetParamName(i + fxInaccuracy, k))
+									if utils.simpleSearch(paramName, answer, ";") then
+										setFilter(sid, answer)
+										PropertiesRibbon.resetPropertyFocus()
+										return true
+									end
+								end
+								msgBox("No parameters found",
+									("Here's no parameter which could be filtered by query %s."):format(answer))
 							else
 								msgBox("Set filter error",
 									"You should type any value here. If you wish to clear a filter query, please interract with appropriate property with category actions. Usualy, it is first property anywhere.")
