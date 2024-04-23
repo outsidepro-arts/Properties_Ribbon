@@ -404,6 +404,15 @@ local function generateSetMethod(fmess)
 	end
 end
 
+local trackWithItemsNavigator = catnavLayout.basic:registerProperty {}
+
+function trackWithItemsNavigator.checkFunction(track)
+	return reaper.CountTrackMediaItems(track) > 0
+end
+
+trackWithItemsNavigator.get = generateGetMethod("Tracks with items")
+trackWithItemsNavigator.set_adjust = generateSetMethod("No %s track with items")
+
 local folderNavigator = {}
 catnavLayout.basic:registerProperty(folderNavigator)
 
