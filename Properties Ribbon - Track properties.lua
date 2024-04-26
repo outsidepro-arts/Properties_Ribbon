@@ -704,6 +704,10 @@ if multiSelectionSupport then
 					msgBox("Error", "the pan value must be a number.")
 					return
 				end
+				if tonumber(panValue) > 100 then
+					msgBox("Error", "the pan value must be less than 100.")
+					return
+				end
 				if not answer[2] then
 					msgBox("Error", "the direction pattern cannot be empty.")
 					return
