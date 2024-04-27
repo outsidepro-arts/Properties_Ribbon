@@ -221,7 +221,17 @@ function utils.generateID(minLength, maxLength)
 end
 
 function utils.makeKeySequence(...)
-	return table.concat(table.pack(...), ".")
+	local args = {}
+	for _, arg in ipairs(table.pack(...)) do
+		if istable(arg) then
+			for _, subarg in ipairs(arg) do
+				table.insert(args, subarg)
+			end
+			else
+			table.insert(args, arg)
+		end
+	end
+	return table.concat(args, ".")
 end
 
 -- Returns the platform name based on REAPER's runnen version
