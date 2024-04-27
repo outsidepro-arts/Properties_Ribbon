@@ -62,14 +62,14 @@ function fx_properties_macros.newContextualAPI()
 end
 
 fx_properties_macros.fxMaskList = setmetatable({
-	keySequence = function (idx)
-		return {"fx_properties", string.format("excludeMask%u", idx)}
+	keySequence = function (idx, key)
+		return string.format("fx_properties.excludeMask%u.%s", idx, key)
 	end
 }, {
 	__index = function(self, idx)
 		if isnumber(idx) then
-			local fxMask = extstate[utils.makeKeySequence(self.keySequence(idx), "fx")]
-			local parmMask = extstate[utils.makeKeySequence(self.keySequence(idx), "param")]
+			local fxMask = extstate[self.keySequence(idx, "fx")]
+			local parmMask = extstate[self.keySequence(idx, "param")]
 			return { ["fxMask"] = fxMask,["paramMask"] = parmMask }
 		end
 		error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
@@ -79,19 +79,19 @@ fx_properties_macros.fxMaskList = setmetatable({
 			assert(istable(maskTable), string.format("Expected key type %s (got %s)", type({}), type(maskTable)))
 			assert(maskTable.fxMask, "Expected field fxMask")
 			assert(maskTable.paramMask, "Expected field paramMask")
-			extstate._forever[utils.makeKeySequence(self.keySequence(idx), "fx")] = maskTable.fxMask
-			extstate._forever[utils.makeKeySequence(self.keySequence(idx), "param")] = maskTable.paramMask
+			extstate._forever[self.keySequence(idx, "fx")] = maskTable.fxMask
+			extstate._forever[self.keySequence(idx, "param")] = maskTable.paramMask
 		else
 			local i = idx
-			while extstate[utils.makeKeySequence(self.keySequence(i), "fx")] do
+			while extstate[self.keySequence(i, "fx")] do
 				if i == idx then
-					extstate._forever[utils.makeKeySequence(self.keySequence(i), "fx")] = nil
-					extstate._forever[utils.makeKeySequence(self.keySequence(i), "param")] = nil
+					extstate._forever[self.keySequence(i, "fx")] = nil
+					extstate._forever[self.keySequence(i, "param")] = nil
 				elseif i > idx then
-					extstate._forever[utils.makeKeySequence(self.keySequence(i - 1), "fx")] = extstate[utils.makeKeySequence(self.keySequence(i), "fx")]
-					extstate._forever[utils.makeKeySequence(self.keySequence(i - 1), "param")] = extstate[utils.makeKeySequence(self.keySequence(i), "param")]
-					extstate._forever[utils.makeKeySequence(self.keySequence(i), "fx")] = nil
-					extstate._forever[utils.makeKeySequence(self.keySequence(i), "param")] = nil
+					extstate._forever[self.keySequence(i - 1, "fx")] = extstate[self.keySequence(i, "fx")]
+					extstate._forever[self.keySequence(i - 1, "param")] = extstate[self.keySequence(i, "param")]
+					extstate._forever[self.keySequence(i, "fx")] = nil
+					extstate._forever[self.keySequence(i, "param")] = nil
 				end
 				i = i + 1
 			end
@@ -99,7 +99,7 @@ fx_properties_macros.fxMaskList = setmetatable({
 	end,
 	__len = function(self)
 		local mCount = 0
-		while extstate[utils.makeKeySequence(self.keySequence(mCount + 1), "fx")] do
+		while extstate[self.keySequence(mCount + 1, "fx")] do
 			mCount = mCount + 1
 		end
 		return mCount
