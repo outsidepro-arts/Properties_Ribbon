@@ -622,7 +622,7 @@ panProperty.extendedProperties:registerProperty({
 	end,
 	set_perform = function(self, parent, action)
 		if istable(tracks) then
-			local retval, answer = getUserInputs(string.format("Pan for %u selected tracks", #tracks)
+			local retval, answer = getUserInputs(string.format("Pan for %u selected tracks", #tracks),
 				{ caption = "New pan value:", defValue = representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")] },
 				prepareUserData.pan.formatCaption)
 			if not retval then
