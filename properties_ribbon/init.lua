@@ -25,7 +25,7 @@ package.path = string.format("%s;%s//%s", package.path, PropertiesRibbon.script_
 
 
 -- Including the types check simplifier
-require "typescheck"
+require "utils.typescheck"
 
 -- Include the configuration provider
 config = require "providers.config_provider" (PropertiesRibbon.script_section)
