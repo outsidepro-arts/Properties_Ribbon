@@ -2,7 +2,8 @@
 This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2024 outsidepro-arts & other contributors
 License: MIT License
-]] --
+]]
+   --
 
 require "utils.conversion"
 require "utils.iters"
@@ -121,7 +122,7 @@ function utils.simpleSearch(fullString, searchString, delimiter)
 	if delimiter then
 		searchParts = searchString:split(delimiter, false)
 	else
-		searchParts = {searchString}
+		searchParts = { searchString }
 	end
 	for _, sBlock in ipairs(searchParts) do
 		if sBlock:find("%u") then
@@ -147,7 +148,7 @@ function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatter
 	if delimiter then
 		searchParts = searchString:split(delimiter)
 	else
-		searchParts = {searchString}
+		searchParts = { searchString }
 	end
 	for _, sBlock in ipairs(searchParts) do
 		if caseSensetive then
@@ -161,7 +162,6 @@ function utils.extendedSearch(fullString, searchString, caseSensetive, luaPatter
 		end
 	end
 end
-
 
 function utils.truncateSmart(stringShouldbeTruncated, truncateLength)
 	local truncatedString = stringShouldbeTruncated
@@ -215,7 +215,9 @@ function utils.generateID(minLength, maxLength)
 	local base = "abcdefghijklmnopqrstuvwxyz" .. os.date():gsub("%D", "")
 	for i = 1, math.random(minLength, maxLength) do
 		local charIndex = math.random(#base)
-		result = result .. ({ [1] = base:sub(charIndex, charIndex):lower(), [2] = base:sub(charIndex, charIndex):upper() })[math.random(1, 2)]
+		result = result ..
+		({ [1] = base:sub(charIndex, charIndex):lower(), [2] = base:sub(charIndex, charIndex):upper() })
+		[math.random(1, 2)]
 	end
 	return result
 end
@@ -227,7 +229,7 @@ function utils.makeKeySequence(...)
 			for _, subarg in ipairs(arg) do
 				table.insert(args, subarg)
 			end
-			else
+		else
 			table.insert(args, arg)
 		end
 	end
@@ -261,8 +263,41 @@ function fixPath(path)
 	if path:match("^%u:") then
 		return path
 	else
-		return select(1, PropertiesRibbon.script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1), path)
+		return select(1, PropertiesRibbon.script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1),
+			path)
 	end
+end
+
+--- Escaping Lua pattern
+-- @param s string The string to escaped
+-- @return string The escaped string
+function utils.escapeLuaPatternChars(s)
+	s = assert(isstring(s) and s, ("The string is expected (got %s)"):format(type(s)))
+	local prohibitedChars = setmetatable(
+		{
+			["%"] = "%%",
+			["."] = "%.",
+			["+"] = "%+",
+			["-"] = "%-",
+			["*"] = "%*",
+			["?"] = "%?",
+			["["] = "%[",
+			["]"] = "%]",
+			["^"] = "%^",
+			["$"] = "%$",
+			["("] = "%(",
+			[")"] = "%)",
+		}, {
+			__index = function(self, key)
+				return key
+			end
+		}
+	)
+	local ns = ""
+	for _, char in s:sequentchar() do
+		ns = ns:join(prohibitedChars[char])
+	end
+	return ns
 end
 
 return utils

@@ -728,7 +728,7 @@ if fxLayout.canProvide() then
 						local retval, curValue = capi.GetFormattedParamValue(parent.fxIndex, parent.parmIndex, "")
 						if retval then
 							local retval, answer = getUserInputs("Search for parameter value",
-								{ caption = "Search query:", defValue = curValue },
+								{ caption = "Search query:", defValue = utils.escapeLuaPatternChars(curValue) },
 								"Type either a part of value string or full string:"
 							)
 							if retval then
@@ -885,7 +885,7 @@ if fxLayout.canProvide() then
 					set_perform = function(self, parent)
 						local _, fxParam = capi.GetParamName(parent.fxIndex, parent.parmIndex)
 						local retval, answer = getUserInputs("Filter parameters by",
-							{ caption = "Filter query:", defValue = fxParam },
+							{ caption = "Filter query:", defValue = utils.escapeLuaPatternChars(fxParam) },
 							"Type either full parameter name or a part of (Lua patterns supported):"
 						)
 						if retval then
@@ -994,8 +994,8 @@ if fxLayout.canProvide() then
 						local _, fxName = getPluginFilename(parent.fxIndex)
 						local _, parmName = capi.GetParamName(parent.fxIndex, parent.parmIndex, "")
 						local retval, answer = getUserInputs("Add new exclude mask", {
-								{ caption = "FX plug-in filename mask:", defValue = fxName },
-								{ caption = "Parameter mask:",           defValue = parmName }
+								{ caption = "FX plug-in filename mask:", defValue = utils.escapeLuaPatternChars(fxName) },
+								{ caption = "Parameter mask:",           defValue = utils.escapeLuaPatternChars(parmName) }
 							},
 							"Type the condition mask below which parameter should be excluded. The Lua patterns are supported per every field.,"
 						)
