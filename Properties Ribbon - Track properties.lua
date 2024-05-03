@@ -301,9 +301,9 @@ function folderStateProperty:set_perform()
 	local state = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERDEPTH")
 	if state == 1 then
 		local compactState = reaper.GetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT")
-		if compactState == 0 then
+		if compactState == 0 and not config.getboolean("donotUseSmallFolderState", false) then
 			reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT", 1)
-		elseif compactState == 1 then
+		elseif compactState <= 1 then
 			reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT", 2)
 		elseif compactState == 2 then
 			reaper.SetMediaTrackInfo_Value(tracks, "I_FOLDERCOMPACT", 0)

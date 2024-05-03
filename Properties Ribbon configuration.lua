@@ -1468,4 +1468,32 @@ function exclusiveArm:set_perform()
 	return message
 end
 
+local donotUseSmallFolderStateProperty = configLayout.trackProperties:registerProperty {}
+donotUseSmallFolderStateProperty.states = {
+	[true] = "enabled",
+	[false] = "disabled"
+}
+
+function donotUseSmallFolderStateProperty:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Toggle this property to switch off the use of small folder state when you're toggling a track folder state property.",
+		"Toggleable"
+	)
+	local state = config.getboolean("donotUseSmallFolderState", false)
+	message {
+		label = "Don't use small folder state in track folder views",
+		value = self.states[state]
+	}
+	return message
+end
+
+function donotUseSmallFolderStateProperty:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("donotUseSmallFolderState", false)
+	config.setboolean("donotUseSmallFolderState", nor(state))
+	message(self:get())
+	return message
+end
+
 PropertiesRibbon.presentLayout(configLayout)
