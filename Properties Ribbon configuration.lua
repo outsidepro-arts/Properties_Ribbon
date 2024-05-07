@@ -1206,27 +1206,35 @@ function disableIdentificationProperty:set_perform()
 	return message
 end
 
-local twicePressPerformProperty = {}
-configLayout.main:registerProperty(twicePressPerformProperty)
+local twicePressPerformProperty = configLayout.main:registerProperty {}
+twicePressPerformProperty.states = {
+	"Does nothing",
+	"Report the property value only",
+	"Performs this (if perform action supported)"
+}
 
 function twicePressPerformProperty:get()
 	local message = initOutputMessage()
-	local state = config.getboolean("twicePressPerforms", false)
+	local state = config.getinteger("twicePressPerforms", 1)
 	message {
 		label = "Twice navigation onto the same property",
-		value = ({
-			[true] = "performs this (if perform action supported)",
-			[false] = "does nothing"
-		})[state]
+		value = self.states[state]
 	}
 	message:initType(
-		"Toggle this property to allow properties ribbon perform a property straightaway when you're navigating twice or more times onto.")
+		"Adjust this property to choose the needed behaviour when you're navigate to the same property twice straightaway.")
 	return message
 end
 
-function twicePressPerformProperty:set_perform()
+function twicePressPerformProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	config.setboolean("twicePressPerforms", nor(config.getboolean("twicePressPerforms", false)))
+	local state =  config.getinteger("twicePressPerforms", 1)
+	if state + direction > #self.states then
+		message("No more next property values.")
+	elseif state + direction < 1 then
+		message("No more previous property values.")
+	else
+		config.setinteger("twicePressPerforms", state + direction)
+	end
 	message(self:get())
 	return message
 end

@@ -1319,16 +1319,32 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		end
 	end
 	local isTwice =
-		config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform ~= nil and
+		config.getinteger("twicePressPerforms", 1) > 1 and
 		extstate.isTwice == pIndex
 	if isTwice then
-		PropertiesRibbon.ajustProperty(actions.set.perform)
+		if config.getinteger("twicePressPerforms", 1) == 2 then
+			if result.value then
+				result.value:output()
+			else
+				message:output(({
+					[true] = 0,
+					[false] = 1
+				})[config.getboolean("objectsIdentificationWhenNavigating", true)])
+				if config.getinteger("twicePressPerforms", 1) > 1 and currentSublayout ==
+					extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] and propertyNumPassed then
+					extstate.isTwice = pIndex
+				end
+			end
+		elseif config.getinteger("twicePressPerforms", 1) == 3 and layoutLevel.properties[pIndex].set_perform ~= nil then
+			PropertiesRibbon.ajustProperty(actions.set.perform)
+		end
 	else
+		::output::
 		message:output(({
 			[true] = 0,
 			[false] = 1
 		})[config.getboolean("objectsIdentificationWhenNavigating", true)])
-		if config.getboolean("twicePressPerforms", false) and layoutLevel.properties[pIndex].set_perform and currentSublayout ==
+		if config.getinteger("twicePressPerforms", 1) > 1 and currentSublayout ==
 			extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] and propertyNumPassed then
 			extstate.isTwice = pIndex
 		end
