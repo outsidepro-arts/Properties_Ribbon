@@ -985,7 +985,6 @@ end
 
 positionProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Position extended interraction")
 
-
 positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
@@ -1021,6 +1020,27 @@ positionProperty.extendedProperties:registerProperty {
 		end
 		message("Moved to new position")
 		return true, message, true
+	end
+}
+
+positionProperty.extendedProperties:registerProperty{
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Move items by grid"
+		message:initType(
+			"Adjust this property to move selected items by set grid in the project timeline."
+		)
+		return message
+	end,
+	set_adjust = function(self, parent, direction)
+		local message = initOutputMessage()
+		local cmds = {
+			[-1] = 40793, -- Item edit: Move items/envelope points left by grid size
+			[1] = 40794 -- Item edit: Move items/envelope points right by grid size
+		}
+		reaper.Main_OnCommand(cmds[direction], 0)
+		message(parent:get())
+		return false, message
 	end
 }
 
