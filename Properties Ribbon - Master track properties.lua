@@ -43,6 +43,7 @@ end
 
 parentLayout:registerSublayout("managementLayout", "Management")
 parentLayout:registerSublayout("playbackLayout", "Playback")
+parentLayout:registerSublayout("meteringLayout", "Metering")
 
 local osaraParamsProperty = {}
 parentLayout.managementLayout:registerProperty(osaraParamsProperty)
@@ -659,6 +660,204 @@ function masterTrackMixerPosProperty:set_adjust(direction)
 	message(self:get())
 	return message
 end
+
+-- Metering property
+local loudnessHoldMeterProperty = parentLayout.meteringLayout:registerProperty {}
+loudnessHoldMeterProperty.states = setmetatable({}, {
+	__index = function(self, value)
+		if value <= -1.50 then
+			return "INF"
+		else
+			return string.format("%.2f", value / 0.01)
+		end
+	end
+})
+
+function loudnessHoldMeterProperty.meterIsEnabled(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_VUMODE") & 1 ~= 1
+end
+
+function loudnessHoldMeterProperty.getMode(track)
+	local modeStruct = {}
+	local curmode = reaper.GetMediaTrackInfo_Value(track, "I_VUMODE") & 30
+	modeStruct.id = curmode
+	if curmode == 0 then
+		modeStruct.name = "Stereo peaks"
+		modeStruct.channels = {
+			{ id = 0, name = "left" },
+			{ id = 1, name = "right" }
+		}
+	elseif curmode == 2 then
+		modeStruct.name = "Multi-channel peaks"
+		modeStruct.channels = {}
+		for i = 0, reaper.GetMediaTrackInfo_Value(track, "I_NCHAN") - 1 do
+			table.insert(modeStruct.channels,
+				{ id = i, name = string.format("channel %u", i + 1) }
+			)
+		end
+	elseif curmode == 4 then
+		modeStruct.name = "Stereo RMS"
+		modeStruct.channels = {
+			{ id = 1024, name = "left" },
+			{ id = 1025, name = "right" }
+		}
+	elseif curmode == 8 then
+		modeStruct.name = "Combined RMS"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 12 then
+		modeStruct.name = "Loudness momentary"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 16 then
+		modeStruct.name = "Loudness short-term (max)"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 20 then
+		modeStruct.name = "Loudness short-term (current)"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	end
+	return modeStruct
+end
+
+function loudnessHoldMeterProperty:get()
+	local message = initOutputMessage()
+	message:initType("Read this property to inquire the hold peak or loudness meter value of master track.")
+	message:addType(" Adjust this property to choose needed channel for watching.", 1)
+	local curChannel = extstate._layout.meterChannel or 1
+	message { objectId = "Master" }
+	local mode = self.getMode(master)
+	if self.meterIsEnabled(master) then
+		message { label = string.format("Hold meter %s", mode.name) }
+		if curChannel > 1 then
+			local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+			message { value = string.format("%s%s %s", channel.name and channel.name .. " " or "", self.states[reaper.Track_GetPeakHoldDB(master, channel.id, false)], mode.id < 10 and "dB" or "LU") }
+		else
+			for _, channel in ipairs(mode.channels) do
+				message { value = string.format("%s%s %s, ", channel.name and channel.name .. " " or "", self.states[reaper.Track_GetPeakHoldDB(master, channel.id, false)], mode.id < 10 and "dB" or "LU") }
+			end
+			-- Clearing off the extra coma chars
+			message.value = message.value:sub(1, -2)
+		end
+	else
+		message { label = "Meter", value = "Disabled" }
+	end
+	return message
+end
+
+function loudnessHoldMeterProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local curChannel = extstate._layout.meterChannel or 1
+	if curChannel + direction == 1 then
+		message "All channels"
+		curChannel = 1
+	elseif curChannel + direction ~= 1 then
+		local mode = self.getMode(master)
+		if #mode.channels > 1 then
+			if curChannel + direction > #mode.channels + 1 then
+				message "No more channels in this meter mode. "
+				curChannel = #mode.channels + 1
+			elseif curChannel + direction <= 0 then
+				curChannel = 1
+				message "No more previous property values. "
+			else
+				curChannel = curChannel + direction
+			end
+		end
+	end
+	extstate._layout.meterChannel = curChannel
+	message(self:get())
+	return message
+end
+
+loudnessHoldMeterProperty.extendedProperties =
+	PropertiesRibbon.initExtendedProperties("Metering interraction")
+
+loudnessHoldMeterProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Reset the peak values"
+		message:initType("Perform this property to reset the peak values. Adjust this property to use channels adjustment like you're in parent property.")
+		return message
+	end,
+	set_adjust = function(self, parent, direction)
+		return false, parent:set_adjust(direction)
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		local curChannel = extstate._layout.meterChannel or 1
+		local mode = parent.getMode(master)
+		if curChannel == 1 then
+			for _, channel in ipairs(mode.channels) do
+				reaper.Track_GetPeakHoldDB(master, channel.id, true)
+			end
+		else
+			local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+			reaper.Track_GetPeakHoldDB(master, channel.id, true)
+		end
+		message "Reset."
+		return true, message, true
+	end
+}
+
+loudnessHoldMeterProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message { label = "Metering" }
+		local state = parent.meterIsEnabled(master)
+		message { value = state and "Enabled" or "Disabled" }
+		message:initType("Toggle this property to switch the meter state.", "Toggleable")
+		return message
+	end,
+	set_perform = function(self, parent)
+		local message = initOutputMessage()
+		local state = reaper.GetMediaTrackInfo_Value(master, "I_VUMODE")
+		reaper.SetMediaTrackInfo_Value(master, "I_VUMODE", state ~ 1)
+		message(self:get(parent))
+		return false, message
+	end
+}
+
+loudnessHoldMeterProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message { label = "Meter mode" }
+		local mode = parent.getMode(master)
+		message { value = mode.name }
+		message:initType("Adjust this property to choose the needed meter mode for master track.")
+		return message
+	end,
+	set_adjust = function(self, parent, direction)
+		local message = initOutputMessage()
+		local modeStates = { 0, 2, 4, 8, 12, 16, 20 }
+		local curMode = nil
+		local mode = parent.getMode(master)
+		for i, m in ipairs(modeStates) do
+			if m == mode.id then
+				curMode = i
+			end
+		end
+		if curMode + direction > #modeStates then
+			message "No more next property values. "
+			curMode = #modeStates
+		elseif curMode + direction < 1 then
+			message "No more previous property values. "
+			curMode = 1
+		else
+			curMode = curMode + direction
+		end
+		local state = reaper.GetMediaTrackInfo_Value(master, "I_VUMODE")
+		-- Thanks to @electrik-spb for the hexadecimal bitmask solution
+		reaper.SetMediaTrackInfo_Value(master, "I_VUMODE", (state & 0x60) | modeStates[curMode])
+		message(self:get(parent))
+		return false, message
+	end
+}
 
 parentLayout.defaultSublayout = "playbackLayout"
 

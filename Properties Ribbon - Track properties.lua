@@ -37,6 +37,8 @@ parentLayout:registerSublayout("playbackLayout", "Playback")
 -- Recording properties
 parentLayout:registerSublayout("recordingLayout", "Recording")
 
+-- Metering information properties
+parentLayout:registerSublayout("meteringLayout", "Metering")
 
 -- Preparing all needed configs which will be used not one time
 multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
@@ -623,7 +625,11 @@ panProperty.extendedProperties:registerProperty({
 	set_perform = function(self, parent, action)
 		if istable(tracks) then
 			local retval, answer = getUserInputs(string.format("Pan for %u selected tracks", #tracks),
-				{ caption = "New pan value:", defValue = representation.pan[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")] },
+				{
+					caption = "New pan value:",
+					defValue = representation.pan
+						[reaper.GetMediaTrackInfo_Value(tracks[1], "D_PAN")]
+				},
 				prepareUserData.pan.formatCaption)
 			if not retval then
 				return false
@@ -687,7 +693,7 @@ if multiSelectionSupport then
 						},
 						{
 							caption = "Directions pattern:",
-							defValue = "LR"
+							defValue = "Left Right"
 						}
 					},
 					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will bel aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right.)."
@@ -713,7 +719,8 @@ if multiSelectionSupport then
 					return
 				end
 				if not answer[2]:lower():find("l") or not answer[2]:lower():find("r") then
-					msgBox("Error", "the direction pattern must contain at least one \"L\" and one \"R\".")
+					msgBox("Error",
+						'The direction pattern must contain at least one "Left" (or "l") and one "Right" (or "r").')
 					return
 				end
 				local dirs = {}
@@ -2373,6 +2380,191 @@ function tcpVisibilityProperty:set_perform()
 		local state = nor(reaper.GetMediaTrackInfo_Value(tracks, "B_SHOWINTCP"))
 		reaper.SetMediaTrackInfo_Value(tracks, "B_SHOWINTCP", state)
 	end
+	message(self:get())
+	return message
+end
+
+-- Track loudness meter
+local loudnessHoldMeterProperty = parentLayout.meteringLayout:registerProperty {}
+loudnessHoldMeterProperty.states = setmetatable({}, {
+	__index = function(self, value)
+		if value <= -1.50 then
+			return "INF"
+		else
+			return string.format("%.2f", value / 0.01)
+		end
+	end
+})
+
+function loudnessHoldMeterProperty.meterIsEnabled(track)
+	return reaper.GetMediaTrackInfo_Value(track, "I_VUMODE") & 1 ~= 1
+end
+
+function loudnessHoldMeterProperty.getMode(track)
+	local modeStruct = {}
+	local curmode = reaper.GetMediaTrackInfo_Value(track, "I_VUMODE") & 30
+	modeStruct.id = curmode
+	if curmode == 0 then
+		modeStruct.name = "Stereo peaks"
+		modeStruct.channels = {
+			{ id = 0, name = "left" },
+			{ id = 1, name = "right" }
+		}
+	elseif curmode == 2 then
+		modeStruct.name = "Multi-channel peaks"
+		modeStruct.channels = {}
+		for i = 0, reaper.GetMediaTrackInfo_Value(track, "I_NCHAN") - 1 do
+			table.insert(modeStruct.channels,
+				{ id = i, name = string.format("channel %u", i + 1) }
+			)
+		end
+	elseif curmode == 4 then
+		modeStruct.name = "Stereo RMS"
+		modeStruct.channels = {
+			{ id = 1024, name = "left" },
+			{ id = 1025, name = "right" }
+		}
+	elseif curmode == 8 then
+		modeStruct.name = "Combined RMS"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 12 then
+		modeStruct.name = "Loudness momentary"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 16 then
+		modeStruct.name = "Loudness short-term (max)"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	elseif curmode == 20 then
+		modeStruct.name = "Loudness short-term (current)"
+		modeStruct.channels = {
+			{ id = 1024, name = "" }
+		}
+	end
+	return modeStruct
+end
+
+function loudnessHoldMeterProperty:get()
+	local message = initOutputMessage()
+	message:initType("Read this property to inquire the hold peak or loudness meter value of selected track.")
+	if multiSelectionSupport == true then
+		message:addType(
+			" If the group of tracks selected, it will report all tracks values.", 1
+		)
+	end
+	message:addType(" Adjust this property to choose needed channel for watching.", 1)
+	message:addType(" Perform this property to reset the peak values for selected channels.", 1)
+	local curChannel = extstate._layout.meterChannel or 1
+	if istable(tracks) then
+		message { label = "Tracks held meters" }
+		message(composeMultipleTrackMessage(
+			function(track)
+				local mode = self.getMode(track)
+				local submessage = initOutputMessage()
+				if self.meterIsEnabled(track) then
+					submessage(mode.name:join(": "))
+					if curChannel > 1 then
+						local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+						submessage(string.format("%s%s %s", channel.name and channel.name .. " " or "",
+							self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)], mode.id < 10 and "dB" or "LU"))
+					else
+						for _, channel in ipairs(mode.channels) do
+							submessage(string.format("%s%s %s, ", channel.name and channel.name .. " " or "",
+								self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)], mode.id < 10 and "dB" or "LU"))
+						end
+						-- Clearing off the extra coma chars
+						submessage.msg = submessage.msg:sub(1, -2)
+					end
+				else
+					submessage "Meter disabled"
+				end
+				return submessage:extract(false)
+			end,
+			setmetatable({}, {
+				__index = function(self, key)
+					return key
+				end
+			})
+		))
+	else
+		message { objectId = getTrackID(tracks) }
+		local mode = self.getMode(tracks)
+		if self.meterIsEnabled(tracks) then
+			message { label = string.format("Hold meter %s", mode.name) }
+			if curChannel > 1 then
+				local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+				message { value = string.format("%s%s %s", channel.name and channel.name .. " " or "", self.states[reaper.Track_GetPeakHoldDB(tracks, channel.id, false)], mode.id < 10 and "dB" or "LU") }
+			else
+				for _, channel in ipairs(mode.channels) do
+					message { value = string.format("%s%s %s, ", channel.name and channel.name .. " " or "", self.states[reaper.Track_GetPeakHoldDB(tracks, channel.id, false)], mode.id < 10 and "dB" or "LU") }
+				end
+				-- Clearing off the extra coma chars
+				message.value = message.value:sub(1, -2)
+			end
+		else
+			message { label = "Meter", value = "Disabled" }
+		end
+	end
+	return message
+end
+
+function loudnessHoldMeterProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local curChannel = extstate._layout.meterChannel or 1
+	if curChannel + direction == 1 then
+		message "All channels"
+		curChannel = 1
+	elseif curChannel + direction ~= 1 then
+		local mode = self.getMode(tracks)
+		if #mode.channels > 1 then
+			if curChannel + direction > #mode.channels + 1 then
+				message "No more channels in this meter mode. "
+				curChannel = #mode.channels + 1
+			elseif curChannel + direction <= 0 then
+				curChannel = 1
+				message "No more previous property values. "
+			else
+				curChannel = curChannel + direction
+			end
+		end
+	end
+	extstate._layout.meterChannel = curChannel
+	message(self:get())
+	return message
+end
+
+function loudnessHoldMeterProperty:set_perform()
+	local message = initOutputMessage()
+	local curChannel = extstate._layout.meterChannel or 1
+	if istable(tracks) then
+		for _, track in ipairs(tracks) do
+			local mode = self.getMode(track)
+			if curChannel == 1 then
+				for _, channel in ipairs(mode.channels) do
+					reaper.Track_GetPeakHoldDB(track, channel.id, true)
+				end
+			else
+				local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+				reaper.Track_GetPeakHoldDB(track, channel.id, true)
+			end
+		end
+		message "Reset for all selected tracks."
+	else
+		local mode = self.getMode(tracks)
+		if curChannel == 1 then
+			for _, channel in ipairs(mode.channels) do
+				reaper.Track_GetPeakHoldDB(tracks, channel.id, true)
+			end
+		else
+			local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
+			reaper.Track_GetPeakHoldDB(tracks, channel.id, true)
+		end
+	end
+	message "Reset."
 	message(self:get())
 	return message
 end
