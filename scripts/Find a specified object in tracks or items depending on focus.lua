@@ -51,7 +51,7 @@ local function searchPluginsInTracks(options, trackFrom, direction)
 		if i < 0 then
 			track = reaper.GetMasterTrack(0)
 		else
-			track = reaper.GetTrack(0, i)
+			track = reaper.GetTrack(0, i - 1)
 		end
 		local countFX = reaper.TrackFX_GetCount(track)
 		if countFX > 0 then
@@ -78,7 +78,7 @@ local function searchItems(options, itemFrom, direction)
 		endRange = 0
 	end
 	for i = startRange, endRange, direction do
-		local item = reaper.GetMediaItem(0, i)
+		local item = reaper.GetMediaItem(0, i - 1)
 		local take = reaper.GetActiveTake(item)
 		local retval, takeName = reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", "", false)
 		if retval then
@@ -103,7 +103,7 @@ local function searchPluginsInTakes(options, itemFrom, direction)
 		endRange = 0
 	end
 	for i = startRange, endRange, direction do
-		local item = reaper.GetMediaItem(0, i)
+		local item = reaper.GetMediaItem(0, i - 1)
 		local take = reaper.GetActiveTake(item)
 		local countFX = reaper.TakeFX_GetCount(take)
 		if countFX > 0 then
