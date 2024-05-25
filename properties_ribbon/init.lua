@@ -788,10 +788,9 @@ function PropertiesRibbon.presentLayout(lt)
 	currentLayout = lt.section
 	layoutFile = select(2, reaper.get_action_context())
 	currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-	if currentLayout ~= extstate.currentLayout and (rememberCFG ~= 1 and rememberCFG ~= 3) then
+	if (rememberCFG ~= 1 and rememberCFG ~= 3) then
 		currentSublayout = layout.defaultSublayout or PropertiesRibbon.findDefaultSublayout(layout)
 	end
-	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if rememberCFG ~= 1 and rememberCFG ~= 2 then
 		layout.pIndex = 1
 	end
@@ -847,6 +846,13 @@ function PropertiesRibbon.initProposedLayout()
 	if lt then
 		currentLayout = lt.section
 		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
+		local rememberCFG = config.getinteger("rememberSublayout", 3)
+		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
+			currentSublayout = lt.defaultSublayout or PropertiesRibbon.findDefaultSublayout(lt)
+		end
+		if rememberCFG ~= 1 and rememberCFG ~= 2 then
+			lt.pIndex = 1
+		end
 		return prepareLayout(lt)
 	end
 end
