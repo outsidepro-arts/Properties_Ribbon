@@ -47,21 +47,27 @@ representation = require "representations.representations"
 -- The preparation of typed data by an user when sets the custom values using input dialogs
 prepareUserData = require "representations.preparation"
 
+-- The translation module
+translation = require"providers.translation_provider"
+
+translation.setLanguage(config.getstring("language", "English"))
+
+translation.init(PropertiesRibbon.script_path)
 
 -- Actions for set methods or some another cases
 actions = {
 	set = {
 		perform = {
-			label = "Perform or toggle",
+			label = t"Perform or toggle",
 			value = "perform"
 		},
 		increase = {
-			label = "increase",
+			label = t"increase",
 			value = "adjust",
 			direction = 1
 		},
 		decrease = {
-			label = "decrease",
+			label = t"decrease",
 			value = "adjust",
 			direction = -1
 		}
@@ -112,8 +118,8 @@ reaper.defer(function() end)
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
 	if reaper.ShowMessageBox(
-			'Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?',
-			"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			t'Seems you haven\'t OSARA installed on this REAPER copy. Please install the OSARA extension which have full accessibility functions and provides the speech output method which Properties Ribbon scripts complex uses for its working.\nWould you like to open the OSARA website where you can download the latest plug-in build?',
+			t"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 		openPath("https://osara.reaperaccessibility.com/snapshots/")
 	end
 	return
@@ -125,8 +131,8 @@ end
 
 if reaper.APIExists("CF_GetSWSVersion") == true then
 	if reaper.ShowMessageBox(
-			'Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?',
-			"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
+			t'Seems you haven\'t SWS extension installed on this REAPER copy. Please install the SWS extension which has an extra API functions which Properties Ribbon scripts complex uses for its working.\nWould you like to open the SWS extension website where you can download the latest plug-in build?',
+			t"Properties Ribbon error", showMessageBoxConsts.sets.yesno) == showMessageBoxConsts.button.yes then
 		openPath("https://sws-extension.org/")
 	end
 	return
@@ -492,8 +498,8 @@ function PropertiesRibbon.initExtendedProperties(str)
 		properties = setmetatable({ {
 			get = function(self, parent)
 				local message = initOutputMessage()
-				message:initType("Perform this property to return back to the properties view.")
-				message(string.format("Return to %s properties", layout.subname or layout.name))
+				message:initType(t"Perform this property to return back to the properties view.")
+				message(string.format(t"Return to %s properties", layout.subname or layout.name))
 				return message
 			end,
 			set_perform = function(self, parent)
@@ -523,7 +529,7 @@ function PropertiesRibbon.composeSubLayout(shouldReportParentLayout)
 	if isSublayout(layout) then
 		message(layout.subname)
 		if shouldReportParentLayout == true then
-			message(string.format(" of %s", ({
+			message(string.format(t" of %s", ({
 				[true] = layout.name:lower(),
 				[false] = layout.name
 			})[(string.match(layout.name, "^%u%l*.*%u") == nil)]))
@@ -533,7 +539,7 @@ function PropertiesRibbon.composeSubLayout(shouldReportParentLayout)
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if (cfg == 1 or cfg == 3) and (isSublayout(layout)) then
-		message(string.format(", %u of %u", layout.slIndex, layout.ofCount))
+		message(string.format(t", %u of %u", layout.slIndex, layout.ofCount))
 	end
 	message(", ")
 	return message:extract()
@@ -811,7 +817,7 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 		end
 	end
 	if layoutFile == nil or layoutFile == "" then
-		("Switch one action group first."):output()
+		(t"Switch one action group first."):output()
 		return
 	end
 	local lt = nil
@@ -835,7 +841,7 @@ function PropertiesRibbon.initProposedLayout()
 		currentExtProperty = nil
 	end
 	if layoutFile == nil or layoutFile == "" then
-		("Switch one action group first."):output()
+		(t"Switch one action group first."):output()
 		return
 	end
 	local lt = nil
@@ -859,11 +865,11 @@ end
 
 function PropertiesRibbon.switchSublayout(action)
 	if extstate.gotoMode then
-		("Goto mode deactivated. "):output()
+		(t"Goto mode deactivated. "):output()
 		extstate.gotoMode = nil
 	end
 	if layout.canProvide() ~= true then
-		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		(string.format(t"There are no elements %s be provided for.", layout.name)):output()
 		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
@@ -876,7 +882,7 @@ function PropertiesRibbon.switchSublayout(action)
 				currentSublayout = layout.nextSubLayout
 				finishScript()
 			else
-				("No next category."):output()
+				(t"No next category."):output()
 				finishScript()
 				return
 			end
@@ -885,7 +891,7 @@ function PropertiesRibbon.switchSublayout(action)
 				currentSublayout = layout.previousSubLayout
 				finishScript()
 			else
-				("No previous category."):output()
+				(t"No previous category."):output()
 				finishScript()
 				return
 			end
@@ -897,7 +903,7 @@ function PropertiesRibbon.switchSublayout(action)
 		speakLayout = true
 		PropertiesRibbon.reportOrGotoProperty(nil, nil, false)
 	else
-		(("The %s layout has no category. "):format(layout.name)):output()
+		((t"The %s layout has no category. "):format(layout.name)):output()
 	end
 	finishScript()
 end
@@ -945,10 +951,10 @@ function PropertiesRibbon.nextProperty()
 		if pIndex + 1 <= #layoutLevel.properties then
 			pIndex = pIndex + 1
 		else
-			message("Last property. ")
+			message(t"Last property. ")
 		end
 	else
-		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		(string.format(t"There are no elements %s be provided for.", layout.name)):output()
 		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
@@ -959,39 +965,39 @@ function PropertiesRibbon.nextProperty()
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
+				result:addType(string.format(t"%s or %s this property to adjust its value to appropriate direction.",
 					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
-				result:addType(string.format("%s this property to perform its action.",
+				result:addType(string.format(t"%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
 					result:addType(
-						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						t". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
 						1)
 				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
 			end
-			result:addType("No any more detailed usability prompt could be provided.", 1)
+			result:addType(t"No any more detailed usability prompt could be provided.", 1)
 		end
 		if not result:isTypeInitialized(2) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType("Adjustable", 2)
+				result:addType(t"Adjustable", 2)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(2) then
-					result:addType(", p", 2)
+					result:addType(t", p", 2)
 				else
-					result:addType("P", 2)
+					result:addType(t"P", 2)
 				end
-				result:addType("erformable", 2)
+				result:addType(t"erformable", 2)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
-					result:addType(" once", 2)
+					result:addType(t" once", 2)
 				end
 			end
 		end
@@ -1000,18 +1006,18 @@ function PropertiesRibbon.nextProperty()
 				result:addType(" ", 1)
 			end
 			if result:isTypeInitialized(2) then
-				result:addType(", h", 2)
+				result:addType(t", h", 2)
 			else
-				result:addType("H", 2)
+				result:addType(t"H", 2)
 			end
-			result:addType("Perform this property to activate the extended properties for.", 1)
-			result:addType("as extended properties", 2)
+			result:addType(t"Perform this property to activate the extended properties for.", 1)
+			result:addType(t"as extended properties", 2)
 		end
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
 		result({
-			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
+			focusIndex = (t"%u of %u"):format(pIndex, #layoutLevel.properties)
 		})
 	end
 	message(result, true)
@@ -1032,7 +1038,7 @@ function PropertiesRibbon.previousProperty()
 	local message = initOutputMessage()
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if extstate.gotoMode then
-		message("Goto mode deactivated. ")
+		message(t"Goto mode deactivated. ")
 		extstate.gotoMode = nil
 	end
 	if extstate.isTwice then
@@ -1061,17 +1067,17 @@ function PropertiesRibbon.previousProperty()
 	end
 	if layout.canProvide() == true then
 		if #layoutLevel.properties < 1 then
-			(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
+			(string.format(t"The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
 			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		if pIndex - 1 > 0 then
 			pIndex = pIndex - 1
 		else
-			message("First property. ")
+			message(t"First property. ")
 		end
 	else
-		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		(string.format(t"There are no elements %s be provided for.", layout.name)):output()
 		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
@@ -1082,39 +1088,40 @@ function PropertiesRibbon.previousProperty()
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
+				result:addType(string.format(t"%s or %s this property to adjust its value to appropriate direction.",
 					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
-				result:addType(string.format("%s this property to perform its action.",
+				result:addType(string.format(t"%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
 					result:addType(
-						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						t". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
 						1)
 				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
 			end
-			result:addType("No any more detailed usability prompt could be provided.", 1)
+			result:addType(t"No any more detailed usability prompt could be provided.", 1)
 		end
 		if not result:isTypeInitialized(2) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType("Adjustable", 2)
+				result:addType(t"Adjustable", 2)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(2) then
-					result:addType(", p", 2)
+					---Translation: This string needs when the type string already fillen, we need the coma symbol and first letter must be lower case
+					result:addType(t", p", 2)
 				else
-					result:addType("P", 2)
+					result:addType(t"P", 2)
 				end
-				result:addType("erformable", 2)
+				result:addType(t"erformable", 2)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
-					result:addType(" once", 2)
+					result:addType(t" once", 2)
 				end
 			end
 		end
@@ -1123,18 +1130,19 @@ function PropertiesRibbon.previousProperty()
 				result:addType(" ", 1)
 			end
 			if result:isTypeInitialized(2) then
-				result:addType(", h", 2)
+				---Translation: This string needs when the type string already fillen, we need the coma symbol and first letter must be lower case
+				result:addType(t", h", 2)
 			else
-				result:addType("H", 2)
+				result:addType(t"H", 2)
 			end
-			result:addType("Perform this property to activate the extended properties for.", 1)
-			result:addType("as extended properties", 2)
+			result:addType(t"Perform this property to activate the extended properties for.", 1)
+			result:addType(t"as extended properties", 2)
 		end
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
 		result({
-			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
+			focusIndex = (t"%u of %u"):format(pIndex, #layoutLevel.properties)
 		})
 	end
 	message(result, true)
@@ -1202,7 +1210,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 	if layout.canProvide() == true then
 		if #layoutLevel.properties < 1 then
 			local definedName = layoutLevel.subname or layoutLevel.name
-			string.format("The ribbon of %s is empty.", definedName):output()
+			string.format(t"The ribbon of %s is empty.", definedName):output()
 			finishScript(true)
 			return
 		end
@@ -1221,13 +1229,13 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 				end
 			else
 				local message = initOutputMessage()
-				message(string.format("No property with number %s in ", propertyNum))
+				message(string.format(t"No property with number %s in ", propertyNum))
 				if currentExtProperty then
-					message(string.format("%s extended properties on ",
+					message(string.format(t"%s extended properties on ",
 						layout.properties[layout.pIndex].extendedProperties.name))
 				end
 				if isSublayout(layout) then
-					message(string.format(" %s category of ", layout.subname))
+					message(string.format(t" %s category of ", layout.subname))
 				end
 				message(string.format("%s layout.", layout.name))
 				message:output()
@@ -1236,7 +1244,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			end
 		end
 	else
-		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		(string.format(t"There are no elements %s be provided for.", layout.name)):output()
 		finishScript(true)
 		return
 	end
@@ -1251,40 +1259,41 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 	if result:isTypeInitialized() then
 		if not result:isTypeInitialized(1) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType(string.format("%s or %s this property to adjust its value to appropriate direction.",
+				result:addType(string.format(t"%s or %s this property to adjust its value to appropriate direction.",
 					actions.set.decrease.label:gsub("^%w", string.upper), actions.set.increase.label), 1)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(1) then
 					result:addType(" ", 1)
 				end
-				result:addType(string.format("%s this property to perform its action.",
+				result:addType(string.format(t"%s this property to perform its action.",
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
 					result:addType(
-						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						t". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
 						1)
 				end
 			end
 			if result:isTypeInitialized(1) then
 				result:addType(" ", 1)
 			end
-			result:addType("No any more detailed usability prompt could be provided.", 1)
+			result:addType(t"No any more detailed usability prompt could be provided.", 1)
 		end
 		if not result:isTypeInitialized(2) then
 			if layoutLevel.properties[pIndex].set_adjust then
-				result:addType("Adjustable", 2)
+				result:addType(t"Adjustable", 2)
 			end
 			if layoutLevel.properties[pIndex].set_perform then
 				if result:isTypeInitialized(2) then
-					result:addType(", p", 2)
+					---Translation: This string needs when the type string already fillen, we need the coma symbol and first letter must be lower case
+					result:addType(t", p", 2)
 				else
-					result:addType("P", 2)
+					result:addType(t"P", 2)
 				end
-				result:addType("erformable", 2)
+				result:addType(t"erformable", 2)
 			end
 			if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
-				result:addType(" once", 2)
+				result:addType(t" once", 2)
 			end
 		end
 		if layoutLevel.properties[pIndex].extendedProperties then
@@ -1292,12 +1301,13 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 				result:addType(" ", 1)
 			end
 			if result:isTypeInitialized(2) then
-				result:addType(", h", 2)
+				---Translation: This string needs when the type string already fillen, we need the coma symbol and first letter must be lower case
+				result:addType(t", h", 2)
 			else
-				result:addType("H", 2)
+				result:addType(t"H", 2)
 			end
-			result:addType("Perform this property to activate the extended properties for.", 1)
-			result:addType("as extended properties", 2)
+			result:addType(t"Perform this property to activate the extended properties for.", 1)
+			result:addType(t"as extended properties", 2)
 		end
 	end
 	local cfg = config.getinteger("reportPos", 3)
@@ -1312,7 +1322,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			[true] = 0,
 			[false] = 1
 		})[config.getboolean("objectsIdentificationWhenNavigating", true)], true):gsub("(.+)([.])$", "%1")
-		message = message .. string.format(". Percentage navigation has chosen property %u", propertyNum)
+		message = message .. string.format(t". Percentage navigation has chosen property %u", propertyNum)
 	end
 	if not propertyNumPassed then
 		if extstate.isTwice then
@@ -1395,7 +1405,7 @@ function PropertiesRibbon.ajustProperty(action)
 					speakLayout = true
 				end
 			else
-				string.format("This property does not support the %s action.", action.label):output()
+				string.format(t"This property does not support the %s action.", action.label):output()
 				finishScript()
 				return
 			end
@@ -1419,7 +1429,7 @@ function PropertiesRibbon.ajustProperty(action)
 					end
 				end
 			else
-				string.format("This property does not support the %s action.", action.label):output()
+				string.format(t"This property does not support the %s action.", action.label):output()
 				finishScript()
 				return
 			end
@@ -1439,7 +1449,8 @@ function PropertiesRibbon.ajustProperty(action)
 							msg = msg .. " "
 						end
 					end
-					msg = msg .. string.format("Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name)
+					---Translation: Leaving the extended properties
+					msg = msg .. string.format(t"Leaving %s. ", layout.properties[layout.pIndex].extendedProperties.name)
 				end
 				if premsg and getShouldReported then
 					msg = msg .. layout.properties[layout.pIndex]:get():extract()
@@ -1459,7 +1470,7 @@ function PropertiesRibbon.ajustProperty(action)
 		end
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
-		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
+		(string.format(t"There are no element to ajust or perform any action for %s.", layout.name)):output()
 	end
 	finishScript(oncePerformRequested)
 end
@@ -1468,46 +1479,41 @@ function PropertiesRibbon.reportLayout()
 	if layout.canProvide() then
 		local message = initOutputMessage()
 		if isSublayout(layout) then
-			message(string.format("%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
+			message(string.format(t"%s category of %s layout", layout.subname, layout.name:gsub("^%w", string.lower)))
 		else
-			message(string.format("%s layout", layout.name))
+			message(string.format(t"%s layout", layout.name))
 		end
-		message(" currently loaded, ")
+		message(t" currently loaded, ")
 		if isSublayout(layout) then
 			if layout.ofCount > 1 then
-				message(string.format("its number is %u of all %u categor%s", layout.slIndex, layout.ofCount, ({
-					[false] = "y",
-					[true] = "ies"
-				})[(layout.ofCount > 1)]))
+				message(string.format(t"its number is %u", layout.slIndex))
+				message(translation.caseStringByNum(t" of all %u categor%s", layout.ofCount, t"y", t"ies", t"ies"))
 			else
-				message("This layout has only 1 category")
+				message(t"This layout has only 1 category")
 			end
 		end
 		if #layout.properties > 0 then
-			message(string.format(", here is %u propert%s", #layout.properties, ({
-				[false] = "y",
-				[true] = "ies"
-			})[(#layout.properties > 1)]))
+			message(translation.caseStringByNum(t", here is %u propert%s", #layout.properties, t"y", t"ies", t"ies"))
 		else
-			message(", here is no properties")
+			message(t", here is no properties")
 		end
 		message(".")
 		if currentExtProperty then
-			message(string.format(" You are now in the %s.", layout.properties[layout.pIndex].extendedProperties.name))
+			message(string.format(t" You are now in the %s.", layout.properties[layout.pIndex].extendedProperties.name))
 		end
 		message:output()
 	else
-		(string.format("The %s layout  cannot provide any interraction here.", layout.name)):output()
+		(string.format(t"The %s layout  cannot provide any interraction here.", layout.name)):output()
 	end
 end
 
 function PropertiesRibbon.activateGotoMode()
 	local mode = extstate.gotoMode
 	if mode == nil then
-		("Goto mode activated."):output()
+		(t"Goto mode activated."):output()
 		extstate.gotoMode = 0
 	else
-		("Goto mode deactivated."):output()
+		(t"Goto mode deactivated."):output()
 		extstate.gotoMode = nil
 	end
 end

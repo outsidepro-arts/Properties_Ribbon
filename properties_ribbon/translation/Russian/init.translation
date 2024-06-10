@@ -1,0 +1,13 @@
+{
+	pluralForms = function(s, n, ...)
+		local variants = table.pack(...)
+		local variant = #variants
+		if #tostring(num) < 2 or tostring(num):sub(-2, -2) ~= "1" and num > 10 then
+			variant = (tonumber(tostring(num):sub(-1, -1)) == 1) and 1 or
+					((tonumber(tostring(num):sub(-1, -1)) >= 2 and tonumber(tostring(num):sub(-1, -1)) <= 4)) and 2 or
+					variant
+		end
+		return fstring:format(num, variants[variant])
+	end
+
+}
