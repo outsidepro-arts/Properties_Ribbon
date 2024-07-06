@@ -1227,7 +1227,7 @@ end
 
 function twicePressPerformProperty:set_adjust(direction)
 	local message = initOutputMessage()
-	local state =  config.getinteger("twicePressPerforms", 1)
+	local state = config.getinteger("twicePressPerforms", 1)
 	if state + direction > #self.states then
 		message("No more next property values.")
 	elseif state + direction < 1 then
@@ -1395,7 +1395,7 @@ function lvDivider:set_perform()
 	end
 end
 
-local obeyConfigSolo = configLayout.trackProperties:registerProperty{}
+local obeyConfigSolo = configLayout.trackProperties:registerProperty {}
 obeyConfigSolo.states = {
 	[true] = "enabled",
 	[false] = "disabled"
@@ -1423,7 +1423,7 @@ function obeyConfigSolo:set_perform()
 	return message
 end
 
-local exclusiveSolo = configLayout.trackProperties:registerProperty{}
+local exclusiveSolo = configLayout.trackProperties:registerProperty {}
 exclusiveSolo.states = obeyConfigSolo.states
 
 function exclusiveSolo:get()
@@ -1448,7 +1448,7 @@ function exclusiveSolo:set_perform()
 	return message
 end
 
-local exclusiveArm = configLayout.trackProperties:registerProperty{}
+local exclusiveArm = configLayout.trackProperties:registerProperty {}
 exclusiveArm.states = {
 	[true] = "enabled",
 	[false] = "disabled"
@@ -1500,6 +1500,34 @@ function donotUseSmallFolderStateProperty:set_perform()
 	local message = initOutputMessage()
 	local state = config.getboolean("donotUseSmallFolderState", false)
 	config.setboolean("donotUseSmallFolderState", nor(state))
+	message(self:get())
+	return message
+end
+
+-- Set up the step adjustment for FX properties foreverely or per loaded REAPER session
+local useForeverStepAdjustmentProperty = configLayout.fxLayout:registerProperty {}
+useForeverStepAdjustmentProperty.states = {
+	[true] = "enabled",
+	[false] = "disabled"
+}
+
+function useForeverStepAdjustmentProperty:get()
+	local message = initOutputMessage()
+	message:initType(
+	"Toggle this property on to set the step adjustment save foreverely for plug-ins. Toggle this property off to FX properties forget the step adjustment after REAPER closing.",
+		"Toggleable")
+	local state = config.getboolean("useForeverFXStepAdjustment", false)
+	message {
+		label = "Save the step adjustment per FX parameters foreverely",
+		value = self.states[state]
+	}
+	return message
+end
+
+function useForeverStepAdjustmentProperty:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("useForeverFXStepAdjustment", false)
+	config.setboolean("useForeverFXStepAdjustment", nor(state))
 	message(self:get())
 	return message
 end

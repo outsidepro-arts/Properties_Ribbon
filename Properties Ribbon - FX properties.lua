@@ -126,7 +126,11 @@ local function getStep(uniqueKey, notRelyConfig)
 end
 
 local function setStep(uniqueKey, value)
-	extstate._layout._forever["fx." .. uniqueKey .. ".parmStep"] = value
+	if config.getboolean("useForeverFXStepAdjustment", false) then
+		extstate._layout._forever["fx." .. uniqueKey .. ".parmStep"] = value
+	else
+		extstate._layout["fx." .. uniqueKey .. ".parmStep"] = value
+	end
 end
 
 local function getFindNearestConfig(uniqueKey, notRelyConfig)
