@@ -1505,7 +1505,7 @@ function donotUseSmallFolderStateProperty:set_perform()
 end
 
 -- Set up the step adjustment for FX properties foreverely or per loaded REAPER session
-local useForeverStepAdjustmentProperty = configLayout.fxLayout:registerProperty {}
+local useForeverStepAdjustmentProperty = configLayout.fxPropertiesConfig:registerProperty {}
 useForeverStepAdjustmentProperty.states = {
 	[true] = "enabled",
 	[false] = "disabled"
@@ -1514,7 +1514,7 @@ useForeverStepAdjustmentProperty.states = {
 function useForeverStepAdjustmentProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-	"Toggle this property on to set the step adjustment save foreverely for plug-ins. Toggle this property off to FX properties forget the step adjustment after REAPER closing.",
+		"Toggle this property on to set the step adjustment save foreverely for plug-ins. Toggle this property off to FX properties forget the step adjustment after REAPER closing.",
 		"Toggleable")
 	local state = config.getboolean("useForeverFXStepAdjustment", false)
 	message {
