@@ -2295,8 +2295,8 @@ function mixerVisibilityProperty:set_perform()
 	if istable(tracks) then
 		local visibleTracks, notvisibleTracks = 0, 0
 		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS") & 2
-			if state == 2 then
+			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER")
+			if state == 1 then
 				visibleTracks = visibleTracks + 1
 			else
 				notvisibleTracks = notvisibleTracks + 1
@@ -2355,8 +2355,8 @@ function tcpVisibilityProperty:set_perform()
 	if istable(tracks) then
 		local visibleTracks, notvisibleTracks = 0, 0
 		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS") & 2
-			if state == 2 then
+			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP")
+			if state == 1 then
 				visibleTracks = visibleTracks + 1
 			else
 				notvisibleTracks = notvisibleTracks + 1
@@ -2470,11 +2470,13 @@ function loudnessHoldMeterProperty:get()
 					if curChannel > 1 then
 						local channel = mode.channels[curChannel - 1] or mode.channels[#mode.channels - 1]
 						submessage(string.format("%s%s %s", channel.name and channel.name .. " " or "",
-							self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)], mode.id < 10 and "dB" or "LU"))
+							self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)],
+							mode.id < 10 and "dB" or "LU"))
 					else
 						for _, channel in ipairs(mode.channels) do
 							submessage(string.format("%s%s %s, ", channel.name and channel.name .. " " or "",
-								self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)], mode.id < 10 and "dB" or "LU"))
+								self.states[reaper.Track_GetPeakHoldDB(track, channel.id, false)],
+								mode.id < 10 and "dB" or "LU"))
 						end
 						-- Clearing off the extra coma chars
 						submessage.msg = submessage.msg:sub(1, -2)
