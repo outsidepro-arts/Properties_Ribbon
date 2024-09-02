@@ -83,26 +83,14 @@ capi.GetParamName(fxIndex, parmIndex)
 -- Exclude masks metatable
 local fxMaskList = fx_properties_macros.fxMaskList
 
-local pluginsFilenames = {}
 local function getPluginFilename(fxId)
-	-- The SWS authors set the own prefix on the  top of function name, so we cannot use capi metatable
-	-- These functions works slow, so we will cache plugin names
-	if not pluginsFilenames[fxId] then
-		pluginsFilenames[fxId] = {}
-		if context == 0 then
-			local retval, str = reaper.BR_TrackFX_GetFXModuleName(capi._contextObj[0], fxId)
-			-- SWS does not knows some FX chains, so we have to get at least something
-			if not retval then
-				retval, str = reaper.TrackFX_GetFXName(capi._contextObj[0], fxId)
-			end
-			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = retval, str
-		elseif context == 1 then
-			pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str = reaper.NF_TakeFX_GetFXModuleName(
-				reaper.GetMediaItemTake_Item(capi
-					._contextObj[1]), fxId)
-		end
+	local retval, buf = capi.GetNamedConfigParm(fxId, "fx_ident")
+	local fxPath
+	if retval then
+		fxPath = buf:split("<")[1]
+		fxPath = select(2, fxPath:match("(.+[\\//])(.+)"))
 	end
-	return pluginsFilenames[fxId].retval, pluginsFilenames[fxId].str
+	return retval, fxPath
 end
 
 local function makeUniqueKey(fxID, fxParm)
