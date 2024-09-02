@@ -346,6 +346,13 @@ if fxLayout.canProvide() then
 			if not fxPrefix:find("Instrument") then
 				fxPrefix = fxPrefix .. "FX "
 			end
+			do
+				local retval, buf = capi.GetNamedConfigParm(i + fxInaccuracy, "parallel")
+				if retval then
+					local parallelPrefix = tonumber(buf) >= 1 and " (parallel)" or ""
+					fxName = fxName .. parallelPrefix
+				end
+			end
 			fxName = fxName .. ({ [true] = "", [false] = " (bypassed)" })[capi.GetEnabled(i + fxInaccuracy)]
 			fxName = fxName .. ({ [false] = "", [true] = " (offline)" })[capi.GetOffline(i + fxInaccuracy)]
 			fxLayout:registerSublayout(sid, fxPrefix .. fxName)
