@@ -989,7 +989,7 @@ positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType(
-		"Perform this property to move selected items to edit cursor position so that left edge will be positioned here..")
+			"Perform this property to move selected items to edit cursor position so that left edge will be positioned here..")
 		message("Move to edit cursor by left edge")
 		return message
 	end,
@@ -1006,7 +1006,7 @@ positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message:initType(
-		"Perform this property to move selected items to edit cursor position so that right edge will be positioned here..")
+			"Perform this property to move selected items to edit cursor position so that right edge will be positioned here..")
 		message("Move to edit cursor by right edge")
 		return message
 	end,
@@ -1023,7 +1023,7 @@ positionProperty.extendedProperties:registerProperty {
 	end
 }
 
-positionProperty.extendedProperties:registerProperty{
+positionProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Move items by grid"
@@ -1478,7 +1478,7 @@ end
 
 fadeoutLenProperty.set_adjust = fadeinLenProperty.set_adjust
 fadeoutLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(fadeinLenProperty.extendedProperties
-.name)
+	.name)
 -- We have to make a hack: copy all extended properties from fade-in length but without first property
 -- Remember that really, extended properties start from 2 but not from 1: 1 is return back
 -- We will not use the iterators factory cuz the changed metatable will make the infinite cycle there
@@ -1581,7 +1581,7 @@ end
 
 fadeinAutoLenProperty.set_adjust = fadeinLenProperty.set_adjust
 fadeinAutoLenProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
-"Automatic fade length extended interraction")
+	"Automatic fade length extended interraction")
 
 fadeinAutoLenProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
@@ -1952,7 +1952,7 @@ end
 
 takeVolumeProperty.set_adjust = itemVolumeProperty.set_adjust
 takeVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(itemVolumeProperty.extendedProperties
-.name)
+	.name)
 takeVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	items,
 	{
@@ -2175,7 +2175,8 @@ if multiSelectionSupport then
 		end,
 		set_perform = function(self, parent)
 			if istable(items) then
-				local retval, answer = getUserInputs(string.format("Sequential Pan for takes of %u selected items", #items),
+				local retval, answer = getUserInputs(
+					string.format("Sequential Pan for takes of %u selected items", #items),
 					{
 						{
 							caption = "Pan value without direction:",
@@ -2185,10 +2186,10 @@ if multiSelectionSupport then
 						},
 						{
 							caption = "Directions pattern:",
-							defValue = "LR"
+							defValue = "Left Right"
 						}
 					},
-					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will bel aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right.)."
+					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will be aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right). Besides there Center or c can be used to set track to center."
 				)
 				if not retval then
 					return false, "Canceled"
@@ -2211,18 +2212,27 @@ if multiSelectionSupport then
 					return
 				end
 				if not answer[2]:lower():find("l") or not answer[2]:lower():find("r") then
-					msgBox("Error", "the direction pattern must contain at least one \"L\" and one \"R\".")
+					msgBox("Error",
+						'The direction pattern must contain at least one "Left" (or "l"), optional "Center" (or "c") and one "Right" (or "r").')
 					return
 				end
 				local dirs = {}
-				for char in answer[2]:lower():gmatch("[lr]") do
-					table.insert(dirs, char)
+				for char in answer[2]:lower():gmatch("%a+") do
+					if char:match("l") then
+						table.insert(dirs, "l")
+					elseif char:match("c") then
+						table.insert(dirs, "c")
+					elseif char:match("r") then
+						table.insert(dirs, "r")
+					end
 				end
 				local dirField = 1
 				for _, item in ipairs(items) do
 					local curPanValue = utils.percenttonum(panValue)
 					if dirs[dirField] == "l" then
 						curPanValue = -curPanValue
+					elseif dirs[dirField] == "c" then
+						curPanValue = 0
 					end
 					parent.setValue(item, curPanValue)
 					if dirField < #dirs then
@@ -2890,7 +2900,7 @@ function takePitchShifterProperty:set_adjust(direction)
 end
 
 takePitchShifterProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
-"Pitch shifter extended properties")
+	"Pitch shifter extended properties")
 
 takePitchShifterProperty.extendedProperties:registerProperty {
 	get = function(self, parent)

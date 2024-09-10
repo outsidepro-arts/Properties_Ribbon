@@ -696,7 +696,7 @@ if multiSelectionSupport then
 							defValue = "Left Right"
 						}
 					},
-					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will bel aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right.)."
+					"First field expects the pan value without any direction specify. Second field expects the direction pattern which will be aplied to selected tracks sequentially (LR means that every two tracks will be panned to left and right respectively, LLRR means that two tracks will be panned to left then two tracks to right). Besides there Center or c can be used to set track to center."
 				)
 				if not retval then
 					return false, "Canceled"
@@ -720,18 +720,26 @@ if multiSelectionSupport then
 				end
 				if not answer[2]:lower():find("l") or not answer[2]:lower():find("r") then
 					msgBox("Error",
-						'The direction pattern must contain at least one "Left" (or "l") and one "Right" (or "r").')
+						'The direction pattern must contain at least one "Left" (or "l"), optional "Center" (or "c") and one "Right" (or "r").')
 					return
 				end
 				local dirs = {}
-				for char in answer[2]:lower():gmatch("[lr]") do
-					table.insert(dirs, char)
+				for char in answer[2]:lower():gmatch("%a+") do
+					if char:match("l") then
+						table.insert(dirs, "l")
+					elseif char:match("c") then
+						table.insert(dirs, "c")
+					elseif char:match("r") then
+						table.insert(dirs, "r")
+					end
 				end
 				local dirField = 1
 				for _, track in ipairs(tracks) do
 					local curPanValue = utils.percenttonum(panValue)
 					if dirs[dirField] == "l" then
 						curPanValue = -curPanValue
+					elseif dirs[dirField] == "c" then
+						curPanValue = 0
 					end
 					reaper.SetMediaTrackInfo_Value(track, "D_PAN", curPanValue)
 					if dirField < #dirs then
