@@ -385,7 +385,7 @@ function representation.getFocusLikeOSARA(context, opTrack)
 				if reaper.TakeFX_GetCount(reaper.GetActiveTake(item)) > 0 then
 					local fxForm = {}
 					for i = 0, reaper.TakeFX_GetCount(reaper.GetActiveTake(item)) - 1 do
-						local retval, fxName = reaper.TakeFX_GetFXName(reaper.GetactiveTake(item), i, "")
+						local retval, fxName = reaper.TakeFX_GetFXName(reaper.GetActiveTake(item), i, "")
 						if retval then
 							if fxName:find(":") and fxName:find(": ") then
 								local startPos = fxName:find(":") + 2
