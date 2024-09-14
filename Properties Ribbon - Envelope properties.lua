@@ -9,7 +9,8 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 
 require "properties_ribbon"
 
-useMacros("envelope_properties")
+useMacros "envelope_properties"
+useMacros "tools"
 
 -- Preparing all needed configs which will be used not one time
 local multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
@@ -692,6 +693,11 @@ if points ~= nil then
 		return message
 	end
 
+	if not istable(points) then
+		if shapeProperty.getValue(points) ~= 5 then
+			goto skipExtendedPropertiesCreation
+		end
+	end
 	function tensionProperty:set_adjust(direction)
 		local message = initOutputMessage()
 		local adjustStep = config.getinteger("percentStep", 1)
@@ -735,27 +741,83 @@ if points ~= nil then
 		return message
 	end
 
-	function tensionProperty:set_perform()
-		local message = initOutputMessage()
-		if istable(points) then
-			message(string.format("Reset selected points to %s. ", self.states[0]))
-			for _, point in ipairs(points) do
-				if shapeProperty.getValue(point) == 5 then
-					self.setValue(point, 0.0)
+	tensionProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Tension interraction")
+
+	tensionProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+		points,
+		{
+			representation = setmetatable({},
+				{
+					__index = function(self, state)
+						return state == 0 and "Linear" or
+							string.format("%s%% to the %s",
+								state < 0 and -utils.numtopercent(state) or utils.numtopercent(state),
+								state > 0 and "next point" or "previous point")
+					end
+				}),
+			min = -1.0,
+			rootmean = 0.0,
+			max = 1.0,
+		}, {
+			[true] = "Set tension of selected points to %s. ",
+			[false] = "Set to %s. "
+		},
+		tensionProperty.setValue,
+		function(point)
+			return shapeProperty.getValue(point) == 5
+		end
+	))
+
+	tensionProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message "Type custom tension value"
+			message:initType("Perform this property to type custom Bezier tension value.")
+			return message
+		end,
+		set_perform = function(self, parent)
+			if istable(points) then
+				local retval, answer = getUserInputs(
+					string.format("Tension for %u selected %s envelope points", #points, name),
+					{
+						caption = "New tension value:",
+						defValue = string.format("%i%%", utils.numtopercent(parent.getValue(points[1])))
+					},
+					prepareUserData.percent.formatCaption)
+				if not retval then
+					return "Canceled"
+				end
+				for _, point in ipairs(points) do
+					local state = parent.getValue(point)
+					state = prepareUserData.percent.process(answer, state)
+					if state then
+						parent.setValue(point, state)
+					end
+				end
+				setUndoLabel(parent:get())
+				return true
+			else
+				local state = parent.getValue(points)
+				local retval, answer = getUserInputs(string.format("Bezier tension for %s of %s envelope",
+						getPointID(points):gsub("^%w", string.lower), name),
+					{
+						caption = "New tension value:",
+						defValue = string.format("%i%%", utils.numtopercent(state))
+					},
+					prepareUserData.percent.formatCaption)
+				if not retval then
+					return false
+				end
+				state = prepareUserData.percent.process(answer, state)
+				if state then
+					parent.setValue(points, state)
+					setUndoLabel(parent:get())
+					return true
 				end
 			end
-		else
-			if shapeProperty.getValue(points) == 5 then
-				message(string.format("Reset to %s. ", self.states[0]))
-				self.setValue(points, 0.0)
-			else
-				return string.format("This property is unavailable because the shape of this point is not %s.",
-					shapeProperty.states[5])
-			end
 		end
-		message(self:get())
-		return message
-	end
+	}
+	::skipExtendedPropertiesCreation::
 end
 
 
