@@ -53,7 +53,7 @@ function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc
 					return false, "This property is unavailable for this object"
 				end
 			end
-			return true, message
+			return true, message, true
 		end,
 		set_perform = function(self, parent)
 			local message = initOutputMessage()
@@ -72,7 +72,7 @@ function composeThreePositionProperty(obj, minRootMax, setMessages, setValueFunc
 					return false, "This property is unavailable for this object"
 				end
 			end
-			return true, message
+			return true, message, true
 		end
 	}
 	return t
