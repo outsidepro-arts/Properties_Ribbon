@@ -549,27 +549,36 @@ function PropertiesRibbon.proposeLayout(forced)
 	if context == -1 then
 		context = extstate.lastKnownContext or context
 	end
-	if context == 0 then
-		if reaper.IsTrackSelected(reaper.GetMasterTrack()) then
-			contextLayout = "Properties Ribbon - Master track properties"
-		else
-			if reaper.CountTracks(0) > 0 then
+	if (reaper.GetMasterTrackVisibility() & 1) == 1 then
+		contextLayout = "Properties Ribbon - Master track properties"
+	end
+	local contexts = {
+		[0] = function()
+			if reaper.GetSelectedTrack(0, 0) then
 				contextLayout = "Properties Ribbon - Track properties"
-			else
-				if (reaper.GetMasterTrackVisibility() & 1) == 1 then
-					contextLayout = "Properties Ribbon - Master track properties"
-				else
-					contextLayout = "Properties Ribbon - Track properties"
-				end
+				return true
+			end
+		end,
+		[1] = function()
+			if reaper.GetSelectedMediaItem(0, 0) then
+				contextLayout = "Properties Ribbon - Item properties"
+				return true
+			end
+		end,
+		[2] = function()
+			if reaper.GetSelectedEnvelope(0) then
+				contextLayout = "Properties Ribbon - Envelope properties"
+				return true
 			end
 		end
-	elseif context == 1 then
-		contextLayout = "Properties Ribbon - Item properties"
-	elseif context == 2 then
-		contextLayout = "Properties Ribbon - Envelope properties"
+	}
+	for i = context, 0, -1 do
+		if contexts[context]() then
+			break
+		end
 	end
-	if forced or curLayout == "masterTrackProperties" or curLayout == "trackProperties" or
-		curLayout == "itemAndTakeProperties" or curLayout == "envelopeProperties" then
+	if (forced and contextLayout ~= "") or (context ~= "" and curLayout == "masterTrackProperties" or curLayout == "trackProperties" or
+			curLayout == "itemAndTakeProperties" or curLayout == "envelopeProperties") then
 		return fixPath(contextLayout:join(".lua"))
 	end
 	return nil
@@ -828,16 +837,14 @@ end
 
 function PropertiesRibbon.initProposedLayout()
 	local proposedLayout = PropertiesRibbon.proposeLayout(true)
-	if proposedLayout then
-		speakLayout = true
-		layoutFile = proposedLayout
-		extstate.gotoMode = nil
-		currentExtProperty = nil
-	end
-	if layoutFile == nil or layoutFile == "" then
-		("Switch one action group first."):output()
+	if proposedLayout == nil or proposedLayout == "" then
+		("Navigate to any supported object first."):output()
 		return
 	end
+	speakLayout = true
+	layoutFile = proposedLayout
+	extstate.gotoMode = nil
+	currentExtProperty = nil
 	local lt = nil
 	PropertiesRibbon.presentLayout = function(newLayout)
 		lt = newLayout
