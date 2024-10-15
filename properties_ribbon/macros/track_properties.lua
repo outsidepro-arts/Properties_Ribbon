@@ -106,3 +106,26 @@ function track_properties_macros.getTrackID(track, shouldSilentColor)
 	end
 	return message:extract()
 end
+
+---# Wraper for cases where user has selected more than one tracks and layout title should present the tracks names (when object identification is off) #
+---@param trackObj track|track[]
+---@return string
+function track_properties_macros.getTrackIDForTitle(trackObj)
+	if istable(trackObj) then
+		local tracksIdentifiers = {}
+		for index, track in ipairs(trackObj) do
+			if index < 5 then
+				tracksIdentifiers[#tracksIdentifiers + 1] = track_properties_macros.getTrackID(track)
+			else
+				tracksIdentifiers[#tracksIdentifiers + 1] = string.format("%u tracks more", #trackObj - 4)
+				break
+			end
+		end
+		tracksIdentifiers[#tracksIdentifiers] = tracksIdentifiers[#tracksIdentifiers - 1]:join(" and ",
+			tracksIdentifiers[#tracksIdentifiers])
+		table.remove(tracksIdentifiers, #tracksIdentifiers - 1)
+		return table.concat(tracksIdentifiers, ", ")
+	else
+		return track_properties_macros.getTrackID(trackObj)
+	end
+end

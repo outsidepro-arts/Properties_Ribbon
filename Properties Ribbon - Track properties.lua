@@ -21,7 +21,23 @@ require "properties_ribbon"
 useMacros("track_properties")
 useMacros("tools")
 
+-- Preparing all needed configs which will be used not one time
+multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
+
+-- For comfort coding, we are making the tracks array as global
+tracks = track_properties_macros.getTracks(multiSelectionSupport)
+
+-- These redirections made especially to not rewrite many code
+-- We have to define the track reporting by configuration. This function has contained in properties macros.
+local getTrackID = track_properties_macros.getTrackID
+
 local parentLayout = PropertiesRibbon.initLayout("Track properties")
+
+-- We have to change the name without patching the section value, so we will change this after layout initializing
+if config.getboolean("objectsIdentificationWhenNavigating", true) == false then
+	parentLayout.name = parentLayout.name:join(" for ", track_properties_macros.getTrackIDForTitle(tracks))
+end
+
 
 -- Define the tracks undo context
 parentLayout.undoContext = undo.contexts.tracks
@@ -40,15 +56,7 @@ parentLayout:registerSublayout("recordingLayout", "Recording")
 -- Metering information properties
 parentLayout:registerSublayout("meteringLayout", "Metering")
 
--- Preparing all needed configs which will be used not one time
-multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
--- For comfort coding, we are making the tracks array as global
-tracks = track_properties_macros.getTracks(multiSelectionSupport)
-
--- These redirections made especially to not rewrite many code
--- We have to define the track reporting by configuration. This function has contained in properties macros.
-getTrackID = track_properties_macros.getTrackID
 
 -- Default messages set for threeposition setters
 tpMessages = {

@@ -398,9 +398,10 @@ function PropertiesRibbon.initLayout(str)
 		-- slName (string) - The sub-name of the sublayout which will be reported in main class format name
 		registerSublayout = function(self, slID, slName)
 			local parentName = self.name
+			local parentSection = self.section
 			self[slID] = setmetatable({
 				subname = slName,
-				section = string.format("%s.%s", utils.removeSpaces(parentName), slID),
+				section = string.format("%s.%s", parentSection, slID),
 				properties = setmetatable({}, {
 					__index = function(t, key)
 						self.pIndex = #t

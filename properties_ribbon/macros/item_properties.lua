@@ -105,6 +105,31 @@ function item_properties_macros.getTakeID(item, shouldSilentColor)
 	return message:extract()
 end
 
+---# Wraper for cases where user has selected more than one items and layout title should present the selected items names (when object identification is off) #
+---@param itemObj item | item[]
+---@return string
+function item_properties_macros.getItemAndTakeIDForTitle(itemObj)
+	if istable(itemObj) then
+		local itemsIdentifiers = {}
+		for index, item in ipairs(itemObj) do
+			if index < 5 then
+				itemsIdentifiers[#itemsIdentifiers + 1] = string.format("%s of %s",
+					item_properties_macros.getTakeID(item), item_properties_macros.getItemID(item, true))
+			else
+				itemsIdentifiers[#itemsIdentifiers + 1] = string.format("%u items more", #itemObj - 4)
+				break
+			end
+		end
+		itemsIdentifiers[#itemsIdentifiers] = itemsIdentifiers[#itemsIdentifiers - 1]:join(" and ",
+			itemsIdentifiers[#itemsIdentifiers])
+		table.remove(itemsIdentifiers, #itemsIdentifiers - 1)
+		return table.concat(itemsIdentifiers, ", ")
+	else
+		return string.format("%s of %s",
+			item_properties_macros.getTakeID(itemObj), item_properties_macros.getItemID(itemObj, true))
+	end
+end
+
 ---Retrieves the item from selected items which currently positiones at the play cursor's position
 ---@param items item[] | item the result from function getItems
 ---@return item

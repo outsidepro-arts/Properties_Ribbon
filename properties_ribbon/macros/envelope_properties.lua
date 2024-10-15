@@ -62,3 +62,24 @@ function envelope_properties_macros.getPointID(point, shouldNotReturnPrefix)
 		end
 	end
 end
+
+function envelope_properties_macros.getPointIDForTitle(pointObj)
+	if istable(pointObj) then
+		local pointsIdentifiers = {}
+		for index, point in ipairs(pointObj) do
+			if index < 5 then
+				pointsIdentifiers[#pointsIdentifiers + 1] = envelope_properties_macros.getPointID(point,
+					index > 1 and true)
+			else
+				pointsIdentifiers[#pointsIdentifiers + 1] = string.format("%u points more", #pointObj - 4)
+				break
+			end
+		end
+		pointsIdentifiers[#pointsIdentifiers] = pointsIdentifiers[#pointsIdentifiers - 1]:join(" and ",
+			pointsIdentifiers[#pointsIdentifiers])
+		table.remove(pointsIdentifiers, #pointsIdentifiers - 1)
+		return table.concat(pointsIdentifiers, ", ")
+	else
+		return envelope_properties_macros.getPointID(pointObj) or ""
+	end
+end

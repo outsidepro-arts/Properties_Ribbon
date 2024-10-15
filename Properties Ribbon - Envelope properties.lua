@@ -142,7 +142,14 @@ do
 	end
 end
 
+
 local envelopePointsLayout = PropertiesRibbon.initLayout(string.format("%s envelope points properties%s", name, fxName))
+
+-- We have to change the name without patching the section value, so we will change this after layout initializing
+if config.getboolean("objectsIdentificationWhenNavigating", true) == false and points then
+	envelopePointsLayout.name = envelopePointsLayout.name:join(" for ",
+		envelope_properties_macros.getPointIDForTitle(points))
+end
 
 envelopePointsLayout.undoContext = undo.contexts.any
 

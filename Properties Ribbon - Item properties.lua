@@ -120,7 +120,13 @@ local pos_globalToRelative = item_properties_macros.pos_globalToRelative
 
 
 -- global pseudoclass initialization
+
 local parentLayout = PropertiesRibbon.initLayout("Item and take properties")
+
+-- We have to change the name without patching the section value, so we will change this after layout initializing
+if config.getboolean("objectsIdentificationWhenNavigating", true) == false then
+	parentLayout.name = parentLayout.name:join(" for ", item_properties_macros.getItemAndTakeIDForTitle(items))
+end
 
 parentLayout.undoContext = undo.contexts.items
 
