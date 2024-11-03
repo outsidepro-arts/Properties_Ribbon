@@ -1,5 +1,5 @@
 {
-	"lua.targetVersion": "5.3",
+	"lua.targetVersion": "5.4",
 	"Lua.diagnostics.globals": [
 		"reaper"
 	],
