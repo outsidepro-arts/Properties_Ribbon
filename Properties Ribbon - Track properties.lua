@@ -34,7 +34,7 @@ local getTrackID = track_properties_macros.getTrackID
 local parentLayout = PropertiesRibbon.initLayout("Track properties")
 
 -- We have to change the name without patching the section value, so we will change this after layout initializing
-if config.getboolean("objectsIdentificationWhenNavigating", true) == false then
+if config.getboolean("objectsIdentificationWhenNavigating", true) == false and tracks then
 	parentLayout.name = parentLayout.name:join(" for ", track_properties_macros.getTrackIDForTitle(tracks))
 end
 
