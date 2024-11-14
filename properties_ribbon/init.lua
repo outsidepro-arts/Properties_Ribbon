@@ -683,9 +683,23 @@ function useMacros(macrosName)
 	return false
 end
 
-function beginUndoBlock()
+function beginUndoBlock(basedMessage)
 	if layout.undoContext then
+		if basedMessage.label and extstate.lastUndoProperty == utils.makeKeySequence(layout.section, layout.pIndex) then
+			return
+		end
 		reaper.Undo_BeginBlock()
+	end
+end
+
+function endUndoBlock(basedMessage)
+	if layout.undoContext then
+		if basedMessage.label and extstate.lastUndoProperty == utils.makeKeySequence(layout.section, layout.pIndex) then
+			reaper.Undo_OnStateChange(basedMessage:extract(0, false))
+			return
+		end
+		reaper.Undo_EndBlock(basedMessage:extract(0, false), layout.undoContext)
+		extstate.lastUndoProperty = utils.makeKeySequence(layout.section, layout.pIndex)
 	end
 end
 
@@ -1353,7 +1367,6 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			PropertiesRibbon.ajustProperty(actions.set.perform)
 		end
 	else
-		::output::
 		message:output(({
 			[true] = 0,
 			[false] = 1
@@ -1383,19 +1396,18 @@ function PropertiesRibbon.ajustProperty(action)
 				return
 			end
 			if layout.properties[layout.pIndex][string.format("set_%s", action.value)] then
-				beginUndoBlock()
+				beginUndoBlock(layout.properties[layout.pIndex]:get())
 				msg, opt_once = layout.properties[layout.pIndex][string.format("set_%s", action.value)](
 					layout.properties[layout.pIndex],
 					action.direction)
 				opt_once = layout.properties[layout.pIndex].performableOnce and opt_once
 				if layout.undoContext then
 					if msg then
-						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
+						endUndoBlock(msg)
 					elseif not msg and g_undoState then
-						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
+						endUndoBlock(g_undoState)
 					else
-						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout
-							.undoContext)
+						endUndoBlock(layout.properties[layout.pIndex]:get())
 					end
 				end
 				if config.getboolean("allowLayoutsrestorePrev", true) and opt_once == true then
@@ -1411,7 +1423,8 @@ function PropertiesRibbon.ajustProperty(action)
 			local retval, premsg, getShouldReported
 			if layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty][string.format("set_%s",
 					action.value)] then
-				beginUndoBlock()
+				beginUndoBlock(layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty]:get(
+					layout.properties[layout.pIndex]))
 				retval, premsg, getShouldReported =
 					layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty]
 					[string.format("set_%s",
@@ -1420,10 +1433,9 @@ function PropertiesRibbon.ajustProperty(action)
 						layout.properties[layout.pIndex], action.direction)
 				if layout.undoContext then
 					if premsg then
-						reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
+						endUndoBlock(premsg)
 					else
-						reaper.Undo_EndBlock(g_undoState or layout.properties[layout.pIndex]:get():extract(0, false),
-							layout.undoContext)
+						endUndoBlock(g_undoState or layout.properties[layout.pIndex]:get())
 					end
 				end
 			else
