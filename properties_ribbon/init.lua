@@ -109,6 +109,9 @@ undo = {
 -- REAPER hack to prevent useless undo points creation
 reaper.defer(function() end)
 
+-- Set script action options to avoid ReaScript tasks control window appear
+reaper.set_action_options(2)
+
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
 	if reaper.ShowMessageBox(
