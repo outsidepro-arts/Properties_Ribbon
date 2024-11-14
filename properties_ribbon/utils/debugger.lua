@@ -27,7 +27,7 @@ function debugger.output(...)
 	local args = {}
 	-- Forcedly converting all arguments to string
 	for _, arg in ipairs { ... } do
-		table.insert(args, tostring(arg))
+		table.insert(args, arg ~= nil and tostring(arg) or "nil")
 	end
 	msgToConsole(string.format("%s\n", table.concat(args, '\t')))
 end
