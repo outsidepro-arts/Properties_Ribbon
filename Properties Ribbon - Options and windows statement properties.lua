@@ -46,7 +46,7 @@ local function setWindow(self, action)
 	states = { [0] = "closed", [1] = "opened" }
 	local state = nor(self.getValue())
 	self.setValue(state)
-	local label = self:get():extract(false)
+	local label = self:get():extract(0, false)
 	message(string.format("%s has been %s", label:match("^%w+%s(.+)"), states[self.getValue()]))
 	if self.getValue() == 0 then
 		return message
@@ -72,7 +72,8 @@ local mixerProperty = composeExtendedSwitcherProperty(
 	usualAreaStates,
 	40078,
 	"Mixer %s",
-	{ "Toggle this property to show or hide the mixer area. Please note: when the mixer area is hidden, the docker property is not available.",
+	{
+		"Toggle this property to show or hide the mixer area. Please note: when the mixer area is hidden, the docker property is not available.",
 		"toggleable" }
 )
 parentLayout.areas:registerProperty(mixerProperty)
@@ -203,7 +204,8 @@ parentLayout.options:registerProperty(
 		usualOptStates,
 		40070,
 		nil,
-		{ "Toggle this property to switch the movement an envelope points with items on these position when they are coppied, cutted or moved.",
+		{
+			"Toggle this property to switch the movement an envelope points with items on these position when they are coppied, cutted or moved.",
 			"Toggleable" }
 	)
 )
@@ -222,9 +224,9 @@ parentLayout.options:registerProperty(
 local rippleSwitcherProperty = {}
 parentLayout.options:registerProperty(rippleSwitcherProperty)
 rippleSwitcherProperty.states = {
-	{ cmd = 40309, label = "off"},
-	{cmd = 40310, label = "per track"},
-	{ cmd = 40311, label = "per all tracks"}
+	{ cmd = 40309, label = "off" },
+	{ cmd = 40310, label = "per track" },
+	{ cmd = 40311, label = "per all tracks" }
 }
 
 function rippleSwitcherProperty.getValue()
@@ -241,8 +243,8 @@ function rippleSwitcherProperty.setValue(index)
 end
 
 function rippleSwitcherProperty:get()
-	local message  = initOutputMessage()
-	message{label = "Ripple editing", value = self.states[self.getValue()].label}
+	local message = initOutputMessage()
+	message { label = "Ripple editing", value = self.states[self.getValue()].label }
 	message:initType("Adjust this property to choose the needed ripple editing mode.")
 	return message
 end
@@ -250,12 +252,12 @@ end
 function rippleSwitcherProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local state = self.getValue()
-	if state+direction > #self.states then
+	if state + direction > #self.states then
 		message "No more next property values."
-	elseif state+direction < 1 then
+	elseif state + direction < 1 then
 		message "No more previous property values."
 	else
-		self.setValue(state+direction)
+		self.setValue(state + direction)
 	end
 	message(self:get())
 	return message
@@ -277,7 +279,8 @@ parentLayout.options:registerProperty(
 		usualOptStates,
 		40239,
 		nil,
-		{ "Toggle this property to switch the REAPER window foreground state. When this option is on, the REAPER window will be allways on top.",
+		{
+			"Toggle this property to switch the REAPER window foreground state. When this option is on, the REAPER window will be allways on top.",
 			"Toggleable" }
 	)
 )
@@ -288,7 +291,8 @@ parentLayout.options:registerProperty(
 		usualOptStates,
 		40346,
 		nil,
-		{ "Toggle this property to switch the REAPER window screen fullness state. When this property is on, the window will be filled full desktop screen.",
+		{
+			"Toggle this property to switch the REAPER window screen fullness state. When this property is on, the window will be filled full desktop screen.",
 			"Toggleable" }
 	)
 )
