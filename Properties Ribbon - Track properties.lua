@@ -732,7 +732,7 @@ if multiSelectionSupport then
 					return
 				end
 				local dirs = {}
-				for char in answer[2]:lower():gmatch("%a+") do
+				for _, char in answer[2]:lower():sequentchar() do
 					if char:match("l") then
 						table.insert(dirs, "l")
 					elseif char:match("c") then
