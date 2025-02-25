@@ -75,6 +75,19 @@ function osaraParamsProperty:set_perform()
 	end
 end
 
+routingProperty = parentLayout.managementLayout:registerProperty {}
+
+function routingProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to view the routing and input/output options for master track")
+	message { objectId = "Master ", label = "Routing and inputs or outputs" }
+	return message
+end
+
+function routingProperty:set_perform()
+	reaper.Main_OnCommand(42235, 0) -- Track: View routing and I/O for master track
+end
+
 -- volume methods
 local volumeProperty = parentLayout.playbackLayout:registerProperty {}
 
@@ -782,7 +795,8 @@ loudnessHoldMeterProperty.extendedProperties:registerProperty {
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message "Reset the peak values"
-		message:initType("Perform this property to reset the peak values. Adjust this property to use channels adjustment like you're in parent property.")
+		message:initType(
+			"Perform this property to reset the peak values. Adjust this property to use channels adjustment like you're in parent property.")
 		return message
 	end,
 	set_adjust = function(self, parent, direction)
