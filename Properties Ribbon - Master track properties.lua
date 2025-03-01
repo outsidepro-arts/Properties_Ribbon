@@ -75,12 +75,12 @@ function osaraParamsProperty:set_perform()
 	end
 end
 
-routingProperty = parentLayout.managementLayout:registerProperty {}
+local routingProperty = parentLayout.managementLayout:registerProperty {}
 
 function routingProperty:get()
 	local message = initOutputMessage()
 	message:initType("Perform this property to view the routing and input/output options for master track")
-	message { objectId = "Master ", label = "Routing and inputs or outputs" }
+	message { objectId = "Master", label = "Routing and inputs or outputs" }
 	return message
 end
 
