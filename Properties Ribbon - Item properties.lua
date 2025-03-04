@@ -749,12 +749,14 @@ function itemSnapOffsetProperty:get()
 	message:initType("Adjust this property to set the desired snap offset time.")
 	if multiSelectionSupport == true then
 		message:addType(
-			" If the group of items has selected, the relative depending on previous value will be set for each selected item."
+			" This property does not supports the group of selected items."
 			, 1)
 	end
 	message:addType(" Perform this property to remove snap offset time.", 1)
 	message { label = "Snap offset" }
 	if istable(items) then
+		message:addType(" Currently this property is unavailable because a few items are selected.", 1)
+		message:changeType("Unavailable", 2)
 		message(composeMultipleItemMessage(self.getValue, representation.timesec))
 	else
 		local state = self.getValue(items)
@@ -763,23 +765,13 @@ function itemSnapOffsetProperty:get()
 	return message
 end
 
-function itemSnapOffsetProperty:set_adjust(direction)
-	local message = initOutputMessage()
-	local ajustingValue = config.getinteger("timeStep", 0.001)
-	if direction == actions.set.decrease.direction then
-		ajustingValue = -ajustingValue
-	end
-	if istable(items) then
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if (state + ajustingValue) >= 0 then
-				state = state + ajustingValue
-			else
-				state = 0.000
-			end
-			self.setValue(items[k], state)
+if not istable(items) then
+	function itemSnapOffsetProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local ajustingValue = config.getinteger("timeStep", 0.001)
+		if direction == actions.set.decrease.direction then
+			ajustingValue = -ajustingValue
 		end
-	else
 		local state = self.getValue(items)
 		if (state + ajustingValue) >= 0.000 then
 			state = state + ajustingValue
@@ -788,23 +780,40 @@ function itemSnapOffsetProperty:set_adjust(direction)
 			message("Minimum snap offset time. ")
 		end
 		self.setValue(items, state)
+		message(self:get())
+		return message
 	end
-	message(self:get())
-	return message
-end
 
-function itemSnapOffsetProperty:set_perform()
-	local message = initOutputMessage()
-	if istable(items) then
-		message("Remove snap offset for selected items. ")
-		for _, item in ipairs(items) do
-			self.setValue(item, 0.000)
+	itemSnapOffsetProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+		"Item snap offset extended interraction")
+
+
+	itemSnapOffsetProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message:initType("Perform this property to set the snap offset time to edit cursor..")
+			message("Set snap offset to cursor")
+			return message
+		end,
+		set_perform = function(self, parent)
+			reaper.Main_OnCommand(40541, 0) -- Item: Set snap offset to cursor
+			return true, "Set snap offset", true
 		end
-	else
-		self.setValue(items, 0.000)
-	end
-	message(self:get())
-	return message
+	}
+	itemSnapOffsetProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message:initType("Perform this property to remove snap offset time.")
+			message("Remove snap offset time")
+			return message
+		end,
+		set_perform = function(self, parent)
+			reaper.SetMediaItemInfo_Value(items, "D_SNAPOFFSET", 0.000)
+			local message = initOutputMessage()
+			message(self:get())
+			return true, message, true
+		end
+	}
 end
 
 -- Item group methods
