@@ -3182,6 +3182,117 @@ function takePitchShifterModeProperty:set_adjust(direction)
 	return message
 end
 
+local takeStretchModeProperty = parentLayout.takeLayout:registerProperty {}
+takeStretchModeProperty.states = {
+	[0] = "Project default",
+	[1] = "Balanced",
+	[2] = "Tonal optimized",
+	[4] = "Transient optimized",
+	[5] = "No pre-echo reduction"
+}
+
+function takeStretchModeProperty.getValue(item)
+	return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_STRETCHFLAGS")
+end
+
+function takeStretchModeProperty.setValue(item, value)
+	reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "I_STRETCHFLAGS", value)
+end
+
+function takeStretchModeProperty:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Adjust this property to choose the needed stretch mode.")
+	if multiSelectionSupport == true then
+		message:addType(
+			string.format(
+				' If the group of items has been selected, the value will enumerate only if takes of selected items have the same value. Otherwise, the stretch mode state will be set to "%s", then will enumerate this.'
+				, self.states[0]), 1)
+	end
+	message:addType(string.format(" Perform this property to reset the mode to %s.", self.states[0]), 1)
+	message { label = "Stretch mode" }
+	if istable(items) then
+		message(composeMultipleTakeMessage(self.getValue, self.states))
+	else
+		local state = self.getValue(items)
+		message { objectId = string.format("%s %s", getItemID(items), getTakeID(items)), value = self.states[state] }
+	end
+	return message
+end
+
+function takeStretchModeProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local ajustingValue = direction
+	if istable(items) then
+		local state
+		local lastState = self.getValue(items[1])
+		for k = 1, #items do
+			local state = self.getValue(items[k])
+			if lastState ~= state then
+				ajustingValue = 0
+				break
+			end
+			lastState = state
+		end
+		state = self.getValue(items[1])
+		if ajustingValue ~= 0 then
+			local maybeState = nil
+			for i = (state + direction), direction == actions.set.increase.direction and #self.states or 0, direction do
+				if self.states[i] then
+					maybeState = i
+					break
+				end
+			end
+			if maybeState then
+				state = maybeState
+			else
+				message(string.format("No more %s property values.",
+					direction == actions.set.increase.direction and "next" or "previous"))
+			end
+		else
+			state = 0
+		end
+		message(string.format("Set selected items active takes stretch mode to %s.", self.states[state]))
+		for k = 1, #items do
+			self.setValue(items[k], state)
+		end
+	else
+		local state = self.getValue(items)
+		local maybeState = nil
+		for i = (state + direction), direction == actions.set.increase.direction and #self.states or 0, direction do
+			if self.states[i] then
+				maybeState = i
+				break
+			end
+		end
+		if maybeState then
+			state = maybeState
+		else
+			message(string.format("No more %s property values.",
+				direction == actions.set.increase.direction and "next" or "previous"))
+		end
+		self.setValue(items, state)
+	end
+
+	message(self:get())
+	return message
+end
+
+function takeStretchModeProperty:set_perform()
+	local message = initOutputMessage()
+	if istable(items) then
+		message(string.format("Set stretch mode for takes of selected items to %s", self.states[0]))
+		for k = 1, #items do
+			self.setValue(items[k], 0)
+		end
+	else
+		message(string.format("Reset to %s.", self.states[0]))
+		self.setValue(items, 0)
+	end
+	message(self:get())
+	return message
+end
+
 parentLayout.defaultSublayout = "itemLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)
