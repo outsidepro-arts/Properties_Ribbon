@@ -3,7 +3,7 @@ This file is part of script complex Properties Ribbon
 Copyright (c) 2020-2024 outsidepro-arts & other contributors
 License: MIT License
 ]]
-   --
+--
 
 require "utils.conversion"
 require "utils.iters"
@@ -216,8 +216,8 @@ function utils.generateID(minLength, maxLength)
 	for i = 1, math.random(minLength, maxLength) do
 		local charIndex = math.random(#base)
 		result = result ..
-		({ [1] = base:sub(charIndex, charIndex):lower(), [2] = base:sub(charIndex, charIndex):upper() })
-		[math.random(1, 2)]
+			({ [1] = base:sub(charIndex, charIndex):lower(), [2] = base:sub(charIndex, charIndex):upper() })
+			[math.random(1, 2)]
 	end
 	return result
 end
@@ -298,6 +298,39 @@ function utils.escapeLuaPatternChars(s)
 		ns = ns:join(prohibitedChars[char])
 	end
 	return ns
+end
+
+function utils.getMostFrequent(arr, getFunc)
+	local counts = {}
+	local firstOccurrence = {}
+	for i, value in ipairs(arr) do
+		value = getFunc and getFunc(value)
+		if counts[value] == nil then
+			counts[value] = 1
+			firstOccurrence[value] = i
+		else
+			counts[value] = counts[value] + 1
+		end
+	end
+	local maxCount = -math.huge
+	local candidates = {}
+	for key, count in pairs(counts) do
+		if count > maxCount then
+			maxCount = count
+			candidates = { key }
+		elseif count == maxCount then
+			table.insert(candidates, key)
+		end
+	end
+	local result
+	local min_index = math.huge
+	for _, candidate in ipairs(candidates) do
+		if firstOccurrence[candidate] < min_index then
+			min_index = firstOccurrence[candidate]
+			result = candidate
+		end
+	end
+	return result
 end
 
 return utils
