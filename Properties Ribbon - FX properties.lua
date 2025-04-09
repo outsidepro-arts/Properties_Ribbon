@@ -45,10 +45,22 @@ local stepsList = fx_properties_macros.stepsList
 
 -- This table contains known plugins names or its masks which work assynchronously. When we know that one of known plugins works that, we have to decelerate the set parameter values to let the plugin to apply a new value. We have not to do this at other cases to not make our code too many slow.
 local knownAssyncPlugins = {
-	{ name = "M%u%w+[.].+",    delay = 6 },
-	{ name = "Pulsar",         delay = 2 },
-	{ name = "Replika",        delay = 5 },
-	{ name = "SynthMasterOne", delay = 10 }
+	{ name = "M%u%w+[.].+",               delay = 6 },
+	{ name = "Pulsar",                    delay = 2 },
+	{ name = "Replika",                   delay = 5 },
+	{ name = "SynthMasterOne",            delay = 10 },
+	-- Plug-ins of Robbert van der Helm
+	-- https://github.com/robbert-vdh/nih-plug/tree/master/plugins/
+	-- Unfortunately these plug-ins have no prefix to differentiate them.
+	{ name = "Buffr Glitch%.vst3",        delay = 10 },
+	{ name = "Crisp%.vst3",               delay = 10 },
+	{ name = "Crossover%.vst3",           delay = 10 },
+	{ name = "Diopser%.vst3",             delay = 10 },
+	{ name = "Loudness War Winner%.vst3", delay = 10 },
+	{ name = "Puberty Simulator%.vst3",   delay = 10 },
+	{ name = "Safety Limiter%.vst3",      delay = 10 },
+	{ name = "Soft Vacuum%.vst3",         delay = 10 },
+	{ name = "Spectral Compressor%.vst3", delay = 10 },
 }
 
 
