@@ -544,6 +544,11 @@ volumeProperty.extendedProperties:registerProperty({
 	end
 })
 
+volumeProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(tracks,
+	"VOLENV2,VOLENV,MUTEENV",
+	function(track, envName)
+		return reaper.GetMediaTrackInfo_Value(track, string.format("P_ENV:<%s", envName))
+	end))
 
 local panProperty = {}
 parentLayout.playbackLayout:registerProperty(panProperty)
@@ -764,6 +769,11 @@ if multiSelectionSupport then
 	}
 end
 
+panProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(tracks, "PANENV2,PANENV",
+	function(track, envName)
+		return reaper.GetMediaTrackInfo_Value(track, string.format("P_ENV:<%s", envName))
+	end))
+
 local widthProperty = {}
 parentLayout.playbackLayout:registerProperty(widthProperty)
 
@@ -888,6 +898,11 @@ widthProperty.extendedProperties:registerProperty({
 		return true
 	end
 })
+
+widthProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(tracks, "WIDTHENV2,WIDTHENV",
+	function(track, envName)
+		return reaper.GetMediaTrackInfo_Value(track, string.format("P_ENV:<%s", envName))
+	end))
 
 local muteProperty = {}
 parentLayout.playbackLayout:registerProperty(muteProperty)

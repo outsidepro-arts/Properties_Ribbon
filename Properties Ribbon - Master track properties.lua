@@ -161,6 +161,11 @@ volumeProperty.extendedProperties:registerProperty {
 	end
 }
 
+volumeProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(master, "VOLENV2,VOLENV",
+	function(_, envName)
+		return reaper.GetMediaTrackInfo_Value(master, string.format("P_ENV:<%s", envName))
+	end))
+
 -- pan methods
 local panProperty = parentLayout.playbackLayout:registerProperty {}
 
@@ -235,6 +240,11 @@ panProperty.extendedProperties:registerProperty {
 	end
 }
 
+panProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(master, "PANENV2,PANENV",
+	function(_, envName)
+		return reaper.GetMediaTrackInfo_Value(master, string.format("P_ENV:<%s", envName))
+	end))
+
 -- Width methods
 local widthProperty = parentLayout.playbackLayout:registerProperty {}
 
@@ -307,6 +317,11 @@ widthProperty.extendedProperties:registerProperty {
 		return false
 	end
 }
+
+widthProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(master, "WIDTHENV2,WIDTHENV",
+	function(_, envName)
+		return reaper.GetMediaTrackInfo_Value(master, string.format("P_ENV:<%s", envName))
+	end))
 
 -- Mute methods
 local muteProperty = parentLayout.playbackLayout:registerProperty {}
@@ -445,13 +460,20 @@ function playrateProperty:set_adjust(direction)
 	return message
 end
 
-function playrateProperty:set_perform()
-	local message = initOutputMessage()
-	message("Reset, ")
-	reaper.Main_OnCommand(40521, 0)
-	message(self:get())
-	return message
-end
+playrateProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Play rate extended interraction")
+
+playrateProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message:initType("Perform this property to reset the master play rate to original value")
+		message("Reset the play rate")
+		return message
+	end,
+	set_perform = function()
+		reaper.Main_OnCommand(40521, 0)
+		return true, "Reset", true
+	end,
+}
 
 -- Preserve pitch when playrate changes methods
 -- It's more easy than previous method
@@ -542,6 +564,10 @@ tempoProperty.extendedProperties:registerProperty {
 	end
 }
 
+tempoProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaCommand(master, "Tempo map",
+	function(_, envName)
+		return reaper.GetTrackEnvelopeByName(master, envName)
+	end, 41046))
 
 -- Master visibility methods
 -- TCP visibility

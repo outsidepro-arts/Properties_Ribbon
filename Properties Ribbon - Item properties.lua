@@ -2043,6 +2043,10 @@ takeVolumeProperty.extendedProperties:registerProperty {
 	end
 }
 
+takeVolumeProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaCommand(items, "Volume,Mute",
+	function(item, envName)
+		return reaper.GetTakeEnvelopeByName(reaper.GetActiveTake(item), string.format("%s", envName))
+	end, { 40693, 40695 }))
 
 -- Take pan methods
 local takePanProperty = {}
@@ -2263,6 +2267,12 @@ if multiSelectionSupport then
 		end
 	}
 end
+
+takePanProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty
+	.viaCommand(items, "Pan",
+		function(item, envName)
+			return reaper.GetTakeEnvelopeByName(reaper.GetActiveTake(item), envName)
+		end, 40694))
 
 -- Take phase methods
 local takePhaseProperty = {}
@@ -2773,6 +2783,11 @@ takePitchProperty.extendedProperties:registerProperty {
 		return true, "", true
 	end
 }
+
+takePitchProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaCommand(items, "Pitch",
+	function(item, envName)
+		return reaper.GetTakeEnvelopeByName(reaper.GetActiveTake(item), envName)
+	end, 41612))
 
 -- Pitch shifter methods
 local takePitchShifterProperty = {}
