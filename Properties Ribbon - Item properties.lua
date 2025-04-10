@@ -3215,6 +3215,26 @@ function takeStretchModeProperty:set_perform()
 	return message
 end
 
+local contextMenuProperty = parentLayout.managementLayout:registerProperty {}
+
+function contextMenuProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to open the context menu for selected items.")
+	if istable(items) then
+		message(string.format("Context menu for %u selected items", #items))
+	else
+		message {
+			objectId = getItemID(items),
+			label = "Context menu"
+		}
+	end
+	return message
+end
+
+function contextMenuProperty:set_perform()
+	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_CONTEXTMENU1"), 0)
+end
+
 parentLayout.defaultSublayout = "itemLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)
