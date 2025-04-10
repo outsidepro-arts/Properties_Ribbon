@@ -899,6 +899,19 @@ loudnessHoldMeterProperty.extendedProperties:registerProperty {
 	end
 }
 
+local contextMenuProperty = parentLayout.managementLayout:registerProperty {}
+
+function contextMenuProperty:get()
+	local message = initOutputMessage()
+	message:initType("Perform this property to open the context menu for master track.")
+	message { objectId = "Master", label = "Outputs Context menu" }
+	return message
+end
+
+function contextMenuProperty:set_perform()
+	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_CONTEXTMENU3"), 0)
+end
+
 parentLayout.defaultSublayout = "playbackLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)
