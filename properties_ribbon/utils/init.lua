@@ -300,6 +300,10 @@ function utils.escapeLuaPatternChars(s)
 	return ns
 end
 
+---Returns the most frequent numerical value of the array
+---@param arr [number]|[any] either array of numbers or array of objects to check
+---@param getFunc? function(value) If a passed array contains not number types, this function should process every item in this array.
+---@return number The most frequent value in the passed array.
 function utils.getMostFrequent(arr, getFunc)
 	local counts = {}
 	local firstOccurrence = {}
@@ -331,6 +335,23 @@ function utils.getMostFrequent(arr, getFunc)
 		end
 	end
 	return result
+end
+
+---Returns true if all values in the array are the same
+---@param arr [any] array of objects to check
+---@param getFunc? function(value) If this parameter is not passed, all elements will check just simple comparison. Otherwise, every element will be processed by this function before comparison.
+---@return boolean
+function utils.isAllTheSame(arr, getFunc)
+	local state = nil
+	for i, value in ipairs(arr) do
+		value = getFunc and getFunc(value)
+		if state == nil then
+			state = value
+		elseif state ~= value then
+			return false
+		end
+	end
+	return true
 end
 
 return utils
