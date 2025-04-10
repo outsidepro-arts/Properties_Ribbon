@@ -459,24 +459,11 @@ if points ~= nil then
 		local message = initOutputMessage()
 		if envelopeType == 5 then
 			if istable(points) then
-				local switchedOnPoints, switchedOffPoints = 0, 0
-				for _, point in ipairs(points) do
+				local adjustingValue = nor(utils.getMostFrequent(points, function(point)
 					local state = math.round(self.getValue(point), 0)
 					if state < 0 then state = -state end
-					if state == 1 then
-						switchedOnPoints = switchedOnPoints + 1
-					else
-						switchedOffPoints = switchedOffPoints + 1
-					end
-				end
-				adjustingValue = nil
-				if switchedOnPoints > switchedOffPoints then
-					adjustingValue = 0
-				elseif switchedOnPoints < switchedOffPoints then
-					adjustingValue = 1
-				else
-					adjustingValue = 0
-				end
+					return state
+				end))
 				message(string.format("Switching selected points values to %s. ", envelopeRepresentation[adjustingValue]))
 				for _, point in ipairs(points) do
 					self.setValue(point, adjustingValue)

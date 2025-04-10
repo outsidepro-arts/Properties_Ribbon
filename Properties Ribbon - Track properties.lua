@@ -930,21 +930,12 @@ end
 function muteProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local mutedTracks, notMutedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE")
-			if state == 1 then
-				mutedTracks = mutedTracks + 1
-			else
-				notMutedTracks = notMutedTracks + 1
-			end
-		end
-		local ajustingValue
-		if mutedTracks > notMutedTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_MUTE")
+		end))
+		if ajustingValue == 0 then
 			message("Unmuting selected tracks.")
-		elseif mutedTracks < notMutedTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Muting selected tracks.")
 		else
 			ajustingValue = 0
@@ -954,7 +945,7 @@ function muteProperty:set_perform()
 		for k = 1, #tracks do
 			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE")
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_MUTE", ajustingValue)
-			if reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE") == state then
+			if state ~= ajustingValue and reaper.GetMediaTrackInfo_Value(tracks[k], "B_MUTE") == state then
 				nonactionable[#nonactionable + 1] = getTrackID(tracks[k], true)
 			end
 		end
@@ -1048,20 +1039,11 @@ function soloProperty:set_perform()
 	local isExclusiveSolo = config.getboolean("exclusiveSolo", false)
 	local checkedTrackslist = {}
 	if istable(tracks) then
-		local soloedTracks, notSoloedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = self.getValue(tracks[k])
-			if state > 0 then
-				soloedTracks = soloedTracks + 1
-			else
-				notSoloedTracks = notSoloedTracks + 1
-			end
-		end
-		local ajustingValue
-		if soloedTracks > notSoloedTracks then
+		local ajustingValue = utils.getMostFrequent(tracks, self.getValue)
+		if ajustingValue > 0 then
 			ajustingValue = 0
 			message("Unsoloing selected tracks.")
-		elseif soloedTracks < notSoloedTracks then
+		elseif ajustingValue == 0 then
 			ajustingValue = soloMode
 			message("Soloing selected tracks.")
 			if isExclusiveSolo then
@@ -1201,20 +1183,11 @@ function recarmProperty:set_perform()
 	local isExclusiveArm = config.getboolean("exclusiveArm", false)
 	local checkedTrackslist = {}
 	if istable(tracks) then
-		local armedTracks, notArmedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = self.getValue(tracks[k])
-			if state == 1 then
-				armedTracks = armedTracks + 1
-			else
-				notArmedTracks = notArmedTracks + 1
-			end
-		end
-		local ajustingValue
-		if armedTracks > notArmedTracks then
+		local ajustingValue = utils.getMostFrequent(tracks, self.getValue)
+		if ajustingValue == 1 then
 			ajustingValue = 0
 			message("Unarming selected tracks.")
-		elseif armedTracks < notArmedTracks then
+		elseif ajustingValue == 0 then
 			ajustingValue = 1
 			message("Arming selected tracks.")
 			if isExclusiveArm then
@@ -1291,13 +1264,7 @@ end
 function recmonitoringProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local st = { 0, 0, 0 }
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMON")
-			st[state + 1] = st[state + 1] + 1
-		end
-		local state
-		if math.max(st[1], st[2], st[3]) == #tracks then
+		if utils.isAllTheSame(tracks, function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECMON") end) then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMON")
 			if self.states[state + direction] then
 				state = state + direction
@@ -1528,15 +1495,9 @@ function recInputsProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local ajustingValue = direction
 	if istable(tracks) then
-		local lastState = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECINPUT")
-			if lastState ~= state then
-				ajustingValue = 0
-				break
-			end
-			lastState = state
-		end
+		ajustingValue = utils.isAllTheSame(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "I_RECINPUT")
+		end) and ajustingValue or 0
 		local state
 		if ajustingValue ~= 0 then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECINPUT")
@@ -1654,15 +1615,8 @@ end
 function recmodeProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local st = { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMODE")
-			if st[state + 1] then
-				st[state + 1] = st[state + 1] + 1
-			end
-		end
 		local state
-		if math.max(st[1], st[2], st[3], st[4], st[5], st[6], st[7], st[8], st[9]) == #tracks then
+		if utils.isAllTheSame(tracks, function(track) return reaper.GetMediaTrackInfo_Value(track, "I_RECMODE") end) then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_RECMODE")
 			-- We have to patch our states metatable to avoid always existing values
 			self.states = setmetatable(self.states, {})
@@ -1728,15 +1682,8 @@ end
 function automationModeProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local st = { 0, 0, 0, 0, 0 }
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_AUTOMODE")
-			if st[state + 1] then
-				st[state + 1] = st[state + 1] + 1
-			end
-		end
 		local state
-		if math.max(st[1], st[2], st[3], st[4], st[5]) == #tracks then
+		if utils.isAllTheSame(tracks, function(track) return reaper.GetMediaTrackInfo_Value(track, "I_AUTOMODE") end) then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "I_AUTOMODE")
 			-- We have to patch our states metatable to avoid always existing values
 			self.states = setmetatable(self.states, {})
@@ -1791,21 +1738,11 @@ end
 function phaseProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local phasedTracks, notPhasedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_PHASE")
-			if state == 1 then
-				phasedTracks = phasedTracks + 1
-			else
-				notPhasedTracks = notPhasedTracks + 1
-			end
-		end
-		local ajustingValue
-		if phasedTracks > notPhasedTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks,
+			function(track) return reaper.GetMediaTrackInfo_Value(track, "B_PHASE") end))
+		if ajustingValue == 0 then
 			message("Set all track phase to normal.")
-		elseif phasedTracks < notPhasedTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Inverting all phase tracks.")
 		else
 			ajustingValue = 0
@@ -1873,21 +1810,12 @@ end
 function mainSendProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local sendTracks, notSendTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_MAINSEND")
-			if state == 1 then
-				sendTracks = sendTracks + 1
-			else
-				notSendTracks = notSendTracks + 1
-			end
-		end
-		local ajustingValue
-		if sendTracks > notSendTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_MAINSEND")
+		end))
+		if ajustingValue == 0 then
 			message("Switching off selected tracks send to parent or master track.")
-		elseif sendTracks < notSendTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Switching on selected tracks send to parent or master track.")
 		else
 			ajustingValue = 0
@@ -1932,23 +1860,9 @@ end
 function freemodeProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local freedTracks, notFreedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_FREEMODE")
-			if state == 1 then
-				freedTracks = freedTracks + 1
-			else
-				notFreedTracks = notFreedTracks + 1
-			end
-		end
-		local ajustingValue
-		if freedTracks > notFreedTracks then
-			ajustingValue = 0
-		elseif freedTracks < notFreedTracks then
-			ajustingValue = 1
-		else
-			ajustingValue = 0
-		end
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_FREEMODE")
+		end))
 		message(string.format("Set all track free position mode to %s.", self.states[ajustingValue]))
 		for k = 1, #tracks do
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_FREEMODE", ajustingValue)
@@ -1999,13 +1913,8 @@ end
 function timebaseProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local st = { 0, 0, 0, 0 }
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "C_BEATATTACHMODE")
-			st[state + 2] = st[state + 2] + 1
-		end
 		local state
-		if math.max(st[1], st[2], st[3], st[4]) == #tracks then
+		if utils.isAllTheSame(tracks, function(track) return reaper.GetMediaTrackInfo_Value(track, "C_BEATATTACHMODE") end) then
 			state = reaper.GetMediaTrackInfo_Value(tracks[1], "C_BEATATTACHMODE")
 			if state + direction >= -1 and state + direction < #self.states then
 				state = state + direction
@@ -2075,21 +1984,12 @@ end
 function recmonitorItemsProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local monitoredTracks, notMonitoredTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_RECMONITEMS")
-			if state == 1 then
-				monitoredTracks = monitoredTracks + 1
-			else
-				notMonitoredTracks = notMonitoredTracks + 1
-			end
-		end
-		local ajustingValue
-		if monitoredTracks > notMonitoredTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "I_RECMONITEMS")
+		end))
+		if ajustingValue == 0 then
 			message("Switching off the monitoring items for selected tracks.")
-		elseif monitoredTracks < notMonitoredTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Switching on the monitoring items for selected tracks.")
 		else
 			ajustingValue = 0
@@ -2135,21 +2035,12 @@ end
 function performanceBufferingProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local bufferedTracks, notBufferedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS") & 1
-			if state == 1 then
-				notBufferedTracks = notBufferedTracks + 1
-			else
-				bufferedTracks = bufferedTracks + 1
-			end
-		end
-		local ajustingValue
-		if bufferedTracks > notBufferedTracks then
-			ajustingValue = 1
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "I_PERFFLAGS") & 1
+		end))
+		if ajustingValue == 1 then
 			message("Switching off the media buffering for selected tracks.")
-		elseif bufferedTracks < notBufferedTracks then
-			ajustingValue = 0
+		elseif ajustingValue == 0 then
 			message("Switching on the media buffering for selected tracks.")
 		else
 			ajustingValue = 0
@@ -2200,21 +2091,12 @@ end
 function performanceAnticipativeFXProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local anticipatedTracks, notanticipatedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "I_PERFFLAGS") & 2
-			if state == 2 then
-				notanticipatedTracks = notanticipatedTracks + 1
-			else
-				anticipatedTracks = anticipatedTracks + 1
-			end
-		end
-		local ajustingValue
-		if anticipatedTracks > notanticipatedTracks then
-			ajustingValue = 2
+		local ajustingValue = utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "I_PERFFLAGS") & 2
+		end) == 2 and 0 or 2
+		if ajustingValue == 2 then
 			message("Switching off the anticipativeness FX for selected tracks.")
-		elseif anticipatedTracks < notanticipatedTracks then
-			ajustingValue = 0
+		elseif ajustingValue == 0 then
 			message("Switching on the anticipativeness FX for selected tracks.")
 		else
 			ajustingValue = 0
@@ -2264,28 +2146,18 @@ end
 function soloDefeatProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local defeatedTracks, notDefeatedTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
-			if state == 1 then
-				notDefeatedTracks = notDefeatedTracks + 1
-			else
-				defeatedTracks = defeatedTracks + 1
-			end
-		end
-		local ajustingValue
-		if defeatedTracks > notDefeatedTracks then
-			ajustingValue = 1
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_SOLO_DEFEAT")
+		end))
+		if ajustingValue == 1 then
 			message("Switching on the solo defeat state for selected tracks.")
-		elseif defeatedTracks < notDefeatedTracks then
-			ajustingValue = 0
+		elseif ajustingValue == 0 then
 			message("Switching off the solo defeat state for selected tracks.")
 		else
 			ajustingValue = 0
 			message("Switching off the solo defeat state for selected tracks.")
 		end
 		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT")
 			reaper.SetMediaTrackInfo_Value(tracks[k], "B_SOLO_DEFEAT", ajustingValue)
 		end
 	else
@@ -2324,21 +2196,12 @@ end
 function mixerVisibilityProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local visibleTracks, notvisibleTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINMIXER")
-			if state == 1 then
-				visibleTracks = visibleTracks + 1
-			else
-				notvisibleTracks = notvisibleTracks + 1
-			end
-		end
-		local ajustingValue
-		if visibleTracks > notvisibleTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_SHOWINMIXER")
+		end))
+		if ajustingValue == 0 then
 			message("Hidding selected tracks on mixer panel.")
-		elseif visibleTracks < notvisibleTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Showing selected tracks on mixer panel.")
 		else
 			ajustingValue = 0
@@ -2384,21 +2247,12 @@ end
 function tcpVisibilityProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(tracks) then
-		local visibleTracks, notvisibleTracks = 0, 0
-		for k = 1, #tracks do
-			local state = reaper.GetMediaTrackInfo_Value(tracks[k], "B_SHOWINTCP")
-			if state == 1 then
-				visibleTracks = visibleTracks + 1
-			else
-				notvisibleTracks = notvisibleTracks + 1
-			end
-		end
-		local ajustingValue
-		if visibleTracks > notvisibleTracks then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(tracks, function(track)
+			return reaper.GetMediaTrackInfo_Value(track, "B_SHOWINTCP")
+		end))
+		if ajustingValue == 0 then
 			message("Hidding selected tracks control panels.")
-		elseif visibleTracks < notvisibleTracks then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Showing selected tracks control panels.")
 		else
 			ajustingValue = 0

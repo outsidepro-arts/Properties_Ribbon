@@ -255,21 +255,10 @@ end
 function lockProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local lockedItems, notLockedItems = 0, 0
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if state == 1 then
-				lockedItems = lockedItems + 1
-			else
-				notLockedItems = notLockedItems + 1
-			end
-		end
-		local ajustingValue
-		if lockedItems > notLockedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items, self.getValue))
+		if ajustingValue == 0 then
 			message("Unlocking selected items.")
-		elseif lockedItems < notLockedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Locking selected  items.")
 		else
 			ajustingValue = 0
@@ -436,21 +425,11 @@ end
 function muteItemProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local mutedItems, notMutedItems = 0, 0
-		for k = 1, #items do
-			local state = reaper.GetMediaItemInfo_Value(items[k], "B_MUTE")
-			if state == 1 then
-				mutedItems = mutedItems + 1
-			else
-				notMutedItems = notMutedItems + 1
-			end
-		end
-		local ajustingValue
-		if mutedItems > notMutedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items,
+			function(item) return reaper.GetMediaItemInfo_Value(item, "B_MUTE") end))
+		if ajustingValue == 0 then
 			message("Unmuting selected items.")
-		elseif mutedItems < notMutedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Muting selected items.")
 		else
 			ajustingValue = 0
@@ -495,21 +474,11 @@ end
 function loopSourceProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local loopedItems, notLoopedItems = 0, 0
-		for k = 1, #items do
-			local state = reaper.GetMediaItemInfo_Value(items[k], "B_LOOPSRC")
-			if state == 1 then
-				loopedItems = loopedItems + 1
-			else
-				notLoopedItems = notLoopedItems + 1
-			end
-		end
-		local ajustingValue
-		if loopedItems > notLoopedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items,
+			function(item) return reaper.GetMediaItemInfo_Value(item, "B_LOOPSRC") end))
+		if ajustingValue == 0 then
 			message("Set selected items sources loop off.")
-		elseif loopedItems < notLoopedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Looping selected items sources.")
 		else
 			ajustingValue = 0
@@ -554,21 +523,11 @@ end
 function itemAllTakesPlayProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local tkPlayItems, tkNotPlayItems = 0, 0
-		for k = 1, #items do
-			local state = reaper.GetMediaItemInfo_Value(items[k], "B_ALLTAKESPLAY")
-			if state == 1 then
-				tkPlayItems = tkPlayItems + 1
-			else
-				tkNotPlayItems = tkNotPlayItems + 1
-			end
-		end
-		local ajustingValue
-		if tkPlayItems > tkNotPlayItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items,
+			function(item) return reaper.GetMediaItemInfo_Value(item, "B_ALLTAKESPLAY") end))
+		if ajustingValue == 0 then
 			message("Sett all Takes of selected items play off.")
-		elseif tkPlayItems < tkNotPlayItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Set all takes of selected items play on.")
 		else
 			ajustingValue = 0
@@ -701,21 +660,11 @@ end
 function autoStretchProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local stretchedItems, notStretchedItems = 0, 0
-		for k = 1, #items do
-			local state = reaper.GetMediaItemInfo_Value(items[k], "C_AUTOSTRETCH")
-			if state == 1 then
-				stretchedItems = stretchedItems + 1
-			else
-				notStretchedItems = notStretchedItems + 1
-			end
-		end
-		local ajustingValue
-		if stretchedItems > notStretchedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items,
+			function(item) return reaper.GetMediaItemInfo_Value(item, "C_AUTOSTRETCH") end))
+		if ajustingValue == 0 then
 			message("Switching off the auto-stretch mode for selected items.")
-		elseif stretchedItems < notStretchedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Switching on the auto-stretch mode for  selected items.")
 		else
 			ajustingValue = 0
@@ -1177,25 +1126,14 @@ function fadeinShapeProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local ajustingValue = direction
 	if istable(items) then
-		local allIdentical, prevState = true, nil
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if prevState and prevState ~= state then
-				allIdentical = false
-				break
-			end
-			prevState = state
-		end
-		local state
-		if allIdentical then
+		local state = 1
+		if utils.isSameValue(items, self.getValue) then
 			state = self.getValue(items[1])
 			if state + ajustingValue <= #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
 			else
 				message(string.format("No more %s property values.", ({ [1] = "next", [-1] = "previous" })[direction]))
 			end
-		else
-			state = 1
 		end
 		for k = 1, #items do
 			self.setValue(items[k], state)
@@ -2324,21 +2262,10 @@ end
 function takePhaseProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local phasedItems, notphasedItems = 0, 0
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if state == 1 then
-				phasedItems = phasedItems + 1
-			else
-				notphasedItems = notphasedItems + 1
-			end
-		end
-		local ajustingValue
-		if phasedItems > notphasedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items, self.getValue))
+		if ajustingValue == 0 then
 			message("Normalizing the phase for selected items takes.")
-		elseif phasedItems < notphasedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("Inverting the phase for selected items takes.")
 		else
 			ajustingValue = 0
@@ -2414,16 +2341,7 @@ function takeChannelModeProperty:set_adjust(direction)
 	local message = initOutputMessage()
 	local ajustingValue = direction
 	if istable(items) then
-		local lastState = self.getValue(items[1])
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if lastState ~= state then
-				ajustingValue = 0
-				break
-			end
-			lastState = state
-		end
-		local state
+		local state = utils.isAllTheSame(items, self.getValue) and ajustingValue or 0
 		if ajustingValue ~= 0 then
 			state = self.getValue(items[1])
 			if (state + ajustingValue) >= 0 and self.states[(state + ajustingValue)] then
@@ -2620,21 +2538,10 @@ end
 function preserveTakePitchProperty:set_perform()
 	local message = initOutputMessage()
 	if istable(items) then
-		local preservedItems, notpreservedItems = 0, 0
-		for k = 1, #items do
-			local state = self.getValue(items[k])
-			if state == 1 then
-				preservedItems = preservedItems + 1
-			else
-				notpreservedItems = notpreservedItems + 1
-			end
-		end
-		local ajustingValue
-		if preservedItems > notpreservedItems then
-			ajustingValue = 0
+		local ajustingValue = nor(utils.getMostFrequent(items, self.getValue))
+		if ajustingValue == 0 then
 			message("switching off the preserving for selected items.")
-		elseif preservedItems < notpreservedItems then
-			ajustingValue = 1
+		elseif ajustingValue == 1 then
 			message("switching on the preserving for selected items.")
 		else
 			ajustingValue = 0
