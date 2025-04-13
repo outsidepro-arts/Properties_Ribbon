@@ -2474,10 +2474,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 			local shrID = string.format("%s%u_track%u", utils.removeSpaces(shrCatNames[category]), i,
 				reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER"))
 			parentLayout:registerSublayout(shrID,
-				string.format("%s%s %s %s",
+				string.format("%s%s to %s",
 					shrCatNames[category],
 					istable(tracks) and string.format(" from %s", select(2, reaper.GetTrackName(track, ""))) or "",
-					category < 0 and "from" or "to",
 					shrName))
 			local shrVolumeProperty = parentLayout[shrID]:registerProperty {
 				track = track,
