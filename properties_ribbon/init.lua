@@ -498,8 +498,7 @@ function PropertiesRibbon.initExtendedProperties(str)
 				return message
 			end,
 			set_perform = function(self, parent)
-				currentExtProperty = nil
-				return true, "", true
+				return PropertiesRibbon.leaveExtendedProperties()
 			end
 		} }, {
 			__index = function(self, key)
@@ -512,6 +511,11 @@ function PropertiesRibbon.initExtendedProperties(str)
 		end
 	}
 	return t
+end
+
+function PropertiesRibbon.leaveExtendedProperties()
+	currentExtProperty = nil
+	return true, "", true
 end
 
 -- }
