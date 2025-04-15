@@ -2477,7 +2477,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 			if istable(tracks) then
 				shrLabel = shrLabel:joinsep(" ", "from", shrName, "to", select(2, reaper.GetTrackName(track, "")))
 			else
-				shrLabel = shrLabel:joinsep(" ", "from", shrName)
+				shrLabel = shrLabel:joinsep(" ", category >= 0 and "to" or "from", shrName)
 			end
 			parentLayout:registerSublayout(shrID, shrLabel)
 			local shrVolumeProperty = parentLayout[shrID]:registerProperty {
