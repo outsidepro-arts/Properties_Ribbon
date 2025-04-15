@@ -2920,7 +2920,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				if direction == actions.set.increase.direction then
 					if isMono and (channels + direction) + 1 <= destTrackChans then
 						state = (channels + direction) | 1024
-					elseif (channels + direction) + (channels + (srcChannelsCount >= 2 and srcChannelsCount * 2 or 1)) <= destTrackChans then
+					elseif (channels + direction) + (channels + (srcChannelsCount >= 2 and srcChannelsCount * 2 or 1)) < destTrackChans then
 						state = (channels + direction)
 					else
 						message("No more next property values.")
