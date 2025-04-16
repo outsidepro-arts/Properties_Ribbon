@@ -3099,12 +3099,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local message = initOutputMessage()
 				local srcState = bitwise.getTo(
 					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 5)
-				if srcState == 31 then
-					return "Turn on the MIDI sending first."
-				end
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS")
 				local channels = bitwise.getRange(state, 6, 11)
-				if (channels + direction) >= 0 and (channels + direction) <= 16 then
+				if srcState ~= 31 and (channels + direction) >= 0 and (channels + direction) <= 16 then
 					channels = channels + direction
 				else
 					message(string.format("No more %s property values.",
