@@ -2953,7 +2953,6 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local isMono = bitwise.getBit(state, 10)
 				local srcState = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
 				local srcChannelsCount = bitwise.getFrom(srcState, 10)
-				local srcState = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
 				if srcState >= 0 then
 					message { value = isMono and string.format("Mono channel %u", channels + 1) or string.format("original channels from %u to %u", channels + 1, channels + ((srcChannelsCount > 0 and srcChannelsCount or 1) * 2)) }
 				else
