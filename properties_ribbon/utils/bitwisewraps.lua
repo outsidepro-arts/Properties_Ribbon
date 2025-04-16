@@ -87,4 +87,24 @@ function bitwise.concat(bdivider, ...)
 	return newValue
 end
 
+---Returns the specified amount of part divided by specified bit.
+---@param value number The value which should be processed
+---@param bdivider number the bit divider
+---@param parts number the amount of parts which should be returned
+---@return ... number the parts which has been specified. The last part is all part of variable on the right.
+function bitwise.getParts(value, bdivider, parts)
+	local parr = {}
+	local startShift = 0
+	for i = 1, parts do
+		local endShift = startShift + bdivider
+		if i == parts then
+			parr[i] = bitwise.getFrom(value, startShift - 1)
+		else
+			parr[i] = bitwise.getRange(value, startShift + 1, endShift)
+		end
+		startShift = endShift + 1
+	end
+	return table.unpack(parr)
+end
+
 return bitwise
