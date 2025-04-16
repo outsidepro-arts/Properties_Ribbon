@@ -73,13 +73,15 @@ end
 
 ---Concatenates a bunch of values with specified divider
 ---@param bdivider number The divider bit
----@param ... number The values which should be concatenated
+---@param ...? number The values which should be concatenated. If one of values is nil, this position will be set as 0.
 ---@return number concatenated value
 function bitwise.concat(bdivider, ...)
 	local newValue = 0
 	local shift = 0
 	for _, value in ipairs({ ... }) do
-		newValue = newValue | (value << shift)
+		if value then
+			newValue = newValue | (value << shift)
+		end
 		shift = shift + bdivider
 	end
 	return newValue
