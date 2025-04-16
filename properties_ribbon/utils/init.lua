@@ -11,6 +11,7 @@ require "utils.math"
 require "utils.string"
 require "utils.table"
 require "utils.debugger"
+bitwise = require "utils.bitwisewraps"
 
 -- Here are some functions which I have been grabbed from some sources and opensource projects. Some of was needed to be rewritten for LUA, but some of already being presented as is also.
 -- Unfortunately, not all functions written here I remembered where grabbed, because I wrote it at the start of complex coding and did not planned to git this..
@@ -71,12 +72,6 @@ function utils.toboolean(value)
 	else
 		return (value > 0)
 	end
-end
-
--- This function written by @electrik-spb in PureBasic and rewritten by me for LUA.
--- Thank you for help with, Sergey!
-function utils.getBitValue(value, first, last)
-	return ((value & ((1 << last) - 1)) >> (first - 1))
 end
 
 function utils.delay(ms)
