@@ -2978,15 +2978,15 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "P_DESTTRACK"), "I_NCHAN")
 				if direction == actions.set.increase.direction then
 					if isMono and (channels + direction) + 1 <= destTrackChans then
-						state = (channels + direction) | 1024
+						state = bitwise.setBit(channels + direction, 10, true)
 					elseif (channels + direction) + (channels + (srcChannelsCount >= 2 and srcChannelsCount * 2 or 1)) < destTrackChans then
-						state = (channels + direction)
+						state = bitwise.setBit(channels + direction, 10, false)
 					else
 						message("No more next property values.")
 					end
 				elseif direction == actions.set.decrease.direction then
 					if (channels + direction) >= 0 then
-						state = isMono and (channels + direction) | 1024 or (channels + direction)
+						state = bitwise.setBit(channels + direction, 10, isMono)
 					else
 						message("No more previous property values.")
 					end
@@ -3027,16 +3027,14 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				end
 			})
 
-			shrSourceMidiChannelsProperty.midiChannelsOrder = {
-				31, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
-			}
 			function shrSourceMidiChannelsProperty:get()
 				local message = initOutputMessage()
 				local state = bitwise.getTo(
 					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 5)
 				message { objectId = self.typeName, label = "Source MIDI", value = self.states[state] }
 				message:initType(
-					"Adjust this property to choose the source MIDI channel."
+					"Adjust this property to choose the source MIDI channel. Toggle this property to switch the MIDI sending state.",
+					"Adjustable, toggleable"
 				)
 				return message
 			end
@@ -3044,22 +3042,25 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 			function shrSourceMidiChannelsProperty:set_adjust(direction)
 				local message = initOutputMessage()
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS")
-				local channels = state & (1 << 5) - 1
-				local pos = nil
-				for i, channel in ipairs(self.midiChannelsOrder) do
-					if channel == channels then
-						pos = i
-						break
-					end
-				end
-				if (pos + direction) > 0 and (pos + direction) <= #self.midiChannelsOrder then
-					channels = self.midiChannelsOrder[pos + direction]
+				local channels = bitwise.getTo(state, 5)
+				if (channels + direction) >= 0 and (channels + direction) <= 16 then
+					channels = channels + direction
 				else
 					message(string.format("No more %s property values.",
 						direction == actions.set.increase.direction and "next" or "previous"))
 				end
 				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS",
 					bitwise.setTo(state, 5, channels))
+				message(self:get())
+				return message
+			end
+
+			function shrSourceMidiChannelsProperty:set_perform()
+				local message = initOutputMessage()
+				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS")
+				local channels = bitwise.getTo(state, 5)
+				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS",
+					bitwise.setTo(state, 5, channels ~= 31 and 31 or 0))
 				message(self:get())
 				return message
 			end
