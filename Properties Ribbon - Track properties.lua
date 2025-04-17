@@ -3003,19 +3003,81 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				return message
 			end
 
-			function shrDestinationAudioChannelsProperty:set_perform()
-				local message = initOutputMessage()
-				local srcState = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
-				if srcState == -1 then
-					return "Turn on the audio sending first."
-				end
-				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_DSTCHAN")
-				local channels, isMono = bitwise.getTo(state, 10), bitwise.getBit(state, 10)
-				message(string.format("Set to %s.", isMono and "original channels" or "mono"))
-				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_DSTCHAN",
-					bitwise.setBit(0, 10, nor(isMono)))
-				message(self:get())
-				return message
+			if reaper.GetTrackSendInfo_Value(track, category, i, "I_SRCCHAN") >= 0 then
+				shrDestinationAudioChannelsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+					"Channels extended interraction")
+
+				shrDestinationAudioChannelsProperty.extendedProperties:registerProperty {
+					get = function(self, parent)
+						local message = initOutputMessage()
+						message { label = "Destination track channels" }
+						local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN")
+						local isMono = bitwise.getBit(
+							reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN"), 10)
+						message { value = isMono and "mono" or "original channels" }
+						message:initType(
+							"Toggle this property to switch the channels set (either original channels or mono).",
+							"Toggleable")
+						return message
+					end,
+					set_perform = function(self, parent)
+						local message = initOutputMessage()
+						local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN")
+						local isMono = bitwise.getBit(state, 10)
+						reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
+							bitwise.setBit(0, 10, nor(isMono)))
+						return true, string.format("Set to %s.", isMono and "original channels" or "mono"), true
+					end
+				}
+
+				shrDestinationAudioChannelsProperty.extendedProperties:registerProperty {
+					get = function(self, parent)
+						local message = initOutputMessage()
+						message { label = "Destination track channels" }
+						local destTrack = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx,
+							"P_DESTTRACK")
+						local state = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN")
+						message { value = string.format("%u", state) }
+						message:initType(
+							"Adjust this property to set the new channels count for destination track. This property repeats the track channels dropdown list in routing window.")
+						return message
+					end,
+					set_adjust = function(self, parent, direction)
+						local message = initOutputMessage()
+						local destTrack = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx,
+							"P_DESTTRACK")
+						local state = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN")
+						local ajustingValue = nil
+						if direction > 0 then
+							ajustingValue = 2
+						else
+							ajustingValue = -2
+						end
+						if (state + ajustingValue) <= 128 and (state + ajustingValue) >= 2 then
+							state = state + ajustingValue
+						else
+							message(string.format("No %s property values.",
+								direction == actions.set.increase.direction and "next" or "previous"))
+						end
+						reaper.SetMediaTrackInfo_Value(destTrack, "I_NCHAN", state)
+						local dstState = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN")
+						local dstChannels = bitwise.getTo(dstState, 10)
+						local dstIsMono = bitwise.getBit(dstState, 10)
+						if dstIsMono == false then
+							if (dstChannels + 2) > state then
+								reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
+									bitwise.setTo(dstState, 10, state - 2))
+							end
+						else
+							if dstChannels + 1 > state then
+								reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
+									bitwise.setTo(dstState, 10, state - 1))
+							end
+						end
+						message(self:get(parent))
+						return false, message
+					end
+				}
 			end
 
 			local shrSourceMidiChannelsProperty = parentLayout[shrID]:registerProperty {
