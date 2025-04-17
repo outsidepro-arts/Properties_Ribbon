@@ -2859,7 +2859,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					local message = initOutputMessage()
 					message { label = "Channels" }
 					local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN")
-					local channelsCount = state >> 10
+					local channelsCount = bitwise.getFrom(state, 10)
 					message { value = state == -1 and "Audio disabled" or self.states[channelsCount] }
 					message:initType(
 						"Adjust this property to choose the channels mode for source channels. Also you may disable the sending audio here. Perform this property to just leave the extended interraction.")
@@ -2889,9 +2889,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 			shrSourceAudioChannelsProperty.extendedProperties:registerProperty {
 				get = function(self, parent)
 					local message = initOutputMessage()
-					message { label = "Source track extra channels" }
+					message { label = "Source track channels" }
 					local state = reaper.GetMediaTrackInfo_Value(parent.track, "I_NCHAN")
-					message { value = string.format("%u channels", state) }
+					message { value = string.format("%u", state) }
 					message:initType(
 						"Adjust this property to set the new channels count for source track. This property repeats the track channels dropdown list in routing window.")
 					return message
@@ -2925,9 +2925,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 								bitwise.setTo(srcState, 10, state - 1))
 						end
 					elseif srcChannelsCount > 1 then
-						if srcChannels + (srcChannelsCount * 2) > state then
+						if srcChannelsCount * 2 > state then
 							reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN",
-								bitwise.setTo(srcState, 10, state - (srcChannelsCount * 2)))
+								bitwise.concat(10, 0, state / 2))
 						end
 					end
 					message(self:get(parent))
