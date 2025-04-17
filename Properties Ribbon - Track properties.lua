@@ -2862,7 +2862,8 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					local channelsCount = bitwise.getFrom(state, 10)
 					message { value = state == -1 and "Audio disabled" or self.states[channelsCount] }
 					message:initType(
-						"Adjust this property to choose the channels mode for source channels. Also you may disable the sending audio here. Perform this property to just leave the extended interraction.")
+						"Adjust this property to choose the channels mode for source channels. Toggle this property to switch the audio state.",
+						"Adjustable, toggleable")
 					return message
 				end,
 				set_adjust = function(self, parent, direction)
@@ -2872,8 +2873,6 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					local trackChans = reaper.GetMediaTrackInfo_Value(parent.track, "I_NCHAN")
 					if (channelsCount + direction) * 2 <= trackChans and (channelsCount + direction) >= 0 then
 						state = bitwise.concat(10, 0, channelsCount + direction)
-					elseif (channelsCount + direction) == -1 then
-						state = -1
 					else
 						message(string.format("No %s property values.", (direction == 1) and "next" or "previous"))
 					end
@@ -2882,7 +2881,16 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					return false, message
 				end,
 				set_perform = function(self, parent)
-					return PropertiesRibbon.leaveExtendedProperties()
+					local message = initOutputMessage()
+					local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN")
+					state = state == -1 and 0 or -1
+					reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN",
+						state)
+					message(string.format("Audio %s.", state == -1 and "disabled" or "enabled"))
+					if state ~= -1 then
+						message(self:get(parent))
+					end
+					return false, message
 				end
 			}
 
