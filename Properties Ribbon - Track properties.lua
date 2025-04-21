@@ -2954,9 +2954,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local message = initOutputMessage()
 				message { objectId = self.typeName, label = "Destination audio" }
 				message:initType(
-					"Adjust this property to choose the destination audio channels. Toggle this property to switch the mono send.",
-					"Adjustable, toggleable")
-
+					"Adjust this property to choose the destination audio channels.")
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_DSTCHAN")
 				local channels = bitwise.getTo(state, 10)
 				local isMono = bitwise.getBit(state, 10)
@@ -2973,7 +2971,8 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					if isMono then
 						message { value = string.format("Mono channel %u", channels + 1) }
 					else
-						message { value = string.format("Original channels from %u to %u",
+						message { value = string.format("%s from %u to %u",
+							(sendChannels == 1 and "Mono channel") or (sendChannels == 2 and "Stereo channels") or sendChannels .. " channels",
 							channels + 1,
 							endChannel) }
 					end
@@ -2983,7 +2982,6 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 						" This property is unavailable because the source audio channels are disabled.", 1)
 					message:changeType("Unavailable", 2)
 				end
-
 				return message
 			end
 
