@@ -2956,44 +2956,64 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				message:initType(
 					"Adjust this property to choose the destination audio channels. Toggle this property to switch the mono send.",
 					"Adjustable, toggleable")
+
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_DSTCHAN")
 				local channels = bitwise.getTo(state, 10)
 				local isMono = bitwise.getBit(state, 10)
 				local srcState = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
-				local srcChannelsCount = bitwise.getFrom(srcState, 10)
 				if srcState >= 0 then
-					message { value = isMono and string.format("Mono channel %u", channels + 1) or string.format("original channels from %u to %u", channels + 1, channels + ((srcChannelsCount > 0 and srcChannelsCount or 1) * 2)) }
+					local srcChannelsCode = bitwise.getFrom(srcState, 10)
+					local sourceChannels = srcChannelsCode == 0 and 2
+						or srcChannelsCode == 1 and 1
+						or srcChannelsCode * 2
+					local destTrack = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "P_DESTTRACK")
+					local destTrackChans = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN") or 0
+					local sendChannels = isMono and 1 or sourceChannels
+					local endChannel = math.min(channels + sendChannels, destTrackChans)
+					if isMono then
+						message { value = string.format("Mono channel %u", channels + 1) }
+					else
+						message { value = string.format("Original channels from %u to %u",
+							channels + 1,
+							endChannel) }
+					end
 				else
 					message { value = "Disabled" }
 					message:addType(
-						" This property is unavailable right now because the source audio channels is disabled.", 1)
+						" This property is unavailable because the source audio channels are disabled.", 1)
 					message:changeType("Unavailable", 2)
 				end
+
 				return message
 			end
 
 			function shrDestinationAudioChannelsProperty:set_adjust(direction)
 				local message = initOutputMessage()
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_DSTCHAN")
-				local channels, isMono = bitwise.getTo(state, 10), bitwise.getBit(state, 10)
+				local channels, isMono = bitwise.getTo(state, 10),
+					bitwise.getBit(state, 10) -- Получаем смещение (0-9 биты) и флаг моно (10 бит)
 				local srcState = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
 				if srcState == -1 then
 					return "Turn on the audio sending first."
 				end
-				local srcChannelsCount = bitwise.getFrom(srcState, 10)
-				local destTrackChans = reaper.GetMediaTrackInfo_Value(
-					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "P_DESTTRACK"), "I_NCHAN")
+				local srcChannelsCode = bitwise.getFrom(srcState, 10)
+				local sourceChannels = srcChannelsCode == 0 and 2
+					or srcChannelsCode == 1 and 1
+					or srcChannelsCode * 2
+				local destTrack = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "P_DESTTRACK")
+				local destTrackChans = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN") or 0
+				local sendChannels = isMono and 1 or sourceChannels
 				if direction == actions.set.increase.direction then
-					if isMono and (channels + direction) + 1 <= destTrackChans then
-						state = bitwise.setBit(channels + direction, 10, true)
-					elseif (channels + direction) + (channels + (srcChannelsCount >= 2 and srcChannelsCount * 2 or 1)) < destTrackChans then
-						state = bitwise.setBit(channels + direction, 10, false)
+					local newChannels = channels + direction
+					if newChannels >= 0 and (newChannels + sendChannels) <= destTrackChans then
+						state = bitwise.setBit(newChannels, 10, isMono)
 					else
 						message("No more next property values.")
 					end
 				elseif direction == actions.set.decrease.direction then
-					if (channels + direction) >= 0 then
-						state = bitwise.setBit(channels + direction, 10, isMono)
+					local newChannels = channels + direction
+					if newChannels >= 0 then
+						state = bitwise.setBit(newChannels, 10, isMono)
 					else
 						message("No more previous property values.")
 					end
@@ -3046,34 +3066,27 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 						local message = initOutputMessage()
 						local destTrack = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx,
 							"P_DESTTRACK")
-						local state = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN")
-						local ajustingValue = nil
-						if direction > 0 then
-							ajustingValue = 2
-						else
-							ajustingValue = -2
+						local prevChanCount = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN")
+						local newChanCount = prevChanCount + (direction > 0 and 2 or -2)
+						newChanCount = math.min(math.max(newChanCount, 2), 128)
+						if newChanCount == prevChanCount then
+							message(string.format("No %s property values.", direction == 1 and "next" or "previous"))
+							return false, message
 						end
-						if (state + ajustingValue) <= 128 and (state + ajustingValue) >= 2 then
-							state = state + ajustingValue
-						else
-							message(string.format("No %s property values.",
-								direction == actions.set.increase.direction and "next" or "previous"))
-						end
-						reaper.SetMediaTrackInfo_Value(destTrack, "I_NCHAN", state)
+						reaper.SetMediaTrackInfo_Value(destTrack, "I_NCHAN", newChanCount)
 						local dstState = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN")
-						local dstChannels = bitwise.getTo(dstState, 10)
-						local dstIsMono = bitwise.getBit(dstState, 10)
-						if dstIsMono == false then
-							if (dstChannels + 2) > state then
-								reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
-									bitwise.setTo(dstState, 10, state - 2))
-							end
-						else
-							if dstChannels + 1 > state then
-								reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
-									bitwise.setTo(dstState, 10, state - 1))
-							end
+						local dstOffset = bitwise.getTo(dstState, 10)
+						local isMono = bitwise.getBit(dstState, 10)
+						local srcState = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN")
+						local srcChannels = srcState == -1 and 0 or
+							(bitwise.getFrom(srcState, 10) == 0 and 2 or bitwise.getFrom(srcState, 10) == 1 and 1 or bitwise.getFrom(srcState, 10) * 2)
+						local sendWidth = isMono and 1 or srcChannels
+						local maxAllowedOffset = math.max(0, newChanCount - sendWidth)
+						if dstOffset > maxAllowedOffset then
+							local newDstState = bitwise.setTo(dstState, 10, maxAllowedOffset)
+							reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN", newDstState)
 						end
+
 						message(self:get(parent))
 						return false, message
 					end
