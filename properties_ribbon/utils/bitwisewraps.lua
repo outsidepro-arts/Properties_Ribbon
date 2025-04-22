@@ -40,7 +40,7 @@ end
 ---@return number updated value
 function bitwise.setBit(value, bit, state)
 	local mask = (1 << bit)
-	return value | (state == true and mask or 0)
+	return state and (value | mask) or (value & ~mask)
 end
 
 ---Sets the value in the range of specified bits
