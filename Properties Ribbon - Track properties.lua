@@ -2889,8 +2889,10 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					message(string.format("Audio %s.", state == -1 and "disabled" or "enabled"))
 					if state ~= -1 then
 						message(self:get(parent))
+						return false, message
+					else
+						return true, message, true
 					end
-					return false, message
 				end
 			}
 
