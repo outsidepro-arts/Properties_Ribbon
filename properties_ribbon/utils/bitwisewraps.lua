@@ -50,7 +50,8 @@ end
 ---@param newValue number The new value
 ---@return number updated value
 function bitwise.setRange(value, bstart, bend, newValue)
-	return value & ~(((1 << bend) - 1) << (bstart - 1)) | (newValue << (bstart - 1))
+	local mask = ((1 << (bend - bstart + 1)) - 1) << (bstart - 1)
+	return (value & ~mask) | ((newValue << (bstart - 1)) & mask)
 end
 
 ---Sets the data till the specified bit
