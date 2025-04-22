@@ -912,6 +912,505 @@ function contextMenuProperty:set_perform()
 	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_CONTEXTMENU3"), 0)
 end
 
+for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
+	local _, shrName = reaper.GetTrackSendName(master, i, "")
+	local shrID = string.format("hardwareOutput%u", i)
+	parentLayout:registerSublayout(shrID, ("Hardware output"):joinsep(" ", "to", shrName))
+	local shrVolumeProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+	function shrVolumeProperty:get()
+		local message = initOutputMessage()
+		message:initType(
+			"Adjust this property to set the desired volume value for this hardwareOutput.")
+		message { objectId = "Hardware output", label = "Volume" }
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "D_VOL")
+		message { value = representation.db[state] }
+		return message
+	end
+
+	function shrVolumeProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local ajustStep = config.getinteger("dbStep", 0.1)
+		local maxDBValue = config.getinteger("maxDBValue", 12.0)
+		if direction == actions.set.decrease.direction then
+			ajustStep = -ajustStep
+		end
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "D_VOL")
+		state = utils.decibelstonum(utils.numtodecibels(state) + ajustStep)
+		if utils.numtodecibels(state) < -150.0 then
+			state = utils.decibelstonum(-150.0)
+			message("Minimum volume. ")
+		elseif utils.numtodecibels(state) > maxDBValue then
+			state = utils.decibelstonum(maxDBValue)
+			message("maximum volume. ")
+		end
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "D_VOL", state)
+		message(self:get())
+		return message
+	end
+
+	shrVolumeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+		"Volume extended interraction")
+
+	shrVolumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+		i,
+		{
+			representation = representation.db,
+			min = utils.decibelstonum("-inf"),
+			rootmean = utils.decibelstonum(0.00),
+			max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
+		},
+		tpMessages,
+		function(obj, value)
+			reaper.SetTrackSendInfo_Value(track, category, obj, "D_VOL",
+				value)
+		end
+	))
+
+	shrVolumeProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message:initType("Perform this property to type the volume value manualy.")
+			message("Type custom volume value")
+			return message
+		end,
+		set_perform = function(self, parent)
+			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "D_VOL")
+			local retval, answer = getUserInputs(string.format("Volume for %s",
+					string.format("send%s to%s",
+						istable(tracks) and string.format(" from %s", select(2, reaper.GetTrackName(track, ""))) or
+						"", shrName)),
+				{ caption = "New volume value:", defValue = representation.db[state] },
+				prepareUserData.db.formatCaption)
+			if not retval then
+				return false
+			end
+			state = prepareUserData.db.process(answer, state)
+			if state then
+				reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "D_VOL", state)
+				setUndoLabel(parent:get())
+				return true
+			end
+		end
+	}
+
+	shrVolumeProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(i,
+		"VOLENV,MUTEENV",
+		function(shr, envName)
+			return reaper.GetTrackSendInfo_Value(master, 1, shr,
+				string.format("P_ENV:<%s", envName))
+		end))
+
+	local shrPanProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+
+	function shrPanProperty:get()
+		local message = initOutputMessage()
+		message:initType("Adjust this property to set the desired pan value for this hardwareOutput.")
+		message { label = "Pan", objectId = "Hardware output" }
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "D_PAN")
+		message({ value = representation.pan[state] })
+		return message
+	end
+
+	function shrPanProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local ajustingValue = config.getinteger("percentStep", 1)
+		ajustingValue = utils.percenttonum(ajustingValue)
+		if direction == actions.set.decrease.direction then
+			ajustingValue = -ajustingValue
+		end
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "D_PAN")
+		state = math.round((state + ajustingValue), 3)
+		if state < -1 then
+			state = -1
+			message("Left boundary. ")
+		elseif state > 1 then
+			state = 1
+			message("Right boundary. ")
+		end
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "D_PAN", state)
+		message(self:get())
+		return message
+	end
+
+	shrPanProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Pan extended interraction")
+
+	shrPanProperty.extendedProperties:registerProperty(composeThreePositionProperty(
+		i,
+		{
+			representation = representation.pan,
+			min = utils.percenttonum(-100),
+			rootmean = utils.percenttonum(0),
+			max = utils.percenttonum(100)
+		},
+		tpMessages,
+		function(obj, value)
+			reaper.SetTrackSendInfo_Value(track, category, obj, "D_PAN", value)
+		end
+	))
+
+	shrPanProperty.extendedProperties:registerProperty({
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message:initType("Perform this property to type the custom pan value.")
+			message("Type custom pan value")
+			return message
+		end,
+		set_perform = function(self, parent, action)
+			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "D_PAN")
+			local retval, answer = getUserInputs(string.format("Pan for %s",
+					string.format("send%s to%s",
+						istable(tracks) and string.format(" from %s", select(2, reaper.GetTrackName(track, ""))) or
+						"", shrName)),
+				{ caption = "New pan value:", defValue = representation.pan[state] },
+				prepareUserData.pan.formatCaption)
+			if not retval then
+				return false
+			end
+			state = prepareUserData.pan.process(answer, state)
+			if state then
+				reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "D_PAN", state)
+				setUndoLabel(parent:get())
+				return true
+			end
+		end
+	})
+
+	shrPanProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaChunk(i,
+		"PANENV",
+		function(shr, envName)
+			return reaper.GetTrackSendInfo_Value(master, 1, shr,
+				string.format("P_ENV:<%s", envName))
+		end))
+
+	shrMuteProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+
+	function shrMuteProperty:get()
+		local message = initOutputMessage()
+		message:initType("Toggle this property to mute or unmute this hardware output.",
+			"Toggleable")
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_MUTE")
+		local states = { [0] = "not muted", [1] = "muted" }
+		message({ objectId = "Hardware output", value = states[state] })
+		return message
+	end
+
+	function shrMuteProperty:set_perform()
+		local message = initOutputMessage()
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_MUTE")
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "B_MUTE", nor(state))
+		message(self:get())
+		return message
+	end
+
+	local shrPhaseProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+
+	function shrPhaseProperty:get()
+		local message = initOutputMessage()
+		message:initType("Toggle this property to set the phase polarity of this hardware output.",
+			"toggleable")
+		message({ label = "Phase" })
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_PHASE")
+		local states = { [0] = "normal", [1] = "inverted" }
+		message({ objectId = "Hardware output", value = states[state] })
+		return message
+	end
+
+	function shrPhaseProperty:set_perform()
+		local message = initOutputMessage()
+		local state = nor(reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_PHASE"))
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "B_PHASE", state)
+		message(self:get())
+		return message
+	end
+
+	local shrMonoProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+
+	function shrMonoProperty:get()
+		local message = initOutputMessage()
+		message:initType("Toggle this property to set the mono state of this hardware output.",
+			"toggleable")
+		message({ label = "Mono" })
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_MONO")
+		message({ objectId = "Hardware output", value = state == 1 and "On" or "Off" })
+		return message
+	end
+
+	function shrMonoProperty:set_perform()
+		local message = initOutputMessage()
+		local state = nor(reaper.GetTrackSendInfo_Value(master, 1, self.idx, "B_MONO"))
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "B_MONO", state)
+		message(self:get())
+		return message
+	end
+
+	local shrSendModeProperty = parentLayout[shrID]:registerProperty {
+		idx = i,
+		states = {
+			[0] = "Post-Fader (Post-Pan)",
+			[1] = "Pre-Fader (Pre-FX)",
+			[2] = "", -- This key should be assigned so Lua will be able to get the table length correctly
+			[3] = "Pre-Fader (Post-FX)"
+		}
+	}
+
+	function shrSendModeProperty:get()
+		local message = initOutputMessage()
+		message:initType("Adjust this property to set the mode of this hardware output.")
+		message({ label = "Mode" })
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SENDMODE")
+		message({ objectId = "Hardware output", value = self.states[state] })
+		return message
+	end
+
+	function shrSendModeProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SENDMODE")
+		local maybeState = nil
+		for i = (state + direction), direction == actions.set.increase.direction and #self.states or 0, direction do
+			if #self.states[i] > 0 then
+				maybeState = i
+				break
+			end
+		end
+		if maybeState then
+			state = maybeState
+		else
+			message(string.format("No more %s property values.",
+				direction == actions.set.increase.direction and "next" or "previous"))
+		end
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "I_SENDMODE", state)
+		message(self:get())
+		return message
+	end
+
+	local shrSourceAudioChannelsProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+	shrSourceAudioChannelsProperty.states = setmetatable({
+		[-1] = "Disabled"
+	}, {
+		__index = function(self, fullState)
+			local channels = bitwise.getTo(fullState, 10)
+			local chansCount = bitwise.getFrom(fullState, 10)
+			if chansCount == 0 then
+				return string.format("Stereo channels from %u to %u", channels + 1, channels + 2)
+			elseif chansCount == 1 then
+				return string.format("Mono channel %u", channels + 1)
+			else
+				return string.format("%u channels from %u to %u", chansCount * 2, channels + 1,
+					channels + (chansCount * 2))
+			end
+		end
+	})
+	function shrSourceAudioChannelsProperty:get()
+		local message = initOutputMessage()
+		message:initType("Adjust this property to set the source channels for this hardware output.")
+		message({ label = "Source audio" })
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SRCCHAN")
+		message({ objectId = "Hardware output", value = self.states[state] })
+		return message
+	end
+
+	function shrSourceAudioChannelsProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SRCCHAN")
+		local channels, channelsCount = bitwise.getTo(state, 10), bitwise.getFrom(state, 10)
+		local trackChans = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+		if state == -1 then
+			return "The audio send is disabled. You have to switch it on first."
+		end
+		if direction == actions.set.increase.direction then
+			if channelsCount == 0 then
+				if (channels + direction) + 2 <= trackChans then
+					channels = channels + direction
+				else
+					message("No more next property values.")
+				end
+			elseif channelsCount == 1 then
+				if (channels + direction) + 1 <= trackChans then
+					channels = channels + direction
+				else
+					message("No more next property values.")
+				end
+			elseif channelsCount > 1 then
+				if (channels + direction) + (channelsCount * 2) <= trackChans then
+					channels = channels + direction
+				else
+					message("No more next property values.")
+				end
+			end
+		elseif direction == actions.set.decrease.direction then
+			if (channels + direction) >= 0 then
+				channels = channels + direction
+			else
+				message("No more previous property values.")
+			end
+		end
+		reaper.SetTrackSendInfo_Value(master, 1, self.idx, "I_SRCCHAN",
+			bitwise.setTo(state, 10, channels))
+		message(self:get())
+		return message
+	end
+
+	shrSourceAudioChannelsProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+		"Channels extended interraction")
+
+	shrSourceAudioChannelsProperty.extendedProperties:registerProperty {
+		states = setmetatable({ [0] = "Stereo", [1] = "Mono" }, {
+			__index = function(self, key)
+				return string.format("%u channels", key * 2)
+			end
+		}),
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message { label = "Channels" }
+			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN")
+			local channelsCount = bitwise.getFrom(state, 10)
+			message { value = state == -1 and "Audio disabled" or self.states[channelsCount] }
+			message:initType(
+				"Adjust this property to choose the channels mode for source channels. Toggle this property to switch the audio state.",
+				"Adjustable, toggleable")
+			return message
+		end,
+		set_adjust = function(self, parent, direction)
+			local message = initOutputMessage()
+			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN")
+			local channelsCount = state == -1 and -1 or bitwise.getFrom(state, 10)
+			local trackChans = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+			if (channelsCount + direction) * 2 <= trackChans and (channelsCount + direction) >= 0 then
+				state = bitwise.concat(10, 0, channelsCount + direction)
+			else
+				message(string.format("No %s property values.", (direction == 1) and "next" or "previous"))
+			end
+			reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN", state)
+			message(self:get(parent))
+			return false, message
+		end,
+		set_perform = function(self, parent)
+			local message = initOutputMessage()
+			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN")
+			state = state == -1 and 0 or -1
+			reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN",
+				state)
+			message(string.format("Audio %s.", state == -1 and "disabled" or "enabled"))
+			if state ~= -1 then
+				message(self:get(parent))
+			end
+			return false, message
+		end
+	}
+
+	shrSourceAudioChannelsProperty.extendedProperties:registerProperty {
+		get = function(self, parent)
+			local message = initOutputMessage()
+			message { label = "Source track channels" }
+			local state = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+			message { value = string.format("%u", state) }
+			message:initType(
+				"Adjust this property to set the new channels count for source track. This property repeats the track channels dropdown list in routing window.")
+			return message
+		end,
+		set_adjust = function(self, parent, direction)
+			local message = initOutputMessage()
+			local state = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+			local ajustingValue = nil
+			if direction > 0 then
+				ajustingValue = 2
+			else
+				ajustingValue = -2
+			end
+			if (state + ajustingValue) <= 128 and (state + ajustingValue) >= 2 then
+				state = state + ajustingValue
+			else
+				message(string.format("No %s property values.",
+					direction == actions.set.increase.direction and "next" or "previous"))
+			end
+			reaper.SetMediaTrackInfo_Value(master, "I_NCHAN", state)
+			local srcState = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN")
+			local srcChannels, srcChannelsCount = bitwise.getParts(srcState, 10, 2)
+			if srcChannelsCount == 0 then
+				if (srcChannels + 2) > state then
+					reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN",
+						bitwise.setTo(srcState, 10, state - 2))
+				end
+			elseif srcChannelsCount == 1 then
+				if srcChannels + 1 > state then
+					reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN",
+						bitwise.setTo(srcState, 10, state - 1))
+				end
+			elseif srcChannelsCount > 1 then
+				if srcChannelsCount * 2 > state then
+					reaper.SetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN",
+						bitwise.concat(10, 0, state / 2))
+				end
+			end
+			message(self:get(parent))
+			return false, message
+		end
+	}
+
+	shrAutomationModeProperty = parentLayout[shrID]:registerProperty {
+		idx = i,
+		states = {
+			[-1] = "Track automation default",
+			[0] = "Trim off",
+			[1] = "Read",
+			[2] = "Touch",
+			[3] = "Write",
+			[4] = "Latch"
+		},
+	}
+
+	function shrAutomationModeProperty:get()
+		local message = initOutputMessage()
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_AUTOMODE")
+		message { objectId = "Hardware output", label = "Automation mode", value = self.states[state] }
+		message:initType("Adjust this property to choose the needed automation mode for this send automation.")
+		return message
+	end
+
+	function shrAutomationModeProperty:set_adjust(direction)
+		local message = initOutputMessage()
+		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_AUTOMODE")
+		if (state + direction) >= -1 and (state + direction) <= #self.states then
+			reaper.SetTrackSendInfo_Value(master, 1, self.idx, "I_AUTOMODE", state + direction)
+		else
+			message(string.format("No more %s property values.",
+				direction == actions.set.increase.direction and "next" or "previous"))
+		end
+		message(self:get())
+		return message
+	end
+
+	local shrRemoveProperty = parentLayout[shrID]:registerProperty {
+		idx = i
+	}
+
+	function shrRemoveProperty:get()
+		local message = initOutputMessage()
+		message("Remove this hardware output")
+		message:initType("Perform this property to remove this hardware output.")
+		return message
+	end
+
+	function shrRemoveProperty:set_perform()
+		if reaper.RemoveTrackSend(master, 1, self.idx) then
+			return "hardware output has been removed."
+		else
+			return "Removing error"
+		end
+	end
+end
 parentLayout.defaultSublayout = "playbackLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)
