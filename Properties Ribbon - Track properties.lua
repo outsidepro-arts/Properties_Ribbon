@@ -3158,7 +3158,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local message = initOutputMessage()
 				message { objectId = self.typeName, label = "Destination MIDI" }
 				local state = bitwise.getRange(
-					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 6, 11)
+					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 6, 10)
 				local srcState = bitwise.getTo(
 					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 5)
 				message:initType(
@@ -3180,7 +3180,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local srcState = bitwise.getTo(
 					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 5)
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS")
-				local channels = bitwise.getRange(state, 6, 11)
+				local channels = bitwise.getRange(state, 6, 10)
 				if srcState ~= 31 and (channels + direction) >= 0 and (channels + direction) <= 16 then
 					channels = channels + direction
 				else
@@ -3188,7 +3188,68 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 						direction == actions.set.increase.direction and "next" or "previous"))
 				end
 				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS",
-					bitwise.setRange(state, 6, 11, channels))
+					bitwise.setRange(state, 6, 10, channels))
+				message(self:get())
+				return message
+			end
+
+			local shr_MidiFaderModeProperty = parentLayout[shrID]:registerProperty {
+				track = track,
+				idx = i,
+				type = category,
+				typeName = shrCatNames[category]
+			}
+
+			function shr_MidiFaderModeProperty:get()
+				local message = initOutputMessage()
+				local state = bitwise.getBit(
+					reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 10)
+				message { objectId = self.typeName, label = "MIDI faders volume and pan", value = state and "Enabled" or "Disabled" }
+				message:initType("Toggle this property to switch the MIDI faders volume and pan state.", "Toggleable")
+				return message
+			end
+
+			function shr_MidiFaderModeProperty:set_perform()
+				local message = initOutputMessage()
+				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS")
+				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS",
+					bitwise.setBit(state, 10, not bitwise.getBit(state, 10)))
+				message(self:get())
+				return message
+			end
+
+			shrAutomationModeProperty = parentLayout[shrID]:registerProperty {
+				track = track,
+				idx = i,
+				type = category,
+				typeName = shrCatNames[category],
+				states = {
+					[-1] = "Track automation default",
+					[0] = "Trim off",
+					[1] = "Read",
+					[2] = "Touch",
+					[3] = "Write",
+					[4] = "Latch"
+				},
+			}
+
+			function shrAutomationModeProperty:get()
+				local message = initOutputMessage()
+				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE")
+				message { objectId = self.typeName, label = "Automation mode", value = self.states[state] }
+				message:initType("Adjust this property to choose the needed automation mode for this send automation.")
+				return message
+			end
+
+			function shrAutomationModeProperty:set_adjust(direction)
+				local message = initOutputMessage()
+				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE")
+				if (state + direction) >= -1 and (state + direction) <= #self.states then
+					reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE", state + direction)
+				else
+					message(string.format("No more %s property values.",
+						direction == actions.set.increase.direction and "next" or "previous"))
+				end
 				message(self:get())
 				return message
 			end
