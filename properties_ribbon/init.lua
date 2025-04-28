@@ -760,7 +760,7 @@ layout = {}
 local maybeLayout = nil
 local layoutFile
 if config.getboolean("allowLayoutsrestorePrev", true) and extstate.oncePerformSuccess then
-	layoutFile = extstate.previousLayoutFile or fixPath(PropertiesRibbon.proposeLayout(true))
+	layoutFile = extstate.previousLayoutFile or PropertiesRibbon.proposeLayout(true)
 	extstate.oncePerformSuccess = false
 else
 	layoutFile = extstate.layoutFile
