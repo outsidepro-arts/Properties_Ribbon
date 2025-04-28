@@ -1236,23 +1236,25 @@ if fxLayout.canProvide() then
 		currentSublayout = PropertiesRibbon.findDefaultSublayout(fxLayout)
 	end
 
-	-- Here is main jumping focus fix code
-	local realParmID = extstate._layout.lastRealParmID
-	if realParmID then
-		for i = 1, #fxLayout[currentSublayout].properties do
-			local v = fxLayout[currentSublayout].properties[i]
-			if v.parmIndex then
-				if v.parmIndex == realParmID then
-					extstate[fxLayout[currentSublayout].section] = i
-					extstate._layout.lastRealParmID = nil
+	if fxLayout.canProvide() then
+		-- Here is main jumping focus fix code
+		local realParmID = extstate._layout.lastRealParmID
+		if realParmID then
+			for i = 1, #fxLayout[currentSublayout].properties do
+				local v = fxLayout[currentSublayout].properties[i]
+				if v.parmIndex then
+					if v.parmIndex == realParmID then
+						extstate[fxLayout[currentSublayout].section] = i
+						extstate._layout.lastRealParmID = nil
+					end
 				end
 			end
 		end
 	end
-end
 
--- Finishing the one parm FX rendering implementation
--- After all rendering cases you have to store current object to next rendering will be fast
-extstate._layout.lastObjectId = getCurrentObjectId()
+	-- Finishing the one parm FX rendering implementation
+	-- After all rendering cases you have to store current object to next rendering will be fast
+	extstate._layout.lastObjectId = getCurrentObjectId()
+end
 
 PropertiesRibbon.presentLayout(fxLayout)
