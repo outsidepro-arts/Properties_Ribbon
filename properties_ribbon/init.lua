@@ -556,6 +556,8 @@ function PropertiesRibbon.proposeLayout(forced)
 	end
 	if (reaper.GetMasterTrackVisibility() & 1) == 1 then
 		contextLayout = "Properties Ribbon - Master track properties"
+	else
+		contextLayout = "Properties Ribbon - Track properties"
 	end
 	local contexts = {
 		[0] = function()
