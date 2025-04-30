@@ -1127,7 +1127,7 @@ function fadeinShapeProperty:set_adjust(direction)
 	local ajustingValue = direction
 	if istable(items) then
 		local state = 1
-		if utils.isSameValue(items, self.getValue) then
+		if utils.isAllTheSame(items, self.getValue) then
 			state = self.getValue(items[1])
 			if state + ajustingValue <= #self.states and state + ajustingValue >= 0 then
 				state = state + ajustingValue
