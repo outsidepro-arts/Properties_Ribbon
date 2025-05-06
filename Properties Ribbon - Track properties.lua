@@ -3031,7 +3031,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					shrDestinationAudioChannelsProperty.extendedProperties:registerProperty {
 						get = function(self, parent)
 							local message = initOutputMessage()
-							message { label = "Destination track channels" }
+							message { label = "Channels mode" }
 							local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx,
 								"I_DSTCHAN")
 							local isMono = bitwise.getBit(
