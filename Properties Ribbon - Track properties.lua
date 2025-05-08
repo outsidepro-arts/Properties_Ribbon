@@ -2475,7 +2475,10 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				reaper.GetMediaTrackInfo_Value(track, "IP_TRACKNUMBER"))
 			local shrLabel = shrCatNames[category]
 			if istable(tracks) then
-				shrLabel = shrLabel:joinsep(" ", "from", shrName, "to", select(2, reaper.GetTrackName(track, "")))
+				shrLabel = shrLabel:joinsep(" ", "from",
+					category < 0 and shrName or select(2, reaper.GetTrackName(track, "")),
+					"to",
+					category < 0 and select(2, reaper.GetTrackName(track, "")) or shrName)
 			else
 				shrLabel = shrLabel:joinsep(" ", category >= 0 and "to" or "from", shrName)
 			end
