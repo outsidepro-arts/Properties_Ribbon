@@ -1,6 +1,6 @@
 --[[
 This file is part of script complex Properties Ribbon
-Copyright (c) 2020-2024 outsidepro-arts
+Copyright (c) 2020-2025 outsidepro-arts
 License: MIT License
 
 ----------
@@ -12,7 +12,7 @@ LUA - is not object oriented programming language, but very flexible. Its flexib
 When i was starting write this scripts complex i imagined this as real OOP. But in consequence the scripts structure has been reunderstanded as current structure. It has been turned out more comfort as for writing new properties table, as for call this from main script engine.
 After this preambula, let me begin.
 ]]
-   --
+--
 
 -- It's just another vision of Properties Ribbon can be applied on
 

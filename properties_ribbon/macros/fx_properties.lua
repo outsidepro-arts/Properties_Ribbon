@@ -1,6 +1,6 @@
 --[[
 This file is part of script complex Properties Ribbon
-Copyright (c) 2020-2024 outsidepro-arts
+Copyright (c) 2020-2025 outsidepro-arts
 License: MIT License
 
 ----------
@@ -62,7 +62,7 @@ function fx_properties_macros.newContextualAPI()
 end
 
 fx_properties_macros.fxMaskList = setmetatable({
-	keySequence = function (idx, key)
+	keySequence = function(idx, key)
 		return string.format("fx_properties.excludeMask%u.%s", idx, key)
 	end
 }, {
@@ -70,7 +70,7 @@ fx_properties_macros.fxMaskList = setmetatable({
 		if isnumber(idx) then
 			local fxMask = extstate[self.keySequence(idx, "fx")]
 			local parmMask = extstate[self.keySequence(idx, "param")]
-			return { ["fxMask"] = fxMask,["paramMask"] = parmMask }
+			return { ["fxMask"] = fxMask, ["paramMask"] = parmMask }
 		end
 		error(string.format("Expected key type %s (got %s)", type(1), type(idx)))
 	end,
@@ -115,4 +115,3 @@ fx_properties_macros.stepsList = {
 	{ label = "biggest",  value = 0.01 },
 	{ label = "huge",     value = 0.1 }
 }
-
