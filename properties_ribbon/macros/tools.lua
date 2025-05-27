@@ -181,23 +181,24 @@ function composeEnvelopeControlProperty.viaChunk(obj, envChunks, getfromFunc)
 			end
 		else
 			local action, envelope = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
+			local _, name = reaper.GetEnvelopeName(envelope)
 			if action == 1 then
 				if reaper.GetSetEnvelopeInfo_String(envelope, "ACTIVE", "1", true) then
-					return true, "Activated"
+					return true, string.format("The %s envelope activated", name)
 				else
-					return true, "Failed to activate"
+					return false, string.format("Failed to activate the %s envelope.", name)
 				end
 			elseif action == 2 then
 				if reaper.GetSetEnvelopeInfo_String(envelope, "VISIBLE", "0", true) then
-					return true, "Hid"
+					return true, string.format("The %s envelope hidden", name)
 				else
-					return true, "Failed to hide"
+					return false, string.format("Failed to hide the %s envelope.", name)
 				end
 			elseif action == 3 then
 				if reaper.GetSetEnvelopeInfo_String(envelope, "VISIBLE", "1", true) then
-					return true, "Showed"
+					return true, string.format("The %s envelope showed", name)
 				else
-					return true, "Failed to show"
+					return false, string.format("Failed to show the %s envelope.", name)
 				end
 			end
 		end
@@ -316,25 +317,25 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 			end
 		else
 			local action, envelope = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
+			local _, name = reaper.GetEnvelopeName(envelope)
 			if action == 0 then
 				reaper.Main_OnCommand(istable(commands) and commands[selectedEnvelope] or commands, 0)
 				if self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope]) == 2 then
-					return true, "Activated"
+					return true, string.format("The %s envelope activated", name)
 				else
-					return true, "Failed to activate", true
+					return true, string.format("Failed to activate the %s envelope.", name), true
 				end
 			elseif action == 2 then
 				if reaper.GetSetEnvelopeInfo_String(envelope, "VISIBLE", "0", true) then
-					return true, "Hid"
+					return true, string.format("The %s envelope hidden", name)
 				else
-					return true, "Failed to hide"
+					return true, string.format("Failed to hide the %s envelope.", name), true
 				end
 			elseif action == 3 then
 				if reaper.GetSetEnvelopeInfo_String(envelope, "VISIBLE", "1", true) then
-					setUndoLabel(undoMessage)
-					return true, "Showed"
+					return true, string.format("The %s envelope showed", name)
 				else
-					return true, "Failed to show"
+					return true, string.format("Failed to show the %s envelope.", name), true
 				end
 			end
 		end
