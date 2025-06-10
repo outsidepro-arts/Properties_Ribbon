@@ -1394,13 +1394,15 @@ function PropertiesRibbon.ajustProperty(action)
 					layout.properties[layout.pIndex],
 					action.direction)
 				opt_once = layout.properties[layout.pIndex].performableOnce and opt_once
-				if layout.undoContext then
+				local localUndoContext = layout.properties[layout.pIndex].undoContext
+				if layout.undoContext or localUndoContext then
 					if msg then
-						reaper.Undo_EndBlock(msg:extract(0, false), layout.undoContext)
+						reaper.Undo_EndBlock(msg:extract(0, false), localUndoContext or layout.undoContext)
 					elseif not msg and g_undoState then
-						reaper.Undo_EndBlock(g_undoState, layout.undoContext)
+						reaper.Undo_EndBlock(g_undoState, localUndoContext or layout.undoContext)
 					else
-						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false), layout
+						reaper.Undo_EndBlock(layout.properties[layout.pIndex]:get():extract(0, false),
+							localUndoContext or layout
 							.undoContext)
 					end
 				end
@@ -1424,12 +1426,14 @@ function PropertiesRibbon.ajustProperty(action)
 						action.value)](
 						layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty],
 						layout.properties[layout.pIndex], action.direction)
-				if layout.undoContext then
+				local localUndoContext = layout.properties[layout.pIndex].extendedProperties.properties
+				[currentExtProperty].undoContext
+				if layout.undoContext or localUndoContext then
 					if premsg then
-						reaper.Undo_EndBlock(premsg:extract(0, false), layout.undoContext)
+						reaper.Undo_EndBlock(premsg:extract(0, false), localUndoContext or layout.undoContext)
 					else
 						reaper.Undo_EndBlock(g_undoState or layout.properties[layout.pIndex]:get():extract(0, false),
-							layout.undoContext)
+							localUndoContext or layout.undoContext)
 					end
 				end
 			else
