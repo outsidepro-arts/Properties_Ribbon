@@ -160,6 +160,8 @@ function initOutputMessage()
 		value = nil,
 		-- The focus position for some cases
 		focusIndex = nil,
+		-- The same value focus position
+		valueFocusIndex = nil,
 		-- type prompts initialization method
 		-- The type prompts adds the string message set by default to the end of value message.
 		-- Parameters:
@@ -244,6 +246,36 @@ function initOutputMessage()
 		clearValue = function(self)
 			self.value = nil
 		end,
+		---Sets the focus position and ofcount for some cases
+		---@param self table
+		---@param index number
+		---@param ofCount number
+		setFocusIndex = function(self, index, ofCount)
+			self.focusIndex = string.format("%u of %u", index, ofCount)
+		end,
+		---Sets the value focus position and ofcount (if the config allows this)
+		---@param self table
+		---@param curIndex number|function()
+		---@param ofCount number|function()
+		setValueFocusIndex = function(self, curIndex, ofCount)
+			local funcInfo = debug.getinfo(3)
+			local conf = config.getinteger("reportValuePos", 3)
+			assert(funcInfo,
+				"Error while getting the function level for position reporting. Please report this error to the author.")
+			if (conf == 1 and (funcInfo.name == "nextProperty" or funcInfo.name == "previousProperty" or funcInfo.name == "reportOrGotoProperty")) or
+				(conf == 2 and funcInfo.name == "?") or
+				(conf == 3) then
+				self.valueFocusIndex = string.format("%u of %u", isfunction(curIndex) and curIndex() or curIndex,
+					isfunction(ofCount) and ofCount() or ofCount)
+			end
+		end,
+		---Clears the value focus position
+		---@param self table
+		clearValueFocusIndex = function(self)
+			if self.valueFocusIndex then
+				self.valueFocusIndex = nil
+			end
+		end,
 		-- Output  composed message to OSARA by itself
 		-- Parameters:
 		-- outputOrder (number, optional):  the output order which supports the following values:
@@ -289,9 +321,9 @@ function initOutputMessage()
 			if self.value then
 				table.insert(message, tostring(string.gsub(self.value, "%s$", "")))
 			end
-			if self.focusIndex then
+			if self.valueFocusIndex then
 				message[#message] = string.format("%s.", message[#message])
-				table.insert(message, self.focusIndex)
+				table.insert(message, self.valueFocusIndex)
 			end
 			if #message == 0 then
 				return
@@ -299,6 +331,10 @@ function initOutputMessage()
 			if shouldExtractType == true and self.tLevels and self.tl > 0 then
 				message[#message] = string.format("%s.", message[#message])
 				table.insert(message, self.tLevels[self.tl])
+			end
+			if self.focusIndex then
+				message[#message] = string.format("%s.", message[#message])
+				table.insert(message, self.focusIndex)
 			end
 			-- Clearing off the extra spaces
 			for _, part in ipairs(message) do
@@ -341,6 +377,9 @@ function initOutputMessage()
 					else
 						self.value = obj.value
 					end
+				end
+				if obj.valueFocusIndex then
+					self.valueFocusIndex = obj.valueFocusIndex
 				end
 				if obj.focusIndex then
 					self.focusIndex = obj.focusIndex
@@ -538,7 +577,7 @@ function PropertiesRibbon.composeSubLayout(shouldReportParentLayout)
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if (cfg == 1 or cfg == 3) and (isSublayout(layout)) then
-		message(string.format(", %u of %u", layout.slIndex, layout.ofCount))
+		message:setFocusIndex(layout.slIndex, layout.ofCount)
 	end
 	message(", ")
 	return message:extract()
@@ -1024,9 +1063,7 @@ function PropertiesRibbon.nextProperty()
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({
-			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
-		})
+		result:setFocusIndex(pIndex, #layoutLevel.properties)
 	end
 	message(result, true)
 	setUndoLabel(message:extract(0, false))
@@ -1147,9 +1184,7 @@ function PropertiesRibbon.previousProperty()
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({
-			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
-		})
+		result:setFocusIndex(pIndex, #layoutLevel.properties)
 	end
 	message(result, true)
 	setUndoLabel(message:extract(0, false))
@@ -1316,9 +1351,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 	end
 	local cfg = config.getinteger("reportPos", 3)
 	if cfg == 2 or cfg == 3 then
-		result({
-			focusIndex = ("%u of %u"):format(pIndex, #layoutLevel.properties)
-		})
+		result:setFocusIndex(pIndex, #layoutLevel.properties)
 	end
 	message(result, true)
 	if percentageNavigationApplied then
@@ -1427,7 +1460,7 @@ function PropertiesRibbon.ajustProperty(action)
 						layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty],
 						layout.properties[layout.pIndex], action.direction)
 				local localUndoContext = layout.properties[layout.pIndex].extendedProperties.properties
-				[currentExtProperty].undoContext
+					[currentExtProperty].undoContext
 				if layout.undoContext or localUndoContext then
 					if premsg then
 						reaper.Undo_EndBlock(premsg:extract(0, false), localUndoContext or layout.undoContext)

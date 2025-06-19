@@ -388,6 +388,7 @@ function contextMenusProperty:get()
 	local state = extstate._layout.contextMenuSelector or 1
 	local track = reaper.GetLastTouchedTrack()
 	message { value = string.format("%s context menu", self.states[state].label) }
+	message:setValueFocusIndex(state, #self.states)
 	message:initType("Adjust this property to choose the needed context menu. Perform this property to pop selected up.")
 	if track then
 		message { objectId = getTrackID(track) }
@@ -1019,6 +1020,7 @@ function soloProperty:get()
 	else
 		local state = self.getValue(tracks)
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1083,6 +1085,7 @@ function soloProperty:set_perform()
 		self.setValue(tracks, state)
 	end
 	message(self:get())
+	message:clearValueFocusIndex()
 	if isExclusiveSolo and #checkedTrackslist > 0 then
 		message { value = " exclusive" }
 		reaper.PreventUIRefresh(1)
@@ -1257,6 +1260,7 @@ function recmonitoringProperty:get()
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMON")
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1608,6 +1612,7 @@ function recmodeProperty:get()
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_RECMODE")
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1675,6 +1680,7 @@ function automationModeProperty:get()
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "I_AUTOMODE")
 		message({ objectId = getTrackID(tracks), value = self.states[state] })
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1906,6 +1912,7 @@ function timebaseProperty:get()
 	else
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "C_BEATATTACHMODE")
 		message({ objectId = getTrackID(tracks), value = self.states[state + 1] })
+		message:setValueFocusIndex(state + 2, #self.states + 1)
 	end
 	return message
 end
@@ -2392,6 +2399,9 @@ function loudnessHoldMeterProperty:get()
 				-- Clearing off the extra coma chars
 				message.value = message.value:sub(1, -2)
 			end
+			if mode.id < 5 then
+				message:setValueFocusIndex(curChannel, #mode.channels + 1)
+			end
 		else
 			message { label = "Meter", value = "Disabled" }
 		end
@@ -2753,6 +2763,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				message({ label = "Mode" })
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SENDMODE")
 				message({ objectId = self.typeName, value = self.states[state] })
+				message:setValueFocusIndex(state < 3 and state + 1 or state, #self.states)
 				return message
 			end
 
@@ -2805,6 +2816,15 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				message({ label = "Source audio" })
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_SRCCHAN")
 				message({ objectId = self.typeName, value = self.states[state] })
+				do
+					local channels, channelsCount = bitwise.getTo(state, 10), bitwise.getFrom(state, 10)
+					local trackChans = reaper.GetMediaTrackInfo_Value(self.track, "I_NCHAN")
+					message:setValueFocusIndex(channels + 1,
+						(channelsCount == 0 and trackChans - 1) or
+						(channelsCount == 1 and trackChans) or
+						trackChans - (channelsCount * 2) + 1
+					)
+				end
 				return message
 			end
 
@@ -2864,6 +2884,11 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					local state = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_SRCCHAN")
 					local channelsCount = bitwise.getFrom(state, 10)
 					message { value = state == -1 and "Audio disabled" or self.states[channelsCount] }
+					if state >= 0 then
+						local trackChans = reaper.GetMediaTrackInfo_Value(parent.track, "I_NCHAN")
+						message:setValueFocusIndex(bitwise.getFrom(state, 10) + 1,
+							(trackChans / 2) + 1)
+					end
 					message:initType(
 						"Adjust this property to choose the channels mode for source channels. Toggle this property to switch the audio state.",
 						"Adjustable, toggleable")
@@ -2905,6 +2930,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					message { label = "Source track channels" }
 					local state = reaper.GetMediaTrackInfo_Value(parent.track, "I_NCHAN")
 					message { value = string.format("%u", state) }
+					message:setValueFocusIndex(state / 2, 64)
 					message:initType(
 						"Adjust this property to set the new channels count for source track. This property repeats the track channels dropdown list in routing window.")
 					return message
@@ -2982,6 +3008,10 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 								channels + 1,
 								endChannel) }
 						end
+						message:setValueFocusIndex(
+							bitwise.getTo(state, 10) +
+							1,
+							destTrackChans)
 					else
 						message { value = "Disabled" }
 						message:addType(
@@ -3064,6 +3094,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 								"P_DESTTRACK")
 							local state = reaper.GetMediaTrackInfo_Value(destTrack, "I_NCHAN")
 							message { value = string.format("%u", state) }
+							message:setValueFocusIndex(state / 2, 64)
 							message:initType(
 								"Adjust this property to set the new channels count for destination track. This property repeats the track channels dropdown list in routing window.")
 							return message
@@ -3077,7 +3108,6 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 							newChanCount = math.min(math.max(newChanCount, 2), 128)
 							if newChanCount == prevChanCount then
 								message(string.format("No %s property values.", direction == 1 and "next" or "previous"))
-								return false, message
 							end
 							reaper.SetMediaTrackInfo_Value(destTrack, "I_NCHAN", newChanCount)
 							local dstState = reaper.GetTrackSendInfo_Value(parent.track, parent.type, parent.idx,
@@ -3095,7 +3125,6 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 								reaper.SetTrackSendInfo_Value(parent.track, parent.type, parent.idx, "I_DSTCHAN",
 									newDstState)
 							end
-
 							message(self:get(parent))
 							return false, message
 						end
@@ -3123,6 +3152,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					local state = bitwise.getTo(
 						reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_MIDIFLAGS"), 5)
 					message { objectId = self.typeName, label = "Source MIDI", value = self.states[state] }
+					local channels = bitwise.getTo(state, 5)
+					message:setValueFocusIndex(channels ~= 31 and channels + 1 or 1,
+						channels ~= 31 and 17 or 1)
 					message:initType(
 						"Adjust this property to choose the source MIDI channel. Toggle this property to switch the MIDI sending state.",
 						"Adjustable, toggleable"
@@ -3182,6 +3214,9 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 						message:changeType("Unavailable", 2)
 					else
 						message { value = self.states[state] }
+						local channels = bitwise.getRange(state, 6, 10)
+						message:setValueFocusIndex(channels + 1,
+							srcState ~= 31 and 17 or 1)
 					end
 					return message
 				end
@@ -3249,6 +3284,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local message = initOutputMessage()
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE")
 				message { objectId = self.typeName, label = "Automation mode", value = self.states[state] }
+				message:setValueFocusIndex(state + 2, #self.states + 2)
 				message:initType("Adjust this property to choose the needed automation mode for this send automation.")
 				return message
 			end

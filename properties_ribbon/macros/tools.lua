@@ -89,6 +89,7 @@ composeEnvelopeControlProperty = {}
 ---@return table the ready property to register via registerProperty method.
 function composeEnvelopeControlProperty.viaChunk(obj, envChunks, getfromFunc)
 	local t = {}
+	t.undoContext = undo.contexts.any
 	t.states = envChunks and envChunks:split(",", true)
 	t.getValue = function(track, envName)
 		local env = getfromFunc(track, envName)
@@ -120,6 +121,7 @@ function composeEnvelopeControlProperty.viaChunk(obj, envChunks, getfromFunc)
 		end
 		local selectedEnvelope = envChunks and
 			(extstate._layout[string.format("%sEnvelopeType", parent:get().label:lower())] or 1)
+		message:setValueFocusIndex(selectedEnvelope, #self.states)
 		if istable(obj) then
 			local _, env = self.getValue(obj[1], selectedEnvelope and self.states[selectedEnvelope])
 			local state = utils.getMostFrequent(obj, function(o)
@@ -245,6 +247,7 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 		end
 		local selectedEnvelope = names and
 			(extstate._layout[string.format("%sEnvelopeType", parent:get().label:lower())] or 1)
+		message:setValueFocusIndex(selectedEnvelope, #self.states)
 		if istable(obj) then
 			local _, env = self.getValue(obj[1], selectedEnvelope and self.states[selectedEnvelope])
 			local state = utils.getMostFrequent(obj, function(o)

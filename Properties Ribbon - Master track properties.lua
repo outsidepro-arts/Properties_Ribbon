@@ -680,6 +680,7 @@ function masterTrackMixerPosProperty:get()
 		message { value = "nowhere" }
 	else
 		message { value = string.format("in the %s on the mixer panel", self.states[state]) }
+		message:setValueFocusIndex(state, #self.states)
 	end
 	return message
 end
@@ -783,6 +784,9 @@ function loudnessHoldMeterProperty:get()
 			-- Clearing off the extra coma chars
 			message.value = message.value:sub(1, -2)
 		end
+		if mode.id < 5 then
+			message:setValueFocusIndex(curChannel, #mode.channels + 1)
+		end
 	else
 		message { label = "Meter", value = "Disabled" }
 	end
@@ -864,27 +868,36 @@ loudnessHoldMeterProperty.extendedProperties:registerProperty {
 }
 
 loudnessHoldMeterProperty.extendedProperties:registerProperty {
+	modeStates = { 0, 2, 4, 8, 12, 16, 20 },
 	get = function(self, parent)
 		local message = initOutputMessage()
 		message { label = "Meter mode" }
 		local mode = parent.getMode(master)
 		message { value = mode.name }
+		message:setValueFocusIndex(function()
+			local curMode = nil
+			for i, m in ipairs(self.modeStates) do
+				if m == mode.id then
+					curMode = i
+				end
+			end
+			return curMode
+		end, #self.modeStates)
 		message:initType("Adjust this property to choose the needed meter mode for master track.")
 		return message
 	end,
 	set_adjust = function(self, parent, direction)
 		local message = initOutputMessage()
-		local modeStates = { 0, 2, 4, 8, 12, 16, 20 }
 		local curMode = nil
 		local mode = parent.getMode(master)
-		for i, m in ipairs(modeStates) do
+		for i, m in ipairs(self.modeStates) do
 			if m == mode.id then
 				curMode = i
 			end
 		end
-		if curMode + direction > #modeStates then
+		if curMode + direction > #self.modeStates then
 			message "No more next property values. "
-			curMode = #modeStates
+			curMode = #self.modeStates
 		elseif curMode + direction < 1 then
 			message "No more previous property values. "
 			curMode = 1
@@ -893,7 +906,7 @@ loudnessHoldMeterProperty.extendedProperties:registerProperty {
 		end
 		local state = reaper.GetMediaTrackInfo_Value(master, "I_VUMODE")
 		-- Thanks to @electrik-spb for the hexadecimal bitmask solution
-		reaper.SetMediaTrackInfo_Value(master, "I_VUMODE", (state & 0x60) | modeStates[curMode])
+		reaper.SetMediaTrackInfo_Value(master, "I_VUMODE", (state & 0x60) | self.modeStates[curMode])
 		message(self:get(parent))
 		return false, message
 	end
@@ -1169,6 +1182,7 @@ for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
 		message({ label = "Mode" })
 		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SENDMODE")
 		message({ objectId = "Hardware output", value = self.states[state] })
+		message:setValueFocusIndex(state < 3 and state + 1 or state, #self.states)
 		return message
 	end
 
@@ -1218,6 +1232,15 @@ for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
 		message({ label = "Source audio" })
 		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_SRCCHAN")
 		message({ objectId = "Hardware output", value = self.states[state] })
+		do
+			local channels, channelsCount = bitwise.getTo(state, 10), bitwise.getFrom(state, 10)
+			local trackChans = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+			message:setValueFocusIndex(channels + 1,
+				(channelsCount == 0 and trackChans - 1) or
+				(channelsCount == 1 and trackChans) or
+				trackChans - (channelsCount * 2) + 1
+			)
+		end
 		return message
 	end
 
@@ -1277,6 +1300,11 @@ for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
 			local state = reaper.GetTrackSendInfo_Value(master, 1, parent.idx, "I_SRCCHAN")
 			local channelsCount = bitwise.getFrom(state, 10)
 			message { value = state == -1 and "Audio disabled" or self.states[channelsCount] }
+			if state >= 0 then
+				local trackChans = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
+				message:setValueFocusIndex(bitwise.getFrom(state, 10) + 1,
+					(trackChans / 2) + 1)
+			end
 			message:initType(
 				"Adjust this property to choose the channels mode for source channels. Toggle this property to switch the audio state.",
 				"Adjustable, toggleable")
@@ -1316,6 +1344,7 @@ for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
 			message { label = "Source track channels" }
 			local state = reaper.GetMediaTrackInfo_Value(master, "I_NCHAN")
 			message { value = string.format("%u", state) }
+			message:setValueFocusIndex(state / 2, 64)
 			message:initType(
 				"Adjust this property to set the new channels count for source track. This property repeats the track channels dropdown list in routing window.")
 			return message
@@ -1375,6 +1404,7 @@ for i = 0, reaper.GetTrackNumSends(master, 1) - 1 do
 		local message = initOutputMessage()
 		local state = reaper.GetTrackSendInfo_Value(master, 1, self.idx, "I_AUTOMODE")
 		message { objectId = "Hardware output", label = "Automation mode", value = self.states[state] }
+		message:setValueFocusIndex(state + 2, #self.states + 2)
 		message:initType("Adjust this property to choose the needed automation mode for this send automation.")
 		return message
 	end

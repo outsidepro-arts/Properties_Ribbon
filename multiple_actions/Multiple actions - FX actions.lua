@@ -133,12 +133,11 @@ function contextualFXChain:get()
 		"Adjust this property to choose which %s FX chain you wish to open. Perform this property to show the chosen FX chain."
 	):format(contexts[context]))
 	local state = nil
-	if context == 0 then
-		state = getCurrentChainAction()
-	else
-		state = 1
-	end
+	state = context == 0 and getCurrentChainAction() or 1
 	message(self.actions[state]:format(contexts[context], getStringPluginsCount(({ self.getValue() })[state])))
+	if context == 0 then
+		message:setValueFocusIndex(state, #self.actions)
+	end
 	return message
 end
 

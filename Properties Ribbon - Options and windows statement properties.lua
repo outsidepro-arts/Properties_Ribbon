@@ -245,6 +245,7 @@ end
 function rippleSwitcherProperty:get()
 	local message = initOutputMessage()
 	message { label = "Ripple editing", value = self.states[self.getValue()].label }
+	message:setValueFocusIndex(self.getValue(), #self.states)
 	message:initType("Adjust this property to choose the needed ripple editing mode.")
 	return message
 end

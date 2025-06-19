@@ -67,6 +67,7 @@ function typeLevelProperty:get()
 		label = "Types prompts level",
 		value = self.states[typeLevel]
 	}
+	message:setValueFocusIndex(typeLevel + 1, #self.states + 1)
 	return message
 end
 
@@ -102,6 +103,7 @@ function reportPosProperty:get()
 		label = "Reporting navigation position",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	return message
 end
 
@@ -114,6 +116,41 @@ function reportPosProperty:set_adjust(direction)
 		message("No more previous property values. ")
 	else
 		config.setinteger("reportPos", state + direction)
+	end
+	message(self:get())
+	return message
+end
+
+-- The virtual cursor position for property values
+local reportValuePosProperty = configLayout.main:registerProperty {}
+reportValuePosProperty.states = {
+	[0] = "off",
+	[1] = "Only when navigating",
+	[2] = "only when adjusting",
+	[3] = "Always"
+}
+function reportValuePosProperty:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Adjust this property to set the position reporting when you're adjusting the discret property values.")
+	local state = config.getinteger("reportValuePos", 3)
+	message {
+		label = "Reporting value position (if available)",
+		value = self.states[state]
+	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
+	return message
+end
+
+function reportValuePosProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local state = config.getinteger("reportValuePos", 3)
+	if (state + direction) > #self.states then
+		message("No more next property values. ")
+	elseif (state + direction) < 0 then
+		message("No more previous property values. ")
+	else
+		config.setinteger("reportValuePos", state + direction)
 	end
 	message(self:get())
 	return message
@@ -137,6 +174,7 @@ function resetSublayoutProperty:get()
 		label = "Remember position in layouts when loading",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	return message
 end
 
@@ -935,6 +973,7 @@ function fxParmstepProperty:get()
 		label = "FX parameters step adjustment",
 		value = fx_properties_macros.stepsList[state].label
 	}
+	message:setValueFocusIndex(state + 1, #fx_properties_macros.stepsList + 1)
 	return message
 end
 
@@ -997,6 +1036,7 @@ function reportParmIndexProperty:get()
 		label = "Parameter identification when navigating",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	return message
 end
 
@@ -1026,6 +1066,7 @@ function reportRealParmValueProperty:get()
 		label = "Report FX parameter number when navigating as",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	return message
 end
 
@@ -1163,6 +1204,7 @@ function outputOrderProperty:get()
 		label = "Output when adjusting a property",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	return message
 end
 
@@ -1220,6 +1262,7 @@ function twicePressPerformProperty:get()
 		label = "Twice navigation onto the same property",
 		value = self.states[state]
 	}
+	message:setValueFocusIndex(state + 1, #self.states + 1)
 	message:initType(
 		"Adjust this property to choose the needed behaviour when you're navigate to the same property twice straightaway.")
 	return message
@@ -1356,6 +1399,7 @@ function lvDivider:get()
 		local charIndex = self.getValue(state)
 		if charIndex then
 			message { value = string.format("by %s character", self.states[charIndex].label) }
+			message:setValueFocusIndex(charIndex + 1, #self.states + 1)
 		else
 			message { value = string.format("by %s", state) }
 		end

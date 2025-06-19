@@ -583,6 +583,7 @@ function timebaseProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = getItemID(items), value = self.states[state + 1] }
+		message:setValueFocusIndex(state + 2, #self.states + 1)
 	end
 	return message
 end
@@ -1118,6 +1119,7 @@ function fadeinShapeProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = getItemID(items), value = self.states[state] }
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1394,6 +1396,7 @@ function fadeoutShapeProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = getItemID(items), value = self.states[state] }
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -1664,6 +1667,8 @@ function activeTakeProperty:get()
 		local state = self.getValue(items)
 		local retval, name = reaper.GetSetMediaItemTakeInfo_String(state, "P_NAME", "", false)
 		message { objectId = getItemID(items), label = getTakeID(items), value = name }
+		message:setValueFocusIndex(reaper.GetMediaItemTakeInfo_Value(state, "IP_TAKENUMBER") + 1,
+			reaper.CountTakes(items))
 	end
 	return message
 end
@@ -2333,6 +2338,7 @@ function takeChannelModeProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = string.format("%s %s", getItemID(items), getTakeID(items)), value = self.states[state] }
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
@@ -2744,6 +2750,19 @@ function takePitchShifterProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = string.format("%s %s", getItemID(items), getTakeID(items)), value = self.states[state] }
+		-- This is very hard case so we will hard-code some values.
+		message:setValueFocusIndex(state >= 0 and function()
+			local curIndex = 0
+			for i = 0, #self.states + 1 do
+				if self.states[reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i)] then
+					curIndex = curIndex + 1
+				end
+				if reaper.BR_Win32_MAKELONG(reaper.BR_Win32_LOWORD(state), i) == state then
+					break
+				end
+			end
+			return curIndex + 1
+		end or 1, #self.states - 4)
 	end
 	return message
 end
@@ -3033,6 +3052,15 @@ function takePitchShifterModeProperty:get()
 					"The Property is unavailable right now, because the shifter has been set to %s. Set the specified shifter before setting it up."
 					, takePitchShifterProperty.states[-1]), 1)
 			message:changeType("unavailable", 2)
+		else
+			-- We have to count the selected submode and its amount manualy.
+			message:setValueFocusIndex(reaper.BR_Win32_LOWORD(state) + 1, function()
+				local submodeCount = 0
+				while reaper.EnumPitchShiftSubModes(reaper.BR_Win32_HIWORD(state), submodeCount) do
+					submodeCount = submodeCount + 1
+				end
+				return submodeCount
+			end)
 		end
 	end
 	return message
@@ -3138,6 +3166,7 @@ function takeStretchModeProperty:get()
 	else
 		local state = self.getValue(items)
 		message { objectId = string.format("%s %s", getItemID(items), getTakeID(items)), value = self.states[state] }
+		message:setValueFocusIndex(state + 1, #self.states + 1)
 	end
 	return message
 end
