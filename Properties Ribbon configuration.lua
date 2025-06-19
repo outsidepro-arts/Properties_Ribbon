@@ -54,7 +54,7 @@ local typeLevelProperty = {}
 configLayout.main:registerProperty(typeLevelProperty)
 typeLevelProperty.states = {
 	[0] = "no prompt for property actions",
-	[1] = "detailed prompts for property actions (for beginers)",
+	[1] = "detailed prompts for property actions (for beginners)",
 	[2] = "short prompts for property actions"
 }
 
