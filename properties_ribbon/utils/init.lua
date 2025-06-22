@@ -360,10 +360,11 @@ function utils.concatSentence(...)
 	for i = 1, n do
 		local arg = select(i, ...)
 		if arg ~= nil then
-			assert(isstring(arg),
-				("Concatenating sentence error in  argument %u: the string is expected (got %s)"):format(i, type(arg)))
+			assert(isstring(arg) or tonumber(arg),
+				("Concatenating sentence error in  argument %u: the convertable to string value is expected (got %s)")
+				:format(i, type(arg)))
 			clean_count = clean_count + 1
-			clean[clean_count] = arg
+			clean[clean_count] = tostring(arg)
 		end
 	end
 	if clean_count == 0 then return "" end
