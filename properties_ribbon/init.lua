@@ -148,6 +148,13 @@ end
 
 -- own metamethods
 
+---@enum concatModes
+local concatModes = {
+	"parts",
+	"sentences",
+	"phrazes"
+}
+
 -- Custom message metamethod
 function initOutputMessage()
 	local mt = setmetatable({
@@ -301,79 +308,58 @@ function initOutputMessage()
 				shouldExtractType = true
 			end
 			outputOrder = outputOrder or 0
-			local message = {}
-			if self.msg then
-				table.insert(message, tostring(self.msg))
-			end
-			if outputOrder == 0 and self.objectId then
-				table.insert(message, tostring(string.gsub(({
-					[true] = tostring(self.objectId):gsub("^%u", string.lower),
-					[false] = tostring(self.objectId)
-				})[(#message > 0)], "%s$", " ")))
-			end
-			if outputOrder <= 1 and self.label then
-				table.insert(message, ({
-					[true] = tostring(self.label):lower(),
-					[false] = tostring(self.label)
-				})[(#message > 0 and string.match(self.label, "^%u%l*.*%u") == nil)]:join(config.getstring("lvDivider",
-					"")))
-			end
-			if self.value then
-				table.insert(message, tostring(string.gsub(self.value, "%s$", "")))
-			end
-			if self.valueFocusIndex then
-				message[#message] = string.format("%s.", message[#message])
-				table.insert(message, self.valueFocusIndex)
-			end
-			if #message == 0 then
-				return
-			end
-			if shouldExtractType == true and self.tLevels and self.tl > 0 then
-				message[#message] = string.format("%s.", message[#message])
-				table.insert(message, self.tLevels[self.tl])
-			end
-			if self.focusIndex then
-				message[#message] = string.format("%s.", message[#message])
-				table.insert(message, self.focusIndex)
-			end
-			-- Clearing off the extra spaces
-			for _, part in ipairs(message) do
-				part = part:gsub("%s%s", " ")
-				part = part:gsub("%s$", "")
-			end
-			return table.concat(message, " ")
+			local msg = utils.concatSentence(
+				self.msg,
+				(self.msg and not self.msg:match("[.?!]%s?$") and self.label and self.value) and ". " or nil,
+				outputOrder == 0 and self.objectId or nil,
+				(outputOrder == 0 and self.objectId) and " " or nil,
+				outputOrder <= 1 and self.label or nil,
+				(outputOrder <= 1 and self.label) and string.format("%s ", config.getstring("lvDivider", "")) or nil,
+				self.value,
+				self.valueFocusIndex and (", "):join(self.valueFocusIndex) or nil,
+				(shouldExtractType == true and self.tLevels and self.tl > 0) and (". "):join(self.tLevels[self.tl]) or
+				nil,
+				self.focusIndex and (". "):join(self.focusIndex)
+			)
+			return msg
 		end
 	}, {
 		-- Redefine the metamethod type
 		__type = "output_message",
-		-- Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
+		---@
+		---Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
+		---@param self table
+		---@param obj table|string|number
+		---@param mode concatModes?
+		---@param shouldCopyTypeLevel boolean?
 		__call = function(self, obj, shouldCopyTypeLevel)
 			shouldCopyTypeLevel = shouldCopyTypeLevel or false
 			if istable(obj) then
 				if obj.msg then
 					if self.msg then
-						self.msg = self.msg .. obj.msg
+						self.msg = self.msg:join(not self.msg:match("[.?!]%s?$") and "." or nil,
+							not self.msg:match("%s$") and " " or nil, obj.msg)
 					else
 						self.msg = obj.msg
 					end
 				end
 				if obj.objectId then
 					if self.objectId then
-						self.objectId = self.objectId .. obj.objectId
+						self.objectId = self.objectId:join(", ", obj.objectId)
 					else
 						self.objectId = obj.objectId
 					end
 				end
 				if obj.label then
 					if self.label then
-						self.label = self.label .. obj.label
+						self.label = self.label:join(", ", obj.label)
 					else
 						self.label = obj.label
 					end
 				end
 				if obj.value then
 					if self.value then
-						self.value = self.value .. obj.value
+						self.value = self.value:join(" ", obj.value)
 					else
 						self.value = obj.value
 					end
@@ -579,7 +565,6 @@ function PropertiesRibbon.composeSubLayout(shouldReportParentLayout)
 	if (cfg == 1 or cfg == 3) and (isSublayout(layout)) then
 		message:setFocusIndex(layout.slIndex, layout.ofCount)
 	end
-	message(", ")
 	return message:extract()
 end
 

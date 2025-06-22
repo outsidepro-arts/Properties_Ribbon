@@ -349,4 +349,47 @@ function utils.isAllTheSame(arr, getFunc)
 	return true
 end
 
+---Concatenates the passed strings into one sentence
+---@param ... string
+---@return string
+function utils.concatSentence(...)
+	local n = select("#", ...)
+	if n == 0 then return "" end
+	local clean = {}
+	local clean_count = 0
+	for i = 1, n do
+		local arg = select(i, ...)
+		if arg ~= nil then
+			assert(isstring(arg),
+				("Concatenating sentence error in  argument %u: the string is expected (got %s)"):format(i, type(arg)))
+			clean_count = clean_count + 1
+			clean[clean_count] = arg
+		end
+	end
+	if clean_count == 0 then return "" end
+	local res = { clean[1] }
+	local prev_dot = clean[1]:sub(-1) == "."
+	for i = 2, clean_count do
+		local s = clean[i]
+		local first = s:sub(1, 1)
+		local rest = s:sub(2)
+
+		if prev_dot then
+			if first:match("%l") then
+				s = first:upper() .. rest
+			end
+		else
+			if first:match("%u") and not s:match("^%u+$") then
+				if not s:match("^%u%l*$") then
+					s = first:lower() .. rest
+				end
+			end
+		end
+		res[#res + 1] = s
+		prev_dot = s:sub(-1) == "."
+	end
+
+	return table.concat(res, "")
+end
+
 return utils
