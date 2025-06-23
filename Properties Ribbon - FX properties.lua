@@ -198,8 +198,32 @@ local function checkKnownAssyncPlugin(fxId)
 	return false
 end
 
+local function getCustomValue(fxId, parmId)
+	local fxValue = capi.GetParam(fxId, parmId)
+	local retval1, buf1 = capi.FormatParamValue(fxId, parmId, fxValue, "")
+	local retval2, buf2 = capi.GetFormattedParamValue(fxId, parmId, "")
+	local buf3 = tostring(utils.numtopercent(capi.GetParamNormalized(fxId, parmId))) .. "%"
+	local retval3 = buf3 and (buf3 ~= "")
+	return extstate._layout
+		[utils.makeKeySequence(makeUniqueKey(fxId, parmId), "customValue", retval1 and buf1 or retval2 and buf2 or retval3 and buf3)]
+end
+
+local function setCustomValue(fxId, parmId, value)
+	local fxValue = capi.GetParam(fxId, parmId)
+	local retval1, buf1 = capi.FormatParamValue(fxId, parmId, fxValue, "")
+	local retval2, buf2 = capi.GetFormattedParamValue(fxId, parmId, "")
+	local buf3 = tostring(utils.numtopercent(capi.GetParamNormalized(fxId, parmId))) .. "%"
+	local retval3 = buf3 and (buf3 ~= "")
+	extstate._layout
+	[utils.makeKeySequence(makeUniqueKey(fxId, parmId), "customValue", retval1 and buf1 or retval2 and buf2 or retval3 and buf3)] =
+		value ~= "" and value or nil
+end
+
 local function getStringParmValue(fxId, parmId)
 	local fxValue = capi.GetParam(fxId, parmId)
+	if getCustomValue(fxId, parmId) then
+		return getCustomValue(fxId, parmId), true
+	end
 	local retval, buf = capi.FormatParamValue(fxId, parmId, fxValue, "")
 	if retval and buf ~= "" then
 		return buf, retval
@@ -1027,6 +1051,34 @@ if fxLayout.canProvide() then
 							}
 						end
 						return true
+					end
+				}
+				extendedFXProperties:registerProperty {
+					get = function(self, parent)
+						local message = initOutputMessage()
+						message "Set the custom plug-in value"
+						if getCustomValue(parent.fxIndex, parent.parmIndex) then
+							message(string.format(" (currently is set %s)",
+								getCustomValue(parent.fxIndex, parent.parmIndex)))
+						end
+						message:initType(
+							"Perform this property to specify a custom value name of this parameter per this plug-in value.")
+						return message
+					end,
+					set_perform = function(self, parent)
+						local value = getCustomValue(parent.fxIndex, parent.parmIndex)
+						local retval, answer = getUserInputs("Set custom value",
+							{
+								caption = "Custom value:",
+								defValue = value or
+									getStringParmValue(parent.fxIndex, parent.parmIndex)
+							}
+						)
+						if retval then
+							setCustomValue(parent.fxIndex, parent.parmIndex, answer)
+							return true
+						end
+						return false
 					end
 				}
 				local retval, fxParmName = capi.GetParamName(i + fxInaccuracy, k, "")
