@@ -20,8 +20,8 @@ for path in package.path:reverse():gmatch("([^;]+)") do
 		break
 	end
 end
-package.path = string.format("%s;%s//%s", package.path, PropertiesRibbon.script_path, "?.lua")
-package.path = string.format("%s;%s//%s", package.path, PropertiesRibbon.script_path, "?//init.lua")
+package.path = string.format("%s;%s/%s", package.path, PropertiesRibbon.script_path, "?.lua")
+package.path = string.format("%s;%s/%s", package.path, PropertiesRibbon.script_path, "?//init.lua")
 
 
 -- Including the types check simplifier
@@ -330,15 +330,14 @@ function initOutputMessage()
 		---Make the metamethod more flexible: if it has been called as function, it must be create or concatenate the private field msg
 		---@param self table
 		---@param obj table|string|number
-		---@param mode concatModes?
 		---@param shouldCopyTypeLevel boolean?
 		__call = function(self, obj, shouldCopyTypeLevel)
 			shouldCopyTypeLevel = shouldCopyTypeLevel or false
 			if istable(obj) then
 				if obj.msg then
 					if self.msg then
-						self.msg = self.msg:join(not self.msg:match("[.?!]%s?$") and "." or nil,
-							not self.msg:match("%s$") and " " or nil, obj.msg)
+						self.msg = self.msg:join(not self.msg:match("[.?!]%s?$") and "." or "",
+							not self.msg:match("%s$") and " " or "", obj.msg)
 					else
 						self.msg = obj.msg
 					end
