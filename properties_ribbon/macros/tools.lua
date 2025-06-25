@@ -319,10 +319,11 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 				return true, string.format("Shown for %u selected elements", successCount)
 			end
 		else
-			local action, envelope = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
-			local _, name = reaper.GetEnvelopeName(envelope)
+			local action = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
 			if action == 0 then
 				reaper.Main_OnCommand(istable(commands) and commands[selectedEnvelope] or commands, 0)
+				local _, envelope = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
+				local _, name = reaper.GetEnvelopeName(envelope)
 				if self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope]) == 2 then
 					return true, string.format("The %s envelope activated", name)
 				else
