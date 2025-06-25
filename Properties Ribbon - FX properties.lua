@@ -214,7 +214,7 @@ local function setCustomValue(fxId, parmId, value)
 	local retval2, buf2 = capi.GetFormattedParamValue(fxId, parmId, "")
 	local buf3 = tostring(utils.numtopercent(capi.GetParamNormalized(fxId, parmId))) .. "%"
 	local retval3 = buf3 and (buf3 ~= "")
-	extstate._layout
+	extstate._layout._forever
 	[utils.makeKeySequence(makeUniqueKey(fxId, parmId), "customValue", retval1 and buf1 or retval2 and buf2 or retval3 and buf3)] =
 		value ~= "" and value or nil
 end
