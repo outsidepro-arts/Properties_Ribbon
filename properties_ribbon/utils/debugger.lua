@@ -24,9 +24,10 @@ local function msgToConsole(msg)
 end
 
 function debugger.output(...)
-	local args = {}
 	-- Forcedly converting all arguments to string
-	for _, arg in ipairs { ... } do
+	local args = {}
+	for i = 1, select("#", ...) do
+		local arg = select(i, ...)
 		table.insert(args, arg ~= nil and tostring(arg) or "nil")
 	end
 	msgToConsole(string.format("%s\n", table.concat(args, '\t')))
