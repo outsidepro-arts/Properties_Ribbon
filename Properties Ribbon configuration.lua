@@ -1308,6 +1308,34 @@ function selectFXProperty:set_perform()
 	return message
 end
 
+local excludeEmptyParamsProperty = {}
+configLayout.fxPropertiesConfig:registerProperty(excludeEmptyParamsProperty)
+excludeEmptyParamsProperty.states = {
+	[false] = "disabled",
+	[true] = "enabled"
+}
+
+function excludeEmptyParamsProperty:get()
+	local message = initOutputMessage()
+	local state = config.getboolean("ignoreEmptyStringFXParams", true)
+	message {
+		label = "Ignore the empty and non-letter parameters",
+		value = self.states[state]
+	}
+	message:initType(
+		"Toggle this property to switch the option which allows to exclude the parameters which contains no name or its name contains only non-letter characters.",
+		"Toggleable"
+	)
+	return message
+end
+
+function excludeEmptyParamsProperty:set_perform()
+	local message = initOutputMessage()
+	config.setboolean("ignoreEmptyStringFXParams", nor(config.getboolean("ignoreEmptyStringFXParams", true)))
+	message(self:get())
+	return message
+end
+
 local tempoStepProperty = {}
 configLayout.stepAdjustment:registerProperty(tempoStepProperty)
 

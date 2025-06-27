@@ -169,11 +169,14 @@ local function setTheBestValue(fxId, parmId, value)
 end
 
 local function shouldBeExcluded(fxId, parmId)
+	local retval, fxParmName = capi.GetParamName(fxId, parmId, "")
+	if config.getboolean("ignoreEmptyStringFXParams", true) and (fxParmName == "" or not fxParmName:match("%a+")) then
+		return true
+	end
 	local retval, fxName = getPluginFilename(fxId)
 	if retval == false then
 		return false
 	end
-	local retval, fxParmName = capi.GetParamName(fxId, parmId, "")
 	if retval == false then
 		return false
 	end
