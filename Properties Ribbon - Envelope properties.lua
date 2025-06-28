@@ -80,54 +80,52 @@ envelopeProcess = function(udata)
 	end
 end
 if envelope then
-	if reaper.GetEnvelopeScalingMode(envelope) == 0 then
-		if not name:find " / " then
-			-- This method will not works with non-english REAPER locales
-			-- I'm waiting for alternative methods for definition
-			if name:lower():find "volume" then
-				envelopeType = 1 -- decibels value
-				envelopeRepresentation = representation.db
-				envelopeFormatCaption = prepareUserData.db.formatCaption
-				envelopeProcess = prepareUserData.db.process
-			elseif name:lower():find "pan" then
-				envelopeType = 2 -- percentage value
-				-- Curious REAPER: the pan envelope has inverted values...
-				envelopeRepresentation = setmetatable({}, {
-					__index = function(self, state)
-						return representation.pan[-state]
-					end
-				})
-				envelopeFormatCaption = prepareUserData.pan.formatCaption
-				envelopeProcess = function(udata, curvalue)
-					udata = prepareUserData.pan.process(udata, curvalue)
-					if udata then
-						return -udata
-					end
+	if not name:find " / " then
+		-- This method will not works with non-english REAPER locales
+		-- I'm waiting for alternative methods for definition
+		if name:lower():find "volume" then
+			envelopeType = 1 -- decibels value
+			envelopeRepresentation = representation.db
+			envelopeFormatCaption = prepareUserData.db.formatCaption
+			envelopeProcess = prepareUserData.db.process
+		elseif name:lower():find "pan" then
+			envelopeType = 2 -- percentage value
+			-- Curious REAPER: the pan envelope has inverted values...
+			envelopeRepresentation = setmetatable({}, {
+				__index = function(self, state)
+					return representation.pan[-state]
 				end
-			elseif name:lower():find "width" then
-				envelopeType = 6
-				envelopeRepresentation = setmetatable({}, {
-					__index = function(self, state)
-						return string.format("%i%%", utils.numtopercent(state))
-					end
-				})
-				envelopeFormatCaption = prepareUserData.percent.formatCaption
-				envelopeProcess = prepareUserData.percent.process
-			elseif name:lower():find "rate" then
-				envelopeType = 3
-				envelopeRepresentation = representation.playrate
-			elseif name:lower():find "pitch" then
-				envelopeType = 4
-				envelopeRepresentation = representation.pitch
-				envelopeFormatCaption = prepareUserData.pitch.formatCaption
-				envelopeProcess = prepareUserData.pitch.process
-			elseif name:lower():find "mute" then
-				envelopeType = 5
-			elseif name:lower():find "tempo" then
-				envelopeType = 7
-				envelopeFormatCaption = prepareUserData.tempo.formatCaption
-				envelopeProcess = prepareUserData.tempo.process
+			})
+			envelopeFormatCaption = prepareUserData.pan.formatCaption
+			envelopeProcess = function(udata, curvalue)
+				udata = prepareUserData.pan.process(udata, curvalue)
+				if udata then
+					return -udata
+				end
 			end
+		elseif name:lower():find "width" then
+			envelopeType = 6
+			envelopeRepresentation = setmetatable({}, {
+				__index = function(self, state)
+					return string.format("%i%%", utils.numtopercent(state))
+				end
+			})
+			envelopeFormatCaption = prepareUserData.percent.formatCaption
+			envelopeProcess = prepareUserData.percent.process
+		elseif name:lower():find "rate" then
+			envelopeType = 3
+			envelopeRepresentation = representation.playrate
+		elseif name:lower():find "pitch" then
+			envelopeType = 4
+			envelopeRepresentation = representation.pitch
+			envelopeFormatCaption = prepareUserData.pitch.formatCaption
+			envelopeProcess = prepareUserData.pitch.process
+		elseif name:lower():find "mute" then
+			envelopeType = 5
+		elseif name:lower():find "tempo" then
+			envelopeType = 7
+			envelopeFormatCaption = prepareUserData.tempo.formatCaption
+			envelopeProcess = prepareUserData.tempo.process
 		end
 	end
 end
