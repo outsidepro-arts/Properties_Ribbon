@@ -3214,9 +3214,7 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 						message:changeType("Unavailable", 2)
 					else
 						message { value = self.states[state] }
-						local channels = bitwise.getRange(state, 6, 10)
-						message:setValueFocusIndex(channels + 1,
-							srcState ~= 31 and 17 or 1)
+						message:setValueFocusIndex(state + 1, 17)
 					end
 					return message
 				end
