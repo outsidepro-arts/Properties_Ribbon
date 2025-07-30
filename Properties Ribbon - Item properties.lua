@@ -1988,7 +1988,7 @@ takeVolumeProperty.extendedProperties:registerProperty {
 
 takeVolumeProperty.extendedProperties:registerProperty(composeEnvelopeControlProperty.viaCommand(items, "Volume,Mute",
 	function(item, envName)
-		return reaper.GetTakeEnvelopeByName(reaper.GetActiveTake(item), string.format("%s", envName))
+		return reaper.GetTakeEnvelopeByName(reaper.GetActiveTake(item), envName)
 	end, { 40693, 40695 }))
 
 -- Take pan methods
