@@ -3009,9 +3009,8 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 								endChannel) }
 						end
 						message:setValueFocusIndex(
-							bitwise.getTo(state, 10) +
-							1,
-							destTrackChans)
+							bitwise.getTo(state, 10) + 1,
+							isMono and destTrackChans or (destTrackChans - sendChannels) + 1)
 					else
 						message { value = "Disabled" }
 						message:addType(
