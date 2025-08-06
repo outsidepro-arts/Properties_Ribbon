@@ -1604,4 +1604,32 @@ function useForeverStepAdjustmentProperty:set_perform()
 	return message
 end
 
+local useConfigVolume = configLayout.trackProperties:registerProperty {}
+useConfigVolume.states = {
+	[true] = "enabled",
+	[false] = "disabled"
+}
+
+function useConfigVolume:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Toggle this property to switch on the using of the default volume value set in REAPER preferences instead of 0 dB when you're perform the three-position setter..",
+		"Toggleable"
+	)
+	local state = config.getboolean("useConfigVolume", true)
+	message {
+		label = "Use default volume preference when volume three-position setter performs",
+		value = self.states[state]
+	}
+	return message
+end
+
+function useConfigVolume:set_perform()
+	local message = initOutputMessage()
+	local state = config.getboolean("useConfigVolume", true)
+	config.setboolean("useConfigVolume", nor(state))
+	message(self:get())
+	return message
+end
+
 PropertiesRibbon.presentLayout(configLayout)

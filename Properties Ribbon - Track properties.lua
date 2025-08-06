@@ -486,7 +486,9 @@ volumeProperty.extendedProperties:registerProperty(composeThreePositionProperty(
 	{
 		representation = representation.db,
 		min = utils.decibelstonum("-inf"),
-		rootmean = utils.decibelstonum(0.00),
+		rootmean = (config.getboolean("useConfigVolume", true) and select(1, reaper.get_config_var_string("deftrackvol")) or utils.decibelstonum(0.00)) and
+			tonumber(select(2, reaper.get_config_var_string("deftrackvol"))) or
+			utils.decibelstonum(0.00),
 		max = utils.decibelstonum(config.getinteger("maxDBValue", 12.0))
 	},
 	tpMessages,
