@@ -421,6 +421,7 @@ end
 local volumeProperty = {}
 parentLayout.playbackLayout:registerProperty(volumeProperty)
 parentLayout.recordingLayout:registerProperty(volumeProperty)
+parentLayout.meteringLayout:registerProperty(volumeProperty)
 
 function volumeProperty:get()
 	local message = initOutputMessage()
@@ -554,6 +555,7 @@ volumeProperty.extendedProperties:registerProperty(composeEnvelopeControlPropert
 local panProperty = {}
 parentLayout.playbackLayout:registerProperty(panProperty)
 parentLayout.recordingLayout:registerProperty(panProperty)
+parentLayout.meteringLayout:registerProperty(panProperty)
 
 function panProperty:get()
 	local message = initOutputMessage()
