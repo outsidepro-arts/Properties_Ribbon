@@ -860,11 +860,11 @@ function leftEdgeProperty:get()
 	message:initType(
 		"Adjust this property to grow or shrink the left item edge. Perform this property to trim left item edge to edit or play cursor.")
 	if multiSelectionSupport then
-		message:addType(" This property doesn't work with group of selected items.", 1)
+		message:addType(" If the group of items selected, the left edge will be growed for every item relatively.", 1)
 	end
 	message { label = "left edge" }
 	if istable(items) then
-		message { value = "unavailable" }
+		message(composeMultipleItemMessage(self.getValue, representation.defpos))
 	else
 		message { objectId = getItemID(items) }
 		message { value = representation.defpos[self.getValue(items)] }
@@ -872,18 +872,18 @@ function leftEdgeProperty:get()
 	return message
 end
 
-if type(items) ~= "table" then
-	function leftEdgeProperty:set_adjust(direction)
-		local message = initOutputMessage()
-		if direction == actions.set.decrease.direction then
-			reaper.Main_OnCommand(40225, 0) -- Item edit: Grow left edge of items
-		elseif direction == actions.set.increase.direction then
-			reaper.Main_OnCommand(40226, 0) -- Item edit: Shrink left edge of items
-		end
-		message(self:get())
-		return message
+function leftEdgeProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	if direction == actions.set.decrease.direction then
+		reaper.Main_OnCommand(40225, 0) -- Item edit: Grow left edge of items
+	elseif direction == actions.set.increase.direction then
+		reaper.Main_OnCommand(40226, 0) -- Item edit: Shrink left edge of items
 	end
+	message(self:get())
+	return message
+end
 
+if type(items) ~= "table" then
 	leftEdgeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Left edge extended interraction")
 
 	leftEdgeProperty.extendedProperties:registerProperty {
@@ -1021,11 +1021,11 @@ function rightEdgeProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to shrink or grow the right item edge.")
 	if multiSelectionSupport then
-		message:addType(" This property doesn't work with group of selected items.", 1)
+		message:addType(" If the group of items selected, the right edge will be shinked for every item relatively.", 1)
 	end
 	message { label = "Right edge" }
 	if istable(items) then
-		message { value = "unavailable" }
+		message(composeMultipleItemMessage(self.getValue, representation.defpos))
 	else
 		message { objectId = getItemID(items) }
 		message { value = representation.defpos[self.getValue(items)] }
@@ -1033,18 +1033,18 @@ function rightEdgeProperty:get()
 	return message
 end
 
-if type(items) ~= "table" then
-	function rightEdgeProperty:set_adjust(direction)
-		local message = initOutputMessage()
-		if direction == actions.set.decrease.direction then
-			reaper.Main_OnCommand(40227, 0) -- Item edit: Shrink right edge of items
-		elseif direction == actions.set.increase.direction then
-			reaper.Main_OnCommand(40228, 0) -- Item edit: Grow right edge of items
-		end
-		message(self:get())
-		return message
+function rightEdgeProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	if direction == actions.set.decrease.direction then
+		reaper.Main_OnCommand(40227, 0) -- Item edit: Shrink right edge of items
+	elseif direction == actions.set.increase.direction then
+		reaper.Main_OnCommand(40228, 0) -- Item edit: Grow right edge of items
 	end
+	message(self:get())
+	return message
+end
 
+if type(items) ~= "table" then
 	rightEdgeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties("Right edge extended interraction")
 
 	rightEdgeProperty.extendedProperties:registerProperty {
