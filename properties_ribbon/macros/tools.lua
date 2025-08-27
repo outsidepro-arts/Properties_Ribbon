@@ -82,6 +82,16 @@ end
 -- Since REAPER has no some envelopes activating standard way, here will two functions to compose this.
 composeEnvelopeControlProperty = {}
 
+local function pickupElementName()
+	local context = reaper.GetCursorContext()
+	if context == 0 then
+		return "Tracks"
+	elseif context == 1 then
+		return "items takes"
+	end
+	return "unknown elements"
+end
+
 ---Composes the envelope control property using chunk name. This is the standard way to get basic envelopes state.
 ---@param obj userdata|table The object where we are working
 ---@param envChunks string the envelope chunk names separated by coma.
@@ -128,7 +138,8 @@ function composeEnvelopeControlProperty.viaChunk(obj, envChunks, getfromFunc)
 				return select(1, self.getValue(o, selectedEnvelope and self.states[selectedEnvelope]))
 			end)
 			local _, name = reaper.GetEnvelopeName(env)
-			message(string.format("%s the %s envelope for %u selected elements", self.actions[state], name, #obj))
+			message(string.format("%s the %s envelope for %u selected %s", self.actions[state], name, #obj,
+				pickupElementName()))
 		else
 			local state, env = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
 			local _, name = reaper.GetEnvelopeName(env)
@@ -175,11 +186,11 @@ function composeEnvelopeControlProperty.viaChunk(obj, envChunks, getfromFunc)
 				end
 			end
 			if action == 1 then
-				return true, string.format("Activated for %u selected elements", successCount)
+				return true, string.format("Activated for %u selected %s", successCount, pickupElementName())
 			elseif action == 2 then
-				return true, string.format("Hid for %u selected elements", successCount)
+				return true, string.format("Hid for %u selected %s", successCount, pickupElementName())
 			else
-				return true, string.format("Shown for %u selected elements", successCount)
+				return true, string.format("Shown for %u selected %s", successCount, pickupElementName())
 			end
 		else
 			local action, envelope = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
@@ -260,7 +271,8 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 				state = 1
 				name = #self.states > 1 and self.states[selectedEnvelope] or names
 			end
-			message(string.format("%s the %s envelope for %u selected elements", self.actions[state], name, #obj))
+			message(string.format("%s the %s envelope for %u selected %s", self.actions[state], name, #obj,
+				pickupElementName()))
 		else
 			local state, env = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
 			local name
@@ -297,7 +309,9 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 			end)
 			if action == 0 then
 				return false,
-					"Cannot activate the envelope: this envelope is non-standard, so it cannot be activate per group of selected elements. Please activate this per every element you need manualy."
+					string.format(
+						"Cannot activate the envelope: this envelope is non-standard, so it cannot be activate per group of selected %s. Please activate this per every %s you need manualy.",
+						pickupElementName(), pickupElementName():sub(1, -2))
 			end
 			for _, o in ipairs(obj) do
 				local _, envelope = self.getValue(o, selectedEnvelope and self.states[selectedEnvelope])
@@ -312,11 +326,11 @@ function composeEnvelopeControlProperty.viaCommand(obj, names, getfromFunc, comm
 				end
 			end
 			if action == 1 then
-				return true, string.format("Activated for %u selected elements", successCount)
+				return true, string.format("Activated for %u selected %s", successCount, pickupElementName())
 			elseif action == 2 then
-				return true, string.format("Hid for %u selected elements", successCount)
+				return true, string.format("Hid for %u selected %s", successCount, pickupElementName())
 			else
-				return true, string.format("Shown for %u selected elements", successCount)
+				return true, string.format("Shown for %u selected %s", successCount, pickupElementName())
 			end
 		else
 			local action = self.getValue(obj, selectedEnvelope and self.states[selectedEnvelope])
