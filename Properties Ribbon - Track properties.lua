@@ -3286,7 +3286,8 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE")
 				message { objectId = self.typeName, label = "Automation mode", value = self.states[state] }
 				message:setValueFocusIndex(state + 2, #self.states + 2)
-				message:initType("Adjust this property to choose the needed automation mode for this send automation.")
+				message:initType(("Adjust this property to choose the needed automation mode for this send automation. Perform this property to reset the automation mode to %s.")
+					:format(self.states[-1]))
 				return message
 			end
 
@@ -3299,6 +3300,14 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 					message(string.format("No more %s property values.",
 						direction == actions.set.increase.direction and "next" or "previous"))
 				end
+				message(self:get())
+				return message
+			end
+
+			function shrAutomationModeProperty:set_perform()
+				local message = initOutputMessage()
+				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE")
+				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "I_AUTOMODE", -1)
 				message(self:get())
 				return message
 			end
