@@ -281,4 +281,68 @@ function prepareUserData.tempo.process(udata, curvalue)
 	return udata
 end
 
+prepareUserData.time = {
+	formatCaption = [[
+Type the humanbeeing time value. The following formats are supported:
+0:01:15.400
+5 m 9 s 400 ms
+<3 seconds (means relative value i.e. the current time value will be decreased by this value)
+>500 ms (means relative value i.e. the current time value will be increased by this value)
+Please note: these format may be combined with eachother.
+]]
+}
+
+---comment
+---@param udata number
+---@param curvalue number
+---@param to string
+---@return number
+function prepareUserData.time.process(udata, curvalue, to)
+	to = to or "ms"
+	local relative = string.match(udata, "^[<>]")
+	udata = udata:gsub("[<>]", "")
+	udata = udata:lower():gsub("%s", "")
+	local hours, mins, secs, ms = nil, nil, nil, nil
+	if udata:find("[.:]") then -- The basic time format
+		-- We have to reverse the udata string to try to catch the time and get the necessary blocks
+		ms, secs, mins, hours = string.match(udata:reverse(), "(%d%d?%d)%.(%d%d?):(%d%d):(%d+)")
+	elseif udata:find("%a") then -- The words-assign time format
+		if udata:find("%d+h") then
+			hours = string.match(udata, "(%d+)h")
+		end
+		if udata:find("%d+mil") or udata:find("%d+ms") then
+			ms = string.match(udata, "(%d+)mil") or string.match(udata, "(%d+)ms")
+		end
+		if udata:find("%d+m%A") or udata:find("%d+min") then
+			mins = string.match(udata, "(%d+)m%A") or string.match(udata, "(%d+)min")
+		end
+		if udata:find("%d+s") then
+			secs = string.match(udata, "(%d+)s")
+		end
+	elseif udata:find("%d") then
+		ms = string.match(udata, "%d+")
+	end
+	if not hours and mins and not mins and not secs and not ms then
+		msgBox("Preparation error", "Couldn't convert the specified value to appropriated data.")
+		return
+	end
+	hours = hours or 0
+	mins = mins or 0
+	secs = secs or 0
+	ms = ms or 0
+	udata = tonumber(
+		(to == "ms" and hours * 3600000 + mins * 60000 + secs * 1000 + ms) or
+		(to == "s" and hours * 3600 + mins * 60 + secs + ms / 1000) or
+		(to == "m" and hours * 60 + mins + secs / 60 + ms / 60000) or
+		(to == "h" and hours + mins / 60 + secs / 3600 + ms / 3600000)
+	)
+	if relative then
+		if relative == "<" then
+			udata = -udata
+		end
+		return curvalue + udata
+	end
+	return udata
+end
+
 return prepareUserData

@@ -3264,6 +3264,136 @@ function contextMenuProperty:set_perform()
 	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_CONTEXTMENU1"), 0)
 end
 
+-- The stretch markers fade size property
+local stretchMarkersFadeSizeProperty = parentLayout.takeLayout:registerProperty {}
+stretchMarkersFadeSizeProperty.states = setmetatable({}, {
+	__index = function(self, state)
+		return string.format("%.1f milli second%s", math.round(state * 1000, 3),
+			math.round(state * 1000, 3) == 1.000 and "" or "s")
+	end
+})
+
+function stretchMarkersFadeSizeProperty.getValue(item)
+	return reaper.GetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "F_STRETCHFADESIZE")
+end
+
+function stretchMarkersFadeSizeProperty.setValue(item, value)
+	reaper.SetMediaItemTakeInfo_Value(reaper.GetActiveTake(item), "F_STRETCHFADESIZE", value)
+end
+
+function stretchMarkersFadeSizeProperty:get()
+	local message = initOutputMessage()
+	message:initType(
+		"Adjust this property to choose the fade size for stretch markers.")
+	if multiSelectionSupport == true then
+		message:addType(
+			" If the group of items has been selected, the relative of previous value will be applied for each item take of."
+			, 1
+		)
+	end
+	message:addType(string.format(" Perform this property to reset the fade size to %s.", self.states[0.0025]), 1)
+	message { label = "Stretch markers fade size" }
+	if istable(items) then
+		message(composeMultipleTakeMessage(self.getValue, self.states))
+	else
+		local state = self.getValue(items)
+		message { objectId = string.format("%s %s", getItemID(items), getTakeID(items)), value = self.states[state] }
+	end
+	return message
+end
+
+function stretchMarkersFadeSizeProperty:set_adjust(direction)
+	local message = initOutputMessage()
+	local ajustingValue = 0.0005
+	ajustingValue = direction > 0 and ajustingValue or -ajustingValue
+	if istable(items) then
+		for k = 1, #items do
+			local state = self.getValue(items[k])
+			if (state + ajustingValue) >= 0 then
+				state = state + ajustingValue
+			else
+				state = 0.0000
+			end
+			self.setValue(items[k], state)
+		end
+	else
+		local state = self.getValue(items)
+		if (state + ajustingValue) >= 0 then
+			state = state + ajustingValue
+		else
+			state = 0.0000
+			message "Minimal fade"
+		end
+		self.setValue(items, state)
+	end
+	message(self:get())
+	return message
+end
+
+stretchMarkersFadeSizeProperty.extendedProperties = PropertiesRibbon.initExtendedProperties(
+	"Stretch markers fade size extended interraction"
+)
+
+stretchMarkersFadeSizeProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message("Reset fade size")
+		message:initType(("Perform this property to reset the fade size to default %s."):format(parent.states[0.0025]))
+		return message
+	end,
+	set_perform = function(self, parent)
+		if istable(items) then
+			for k = 1, #items do
+				parent.setValue(items[k], 0.0025)
+			end
+			return true, "Reset selected items takes stretch fades to default value", true
+		else
+			parent.setValue(items, 0.0025)
+			return true, "Reset to default value", true
+		end
+	end
+}
+
+stretchMarkersFadeSizeProperty.extendedProperties:registerProperty {
+	get = function(self, parent)
+		local message = initOutputMessage()
+		message "Type the custom fade size"
+		message:initType("Perform this property to set the custom fade size.")
+		return message
+	end,
+	set_perform = function(self, parent)
+		if istable(items) then
+			local retval, answer = getUserInputs(string.format("Fade size for %u selected items", #items),
+				{ caption = "New fade size:", defValue = parent.states[parent.getValue(items[1])] },
+				prepareUserData.time.formatCaption)
+			if not retval then
+				return false, "Canceled"
+			end
+			for k = 1, #items do
+				local state = parent.getValue(items[k])
+				state = prepareUserData.time.process(answer, state, "s")
+				if state then
+					parent.setValue(items[k], state)
+				end
+			end
+		else
+			local retval, answer = getUserInputs(string.format("Fade size for %s of %s",
+					getTakeID(items, true):gsub("^%w", string.lower), getItemID(items, true):gsub("^%w", string.lower)),
+				{ caption = "New fade size:", defValue = parent.states[parent.getValue(items)] },
+				prepareUserData.time.formatCaption)
+			if not retval then
+				return false, "Canceled"
+			end
+			local state = parent.getValue(items)
+			state = prepareUserData.time.process(answer, state, "s")
+			if state then
+				parent.setValue(items, state)
+			end
+		end
+		return true, nil, true
+	end
+}
+
 parentLayout.defaultSublayout = "itemLayout"
 
 PropertiesRibbon.presentLayout(parentLayout)
