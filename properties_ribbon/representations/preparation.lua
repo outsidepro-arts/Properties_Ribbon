@@ -305,7 +305,15 @@ function prepareUserData.time.process(udata, curvalue, to)
 	local hours, mins, secs, ms = nil, nil, nil, nil
 	if udata:find("[.:]") then -- The basic time format
 		-- We have to reverse the udata string to try to catch the time and get the necessary blocks
-		ms, secs, mins, hours = string.match(udata:reverse(), "(%d%d?%d)%.(%d%d?):(%d%d):(%d+)")
+		secs, mins, hours = table.unpack(string.split(udata:reverse(), ":", false))
+		if secs:find("%.") then
+			ms = string.split(secs, ".", false)[1]
+			secs = string.split(secs, ".", false)[2]
+		end
+		hours = hours and hours:reverse() or nil
+		mins = mins and mins:reverse() or nil
+		secs = secs and secs:reverse() or nil
+		ms = ms and ms:reverse() or nil
 	elseif udata:find("%a") then -- The words-assign time format
 		if udata:find("%d+h") then
 			hours = string.match(udata, "(%d+)h")
