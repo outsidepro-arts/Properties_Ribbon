@@ -3152,7 +3152,7 @@ end
 function takeStretchModeProperty:get()
 	local message = initOutputMessage()
 	message:initType(
-		"Adjust this property to choose the needed stretch mode.")
+		"Adjust this property to choose the needed stretch markers mode.")
 	if multiSelectionSupport == true then
 		message:addType(
 			string.format(
@@ -3160,7 +3160,7 @@ function takeStretchModeProperty:get()
 				, self.states[0]), 1)
 	end
 	message:addType(string.format(" Perform this property to reset the mode to %s.", self.states[0]), 1)
-	message { label = "Stretch mode" }
+	message { label = "Stretch marker mode" }
 	if istable(items) then
 		message(composeMultipleTakeMessage(self.getValue, self.states))
 	else
@@ -3292,7 +3292,7 @@ function stretchMarkersFadeSizeProperty:get()
 		)
 	end
 	message:addType(string.format(" Perform this property to reset the fade size to %s.", self.states[0.0025]), 1)
-	message { label = "Stretch markers fade size" }
+	message { label = "Stretch marker fade size" }
 	if istable(items) then
 		message(composeMultipleTakeMessage(self.getValue, self.states))
 	else
