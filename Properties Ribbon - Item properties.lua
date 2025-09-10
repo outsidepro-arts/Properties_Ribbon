@@ -3268,7 +3268,7 @@ end
 local stretchMarkersFadeSizeProperty = parentLayout.takeLayout:registerProperty {}
 stretchMarkersFadeSizeProperty.states = setmetatable({}, {
 	__index = function(self, state)
-		return string.format("%.1f milli second%s", math.round(state * 1000, 3),
+		return string.format("%.1f milli-second%s", math.round(state * 1000, 3),
 			math.round(state * 1000, 3) == 1.000 and "" or "s")
 	end
 })
