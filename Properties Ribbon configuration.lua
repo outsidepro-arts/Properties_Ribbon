@@ -1262,7 +1262,7 @@ function twicePressPerformProperty:get()
 		label = "Twice navigation onto the same property",
 		value = self.states[state]
 	}
-	message:setValueFocusIndex(state + 1, #self.states + 1)
+	message:setValueFocusIndex(state, #self.states)
 	message:initType(
 		"Adjust this property to choose the needed behaviour when you're navigate to the same property twice straightaway.")
 	return message
