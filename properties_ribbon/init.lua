@@ -861,7 +861,9 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 	if lt then
 		currentLayout = lt.section
 		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-		return prepareLayout(lt)
+		local retval = prepareLayout(lt)
+		reaper.runloop(mainLoop)
+		return retval
 	end
 end
 
@@ -890,8 +892,40 @@ function PropertiesRibbon.initProposedLayout()
 		if rememberCFG ~= 1 and rememberCFG ~= 2 then
 			lt.pIndex = 1
 		end
-		return prepareLayout(lt)
+		local retval = prepareLayout(lt)
+		reaper.runloop(mainLoop)
+		return retval
 	end
+end
+
+local isActivated = false
+function mainLoop()
+	if isActivated == true then
+		local cmd = extstate.callCommand
+		if cmd then
+			cmdName = select(1, cmd:lpart("%("))
+			if cmdName == "shutdown" then
+				isActivated = false
+				finishScript()
+				return
+			end
+			local args = {}
+			if cmd:find("%(.+%)") then
+				args = cmd:sub(cmd:find("%(") + 1, cmd:find("%)")):split(",")
+			end
+			PropertiesRibbon[cmdName](table.unpack(args))
+			extstate.callCommand = nil
+		end
+	else
+		isActivated = true
+	end
+	reaper.runloop(mainLoop)
+end
+
+function PropertiesRibbon.call(...)
+	local args = { ... }
+	table.remove(args, 1)
+	extstate.callCommand = string.format("%s(%s)", select(1, ...), #args > 0 and table.concat(args, ",") or "")
 end
 
 function PropertiesRibbon.switchSublayout(action)
@@ -1564,6 +1598,7 @@ function finishScript()
 		end
 		extstate.speakLayout = speakLayout
 		extstate.extProperty = currentExtProperty
+		extstate.callCommand = nil
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
