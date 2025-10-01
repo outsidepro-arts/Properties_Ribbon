@@ -49,7 +49,7 @@ function string.join(orig, ...)
 end
 
 function string.lpart(orig, sep)
-	local left, sp, right = orig:match(string.join("^(.+)(", sep, ")(.+)$"))
+	local left, sp, right = orig:match(string.join("^(.-)(", sep, ")(.+)"))
 	if left and sp and right then
 		return left, sp, right
 	end
