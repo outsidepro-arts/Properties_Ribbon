@@ -833,6 +833,7 @@ function PropertiesRibbon.presentLayout(lt)
 	end
 	if prepareLayout(lt) then
 		PropertiesRibbon.reportOrGotoProperty()
+		reaper.runloop(mainLoop)
 	end
 end
 
