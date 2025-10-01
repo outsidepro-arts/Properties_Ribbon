@@ -8,6 +8,4 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 
 require "properties_ribbon"
 
-if PropertiesRibbon.initLastLayout() then
-	PropertiesRibbon.switchSublayout(actions.sublayout_next)
-end
+PropertiesRibbon.call("switchSublayout", actions.sublayout_next)

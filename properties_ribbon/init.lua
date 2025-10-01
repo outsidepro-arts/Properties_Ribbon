@@ -106,8 +106,6 @@ undo = {
 	}
 }
 
--- REAPER hack to prevent useless undo points creation
-reaper.defer(function() end)
 
 -- Checking the speech output method existing
 if not reaper.APIExists("osara_outputMessage") then
@@ -898,34 +896,86 @@ function PropertiesRibbon.initProposedLayout()
 	end
 end
 
+local function deserializeTable(tstring)
+	local t = {}
+	for _, field in ipairs(tstring:sub(2, -2):split(",")) do
+		local fieldKey, _, fieldValue = field:lpart("=")
+		if fieldValue:find("%{") then
+			t[fieldKey] = deserializeTable(fieldValue)
+		else
+			local argType, _, argValue = fieldValue:lpart(":")
+			local keyPrepare = string.format("to%s", argType)
+			t[fieldKey] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
+		end
+	end
+	return t
+end
+
+local function exposeCommand(cmd)
+	local cmdName = select(1, cmd:lpart("%("))
+	local args = {}
+	if cmd:find("%(.+%)") then
+		for _, arg in ipairs(cmd:sub(cmd:find("%(") + 1, cmd:find("%)") - 1):split("||")) do
+			local argType, _, argValue = arg:lpart(":")
+			if argType == "table" then
+				args[#args + 1] = deserializeTable(argValue)
+			else
+				local keyPrepare = string.format("to%s", argType)
+				args[#args + 1] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
+			end
+		end
+	end
+	return cmdName, args
+end
+
 local isActivated = false
 function mainLoop()
 	if isActivated == true then
 		local cmd = extstate.callCommand
 		if cmd then
-			cmdName = select(1, cmd:lpart("%("))
-			if cmdName == "shutdown" then
+			local cmdName, args = exposeCommand(cmd)
+			if cmdName == "quit" then
+				isActivated = false
+				string.output("Leaving Properties Ribbon")
+				finishScript()
+				return
+			elseif cmdName == "break" then
 				isActivated = false
 				finishScript()
 				return
-			end
-			local args = {}
-			if cmd:find("%(.+%)") then
-				args = cmd:sub(cmd:find("%(") + 1, cmd:find("%)")):split(",")
 			end
 			PropertiesRibbon[cmdName](table.unpack(args))
 			extstate.callCommand = nil
 		end
 	else
 		isActivated = true
+		extstate.callCommand = nil
 	end
 	reaper.runloop(mainLoop)
 end
 
+local function serializeTable(t)
+	local s = {}
+	for k, v in pairs(t) do
+		if istable(v) then
+			table.insert(s, serializeTable(v))
+		else
+			table.insert(s, string.format("%s=%s:%s", k, type(v), v))
+		end
+	end
+	return "table:{" .. table.concat(s, ",") .. "}"
+end
+
 function PropertiesRibbon.call(...)
-	local args = { ... }
-	table.remove(args, 1)
-	extstate.callCommand = string.format("%s(%s)", select(1, ...), #args > 0 and table.concat(args, ",") or "")
+	local args = {}
+	for _, arg in ipairswith({ ... }, 1, 2) do
+		if istable(arg) then
+			table.insert(args, serializeTable(arg))
+		else
+			table.insert(args, string.format("%s:%s", type(arg), tostring(arg)))
+		end
+	end
+	extstate.callCommand = string.format("%s(%s)", select(1, ...), #args > 0 and table.concat(args, "||") or "")
 end
 
 function PropertiesRibbon.switchSublayout(action)
