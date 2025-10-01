@@ -1484,7 +1484,7 @@ function PropertiesRibbon.ajustProperty(action)
 	if layout.canProvide() == true then
 		local retval, msg
 		if currentExtProperty == nil then
-			if layout.properties[layout.pIndex].extendedProperties and action == actions.set.perform then
+			if layout.properties[layout.pIndex].extendedProperties and action.value == actions.set.perform.value then
 				currentExtProperty = 1
 				speakLayout = true
 				PropertiesRibbon.reportOrGotoProperty(nil, nil, nil, true)
