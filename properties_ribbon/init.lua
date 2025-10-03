@@ -424,6 +424,7 @@ function PropertiesRibbon.initLayout(str)
 			self[slID] = setmetatable({
 				subname = slName,
 				section = string.format("%s.%s", parentSection, slID),
+				parentLayout = self,
 				properties = setmetatable({}, {
 					__index = function(t, key)
 						self.pIndex = #t
@@ -767,6 +768,60 @@ function interruptNextOSARAMessage()
 	reaper.Main_OnCommand(reaper.NamedCommandLookup("_OSARA_MUTENEXTMESSAGE"), 0)
 end
 
+---Deserialize the table from string to Lua table
+---@param tstring string
+---@return table
+local function deserializeTable(tstring)
+	local t = {}
+	for _, field in ipairs(tstring:sub(2, -2):split(",")) do
+		local fieldKey, _, fieldValue = field:lpart("=")
+		if fieldValue:find("%{") then
+			t[fieldKey] = deserializeTable(fieldValue)
+		else
+			local argType, _, argValue = fieldValue:lpart(":")
+			local keyPrepare = string.format("to%s", argType)
+			t[fieldKey] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
+		end
+	end
+	return t
+end
+
+---Serialize the table to string
+---@param t table
+---@return string
+local function serializeTable(t)
+	local s = {}
+	for k, v in pairs(t) do
+		if istable(v) then
+			table.insert(s, serializeTable(v))
+		else
+			table.insert(s, string.format("%s=%s:%s", k, type(v), v))
+		end
+	end
+	return "table:{" .. table.concat(s, ",") .. "}"
+end
+
+---Exposes the command and returns the command name and arguments
+---@param cmd string
+---@return string
+---@return table
+local function exposeCommand(cmd)
+	local cmdName = select(1, cmd:lpart("%("))
+	local args = {}
+	if cmd:find("%(.+%)") then
+		for _, arg in ipairs(cmd:sub(cmd:find("%(") + 1, cmd:find("%)") - 1):split("||")) do
+			local argType, _, argValue = arg:lpart(":")
+			if argType == "table" then
+				args[#args + 1] = deserializeTable(argValue)
+			else
+				local keyPrepare = string.format("to%s", argType)
+				args[#args + 1] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
+			end
+		end
+	end
+	return cmdName, args
+end
+
 -- Main body
 
 -- We have to notify you about ReaScript task control window and instructions for.
@@ -790,13 +845,15 @@ else
 end
 currentLayout = extstate.currentLayout
 currentSublayout = currentLayout and extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-local SpeakLayout = extstate.speakLayout
+local SpeakLayout = true
+local gotoMode = nil
+local isTwice = nil
 local g_undoState = nil
-local currentExtProperty = extstate.extProperty
+local currentExtProperty = nil
 local layoutHasReset = false
-local layoutSaid = false
+local isActivated = false
 
-function prepareLayout(newLayout)
+function prepareLayout(newLayout, newSublayout)
 	layout = isLayout(newLayout) and newLayout
 	if layout == nil then
 		reaper.ShowMessageBox(string.format("The properties layout %s couldn't be loaded.", currentLayout),
@@ -804,6 +861,7 @@ function prepareLayout(newLayout)
 		return false
 	end
 	if PropertiesRibbon.isHasSublayouts(layout) then
+		currentSublayout = newSublayout or currentSublayout
 		currentSublayout = (layout[currentSublayout] and currentSublayout) or layout.defaultSublayout or
 			PropertiesRibbon.findDefaultSublayout(layout)
 		layout = assert(layout[currentSublayout],
@@ -818,9 +876,6 @@ function prepareLayout(newLayout)
 end
 
 function PropertiesRibbon.presentLayout(lt)
-	extstate.gotoMode = nil
-	extstate.isTwice = nil
-	speakLayout = true
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	currentLayout = lt.section
 	layoutFile = select(2, reaper.get_action_context())
@@ -832,8 +887,7 @@ function PropertiesRibbon.presentLayout(lt)
 		layout.pIndex = 1
 	end
 	if prepareLayout(lt) then
-		PropertiesRibbon.reportOrGotoProperty()
-		reaper.runloop(mainLoop)
+		PropertiesRibbon.mainLoop()
 	end
 end
 
@@ -844,8 +898,6 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 		if proposedLayout and proposedLayout ~= layoutFile then
 			speakLayout = true
 			layoutFile = proposedLayout
-			extstate.gotoMode = nil
-			currentExtProperty = nil
 		end
 	end
 	if layoutFile == nil or layoutFile == "" then
@@ -861,7 +913,9 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 		currentLayout = lt.section
 		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
 		local retval = prepareLayout(lt)
-		reaper.runloop(mainLoop)
+		if retval == true then
+			PropertiesRibbon.mainLoop()
+		end
 		return retval
 	end
 end
@@ -874,8 +928,6 @@ function PropertiesRibbon.initProposedLayout()
 	end
 	speakLayout = true
 	layoutFile = proposedLayout
-	extstate.gotoMode = nil
-	currentExtProperty = nil
 	local lt = nil
 	PropertiesRibbon.presentLayout = function(newLayout)
 		lt = newLayout
@@ -892,45 +944,14 @@ function PropertiesRibbon.initProposedLayout()
 			lt.pIndex = 1
 		end
 		local retval = prepareLayout(lt)
-		reaper.runloop(mainLoop)
+		if retval == true then
+			PropertiesRibbon.mainLoop()
+		end
 		return retval
 	end
 end
 
-local function deserializeTable(tstring)
-	local t = {}
-	for _, field in ipairs(tstring:sub(2, -2):split(",")) do
-		local fieldKey, _, fieldValue = field:lpart("=")
-		if fieldValue:find("%{") then
-			t[fieldKey] = deserializeTable(fieldValue)
-		else
-			local argType, _, argValue = fieldValue:lpart(":")
-			local keyPrepare = string.format("to%s", argType)
-			t[fieldKey] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
-		end
-	end
-	return t
-end
-
-local function exposeCommand(cmd)
-	local cmdName = select(1, cmd:lpart("%("))
-	local args = {}
-	if cmd:find("%(.+%)") then
-		for _, arg in ipairs(cmd:sub(cmd:find("%(") + 1, cmd:find("%)") - 1):split("||")) do
-			local argType, _, argValue = arg:lpart(":")
-			if argType == "table" then
-				args[#args + 1] = deserializeTable(argValue)
-			else
-				local keyPrepare = string.format("to%s", argType)
-				args[#args + 1] = _G[keyPrepare] and _G[keyPrepare](argValue) or argValue
-			end
-		end
-	end
-	return cmdName, args
-end
-
-local isActivated = false
-function mainLoop()
+function PropertiesRibbon.mainLoop()
 	if isActivated == true then
 		local cmd = extstate.callCommand
 		if cmd then
@@ -949,22 +970,17 @@ function mainLoop()
 			extstate.callCommand = nil
 		end
 	else
-		isActivated = true
-		extstate.callCommand = nil
-	end
-	reaper.runloop(mainLoop)
-end
-
-local function serializeTable(t)
-	local s = {}
-	for k, v in pairs(t) do
-		if istable(v) then
-			table.insert(s, serializeTable(v))
-		else
-			table.insert(s, string.format("%s=%s:%s", k, type(v), v))
+		if extstate.instance then
+			PropertiesRibbon.call("break")
+			goto nextIteration
 		end
+		isActivated = true
+		extstate.instance = true
+		extstate.callCommand = nil
+		PropertiesRibbon.reportOrGotoProperty()
 	end
-	return "table:{" .. table.concat(s, ",") .. "}"
+	::nextIteration::
+	reaper.runloop(PropertiesRibbon.mainLoop)
 end
 
 function PropertiesRibbon.call(...)
@@ -980,58 +996,48 @@ function PropertiesRibbon.call(...)
 end
 
 function PropertiesRibbon.switchSublayout(action)
-	if extstate.gotoMode then
+	if gotoMode then
 		("Goto mode deactivated. "):output()
-		extstate.gotoMode = nil
+		gotoMode = nil
 	end
 	if layout.canProvide() ~= true then
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
 	if isSublayout(layout) then
-		if extstate.isTwice then
-			extstate.isTwice = nil
+		if isTwice then
+			isTwice = nil
 		end
 		if action == actions.sublayout_next then
 			if layout.nextSubLayout then
-				currentSublayout = layout.nextSubLayout
-				finishScript()
+				prepareLayout(layout.parentLayout, layout.nextSubLayout)
 			else
 				("No next category."):output()
-				finishScript()
 				return
 			end
 		elseif action == actions.sublayout_prev then
 			if layout.previousSubLayout then
-				currentSublayout = layout.previousSubLayout
-				finishScript()
+				prepareLayout(layout.parentLayout, layout.previousSubLayout)
 			else
 				("No previous category."):output()
-				finishScript()
 				return
 			end
-		end
-		if not PropertiesRibbon.initLastLayout() then
-			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
-			return
 		end
 		speakLayout = true
 		PropertiesRibbon.reportOrGotoProperty(nil, nil, false)
 	else
 		(("The %s layout has no category. "):format(layout.name)):output()
 	end
-	finishScript()
 end
 
 function PropertiesRibbon.nextProperty()
 	local message = initOutputMessage()
-	if extstate.gotoMode then
+	if gotoMode then
 		message("Goto mode deactivated. ")
-		extstate.gotoMode = nil
+		gotoMode = nil
 	end
-	if extstate.isTwice then
-		extstate.isTwice = nil
+	if isTwice then
+		isTwice = nil
 	end
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if speakLayout == true then
@@ -1061,7 +1067,6 @@ function PropertiesRibbon.nextProperty()
 				[true] = layoutLevel.name,
 				[false] = layoutLevel.subname
 			})[currentExtProperty ~= nil])):output()
-			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		if pIndex + 1 <= #layoutLevel.properties then
@@ -1071,7 +1076,6 @@ function PropertiesRibbon.nextProperty()
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 		return
 	end
 	local result = layoutLevel.properties[pIndex]:get(({
@@ -1145,18 +1149,17 @@ function PropertiesRibbon.nextProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	finishScript()
 end
 
 function PropertiesRibbon.previousProperty()
 	local message = initOutputMessage()
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
-	if extstate.gotoMode then
+	if gotoMode then
 		message("Goto mode deactivated. ")
-		extstate.gotoMode = nil
+		gotoMode = nil
 	end
-	if extstate.isTwice then
-		extstate.isTwice = nil
+	if isTwice then
+		isTwice = nil
 	end
 	local pIndex = ({
 		[true] = currentExtProperty,
@@ -1182,7 +1185,6 @@ function PropertiesRibbon.previousProperty()
 	if layout.canProvide() == true then
 		if #layoutLevel.properties < 1 then
 			(string.format("The ribbon of %s is empty.", layout.name:format(layout.subname))):output()
-			finishScript(config.getboolean("allowLayoutsrestorePrev", true))
 			return
 		end
 		if pIndex - 1 > 0 then
@@ -1266,14 +1268,12 @@ function PropertiesRibbon.previousProperty()
 	else
 		layout.pIndex = pIndex
 	end
-	finishScript()
 end
 
 function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
 											   shouldNotResetExtProperty)
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
-	local gotoMode = extstate.gotoMode
 	local propertyNumPassed = propertyNum ~= nil
 	if gotoMode and propertyNum then
 		if propertyNum == 10 then
@@ -1285,12 +1285,10 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			gotoMode = tostring(gotoMode) .. tostring(propertyNum)
 		end
 		(tostring(gotoMode)):output()
-		extstate.gotoMode = gotoMode
 		return
 	elseif gotoMode and propertyNum == nil then
 		cfg_percentageNavigation = false
-		propertyNum = gotoMode
-		extstate.gotoMode = nil
+		propertyNum = tonumber(gotoMode)
 	end
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	local percentageNavigationApplied = false
@@ -1309,7 +1307,6 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			layout.pIndex = 1
 		end
 		speakLayout = false
-		layoutSaid = true
 	end
 	local layoutLevel
 	if currentExtProperty then
@@ -1321,7 +1318,6 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		if #layoutLevel.properties < 1 then
 			local definedName = layoutLevel.subname or layoutLevel.name
 			string.format("The ribbon of %s is empty.", definedName):output()
-			finishScript(true)
 			return
 		end
 		if propertyNum then
@@ -1349,13 +1345,11 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 				end
 				message(string.format("%s layout.", layout.name))
 				message:output()
-				finishScript()
 				return
 			end
 		end
 	else
 		(string.format("There are no elements %s be provided for.", layout.name)):output()
-		finishScript(true)
 		return
 	end
 	local pIndex
@@ -1380,7 +1374,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 					actions.set.perform.label:gsub("^%w", string.upper)), 1)
 				if config.getboolean("allowLayoutsrestorePrev", true) and layoutLevel.properties[pIndex].performableOnce == true then
 					result:addType(
-						". Please note that this property is performable once, after it will be performed successfully, this layout will be reset to previous.",
+						". Please note that this property is performable once, after it will be performed successfully, Properties ribbon will be closed and this layout will be reset to previous.",
 						1)
 				end
 			end
@@ -1431,19 +1425,19 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 		message = message .. string.format(". Percentage navigation has chosen property %u", propertyNum)
 	end
 	if not propertyNumPassed then
-		if extstate.isTwice then
-			extstate.isTwice = nil
+		if isTwice then
+			isTwice = nil
 		end
 	end
-	if extstate.isTwice then
-		if extstate.isTwice ~= pIndex then
-			extstate.isTwice = nil
-		end
-	end
-	local isTwice =
-		config.getinteger("twicePressPerforms", 1) > 1 and
-		extstate.isTwice == pIndex
 	if isTwice then
+		if isTwice ~= pIndex then
+			isTwice = nil
+		end
+	end
+	local lc_isTwice =
+		config.getinteger("twicePressPerforms", 1) > 1 and
+		isTwice == pIndex
+	if lc_isTwice then
 		if config.getinteger("twicePressPerforms", 1) == 2 then
 			if result.value then
 				result.value:output()
@@ -1454,7 +1448,7 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 				})[config.getboolean("objectsIdentificationWhenNavigating", true)])
 				if config.getinteger("twicePressPerforms", 1) > 1 and currentSublayout ==
 					extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] and propertyNumPassed then
-					extstate.isTwice = pIndex
+					isTwice = pIndex
 				end
 			end
 		elseif config.getinteger("twicePressPerforms", 1) == 3 and layoutLevel.properties[pIndex].set_perform ~= nil then
@@ -1471,12 +1465,10 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 			extstate.isTwice = pIndex
 		end
 	end
-	finishScript()
 end
 
 function PropertiesRibbon.ajustProperty(action)
 	local oncePerformRequested = false
-	local gotoMode = extstate.gotoMode
 	if gotoMode and action == actions.set.perform then
 		PropertiesRibbon.reportOrGotoProperty()
 		return
@@ -1510,11 +1502,10 @@ function PropertiesRibbon.ajustProperty(action)
 				end
 				if config.getboolean("allowLayoutsrestorePrev", true) and opt_once == true then
 					extstate.oncePerformSuccess = true
-					speakLayout = true
+					PropertiesRibbon.call("break")
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				finishScript()
 				return
 			end
 		elseif currentExtProperty then
@@ -1540,7 +1531,6 @@ function PropertiesRibbon.ajustProperty(action)
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
-				finishScript()
 				return
 			end
 			msg = nil
@@ -1569,19 +1559,16 @@ function PropertiesRibbon.ajustProperty(action)
 						msg:output()
 					end
 				end
-				finishScript()
 				return
 			end
 		end
 		if not msg then
-			finishScript(oncePerformRequested)
 			return
 		end
 		msg:output(config.getinteger("adjustOutputOrder", 0))
 	else
 		(string.format("There are no element to ajust or perform any action for %s.", layout.name)):output()
 	end
-	finishScript(oncePerformRequested)
 end
 
 function PropertiesRibbon.reportLayout()
@@ -1622,13 +1609,12 @@ function PropertiesRibbon.reportLayout()
 end
 
 function PropertiesRibbon.activateGotoMode()
-	local mode = extstate.gotoMode
-	if mode == nil then
+	if gotoMode == nil then
 		("Goto mode activated."):output()
-		extstate.gotoMode = 0
+		gotoMode = 0
 	else
 		("Goto mode deactivated."):output()
-		extstate.gotoMode = nil
+		gotoMode = nil
 	end
 end
 
@@ -1647,9 +1633,8 @@ function finishScript()
 				extstate.previousLayoutFile = layoutFile
 			end
 		end
-		extstate.speakLayout = speakLayout
-		extstate.extProperty = currentExtProperty
 		extstate.callCommand = nil
+		extstate.instance = nil
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()
 		end
