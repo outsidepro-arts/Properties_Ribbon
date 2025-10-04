@@ -13,6 +13,9 @@ PropertiesRibbon.script_section = "Properties_Ribbon_script"
 
 PropertiesRibbon.script_path = nil
 
+-- Fix the mixed slashes in the paths
+package.path = package.path:gsub("[\\//]", package.config:sub(1, 1))
+package.path = package.path:gsub(package.config:sub(1, 1) .. package.config:sub(1, 1), package.config:sub(1, 1))
 -- We will reverse the package.path string because most likely the path pattern may be at the bottom of.
 for path in package.path:reverse():gmatch("([^;]+)") do
 	if reaper.file_exists(path:reverse():gsub("%?", "properties_ribbon")) then
@@ -20,9 +23,9 @@ for path in package.path:reverse():gmatch("([^;]+)") do
 		break
 	end
 end
-package.path = string.format("%s;%s/%s", package.path, PropertiesRibbon.script_path, "?.lua")
-package.path = string.format("%s;%s/%s", package.path, PropertiesRibbon.script_path, "?//init.lua")
-
+package.path = string.format("%s;%s%s%s", package.path, PropertiesRibbon.script_path, package.config:sub(1, 1), "?.lua")
+package.path = string.format("%s;%s%s%s", package.path, PropertiesRibbon.script_path, package.config:sub(1, 1),
+	"?//init.lua")
 
 -- Including the types check simplifier
 require "utils.typescheck"
@@ -629,44 +632,13 @@ end
 -- -- newLayout (string): either absolute or relative path of new layout  which Properties Ribbon should switch to.
 -- Returns none
 function PropertiesRibbon.executeLayout(newLayoutFile)
-	finishScript()
-	local lt = nil
-	PropertiesRibbon.presentLayout = function(newLayout)
-		local rememberCFG = config.getinteger("rememberSublayout", 3)
-		if (rememberCFG ~= 1 and rememberCFG ~= 3) then
-			-- Let REAPER do not request the extstate superfluously
-			if extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] ~= "" then
-				extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = nil
-			end
-		end
-		extstate.gotoMode = nil
-		extstate.isTwice = nil
-		speakLayout = true
-		layoutFile = fixPath(newLayoutFile):join(".lua")
-		currentLayout = newLayout.section
-		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-		lt = newLayout
-	end
-	dofile(fixPath(newLayoutFile):join(".lua"))
-	finishScript = function()
-		if lt.destroy then
-			lt.destroy()
-		end
-		extstate[lt.section] = lt.pIndex
-		extstate.currentLayout = lt.section
-		extstate.layoutFile = fixPath(newLayoutFile):join(".lua")
-		if layoutHasReset ~= true then
-			extstate[utils.removeSpaces(layoutFile) .. ".sublayout"] = currentSublayout or
-				extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-		end
-		extstate.speakLayout = speakLayout
-		extstate.extProperty = nil
-		if reaper.GetCursorContext() ~= -1 then
-			extstate.lastKnownContext = reaper.GetCursorContext()
-		end
-	end
-	if prepareLayout(lt) then
-		PropertiesRibbon.reportOrGotoProperty()
+	newLayoutFile = fixPath(newLayoutFile):join(".lua")
+	local chunk, errmsg = loadfile(newLayoutFile)
+	if chunk then
+		PropertiesRibbon.call("break")
+		chunk()
+	else
+		error(errmsg)
 	end
 end
 
@@ -852,6 +824,7 @@ local g_undoState = nil
 local currentExtProperty = nil
 local layoutHasReset = false
 local isActivated = false
+local callCommand = nil
 
 function prepareLayout(newLayout, newSublayout)
 	layout = isLayout(newLayout) and newLayout
@@ -953,7 +926,7 @@ end
 
 function PropertiesRibbon.mainLoop()
 	if isActivated == true then
-		local cmd = extstate.callCommand
+		local cmd = callCommand or extstate.callCommand
 		if cmd then
 			local cmdName, args = exposeCommand(cmd)
 			if cmdName == "quit" then
@@ -967,7 +940,7 @@ function PropertiesRibbon.mainLoop()
 				return
 			end
 			PropertiesRibbon[cmdName](table.unpack(args))
-			extstate.callCommand = nil
+			callCommand, extstate.callCommand = nil, nil
 		end
 	else
 		if extstate.instance then
@@ -976,7 +949,8 @@ function PropertiesRibbon.mainLoop()
 		end
 		isActivated = true
 		extstate.instance = true
-		extstate.callCommand = nil
+		callCommand, extstate.callCommand = nil, nil
+		speakLayout = true
 		PropertiesRibbon.reportOrGotoProperty()
 	end
 	::nextIteration::
@@ -1633,7 +1607,7 @@ function finishScript()
 				extstate.previousLayoutFile = layoutFile
 			end
 		end
-		extstate.callCommand = nil
+		callCommand, extstate.callCommand = nil, nil
 		extstate.instance = nil
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()
