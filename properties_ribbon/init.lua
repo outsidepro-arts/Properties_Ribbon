@@ -824,7 +824,6 @@ local g_undoState = nil
 local currentExtProperty = nil
 local layoutHasReset = false
 local isActivated = false
-local callCommand = nil
 
 function prepareLayout(newLayout, newSublayout)
 	layout = isLayout(newLayout) and newLayout
@@ -926,7 +925,7 @@ end
 
 function PropertiesRibbon.mainLoop()
 	if isActivated == true then
-		local cmd = callCommand or extstate.callCommand
+		local cmd = extstate.callCommand
 		if cmd then
 			local cmdName, args = exposeCommand(cmd)
 			if cmdName == "quit" then
@@ -1005,6 +1004,10 @@ function PropertiesRibbon.switchSublayout(action)
 end
 
 function PropertiesRibbon.nextProperty()
+	if layout.canProvide() ~= true then
+		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		return
+	end
 	local message = initOutputMessage()
 	if gotoMode then
 		message("Goto mode deactivated. ")
@@ -1126,6 +1129,10 @@ function PropertiesRibbon.nextProperty()
 end
 
 function PropertiesRibbon.previousProperty()
+	if layout.canProvide() ~= true then
+		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		return
+	end
 	local message = initOutputMessage()
 	local rememberCFG = config.getinteger("rememberSublayout", 3)
 	if gotoMode then
@@ -1246,6 +1253,10 @@ end
 
 function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeactivated, shouldReportParentLayout,
 											   shouldNotResetExtProperty)
+	if layout.canProvide() ~= true then
+		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		return
+	end
 	local message = initOutputMessage()
 	local cfg_percentageNavigation = config.getboolean("percentagePropertyNavigation", false)
 	local propertyNumPassed = propertyNum ~= nil
@@ -1442,6 +1453,10 @@ function PropertiesRibbon.reportOrGotoProperty(propertyNum, gotoModeShouldBeDeac
 end
 
 function PropertiesRibbon.ajustProperty(action)
+	if layout.canProvide() ~= true then
+		(string.format("There are no elements %s be provided for.", layout.name)):output()
+		return
+	end
 	local oncePerformRequested = false
 	if gotoMode and action == actions.set.perform then
 		PropertiesRibbon.reportOrGotoProperty()
