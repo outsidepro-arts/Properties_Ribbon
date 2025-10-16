@@ -9,4 +9,4 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 
 require "properties_ribbon"
 
-PropertiesRibbon.call("ajustProperty", actions.set.decrease)
+PropertiesRibbon.send("ajustProperty", actions.set.decrease)

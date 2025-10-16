@@ -51,6 +51,7 @@ representation = require "representations.representations"
 prepareUserData = require "representations.preparation"
 
 
+
 -- Actions for set methods or some another cases
 actions = {
 	set = {
@@ -611,7 +612,7 @@ function PropertiesRibbon.proposeLayout(forced)
 	end
 	if (forced and contextLayout ~= "") or (context ~= "" and curLayout == "masterTrackProperties" or curLayout == "trackProperties" or
 			curLayout == "itemAndTakeProperties" or curLayout == "envelopeProperties") then
-		return fixPath(contextLayout:join(".lua"))
+		return fixPath(contextLayout)
 	end
 	return nil
 end
@@ -632,10 +633,29 @@ end
 -- -- newLayout (string): either absolute or relative path of new layout  which Properties Ribbon should switch to.
 -- Returns none
 function PropertiesRibbon.executeLayout(newLayoutFile)
-	newLayoutFile = fixPath(newLayoutFile):join(".lua")
+	newLayoutFile = fixPath(newLayoutFile)
 	local chunk, errmsg = loadfile(newLayoutFile)
 	if chunk then
-		PropertiesRibbon.call("break")
+		PropertiesRibbon.send("break")
+
+		layout = {}
+		maybeLayout = nil
+		layoutFile = nil
+		if config.getboolean("allowLayoutsrestorePrev", true) and extstate.oncePerformSuccess then
+			layoutFile = extstate.previousLayoutFile or PropertiesRibbon.proposeLayout(true)
+			extstate.oncePerformSuccess = false
+		else
+			layoutFile = extstate.layoutFile
+		end
+		currentLayout = extstate.currentLayout
+		currentSublayout = currentLayout and extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
+		SpeakLayout = true
+		gotoMode = nil
+		isTwice = nil
+		g_undoState = nil
+		currentExtProperty = nil
+		layoutHasReset = false
+		isActivated = false
 		chunk()
 	else
 		error(errmsg)
@@ -876,20 +896,7 @@ function PropertiesRibbon.initLastLayout(shouldOmitAutomaticLayoutLoading)
 		("Switch one action group first."):output()
 		return
 	end
-	local lt = nil
-	PropertiesRibbon.presentLayout = function(newLayout)
-		lt = newLayout
-	end
-	dofile(layoutFile)
-	if lt then
-		currentLayout = lt.section
-		currentSublayout = extstate[utils.removeSpaces(layoutFile) .. ".sublayout"]
-		local retval = prepareLayout(lt)
-		if retval == true then
-			PropertiesRibbon.mainLoop()
-		end
-		return retval
-	end
+	PropertiesRibbon.executeLayout(layoutFile)
 end
 
 function PropertiesRibbon.initProposedLayout()
@@ -925,6 +932,11 @@ end
 
 function PropertiesRibbon.mainLoop()
 	if isActivated == true then
+		if layout.loop and layout.loop() == true then
+			isActivated = false
+			finishScript()
+			return
+		end
 		local cmd = extstate.callCommand
 		if cmd then
 			local cmdName, args = exposeCommand(cmd)
@@ -937,18 +949,19 @@ function PropertiesRibbon.mainLoop()
 				isActivated = false
 				finishScript()
 				return
+			else
+				PropertiesRibbon[cmdName](table.unpack(args))
+				extstate.callCommand = nil
 			end
-			PropertiesRibbon[cmdName](table.unpack(args))
-			callCommand, extstate.callCommand = nil, nil
 		end
 	else
 		if extstate.instance then
-			PropertiesRibbon.call("break")
+			PropertiesRibbon.send("break")
 			goto nextIteration
 		end
 		isActivated = true
 		extstate.instance = true
-		callCommand, extstate.callCommand = nil, nil
+		extstate.callCommand = nil
 		speakLayout = true
 		PropertiesRibbon.reportOrGotoProperty()
 	end
@@ -956,16 +969,22 @@ function PropertiesRibbon.mainLoop()
 	reaper.runloop(PropertiesRibbon.mainLoop)
 end
 
-function PropertiesRibbon.call(...)
+---Sends a command to Properties Ribbon instances
+---@param command string
+---@param ... string|number|boolean|table
+function PropertiesRibbon.send(command, ...)
+	if (command ~= "quit" and command ~= "break") and not extstate.instance then
+		PropertiesRibbon.initLastLayout()
+	end
 	local args = {}
-	for _, arg in ipairswith({ ... }, 1, 2) do
+	for _, arg in ipairs { ... } do
 		if istable(arg) then
 			table.insert(args, serializeTable(arg))
 		else
 			table.insert(args, string.format("%s:%s", type(arg), tostring(arg)))
 		end
 	end
-	extstate.callCommand = string.format("%s(%s)", select(1, ...), #args > 0 and table.concat(args, "||") or "")
+	extstate.callCommand = string.format("%s(%s)", command, #args > 0 and table.concat(args, "||") or "")
 end
 
 function PropertiesRibbon.switchSublayout(action)
@@ -1491,7 +1510,7 @@ function PropertiesRibbon.ajustProperty(action)
 				end
 				if config.getboolean("allowLayoutsrestorePrev", true) and opt_once == true then
 					extstate.oncePerformSuccess = true
-					PropertiesRibbon.call("break")
+					PropertiesRibbon.send("break")
 				end
 			else
 				string.format("This property does not support the %s action.", action.label):output()
@@ -1622,7 +1641,7 @@ function finishScript()
 				extstate.previousLayoutFile = layoutFile
 			end
 		end
-		callCommand, extstate.callCommand = nil, nil
+		extstate.callCommand = nil
 		extstate.instance = nil
 		if reaper.GetCursorContext() ~= -1 then
 			extstate.lastKnownContext = reaper.GetCursorContext()

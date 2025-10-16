@@ -253,13 +253,21 @@ function openPath(path)
 	end
 end
 
+local function checkExtension(s)
+	if not s:match("%..+$") then
+		s = s:join(".lua")
+	end
+	return s
+end
+
 function fixPath(path)
 	path = assert(isstring(path) and path, ("The string is expected (got %s)"):format(type(path)))
 	if path:match("^%u:") then
-		return path
+		return checkExtension(path)
 	else
-		return select(1, PropertiesRibbon.script_path:rpart(package.config:sub(1, 1))):joinsep(package.config:sub(1, 1),
-			path)
+		return checkExtension(select(1, PropertiesRibbon.script_path:rpart(package.config:sub(1, 1))):joinsep(
+			package.config:sub(1, 1),
+			path))
 	end
 end
 

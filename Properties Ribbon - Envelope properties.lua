@@ -155,6 +155,10 @@ function envelopePointsLayout.canProvide()
 	return (envelope ~= nil)
 end
 
+function envelopePointsLayout.loop()
+	return reaper.GetSelectedEnvelope(0) ~= envelope
+end
+
 local addEnvelopePointProperty = {}
 
 function addEnvelopePointProperty:get()

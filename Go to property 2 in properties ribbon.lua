@@ -10,4 +10,4 @@ package.path = select(2, reaper.get_action_context()):match('^.+[\\//]') .. "?//
 require "properties_ribbon"
 
 
-PropertiesRibbon.call("reportOrGotoProperty", 2)
+PropertiesRibbon.send("reportOrGotoProperty", 2)

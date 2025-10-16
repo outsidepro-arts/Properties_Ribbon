@@ -24,24 +24,21 @@ useMacros("tools")
 -- Preparing all needed configs which will be used not one time
 multiSelectionSupport = config.getboolean("multiSelectionSupport", true)
 
--- For comfort coding, we are making the tracks array as global
-tracks = track_properties_macros.getTracks(multiSelectionSupport)
+local tracks = track_properties_macros.getTracks(multiSelectionSupport)
 
 -- These redirections made especially to not rewrite many code
 -- We have to define the track reporting by configuration. This function has contained in properties macros.
 local getTrackID = track_properties_macros.getTrackID
 
-local parentLayout = PropertiesRibbon.initLayout("Track properties")
+local layoutTitle = "Track properties"
+local parentLayout = PropertiesRibbon.initLayout(layoutTitle)
 
--- We have to change the name without patching the section value, so we will change this after layout initializing
 if config.getboolean("objectsIdentificationWhenNavigating", true) == false and tracks then
-	parentLayout.name = parentLayout.name:join(" for ", track_properties_macros.getTrackIDForTitle(tracks))
+	parentLayout.name = layoutTitle:join(" for ", track_properties_macros.getTrackIDForTitle(tracks))
 end
-
 
 -- Define the tracks undo context
 parentLayout.undoContext = undo.contexts.tracks
-
 
 -- sublayouts
 --Track management properties
@@ -110,7 +107,11 @@ end
 
 -- the function which gives green light to call any method from this class
 function parentLayout.canProvide()
-	return tracks ~= nil
+	return track_properties_macros.getTracks(multiSelectionSupport) ~= nil
+end
+
+function parentLayout.loop()
+	return track_properties_macros.getTracks(multiSelectionSupport) ~= tracks
 end
 
 --[[

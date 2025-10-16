@@ -149,6 +149,10 @@ function parentLayout.canProvide()
 	return (itemsCount > 0 and isEmptyLanes == false)
 end
 
+function parentLayout.loop()
+	return item_properties_macros.getItems(multiSelectionSupport) ~= items
+end
+
 -- sublayouts
 --visual properties
 parentLayout:registerSublayout("managementLayout", "Management")
