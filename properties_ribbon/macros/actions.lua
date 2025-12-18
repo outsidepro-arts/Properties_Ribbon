@@ -52,7 +52,10 @@ function composeSimpleProperty(
 			local message = initOutputMessage()
 			local oldTracksCount, oldItemsCount = reaper.CountTracks(0), reaper.CountMediaItems(0)
 			if istable(cmd) then
-				for _, command in ipairs(cmd) do
+				for i, command in ipairs(cmd) do
+					if i < #cmd then
+						interruptNextOSARAMessage()
+					end
 					reaper.Main_OnCommand(command, 1)
 				end
 			else
@@ -174,7 +177,10 @@ function composeExtendedProperty(cmd, msg, types, getFunction, setFunction)
 		end,
 		set_perform = setFunction or function(self, action)
 			if istable(cmd) then
-				for _, command in ipairs(cmd) do
+				for i, command in ipairs(cmd) do
+					if i < #cmd then
+						interruptNextOSARAMessage()
+					end
 					reaper.Main_OnCommand(command, 0)
 				end
 			else
