@@ -699,6 +699,8 @@ end
 ---@param resetTo? number @ Ability to specify which property should be focused. If omited, the focus will be reset to 1.
 function PropertiesRibbon.resetPropertyFocus(resetTo)
 	layout.pIndex = resetTo or 1
+	currentExtProperty = nil
+	isTwice = nil
 end
 
 ---Load specified macros
@@ -1443,8 +1445,12 @@ function PropertiesRibbon.ajustProperty(action)
 						action.value)](
 						layout.properties[layout.pIndex].extendedProperties.properties[currentExtProperty],
 						layout.properties[layout.pIndex], action.direction)
-				local localUndoContext = layout.properties[layout.pIndex].extendedProperties.properties
-					[currentExtProperty].undoContext
+				-- We still should be sure that current extended property is active because it might reset.
+				local level = layout.properties[layout.pIndex]
+				if currentExtProperty and level.extendedProperties then
+					level = level.extendedProperties.properties[currentExtProperty]
+				end
+				local localUndoContext = level.undoContext
 				if layout.undoContext or localUndoContext then
 					if premsg then
 						reaper.Undo_EndBlock(premsg:extract(0, false), localUndoContext or layout.undoContext)
