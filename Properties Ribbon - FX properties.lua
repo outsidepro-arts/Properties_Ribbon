@@ -606,7 +606,7 @@ if fxLayout.canProvide() then
 					local curFilter = getFilter(sid) or ""
 					local retval, answer = getUserInputs("Filter parameters by",
 						{ caption = "Query:", defValue = curFilter },
-						"Type either full parameter name or a part of (Lua patterns supported):")
+						"Type either full parameter name or a part of (Lua patterns supported).")
 					if retval then
 						if answer ~= "" then
 							for k = 0, capi.GetNumParams(i + fxInaccuracy) - 1 do
@@ -924,7 +924,7 @@ if fxLayout.canProvide() then
 						local _, fxParam = capi.GetParamName(parent.fxIndex, parent.parmIndex)
 						local retval, answer = getUserInputs("Filter parameters by",
 							{ caption = "Filter query:", defValue = utils.escapeLuaPatternChars(fxParam) },
-							"Type either full parameter name or a part of (Lua patterns supported):"
+							"Type either full parameter name or a part of (Lua patterns supported)."
 						)
 						if retval then
 							if answer ~= "" then
