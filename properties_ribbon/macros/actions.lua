@@ -27,16 +27,23 @@ function composeSimpleProperty(
 				if istable(cmd) then
 					message:changeType(
 						string.format("Perform this property to execute these %u actions by queued order: ", #cmd), 1)
-					message("Multiple actions: ")
-					for id, ccmd in ipairs(cmd) do
-						local premsg = string.match(reaper.CF_GetCommandText(0, ccmd), "^.+:%s(.+)") or
-							reaper.CF_GetCommandText(0, ccmd)
+					if cmd.importantAction then
+						local premsg = string.match(reaper.CF_GetCommandText(0, cmd[cmd.importantAction]), "^.+:%s(.+)") or
+							reaper.CF_GetCommandText(0, cmd[cmd.importantAction])
 						premsg = premsg:gsub("[.]+$", "")
 						message(premsg)
-						if id < #cmd - 1 then
-							message(", ")
-						elseif id == #cmd - 1 then
-							message(" and ")
+					else
+						message("Multiple actions: ")
+						for id, ccmd in ipairs(cmd) do
+							local premsg = string.match(reaper.CF_GetCommandText(0, ccmd), "^.+:%s(.+)") or
+								reaper.CF_GetCommandText(0, ccmd)
+							premsg = premsg:gsub("[.]+$", "")
+							message(premsg)
+							if id < #cmd - 1 then
+								message(", ")
+							elseif id == #cmd - 1 then
+								message(" and ")
+							end
 						end
 					end
 				else
