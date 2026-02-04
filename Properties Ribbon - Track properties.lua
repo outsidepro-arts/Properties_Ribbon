@@ -2723,29 +2723,31 @@ for _, track in ipairs(istable(tracks) and tracks or { tracks }) do
 				return message
 			end
 
-			local shrMonoProperty = parentLayout[shrID]:registerProperty {
-				track = track,
-				idx = i,
-				type = category,
-				typeName = shrCatNames[category]
-			}
+			if category < 1 then
+				local shrMonoProperty = parentLayout[shrID]:registerProperty {
+					track = track,
+					idx = i,
+					type = category,
+					typeName = shrCatNames[category]
+				}
 
-			function shrMonoProperty:get()
-				local message = initOutputMessage()
-				message:initType(("Toggle this property to set the mono state of this %s."):format(self.typeName),
-					"toggleable")
-				message({ label = "Mono" })
-				local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO")
-				message({ objectId = self.typeName, value = state == 1 and "On" or "Off" })
-				return message
-			end
+				function shrMonoProperty:get()
+					local message = initOutputMessage()
+					message:initType(("Toggle this property to set the mono state of this %s."):format(self.typeName),
+						"toggleable")
+					message({ label = "Mono" })
+					local state = reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO")
+					message({ objectId = self.typeName, value = state == 1 and "On" or "Off" })
+					return message
+				end
 
-			function shrMonoProperty:set_perform()
-				local message = initOutputMessage()
-				local state = nor(reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO"))
-				reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO", state)
-				message(self:get())
-				return message
+				function shrMonoProperty:set_perform()
+					local message = initOutputMessage()
+					local state = nor(reaper.GetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO"))
+					reaper.SetTrackSendInfo_Value(self.track, self.type, self.idx, "B_MONO", state)
+					message(self:get())
+					return message
+				end
 			end
 
 			local shrSendModeProperty = parentLayout[shrID]:registerProperty {
