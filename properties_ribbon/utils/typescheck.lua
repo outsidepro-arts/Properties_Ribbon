@@ -37,6 +37,10 @@ function isboolean(var)
 	return type(var) == "boolean"
 end
 
+function isnil(var)
+	return type(var) == "nil"
+end
+
 -- Some super-simplifies
 
 function isarray(var)
