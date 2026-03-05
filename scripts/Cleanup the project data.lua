@@ -157,10 +157,10 @@ layout:registerProperty(generateConfigProperty(
 -- Remove muted tracks?
 
 local function getsetMutedTracks(state)
-	if state then
+	if type(state) ~= "nil" then
 		setLayoutQuery("removeMutedTracks", state)
 	else
-		return getLayoutQuery("removeMutedTracks", false)
+		return getLayoutQuery("removeMutedTracks", true)
 	end
 end
 
@@ -197,7 +197,7 @@ local function getsetEmptyTracks(state)
 	if type(state) ~= "nil" then
 		setLayoutQuery("removeEmptyTracks", state)
 	else
-		return getLayoutQuery("removeEmptyTracks", false)
+		return getLayoutQuery("removeEmptyTracks", true)
 	end
 end
 
@@ -216,7 +216,7 @@ local function getsetMutedItems(state)
 	if type(state) ~= "nil" then
 		setLayoutQuery("removeMutedItems", state)
 	else
-		return getLayoutQuery("removeMutedItems", false)
+		return getLayoutQuery("removeMutedItems", true)
 	end
 end
 
