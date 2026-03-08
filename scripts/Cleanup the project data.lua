@@ -154,6 +154,24 @@ layout:registerProperty(generateConfigProperty(
 	getsetOfflineFX
 ))
 
+-- Do not remove instruments?
+
+local function getsetDontRemoveInstruments(state)
+	if type(state) ~= "nil" then
+		setLayoutQuery("dontRemoveInstruments", state)
+	else
+		return getLayoutQuery("dontRemoveInstruments", false)
+	end
+end
+
+layout:registerProperty(generateConfigProperty(
+	{
+		tip = "Toggle this property to define whether the plug-ins which set as instruments should not be removed.",
+		label = "Do not remove instruments"
+	},
+	getsetDontRemoveInstruments
+))
+
 -- Remove muted tracks?
 
 local function getsetMutedTracks(state)
@@ -253,9 +271,10 @@ layout:registerProperty(generateConfigProperty(
 
 local function process()
 	-- Get all pre-defined configs
-	local cleanObjects, includeMaster, removeBypassedFX, removeOfflineFX, removeMutedTracks, removeEmptyTracks, removeMutedItems, dontRemoveMutedTrackWithHWO, removeEmptyTakeLanes =
+	local cleanObjects, includeMaster, removeBypassedFX, removeOfflineFX, removeMutedTracks, removeEmptyTracks, removeMutedItems, dontRemoveMutedTrackWithHWO, removeEmptyTakeLanes, dontRemoveInstruments =
 		getsetObjects(), getsetIncludeMaster(), getsetBypassedFX(), getsetOfflineFX(), getsetMutedTracks(),
-		getsetEmptyTracks(), getsetMutedItems(), getsetDontRemoveMutedTrackWithHWO(), getsetEmptyTakeLanes()
+		getsetEmptyTracks(), getsetMutedItems(), getsetDontRemoveMutedTrackWithHWO(), getsetEmptyTakeLanes(),
+		getsetDontRemoveInstruments()
 	local tracks, items = {}, {}
 	local statistic = setmetatable({
 		__data = {},
@@ -357,14 +376,18 @@ local function process()
 			end
 		else
 			-- REAPER does not snapshots the state per Reascript Run, so we will go by unsafe plan
+			local trackInstrument = nil
+			if dontRemoveInstruments then
+				trackInstrument = reaper.TrackFX_GetInstrument(track)
+			end
 			local i = 0
 			while i < reaper.TrackFX_GetCount(track) do
-				if removeBypassedFX and not reaper.TrackFX_GetEnabled(track, i) then
+				if removeBypassedFX and not reaper.TrackFX_GetEnabled(track, i) and trackInstrument ~= i then
 					if reaper.TrackFX_Delete(track, i) then
 						statistic["bypassed FX removed"] = 1
 						goto continue
 					end
-				elseif removeOfflineFX and reaper.TrackFX_GetOffline(track, i) then
+				elseif removeOfflineFX and reaper.TrackFX_GetOffline(track, i) and trackInstrument ~= i then
 					if reaper.TrackFX_Delete(track, i) then
 						statistic["offline FX removed"] = 1
 						goto continue
