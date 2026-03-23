@@ -102,6 +102,36 @@ function fxActionsLayout.canProvide()
 	return reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility() & 1) == 1
 end
 
+-- Add the FX into a contextual FX chain using FX Browser
+local contextualFXBrowser = {}
+if context == 0 then
+	fxActionsLayout.contextLayout:registerProperty(contextualFXBrowser, true)
+end
+function contextualFXBrowser:get()
+	local message = initOutputMessage()
+	local isMasterTrack = reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0)
+	message:initType(("Perform this property to add FX using FX Browser for %s"):format(isMasterTrack and "master track" or
+		contexts[0]))
+	if config.getboolean("allowLayoutsrestorePrev", true) then
+		message:addType(
+			" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored."
+			, 1)
+		message:addType(" once", 2)
+	end
+	useMacros("track_properties")
+	local tracks = track_properties_macros.getTracks(config.getboolean("multiSelectionSupport", true))
+	tracks = istable(tracks) and tracks or { tracks }
+	message(string.format("Add FX to %s chain",
+		isMasterTrack and "master track" or contexts[0]))
+	return message
+end
+
+function contextualFXBrowser:set_perform()
+	reaper.Main_OnCommand(40271, 0) -- View: Show FX browser window
+	setUndoLabel(self:get())
+	return
+end
+
 -- Contextual FX chain action
 local contextualFXChain = {}
 if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then

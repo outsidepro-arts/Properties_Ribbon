@@ -106,18 +106,6 @@ parentLayout.areas:registerProperty(
 	)
 )
 
--- FX browser window
-parentLayout.windows:registerProperty(
-	composeExtendedSwitcherProperty(
-		usualWindowStates,
-		40271,
-		"%s the FX browser",
-		{ "Toggle this property to either open or close the FX browser window.", "Toggleable" },
-		nil,
-		setWindow
-	)
-)
-
 -- Video window visibility
 parentLayout.windows:registerProperty(
 	composeExtendedSwitcherProperty(
