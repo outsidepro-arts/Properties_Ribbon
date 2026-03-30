@@ -321,7 +321,7 @@ local function process()
 	for _, item in ipairs(items) do
 		if removeMutedItems and reaper.GetMediaItemInfo_Value(item, "B_MUTE") == 1 then
 			-- Since we cannot remove item directly, we have to remove this using its parent track.
-			local parentTrack = reaper.GetMediaItemInfo_Value(item, "P_PARTRACK")
+			local parentTrack = reaper.GetMediaItemInfo_Value(item, "P_TRACK")
 			if reaper.DeleteTrackMediaItem(parentTrack, item) then
 				statistic["muted items removed"] = 1
 			end
