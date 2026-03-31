@@ -102,36 +102,6 @@ function fxActionsLayout.canProvide()
 	return reaper.GetLastTouchedTrack() == nil and (reaper.GetMasterTrackVisibility() & 1) == 1
 end
 
--- Add the FX into a contextual FX chain using FX Browser
-local contextualFXBrowser = {}
-if context == 0 then
-	fxActionsLayout.contextLayout:registerProperty(contextualFXBrowser, true)
-end
-function contextualFXBrowser:get()
-	local message = initOutputMessage()
-	local isMasterTrack = reaper.GetLastTouchedTrack() == reaper.GetMasterTrack(0)
-	message:initType(("Perform this property to add FX using FX Browser for %s"):format(isMasterTrack and "master track" or
-		contexts[0]))
-	if config.getboolean("allowLayoutsrestorePrev", true) then
-		message:addType(
-			" Please note that this property is onetime, i.e., after its performing the previous actual layout will be restored."
-			, 1)
-		message:addType(" once", 2)
-	end
-	useMacros("track_properties")
-	local tracks = track_properties_macros.getTracks(config.getboolean("multiSelectionSupport", true))
-	tracks = istable(tracks) and tracks or { tracks }
-	message(string.format("Add FX to %s chain",
-		isMasterTrack and "master track" or contexts[0]))
-	return message
-end
-
-function contextualFXBrowser:set_perform()
-	reaper.Main_OnCommand(40271, 0) -- View: Show FX browser window
-	setUndoLabel(self:get())
-	return
-end
-
 -- Contextual FX chain action
 local contextualFXChain = {}
 if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
@@ -139,55 +109,66 @@ if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTou
 end
 
 contextualFXChain.actions = {
-	"View FX chain for %s with %s",
-	"View input FX chain for %s with %s"
+	[0] = {
+		countFunction = function()
+			return reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack())
+		end,
+		{
+			label = "View FX chain for %s with %s",
+			command = 40291
+		},
+		{
+			label = "Add FX to %s fx chain",
+			command = 40271,
+			needReset = true
+		},
+		{
+			label = "View input FX chain for %s with %s",
+			countFunction = function()
+				return reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
+			end,
+			command = 40271
+		}
+	},
+	[1] = {
+		countFunction = function()
+			return reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0)))
+		end,
+		{
+			label = "View FX chain for %s with %s",
+			command = 40638
+		}
+	}
 }
-
-contextualFXChain.commands = {
-	[0] = 40291,
-	[1] = 40638
-}
-
-function contextualFXChain.getValue()
-	if context == 0 then
-		return reaper.TrackFX_GetCount(reaper.GetLastTouchedTrack()),
-			reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
-	elseif context == 1 then
-		return reaper.TakeFX_GetCount(reaper.GetActiveTake(reaper.GetSelectedMediaItem(0, 0)))
-	end
-end
 
 function contextualFXChain:get()
 	local message = initOutputMessage()
 	message:initType((
-		"Adjust this property to choose which %s FX chain you wish to open. Perform this property to show the chosen FX chain."
+		"Adjust this property to choose which actionn you are perform on %s FX chain. Perform this property to perform the chosen FX chain action."
 	):format(contexts[context]))
-	local state = nil
-	state = context == 0 and getCurrentChainAction() or 1
-	message(self.actions[state]:format(contexts[context], getStringPluginsCount(({ self.getValue() })[state])))
-	if context == 0 then
-		message:setValueFocusIndex(state, #self.actions)
+	local state = getCurrentChainAction()
+	if state < 1 or state > #self.actions[context] then
+		state = 1
+	end
+	local countFunction = self.actions[context][state].countFunction or self.actions[context].countFunction
+	message(self.actions[context][state].label:format(contexts[context], getStringPluginsCount(countFunction())))
+	if #self.actions[context] > 1 then
+		message:setValueFocusIndex(state, #self.actions[context])
 	end
 	return message
 end
 
-if context == 0 then
+if #contextualFXChain.actions[context] > 1 then
 	function contextualFXChain:set_adjust(direction)
 		local message = initOutputMessage()
-		if direction == actions.set.increase.direction then
-			local curAction = getCurrentChainAction()
-			if (curAction + 1) <= #self.actions then
-				setCurrentChainAction(curAction + 1)
-			else
-				message("No more next action.")
-			end
-		elseif direction == actions.set.decrease.direction then
-			local curAction = getCurrentChainAction()
-			if (curAction - 1) >= 1 then
-				setCurrentChainAction(curAction - 1)
-			else
-				message("No more previous action.")
-			end
+		local curAction = getCurrentChainAction()
+		if curAction < 1 or curAction > #self.actions[context] then
+			curAction = 1
+		end
+		if self.actions[context][curAction + direction] then
+			setCurrentChainAction(curAction + direction)
+		else
+			message(string.format("No more %s action.", direction == 1 and "next" or "previous"))
 		end
 		message(self:get())
 		return message
@@ -196,15 +177,14 @@ end
 
 function contextualFXChain:set_perform()
 	local curAction = nil
-	if context == 0 then
+	if #self.actions[context] > 1 then
 		curAction = getCurrentChainAction()
 	else
 		curAction = 1
 	end
-	if curAction == 1 then
-		reaper.Main_OnCommand(self.commands[context], 0)
-	else
-		reaper.Main_OnCommand(40844, 0)
+	reaper.Main_OnCommand(self.actions[context][curAction].command, 0)
+	if self.actions[context][curAction].needReset then
+		setCurrentChainAction(1)
 	end
 	setUndoLabel(self:get())
 	return nil, true
@@ -245,7 +225,7 @@ if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTou
 				[0] = 40298,
 				[1] = reaper.NamedCommandLookup("_S&M_TGL_TAKEFX_BYP")
 			},
-			getValue = contextualFXChain.getValue,
+			getValue = contextualFXChain.actions[context].countFunction,
 			take_checkState = function()
 				-- REAPER doesn't provide any way to neither check the all FX bypass state nor set this, so we have to check the bypass state per each FX in. For set state we are using the SWS action.
 				useMacros("item_properties")
@@ -355,46 +335,57 @@ if fxActionsLayout.masterTrackLayout then
 end
 
 -- Contextual Properties Ribbon FX parameters layout
+local contextualFXProperties = {}
 -- If this script is not installed, we should omit this property rendering
 if reaper.NamedCommandLookup("_RS4e4bbd4cecce51a391e9f9b3b829c6d8144f237a") then
 	if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
-		fxActionsLayout.contextLayout:registerProperty {
-			getValue = contextualFXChain.getValue,
-			get = function(self)
-				local message = initOutputMessage()
-				message:initType(("Perform this property to work with %s FX properties."):format(contexts[context]))
-				local chainCount, inputCount = self.getValue()
-				if context == 0 and inputCount > 0 then
-					message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
-				end
-				if chainCount == 0 then
-					message:addType(" This action is unavailable right now because there are no FX.", 1)
-					message:changeType("Unavailable", 2)
-				end
-				message(("FX properties of %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
-				if context == 0 and inputCount > 0 then
-					message(string.format(" and input FX chain with %s", getStringPluginsCount(inputCount)))
-				end
-				return message
-			end,
-			set_perform = function(self)
-				local chainCount, inputCount = self.getValue()
-				if chainCount > 0 or (inputCount and inputCount > 0) then
-					extstate["fx_properties.loadFX"] = nil
-					PropertiesRibbon.executeLayout("Properties Ribbon - FX properties")
-				else
-					return "This action is unavailable right now because no FX is set there."
-				end
-			end
-		}
+		contextualFXProperties = fxActionsLayout.contextLayout:registerProperty {}
 	end
 end
 
+function contextualFXProperties.getValue()
+	local contextCount = contextualFXChain.actions[context].countFunction()
+	local actionCount = 0
+	local curAction = getCurrentChainAction() or 1
+	if contextualFXChain.actions[context][curAction] and
+		contextualFXChain.actions[context][curAction].countFunction then
+		actionCount = contextualFXChain.actions[context][curAction].countFunction()
+	end
+	return contextCount, actionCount
+end
+
+function contextualFXProperties:get()
+	local message = initOutputMessage()
+	message:initType(("Perform this property to work with %s FX properties."):format(contexts[context]))
+	local chainCount, inputCount = self.getValue()
+	if context == 0 and inputCount > 0 then
+		message:addType(" The FX which have being added to track input FX chain will display also here.", 1)
+	end
+	if chainCount == 0 then
+		message:addType(" This action is unavailable right now because there are no FX.", 1)
+		message:changeType("Unavailable", 2)
+	end
+	message(("FX properties of %s with %s"):format(contexts[context], getStringPluginsCount(self.getValue)))
+	if context == 0 and inputCount > 0 then
+		message(string.format(" and input FX chain with %s", getStringPluginsCount(inputCount)))
+	end
+	return message
+end
+
+function contextualFXProperties:set_perform()
+	local chainCount, inputCount = self.getValue()
+	if chainCount > 0 or (inputCount and inputCount > 0) then
+		extstate["fx_properties.loadFX"] = nil
+		PropertiesRibbon.executeLayout("Properties Ribbon - FX properties")
+	else
+		return "This action is unavailable right now because no FX is set there."
+	end
+end
 
 -- Contextual OSARA FX parameters action
 if reaper.GetLastTouchedTrack() ~= reaper.GetMasterTrack() and reaper.GetLastTouchedTrack() ~= nil then
 	fxActionsLayout.contextLayout:registerProperty({
-			getValue = contextualFXChain.getValue,
+			getValue = contextualFXProperties.getValue,
 			get = function(self)
 				local message = initOutputMessage()
 				message:initType(("Perform this property to show the %s FX parameters using OSARA."):format(contexts
