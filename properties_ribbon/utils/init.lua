@@ -58,7 +58,7 @@ end
 
 -- This function originaly written by @electrik-spb in PureBasic and rewritten by me for LUA.
 function utils.numtopercent(num)
-	return math.floor(num / (1 / 100))
+	return math.round(num / (1 / 100), 0)
 end
 
 -- This function based on previous function but just reversed.

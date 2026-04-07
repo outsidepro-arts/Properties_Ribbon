@@ -798,7 +798,7 @@ function widthProperty:get()
 	else
 		message({ objectId = getTrackID(tracks) })
 		local state = reaper.GetMediaTrackInfo_Value(tracks, "D_WIDTH")
-		message({ value = string.format("%s%%", utils.numtopercent(state)) })
+		message({ value = string.format("%i%%", utils.numtopercent(state)) })
 	end
 	return message
 end

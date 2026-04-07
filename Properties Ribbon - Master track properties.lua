@@ -256,7 +256,7 @@ function widthProperty:get()
 	local message = initOutputMessage()
 	message:initType("Adjust this property to set the desired width value for master track.")
 	local state = reaper.GetMediaTrackInfo_Value(master, "D_WIDTH")
-	message({ objectId = "Master", label = "Width", value = string.format("%s%%", utils.numtopercent(state)) })
+	message({ objectId = "Master", label = "Width", value = string.format("%i%%", utils.numtopercent(state)) })
 	return message
 end
 
