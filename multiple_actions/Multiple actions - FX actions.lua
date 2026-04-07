@@ -127,7 +127,7 @@ contextualFXChain.actions = {
 			countFunction = function()
 				return reaper.TrackFX_GetRecCount(reaper.GetLastTouchedTrack())
 			end,
-			command = 40271
+			command = 40844
 		}
 	},
 	[1] = {
